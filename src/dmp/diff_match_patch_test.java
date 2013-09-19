@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package name.fraser.neil.plaintext;
+package dmp;
 
 import junit.framework.TestCase;
 
@@ -28,9 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import name.fraser.neil.plaintext.diff_match_patch.Diff;
-import name.fraser.neil.plaintext.diff_match_patch.LinesToCharsResult;
-import name.fraser.neil.plaintext.diff_match_patch.Patch;
+import dmp.diff_match_patch.Diff;
+import dmp.diff_match_patch.LinesToCharsResult;
+import dmp.diff_match_patch.Patch;
 
 public class diff_match_patch_test extends TestCase {
 

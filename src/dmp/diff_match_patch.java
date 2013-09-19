@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package name.fraser.neil.plaintext;
+package dmp;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
