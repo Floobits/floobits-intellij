@@ -6,6 +6,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import dmp.diff_match_patch;
+
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     public FloobitsPlugin() {
