@@ -34,6 +34,11 @@
 
   <actions>
     <!-- Add your actions here -->
+      <action id="FloobitsJoinWorkspace" class="floobits.JoinWorkspace" text="Floobits: Join Workspace"
+              description="Join Floobits workspace">
+          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
