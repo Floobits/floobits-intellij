@@ -1,8 +1,7 @@
-package com.floobits.idea.floobits;
+package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.diagnostic.Logger;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +15,31 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     @Override
     public void initComponent() {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override
