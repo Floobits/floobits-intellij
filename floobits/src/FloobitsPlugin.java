@@ -1,5 +1,3 @@
-package floobits;
-
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import org.jdom.Element;
