@@ -3,3 +3,4 @@
 *.war
 *.ear
 .sublime-project
+.DS_Store
