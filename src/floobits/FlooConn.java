@@ -64,12 +64,18 @@ public class FlooConn {
             String line;
 
 //            while (true){
-                try {
-                    line = in.readLine();
-                    Log.info(String.format("response: %s", line));
-                } catch (IOException e) {
-//                    break;
-                }
+            if (in.ready()) {
+                line = in.readLine();
+                Log.info(String.format("response: %s", line));
+            } else {
+                Log.info("not ready");
+            }
+//                try {
+//                    line = in.readLine();
+//                    Log.info(String.format("response: %s", line));
+//                } catch (IOException e) {
+////                    break;
+//                }
 
 //            }
             out.close();

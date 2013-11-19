@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FlooConn.java" afterPath="$PROJECT_DIR$/src/floobits/FlooConn.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" afterPath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -21,7 +21,7 @@
     <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384825176347" ignored="false" />
     <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384821574636" ignored="false" />
     <file path="/floo_conn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384826374330" ignored="false" />
-    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384899432612" ignored="false" />
+    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384900189479" ignored="false" />
     <file path="/fragment.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384899241199" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -75,7 +75,7 @@
     </breakpoint_any>
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="76" class="floobits.FlooConn" package="floobits">
+      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="82" class="floobits.FlooConn" package="floobits">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -132,7 +132,7 @@
       <file leaf-file-name="FlooConn.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="120" selection-start="2592" selection-end="2592" vertical-scroll-proportion="0.8347107">
+            <state line="83" column="106" selection-start="2892" selection-end="2892" vertical-scroll-proportion="0.7933884">
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#getAcceptedIssuers#0;class#989:1387" expanded="false" />
@@ -871,7 +871,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="74" column="120" selection-start="2592" selection-end="2592" vertical-scroll-proportion="0.8347107">
+        <state line="83" column="106" selection-start="2892" selection-end="2892" vertical-scroll-proportion="0.7933884">
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="method#getAcceptedIssuers#0;class#989:1387" expanded="false" />
