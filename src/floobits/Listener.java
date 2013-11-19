@@ -51,6 +51,8 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     public void disposeComponent() {
         connection.disconnect();
+        em.removeSelectionListener(this);
+        em.removeDocumentListener(this);
     }
 
     @Override
