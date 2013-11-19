@@ -3,7 +3,7 @@ package floobits;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
@@ -12,23 +12,26 @@ import com.intellij.openapi.editor.EditorFactory;
 import org.jetbrains.annotations.NotNull;
 
 
-import com.intellij.openapi.editor.event.DocumentListener;
-
 import java.util.List;
 
-public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener{
+// see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
+public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener{
     private static Logger Log = Logger.getInstance(Listener.class);
 
     private final MessageBusConnection connection;
+    private final EditorEventMulticaster em;
 
 
     public Listener() {
         connection = ApplicationManager.getApplication().getMessageBus().connect();
+        em = EditorFactory.getInstance().getEventMulticaster();
     }
+
 
     public void initComponent() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
-        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this);
+        em.addDocumentListener(this);
+        em.addSelectionListener(this);
     }
 
     @Override
@@ -41,6 +44,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Log.info(String.format("documentChanged, %s", event));
     }
 
+    @Override
+    public void selectionChanged(SelectionEvent event) {
+        Log.info(String.format("selectionChanged, %s", event));
+    }
+
     public void disposeComponent() {
         connection.disconnect();
     }
@@ -50,7 +58,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Log.info("before");
     }
     @Override
-    public void after(List<? extends VFileEvent> events) {
+    public void after(@NotNull List<? extends VFileEvent> events) {
         Log.info("after");
     }
 

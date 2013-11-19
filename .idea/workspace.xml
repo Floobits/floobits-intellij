@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" afterPath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/Listener.java" afterPath="$PROJECT_DIR$/src/floobits/Listener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/META-INF/plugin.xml" afterPath="$PROJECT_DIR$/META-INF/plugin.xml" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -19,7 +17,7 @@
     <file path="/blahblah.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379632575241" ignored="false" />
     <file path="/JoinWorkspace.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379632880367" ignored="false" />
     <file path="$PROJECT_DIR$/../intellij/.idea/workspace.xml" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379636389131" ignored="false" />
-    <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384824433302" ignored="false" />
+    <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384825078645" ignored="false" />
     <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384821574636" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -104,7 +102,7 @@
       <file leaf-file-name="Listener.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/floobits/Listener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="69" selection-start="924" selection-end="924" vertical-scroll-proportion="0.38580248">
+            <state line="17" column="0" selection-start="724" selection-end="724" vertical-scroll-proportion="0.1929499">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -124,7 +122,7 @@
       <file leaf-file-name="workspace.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="688" column="93" selection-start="35133" selection-end="35133" vertical-scroll-proportion="-22.36">
+            <state line="686" column="93" selection-start="34844" selection-end="34844" vertical-scroll-proportion="-22.36">
               <folding />
             </state>
           </provider>
@@ -611,15 +609,15 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="22" width="1493" height="1414" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22720248" sideWeight="0.64409125" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22720248" sideWeight="0.35590878" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22720248" sideWeight="0.64409125" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.13523957" sideWeight="0.28265378" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33075735" sideWeight="0.49965447" order="7" side_tool="false" content_ui="tabs" />
@@ -627,8 +625,8 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22322045" sideWeight="0.7727975" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3995363" sideWeight="0.71734625" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22322045" sideWeight="0.86476046" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.13523957" sideWeight="0.71734625" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843894" sideWeight="0.49965447" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -779,7 +777,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="688" column="93" selection-start="35133" selection-end="35133" vertical-scroll-proportion="-22.36">
+        <state line="686" column="93" selection-start="34844" selection-end="34844" vertical-scroll-proportion="-22.36">
           <folding />
         </state>
       </provider>
@@ -809,7 +807,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/floobits/Listener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="69" selection-start="924" selection-end="924" vertical-scroll-proportion="0.38580248">
+        <state line="17" column="0" selection-start="724" selection-end="724" vertical-scroll-proportion="0.1929499">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
