@@ -1,33 +1,22 @@
 package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
-
-import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Ref;
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.vfs.*;
-import com.intellij.openapi.vfs.impl.local.FileWatcher;
-import com.intellij.openapi.vfs.impl.local.LocalFileSystemImpl;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
-import com.intellij.openapi.vfs.newvfs.NewVirtualFile;
 import com.intellij.openapi.vfs.newvfs.events.*;
-import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
-import com.intellij.testFramework.PlatformLangTestCase;
-import com.intellij.util.Alarm;
-import com.intellij.util.Function;
-import com.intellij.util.TimeoutUtil;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.openapi.editor.EditorFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+
+import com.intellij.openapi.editor.event.DocumentListener;
 
 import java.util.List;
 
-public class Listener implements ApplicationComponent, BulkFileListener {
+public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener{
     private static Logger Log = Logger.getInstance(Listener.class);
 
     private final MessageBusConnection connection;
@@ -39,6 +28,17 @@ public class Listener implements ApplicationComponent, BulkFileListener {
 
     public void initComponent() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
+        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(this);
+    }
+
+    @Override
+    public void beforeDocumentChange(DocumentEvent event) {
+        Log.info(String.format("beforeDocumentChange, %s", event));
+    }
+
+    @Override
+    public void documentChanged(DocumentEvent event) {
+        Log.info(String.format("documentChanged, %s", event));
     }
 
     public void disposeComponent() {
@@ -47,11 +47,11 @@ public class Listener implements ApplicationComponent, BulkFileListener {
 
     @Override
     public void before(@NotNull List<? extends VFileEvent> events) {
-        Log.info("Joining workspace... NOT");
+        Log.info("before");
     }
     @Override
     public void after(List<? extends VFileEvent> events) {
-        Log.info("Joining workspace... NOT");
+        Log.info("after");
     }
 
     @NotNull

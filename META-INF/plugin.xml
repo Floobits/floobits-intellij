@@ -25,7 +25,9 @@
   -->
 
   <application-components>
-    <!-- Add your application components here -->
+      <component>
+          <implementation-class>floobits.Listener</implementation-class>
+      </component>
   </application-components>
 
   <project-components>
@@ -44,4 +46,5 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
   </extensions>
+
 </idea-plugin>
