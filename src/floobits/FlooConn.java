@@ -4,6 +4,22 @@ import java.net.*;
 import java.io.*;
 import java.security.*;
 import javax.net.ssl.*;
+import com.google.gson.Gson;
+
+class RoomInfo {
+    private String username = "";
+    private String room = "";
+    private String room_owner;
+    private String platform = "???";
+    private String version = "1.0";
+    private String[] supported_encodings =  {"utf8"};
+
+    public RoomInfo(String username, String room, String owner) {
+        this.username = username;
+        this.room = room;
+        this.room_owner = owner;
+}
+
 
 public class FlooConn {
     public FlooConn(String owner, String workspace) {
@@ -11,7 +27,6 @@ public class FlooConn {
         int port = 443; // default https port
         String host = "floobits.com";
 //        String url = String.format("%s/%s/%s", host, owner, workspace);
-
 
         TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
                 new javax.net.ssl.X509TrustManager(){
@@ -40,8 +55,11 @@ public class FlooConn {
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
 
             Writer out = new OutputStreamWriter(socket.getOutputStream());
-            out.write("GET / HTTP/1.0\\r\\n");
-            out.write("\\r\\n");
+            Gson gson = new Gson();
+            String data = gson.toJson(new RoomInfo("asdf", owner, workspace));
+
+            out.write(data);
+            out.write("/n");
             out.flush();
 
             // read response

@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/Listener.java" afterPath="$PROJECT_DIR$/src/floobits/Listener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FlooConn.java" afterPath="$PROJECT_DIR$/src/floobits/FlooConn.java" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -21,7 +20,7 @@
     <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384825176347" ignored="false" />
     <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384821574636" ignored="false" />
     <file path="/floo_conn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384826374330" ignored="false" />
-    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384826643819" ignored="false" />
+    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384827908373" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +115,7 @@
       <file leaf-file-name="FlooConn.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="12" column="79" selection-start="341" selection-end="341" vertical-scroll-proportion="0.16304348">
+            <state line="62" column="29" selection-start="2240" selection-end="2240" vertical-scroll-proportion="0.7418478">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -136,7 +135,7 @@
       <file leaf-file-name="workspace.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="695" column="93" selection-start="35437" selection-end="35437" vertical-scroll-proportion="-22.36">
+            <state line="716" column="93" selection-start="36489" selection-end="36489" vertical-scroll-proportion="-22.36">
               <folding />
             </state>
           </provider>
@@ -332,6 +331,28 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="floobits" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="intellij-plugin" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="untellij" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="floobits" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="FlooConn.java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -786,7 +807,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="695" column="93" selection-start="35437" selection-end="35437" vertical-scroll-proportion="-22.36">
+        <state line="716" column="93" selection-start="36489" selection-end="36489" vertical-scroll-proportion="-22.36">
           <folding />
         </state>
       </provider>
@@ -825,7 +846,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="79" selection-start="341" selection-end="341" vertical-scroll-proportion="0.16304348">
+        <state line="62" column="29" selection-start="2240" selection-end="2240" vertical-scroll-proportion="0.7418478">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
