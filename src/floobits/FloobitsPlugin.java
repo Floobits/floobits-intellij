@@ -42,7 +42,6 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     }
 
     public static void joinWorkspace() {
-        Log.info("Joining workspace... NOT");
         new FlooConn("kansface", "asdf");
     }
 

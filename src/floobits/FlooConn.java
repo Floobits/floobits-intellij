@@ -27,18 +27,18 @@ public class FlooConn {
     private static Logger Log = Logger.getInstance(Listener.class);
     public FlooConn(String owner, String workspace) {
 
-        int port = 443; // default https port
-        String host = "floobits.com";
+        int port = 3448; // default https port
+        String host = "staging.floobits.com";
 //        String url = String.format("%s/%s/%s", host, owner, workspace);
 
         TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager(){
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers(){
-                        return null;
-                    }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs,String authType){}
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs,String authType){}
+            new javax.net.ssl.X509TrustManager(){
+                public java.security.cert.X509Certificate[] getAcceptedIssuers(){
+                    return null;
                 }
+                public void checkClientTrusted(java.security.cert.X509Certificate[] certs,String authType){}
+                public void checkServerTrusted(java.security.cert.X509Certificate[] certs,String authType){}
+            }
         };
 
 
@@ -47,22 +47,15 @@ public class FlooConn {
             javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
             sc.init(null, trustAll, new java.security.SecureRandom());
 
-//            Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-//            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-//
-//            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-
-
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+//            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocketFactory factory = (SSLSocketFactory) sc.getSocketFactory();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
 
             Writer out = new OutputStreamWriter(socket.getOutputStream());
-            Gson gson = new Gson();
-            String data = gson.toJson(new RoomInfo("asdf", owner, workspace));
+            String data = new Gson().toJson(new RoomInfo("asdf", owner, workspace));
 
-            out.write(data);
-            out.write("/n");
+            out.write(data + "\n");
             out.flush();
 
             // read response
@@ -70,15 +63,15 @@ public class FlooConn {
                     new InputStreamReader(socket.getInputStream()));
             String line;
 
-            while (true){
+//            while (true){
                 try {
                     line = in.readLine();
-                    Log.info(line);
+                    Log.info(String.format("response: %s", line));
                 } catch (IOException e) {
-                    break;
+//                    break;
                 }
 
-            }
+//            }
             out.close();
             in.close();
             socket.close();
