@@ -5,6 +5,7 @@ import java.io.*;
 import java.security.*;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
+import com.intellij.openapi.diagnostic.Logger;
 
 class RoomInfo {
     private String username = "";
@@ -18,10 +19,12 @@ class RoomInfo {
         this.username = username;
         this.room = room;
         this.room_owner = owner;
+    }
 }
 
 
 public class FlooConn {
+    private static Logger Log = Logger.getInstance(Listener.class);
     public FlooConn(String owner, String workspace) {
 
         int port = 443; // default https port
@@ -65,15 +68,22 @@ public class FlooConn {
             // read response
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
-            int c;
-            while ((c = in.read()) != -1) {
-                System.out.write(c);
+            String line;
+
+            while (true){
+                try {
+                    line = in.readLine();
+                    Log.info(line);
+                } catch (IOException e) {
+                    break;
+                }
+
             }
             out.close();
             in.close();
             socket.close();
         }catch (Exception e) {
-            System.err.println(e);
+            Log.error(e);
         }
     }
 }

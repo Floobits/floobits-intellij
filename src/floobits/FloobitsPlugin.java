@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import dmp.diff_match_patch;
-
+import floobits.FlooConn;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
@@ -43,6 +43,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
 
     public static void joinWorkspace() {
         Log.info("Joining workspace... NOT");
+        new FlooConn("kansface", "asdf");
     }
 
     @Override
