@@ -1,6 +1,6 @@
 package floobits;
 
-import java.net.*;
+import java.util.*;
 import java.io.*;
 import java.security.*;
 import javax.net.ssl.*;
@@ -18,11 +18,11 @@ class RoomInfo {
     private String secret = "";
     private String client = "untellij";
 
-    public RoomInfo(String username, String secret, String room, String room_owner) {
-        this.username = username;
-        this.room = room;
-        this.room_owner = room_owner;
-        this.secret = secret;
+    public RoomInfo(Map<String, String> settings) {
+        this.username = settings.get("username");
+        this.room = settings.get("workspace");
+        this.room_owner = settings.get("room_owner");
+        this.secret = settings.get("secret");
     }
 }
 class Path {
@@ -40,14 +40,11 @@ class Path {
 
 public class FlooConn extends Thread{
     private static Logger Log = Logger.getInstance(Listener.class);
-    private String owner;
-    private String workspace;
-    private String username;
-    private String secret;
-    private String api_key;
-    public FlooConn(String owner, String workspace) {
-        this.owner = owner;
-        this.workspace = workspace;
+    public Map<String, String> settings = new HashMap<String, String>();
+
+    public FlooConn(String room_owner, String workspace) {
+        this.settings.put("room_owner", room_owner);
+        this.settings.put("workspace", workspace);
     }
 
     private void read_floorc() {
@@ -65,16 +62,7 @@ public class FlooConn extends Thread{
                     continue;
                 }
                 String[] shit = line.split(" ");
-                String key = shit[0];
-                String val = shit[1];
-                if (key.equals("username")) {
-                    this.username = val;
-                } else if (key.equals("api_key")) {
-                    this.api_key = val;
-                } else if (key.equals("secret")) {
-                    this.secret = val;
-                }
-                Log.info(String.format("%s: %s", key, val));
+                this.settings.put(shit[0], shit[1]);
                 line = br.readLine();
             }
         } catch (Exception e) {
@@ -116,7 +104,7 @@ public class FlooConn extends Thread{
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
 
             Writer out = new OutputStreamWriter(socket.getOutputStream());
-            String data = new Gson().toJson(new RoomInfo(this.username, this.secret, workspace, owner));
+            String data = new Gson().toJson(new RoomInfo(this.settings));
 
             out.write(data + "\n");
             out.flush();

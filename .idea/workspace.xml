@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FlooConn.java" afterPath="$PROJECT_DIR$/src/floobits/FlooConn.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" afterPath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -20,9 +18,9 @@
     <file path="/JoinWorkspace.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379632880367" ignored="false" />
     <file path="$PROJECT_DIR$/../intellij/.idea/workspace.xml" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379636389131" ignored="false" />
     <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384825176347" ignored="false" />
-    <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384821574636" ignored="false" />
+    <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384912488173" ignored="false" />
     <file path="/floo_conn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384826374330" ignored="false" />
-    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384911147981" ignored="false" />
+    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384912683066" ignored="false" />
     <file path="/fragment.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384909881655" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -75,7 +73,38 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
+      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="106" class="floobits.FlooConn" package="floobits">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="21" class="floobits.RoomInfo" package="floobits">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -115,10 +144,11 @@
       <file leaf-file-name="FlooConn.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="55" column="55" selection-start="1535" selection-end="1535" vertical-scroll-proportion="0.7842324">
+            <state line="41" column="83" selection-start="1114" selection-end="1114" vertical-scroll-proportion="0.5819502">
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#getAcceptedIssuers#0;class#2789:3187" expanded="false" />
+                <element signature="e#1168#1184#0" expanded="true" />
+                <element signature="method#getAcceptedIssuers#0;class#2433:2831" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -747,7 +777,9 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/src/dmp/diff_match_patch_test.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="15" selection-start="1066" selection-end="1066" vertical-scroll-proportion="0.0" />
+        <state line="35" column="15" selection-start="1066" selection-end="1066" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.idea/modules.xml">
@@ -842,10 +874,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="55" selection-start="1535" selection-end="1535" vertical-scroll-proportion="0.7842324">
+        <state line="41" column="83" selection-start="1114" selection-end="1114" vertical-scroll-proportion="0.5819502">
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="method#getAcceptedIssuers#0;class#2789:3187" expanded="false" />
+            <element signature="e#1168#1184#0" expanded="true" />
+            <element signature="method#getAcceptedIssuers#0;class#2433:2831" expanded="false" />
           </folding>
         </state>
       </provider>
