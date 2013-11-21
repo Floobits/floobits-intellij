@@ -18,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 import dmp.diff_match_patch;
 import floobits.FlooConn;
+import java.net.*;
+import java.io.*;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
@@ -27,22 +29,18 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
 
     @Override
     public void initComponent() {
-//        MessageBus bus = ApplicationManager.getApplication().getMessageBus();
-//
-//        MessageBusConnection connection = bus.connect();
-
-//        connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC,
-//                new FileDocumentManagerAdapter() {
-//                    @Override
-//                    public void beforeDocumentSaving(Document document) {
-//                        // create your custom logic here
-//                    }
-//                });
-//        EditorFactory.getInstance().getEventMulticaster().addDocumentListener(documentListener);
     }
 
-    public static void joinWorkspace() {
-        new FlooConn("kansface", "asdf").start();
+    public static void joinWorkspace(String url) {
+        try {
+            URL u = new URL(url);
+            String path = u.getPath();
+            String[] parts = path.split("/");
+            new FlooConn(parts[1], parts[2]).start();
+        } catch (Exception e) {
+            Log.error(e);
+        }
+
     }
 
     @Override

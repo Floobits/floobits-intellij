@@ -79,7 +79,7 @@ public class FlooConn extends Thread{
 
 
         int port = 3448; // default https port
-        String host = "staging.floobits.com";
+        String host = "floobits.com";
 //        String url = String.format("%s/%s/%s", host, owner, workspace);
 
         TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
@@ -92,6 +92,7 @@ public class FlooConn extends Thread{
             }
         };
 
+        Log.info(String.format("%s", this.settings));
 
         try {
 
