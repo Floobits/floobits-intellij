@@ -5,21 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/JoinWorkspaceDialog.form" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/JoinWorkspaceDialog.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/workspace.form" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/workspace.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FlooConn.java" afterPath="$PROJECT_DIR$/src/floobits/FlooConn.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" afterPath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/JoinWorkspace.java" afterPath="$PROJECT_DIR$/src/floobits/JoinWorkspace.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/Dummy.txt" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385069995441" ignored="false" />
     <file path="/diff_match_patch.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379630795669" ignored="false" />
     <file path="/diff_match_patch_test.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379631198635" ignored="false" />
-    <file path="/FloobitsPlugin.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385072368580" ignored="false" />
+    <file path="/FloobitsPlugin.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385076411581" ignored="false" />
     <file path="/plugin.xml" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384811911668" ignored="false" />
     <file path="/blahblah.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1379632575241" ignored="false" />
     <file path="/JoinWorkspace.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385071423444" ignored="false" />
@@ -100,6 +93,17 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="FloobitsPlugin.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="30" column="25" selection-start="938" selection-end="938" vertical-scroll-proportion="0.5125285">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="plugin.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/META-INF/plugin.xml">
           <provider selected="true" editor-type-id="text-editor">
@@ -112,18 +116,7 @@
       <file leaf-file-name="JoinWorkspace.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/floobits/JoinWorkspace.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="36" column="50" selection-start="1066" selection-end="1066" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FloobitsPlugin.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="101" selection-start="1125" selection-end="1125" vertical-scroll-proportion="0.25485122">
+            <state line="42" column="49" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -152,16 +145,9 @@
       <file leaf-file-name="workspace.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/workspace.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="66" selection-start="850" selection-end="850" vertical-scroll-proportion="0.0">
+            <state line="26" column="52" selection-start="815" selection-end="815" vertical-scroll-proportion="0.0">
               <folding />
             </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="workspace.form" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/workspace.form">
-          <provider selected="true" editor-type-id="ui-designer">
-            <state />
           </provider>
         </entry>
       </file>
@@ -509,13 +495,13 @@
     <frame x="0" y="22" width="1493" height="1414" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964754" sideWeight="0.79829985" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32964754" sideWeight="0.70015454" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.14374568" sideWeight="0.79829985" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.14374568" sideWeight="0.70015454" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3809892" sideWeight="0.86731166" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3809892" sideWeight="0.13268831" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29984543" sideWeight="0.86731166" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29984543" sideWeight="0.13268831" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33075735" sideWeight="0.49965447" order="7" side_tool="false" content_ui="tabs" />
@@ -636,26 +622,19 @@
         <state line="893" column="0" selection-start="28564" selection-end="28564" vertical-scroll-proportion="0.32195845" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/workspace.java">
+    <entry file="file://$PROJECT_DIR$/src/JoinWorkspaceDialog.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/JoinWorkspaceDialog.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="66" selection-start="850" selection-end="850" vertical-scroll-proportion="0.0">
+        <state line="50" column="5" selection-start="1454" selection-end="1454" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/workspace.form">
-      <provider selected="true" editor-type-id="ui-designer">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/META-INF/plugin.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="12" selection-start="1603" selection-end="1603" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/JoinWorkspaceDialog.form">
       <provider selected="true" editor-type-id="ui-designer">
         <state />
       </provider>
@@ -667,10 +646,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/JoinWorkspaceDialog.java">
+    <entry file="file://$PROJECT_DIR$/src/workspace.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="50" column="5" selection-start="1454" selection-end="1454" vertical-scroll-proportion="0.0">
+        <state line="26" column="52" selection-start="815" selection-end="815" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/META-INF/plugin.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="12" selection-start="1603" selection-end="1603" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/floobits/JoinWorkspace.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="42" column="49" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -681,18 +676,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/floobits/JoinWorkspace.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="36" column="50" selection-start="1066" selection-end="1066" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="101" selection-start="1125" selection-end="1125" vertical-scroll-proportion="0.25485122">
+        <state line="30" column="25" selection-start="938" selection-end="938" vertical-scroll-proportion="0.5125285">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

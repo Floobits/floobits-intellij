@@ -1,28 +1,19 @@
 package floobits;
 
-import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.event.DocumentListener;
-
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.AppTopics;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
 import org.jdom.Element;
-import com.intellij.util.messages.MessageBus;
-import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import dmp.diff_match_patch;
 import floobits.FlooConn;
 import java.net.*;
-import java.io.*;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
+    private static FlooConn conn;
     public FloobitsPlugin() {
 
     }
@@ -36,7 +27,8 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
             URL u = new URL(url);
             String path = u.getPath();
             String[] parts = path.split("/");
-            new FlooConn(parts[1], parts[2]).start();
+            conn = new FlooConn(parts[1], parts[2]);
+            conn.start();
         } catch (Exception e) {
             Log.error(e);
         }
