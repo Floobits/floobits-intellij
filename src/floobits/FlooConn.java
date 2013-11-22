@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import com.intellij.openapi.diagnostic.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import com.google.gson.*;
+import java.util.Map.Entry;
 
 
 class RoomInfo {
@@ -43,16 +45,37 @@ class User implements Serializable {
     public String username;
     public String version;
 };
+
+class Tree implements Serializable {
+    public HashMap<String, Integer> bufs;
+    public HashMap<String, Tree> folders;
+    public Tree(JsonObject obj) {
+        this.bufs = new HashMap<String, Integer>();
+        this.folders = new HashMap<String, Tree>();
+        for (Entry<String, JsonElement> entry : obj.entrySet()) {
+            String key = entry.getKey();
+            JsonElement value = entry.getValue();
+            if (value.isJsonPrimitive()) {
+                this.bufs.put(key, Integer.parseInt(value.getAsString()));
+            } else {
+                this.folders.put(key, new Tree(value.getAsJsonObject()));
+            }
+        }
+    }
+};
+
 class RoomInfoResponse implements Serializable{
-    private String[] anon_perms;
-    private Integer max_size;
-    private String name;
-    private String owner;
-    private String[] perms;
-    private String room_name;
-    private Boolean secret;
-    private HashMap<Integer, User> users;
-    private HashMap<Integer, Buf> bufs;
+    public String[] anon_perms;
+    public Integer max_size;
+    public String name;
+    public String owner;
+    public String[] perms;
+    public String room_name;
+    public Boolean secret;
+    public HashMap<Integer, User> users;
+    public HashMap<Integer, Buf> bufs;
+    public Tree tree;
+
 //    private ??? temp_data;
 //    private ??? terms;
 };
@@ -75,7 +98,7 @@ public class FlooConn extends Thread{
     private static Logger Log = Logger.getInstance(Listener.class);
     public String[] perms;
     public Map<String, String> settings = new HashMap<String, String>();
-    private Map<Integer, User> users = new HashMap<Integer, User>();
+    public Map<Integer, User> users = new HashMap<Integer, User>();
 
     public FlooConn(String room_owner, String workspace) {
         this.settings.put("room_owner", room_owner);
@@ -159,6 +182,9 @@ public class FlooConn extends Thread{
                     }
                     Log.info(String.format("response: %s", line));
                     RoomInfoResponse ri = new Gson().fromJson(line, RoomInfoResponse.class);
+                    JsonObject obj = (JsonObject)new JsonParser().parse(line);
+                    JsonObject tree_obj =  obj.getAsJsonObject("tree");
+                    ri.tree = new Tree(tree_obj);
                     this.users = ri.users;
                     this.perms = ri.perms;
                     Log.info("c");
