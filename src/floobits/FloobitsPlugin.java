@@ -8,14 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import dmp.diff_match_patch;
+import floobits.Settings;
 import floobits.FlooConn;
+import floobits.FlooHandler;
 import java.net.*;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
-    private static FlooConn conn;
-    public FloobitsPlugin() {
 
+    public FloobitsPlugin() {
     }
 
     @Override
@@ -27,8 +28,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
             URL u = new URL(url);
             String path = u.getPath();
             String[] parts = path.split("/");
-            conn = new FlooConn(parts[1], parts[2]);
-            conn.start();
+            FlooHandler handler = new FlooHandler(parts[1], parts[2]);
         } catch (Exception e) {
             Log.error(e);
         }
