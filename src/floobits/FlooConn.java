@@ -136,33 +136,28 @@ public class FlooConn extends Thread{
         JsonObject obj = (JsonObject)new JsonParser().parse(line);
         JsonElement name = obj.get("name");
         String method_name;
-        if (name == null) {
-            method_name = "room_info";
-        } else {
-            method_name = name.getAsString();
-        }
+        Method method;
+        method_name = "_on_" + name.getAsString();
+
         try {
-            Method method = this.getClass().getMethod("_on_" + method_name, new Class[]{String.class, JsonObject.class});
+            method = this.getClass().getDeclaredMethod(method_name, new Class[]{String.class, JsonObject.class});
         } catch (NoSuchMethodException e) {
             Log.error(e);
             return;
         }
-        if (method != null) {
-            Object arglist[] = new Object[2];
-            arglist[0] = line;
-            arglist[1] = obj;
-            try {
-                method.invoke(this, arglist);
-            } catch (Exception e) {
-                Log.error(e);
-            }
+        Object arglist[] = new Object[2];
+        arglist[0] = line;
+        arglist[1] = obj;
+        try {
+            method.invoke(this, arglist);
+        } catch (Exception e) {
+            Log.error(e);
         }
     };
 
-
-    private void on_room_info(String line, JsonObject obj) {
+    private void _on_room_info(String line, JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(line, RoomInfoResponse.class);
-        JsonObject tree_obj =  obj.getAsJsonObject("tree");
+        JsonObject tree_obj = obj.getAsJsonObject("tree");
         ri.tree = new Tree(tree_obj);
         this.users = ri.users;
         this.perms = ri.perms;
@@ -226,7 +221,7 @@ public class FlooConn extends Thread{
             out.close();
             in.close();
             socket.close();
-        }catch (Exception e) {
+        } catch (Exception e) {
             Log.error(e);
         }
     }
