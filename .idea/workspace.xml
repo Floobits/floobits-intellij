@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67d0bc7c-1652-4647-bd15-466900985e25" name="Default" comment="import com.intellij.openapi.actionSystem.AnAction;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" afterPath="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/floobits/FlooConn.java" afterPath="$PROJECT_DIR$/src/floobits/FlooConn.java" />
     </list>
     <ignored path="intellij-plugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -20,8 +20,8 @@
     <file path="/Listener.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384825176347" ignored="false" />
     <file path="/a.dummy" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384912488173" ignored="false" />
     <file path="/floo_conn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384826374330" ignored="false" />
-    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385071905543" ignored="false" />
-    <file path="/fragment.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384909881655" ignored="false" />
+    <file path="/FlooConn.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385090506447" ignored="false" />
+    <file path="/fragment.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1385090463272" ignored="false" />
     <file path="/workspace.java" changelist="67d0bc7c-1652-4647-bd15-466900985e25" time="1384917710006" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +73,38 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true" />
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
+      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="165" class="floobits.FlooConn" package="floobits">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/floobits/FlooConn.java" line="163" class="floobits.FlooConn" package="floobits">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
     <breakpoint_rules />
     <ui_properties />
@@ -84,19 +115,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="FlooConn.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="FlooConn.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="113" column="26" selection-start="3661" selection-end="3661" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="167" column="13" selection-start="5297" selection-end="5297" vertical-scroll-proportion="0.7610921">
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#2071#2086#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FloobitsPlugin.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="FloobitsPlugin.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="25" selection-start="938" selection-end="938" vertical-scroll-proportion="0.5125285">
+            <state line="38" column="49" selection-start="1077" selection-end="1077" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -183,8 +217,8 @@
         <option value="$PROJECT_DIR$/src/JoinWorkspaceDialog.form" />
         <option value="$PROJECT_DIR$/src/JoinWorkspaceDialog.java" />
         <option value="$PROJECT_DIR$/src/floobits/JoinWorkspace.java" />
-        <option value="$PROJECT_DIR$/src/floobits/FlooConn.java" />
         <option value="$PROJECT_DIR$/src/floobits/FloobitsPlugin.java" />
+        <option value="$PROJECT_DIR$/src/floobits/FlooConn.java" />
       </list>
     </option>
   </component>
@@ -500,8 +534,8 @@
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.14374568" sideWeight="0.70015454" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29984543" sideWeight="0.86731166" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29984543" sideWeight="0.13268831" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29907265" sideWeight="0.86731166" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.29907265" sideWeight="0.13268831" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33075735" sideWeight="0.49965447" order="7" side_tool="false" content_ui="tabs" />
@@ -669,18 +703,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
+    <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="113" column="26" selection-start="3661" selection-end="3661" vertical-scroll-proportion="0.0">
-          <folding />
+        <state line="38" column="49" selection-start="1077" selection-end="1077" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/floobits/FloobitsPlugin.java">
+    <entry file="file://$PROJECT_DIR$/src/floobits/FlooConn.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="25" selection-start="938" selection-end="938" vertical-scroll-proportion="0.5125285">
+        <state line="167" column="13" selection-start="5297" selection-end="5297" vertical-scroll-proportion="0.7610921">
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#2071#2086#0" expanded="true" />
           </folding>
         </state>
       </provider>

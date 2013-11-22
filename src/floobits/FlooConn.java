@@ -6,6 +6,8 @@ import java.security.*;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
 import com.intellij.openapi.diagnostic.Logger;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 
 
 class RoomInfo {
@@ -25,6 +27,37 @@ class RoomInfo {
         this.secret = settings.get("secret");
     }
 }
+
+class Buf implements Serializable {
+    private Integer id;
+    private String md5;
+    private String path;
+    private String encoding;
+};
+
+class User implements Serializable {
+    public String[] perms;
+    public String client;
+    public String platform;
+    public Integer user_id;
+    public String username;
+    public String version;
+};
+class RoomInfoResponse implements Serializable{
+    private String[] anon_perms;
+    private Integer max_size;
+    private String name;
+    private String owner;
+    private String[] perms;
+    private String room_name;
+    private Boolean secret;
+    private HashMap<Integer, User> users;
+    private HashMap<Integer, Buf> bufs;
+//    private ??? temp_data;
+//    private ??? terms;
+};
+
+
 class Path {
     public static String combine(String... paths)
     {
@@ -36,11 +69,13 @@ class Path {
 
         return file.getPath();
     }
-}
+};
 
 public class FlooConn extends Thread{
     private static Logger Log = Logger.getInstance(Listener.class);
+    public String[] perms;
     public Map<String, String> settings = new HashMap<String, String>();
+    private Map<Integer, User> users = new HashMap<Integer, User>();
 
     public FlooConn(String room_owner, String workspace) {
         this.settings.put("room_owner", room_owner);
@@ -123,6 +158,10 @@ public class FlooConn extends Thread{
                         break;
                     }
                     Log.info(String.format("response: %s", line));
+                    RoomInfoResponse ri = new Gson().fromJson(line, RoomInfoResponse.class);
+                    this.users = ri.users;
+                    this.perms = ri.perms;
+                    Log.info("c");
                 } catch (IOException e) {
                     break;
                 }
