@@ -6,11 +6,10 @@ import java.security.*;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
 import com.intellij.openapi.diagnostic.Logger;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.google.gson.*;
 import java.util.Map.Entry;
-
+import java.lang.reflect.Method;
 
 class RoomInfo {
     private String username = "";
@@ -99,6 +98,7 @@ public class FlooConn extends Thread{
     public String[] perms;
     public Map<String, String> settings = new HashMap<String, String>();
     public Map<Integer, User> users = new HashMap<Integer, User>();
+    public Tree tree;
 
     public FlooConn(String room_owner, String workspace) {
         this.settings.put("room_owner", room_owner);
@@ -130,6 +130,44 @@ public class FlooConn extends Thread{
 
         }
     }
+
+    private void handle(String line){
+        Log.info(String.format("response: %s", line));
+        JsonObject obj = (JsonObject)new JsonParser().parse(line);
+        JsonElement name = obj.get("name");
+        String method_name;
+        if (name == null) {
+            method_name = "room_info";
+        } else {
+            method_name = name.getAsString();
+        }
+        try {
+            Method method = this.getClass().getMethod("_on_" + method_name, new Class[]{String.class, JsonObject.class});
+        } catch (NoSuchMethodException e) {
+            Log.error(e);
+            return;
+        }
+        if (method != null) {
+            Object arglist[] = new Object[2];
+            arglist[0] = line;
+            arglist[1] = obj;
+            try {
+                method.invoke(this, arglist);
+            } catch (Exception e) {
+                Log.error(e);
+            }
+        }
+    };
+
+
+    private void on_room_info(String line, JsonObject obj) {
+        RoomInfoResponse ri = new Gson().fromJson(line, RoomInfoResponse.class);
+        JsonObject tree_obj =  obj.getAsJsonObject("tree");
+        ri.tree = new Tree(tree_obj);
+        this.users = ri.users;
+        this.perms = ri.perms;
+        this.tree = ri.tree;
+    };
 
     public void run() {
 
@@ -180,14 +218,7 @@ public class FlooConn extends Thread{
                         Log.warn("socket died");
                         break;
                     }
-                    Log.info(String.format("response: %s", line));
-                    RoomInfoResponse ri = new Gson().fromJson(line, RoomInfoResponse.class);
-                    JsonObject obj = (JsonObject)new JsonParser().parse(line);
-                    JsonObject tree_obj =  obj.getAsJsonObject("tree");
-                    ri.tree = new Tree(tree_obj);
-                    this.users = ri.users;
-                    this.perms = ri.perms;
-                    Log.info("c");
+                    this.handle(line);
                 } catch (IOException e) {
                     break;
                 }
