@@ -31,9 +31,11 @@ public class FlooConn extends Thread {
 
     protected Writer out;
     protected FlooHandler handler;
+    protected String host;
 
-    public FlooConn(FlooHandler handler) {
+    public FlooConn(String host, FlooHandler handler) {
         this.handler = handler;
+        this.host = host;
     }
 
     private void handle (String line) {

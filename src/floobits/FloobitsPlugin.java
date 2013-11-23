@@ -28,7 +28,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
             URL u = new URL(url);
             String path = u.getPath();
             String[] parts = path.split("/");
-            FlooHandler handler = new FlooHandler(parts[1], parts[2]);
+            FlooHandler handler = new FlooHandler(u.getHost(), parts[1], parts[2]);
         } catch (Exception e) {
             Log.error(e);
         }

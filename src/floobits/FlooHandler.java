@@ -92,10 +92,10 @@ class FlooHandler {
 
     public FlooConn conn;
 
-    public FlooHandler(String owner, String workspace) {
+    public FlooHandler(String host, String owner, String workspace) {
         this.owner = owner;
         this.workspace = workspace;
-        this.conn = new FlooConn(this);
+        this.conn = new FlooConn(host, this);
         this.conn.start();
     }
 
