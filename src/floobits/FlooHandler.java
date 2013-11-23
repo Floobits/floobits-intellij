@@ -123,10 +123,15 @@ class FlooHandler {
         }
     }
 
-    public void on_room_info (String name, JsonObject obj) {
+    private void _on_room_info (String name, JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
+    };
+
+    private void _on_disconnect (String name, JsonObject obj) {
+        String reason = obj.get("reason").getAsString();
+        Log.warn(String.format("Disconnected: %s", reason));
     };
 }
