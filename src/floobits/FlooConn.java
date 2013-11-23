@@ -32,6 +32,7 @@ public class FlooConn extends Thread {
     protected Writer out;
     protected FlooHandler handler;
     protected String host;
+    protected int port = 3448;
 
     public FlooConn(String host, FlooHandler handler) {
         this.handler = handler;
@@ -39,7 +40,7 @@ public class FlooConn extends Thread {
     }
 
     private void handle (String line) {
-        Log.info(String.format("response: %s", line));
+        // Log.info(String.format("response: %s", line));
         JsonObject obj = (JsonObject)new JsonParser().parse(line);
         JsonElement name = obj.get("name");
         this.handler.on_data(name.getAsString(), obj);
@@ -57,9 +58,6 @@ public class FlooConn extends Thread {
     }
 
     public void run () {
-
-        int port = 3448; // default https port
-        String host = "floobits.com";
         // String url = String.format("%s/%s/%s", host, owner, workspace);
 
 //        TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{

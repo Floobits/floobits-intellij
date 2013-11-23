@@ -81,6 +81,23 @@ class RoomInfoResponse implements Serializable {
 //    private ??? terms;
 }
 
+class GetBufRequest implements Serializable {
+    public String name = "get_buf";
+    public Integer id;
+
+    public GetBufRequest (Integer buf_id) {
+        this.id = buf_id;
+    }
+}
+
+class GetBufResponse implements Serializable {
+    public String name;
+    public Integer id;
+    public String path;
+    public String buf;
+    public String encoding;
+    
+}
 
 class FlooHandler {
     private static Logger Log = Logger.getInstance(FlooHandler.class);
@@ -99,23 +116,22 @@ class FlooHandler {
         this.conn.start();
     }
 
-    public void on_ready() {
+    public void on_ready () {
         this.conn.write(new FlooAuth(new Settings(), this.owner, this.workspace));
     }
 
-    public void on_data(String name, JsonObject obj) {
+    public void on_data (String name, JsonObject obj) {
         String method_name = "_on_" + name;
         Method method;
 
         try {
-            method = this.getClass().getDeclaredMethod(method_name, new Class[]{String.class, JsonObject.class});
+            method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
         } catch (NoSuchMethodException e) {
             Log.error(e);
             return;
         }
-        Object arglist[] = new Object[2];
-        arglist[0] = name;
-        arglist[1] = obj;
+        Object arglist[] = new Object[1];
+        arglist[0] = obj;
         try {
             method.invoke(this, arglist);
         } catch (Exception e) {
@@ -123,15 +139,35 @@ class FlooHandler {
         }
     }
 
-    private void _on_room_info (String name, JsonObject obj) {
+    private void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
-    };
 
-    private void _on_disconnect (String name, JsonObject obj) {
+        for (Map.Entry entry : ri.bufs.entrySet()) {
+            Integer buf_id = (Integer) entry.getKey();
+            // Buf value = (Buf) entry.getValue();
+            this.send_get_buf(buf_id);
+        }
+    }
+
+    protected void _on_get_buf (JsonObject obj) {
+        // TODO: be nice about this and update the existing view
+        GetBufResponse gb = new Gson().fromJson(obj, GetBufResponse.class);
+        Log.info(String.format("Got buf %s %s", gb.id, gb.path));
+    }
+
+    private void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Log.warn(String.format("Disconnected: %s", reason));
-    };
+    }
+
+    public void send_get_buf (Integer buf_id) {
+        this.conn.write(new GetBufRequest(buf_id));
+    }
+
+    public void send_patch () {
+        
+    }
 }
