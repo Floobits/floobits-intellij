@@ -36,7 +36,7 @@ public class JoinWorkspace extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
         JFrame frame = new JFrame("JOptionPane showMessageDialog example");
-        String inputValue = JOptionPane.showInputDialog(null, "Workspace Url");
+        String inputValue = JOptionPane.showInputDialog("Workspace URL", "https://floobits.com/kansface/asdf");
 //        JOptionPane.showMessageDialog(frame, "asdf");
 //        JoinWorkspaceDialog dialog = new JoinWorkspaceDialog();
         Log.info(inputValue);

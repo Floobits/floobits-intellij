@@ -58,27 +58,27 @@ public class FlooConn extends Thread {
 
         int port = 3448; // default https port
         String host = "floobits.com";
-//        String url = String.format("%s/%s/%s", host, owner, workspace);
+        // String url = String.format("%s/%s/%s", host, owner, workspace);
 
-        TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-            new javax.net.ssl.X509TrustManager(){
-                public java.security.cert.X509Certificate[] getAcceptedIssuers(){
-                    return null;
-                }
-                public void checkClientTrusted(java.security.cert.X509Certificate[] certs,String authType){}
-                public void checkServerTrusted(java.security.cert.X509Certificate[] certs,String authType){}
-            }
-        };
-
+//        TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
+//            new javax.net.ssl.X509TrustManager(){
+//                public java.security.cert.X509Certificate[] getAcceptedIssuers(){
+//                    return null;
+//                }
+//                public void checkClientTrusted(java.security.cert.X509Certificate[] certs,String authType){}
+//                public void checkServerTrusted(java.security.cert.X509Certificate[] certs,String authType){}
+//            }
+//        };
+//
         try {
-
-            // TODO: verify ssl cert
-            javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
-            sc.init(null, trustAll, new java.security.SecureRandom());
+//
+//            // TODO: verify ssl cert
+//            javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+//            sc.init(null, trustAll, new java.security.SecureRandom());
 
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-//            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            SSLSocketFactory factory = (SSLSocketFactory) sc.getSocketFactory();
+            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//            SSLSocketFactory factory = (SSLSocketFactory) sc.getSocketFactory();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
 
             this.out = new OutputStreamWriter(socket.getOutputStream());
@@ -88,6 +88,7 @@ public class FlooConn extends Thread {
             new InputStreamReader(socket.getInputStream()));
 
             String line;
+            this.handler.on_ready();
 
             while (true) {
                 try {

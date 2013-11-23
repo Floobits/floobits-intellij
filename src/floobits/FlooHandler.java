@@ -9,8 +9,11 @@ import com.google.gson.*;
 import java.util.Map.Entry;
 import java.lang.reflect.Method;
 
+import floobits.Settings;
+
 class FlooAuth implements Serializable {
     private String username = "";
+    private String api_key = "";
     private String room = "";
     private String room_owner;
     private String platform = "???";
@@ -19,8 +22,9 @@ class FlooAuth implements Serializable {
     private String secret = "";
     private String client = "untellij";
 
-    public FlooAuth(Map<String, String> settings, String owner, String workspace) {
+    public FlooAuth(Settings settings, String owner, String workspace) {
         this.username = settings.get("username");
+        this.username = settings.get("api_key");
         this.room = workspace;
         this.room_owner = owner;
         this.secret = settings.get("secret");
@@ -81,7 +85,6 @@ class RoomInfoResponse implements Serializable {
 class FlooHandler {
     private static Logger Log = Logger.getInstance(FlooHandler.class);
     public String[] perms;
-    public Map<String, String> settings = new HashMap<String, String>();
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public Tree tree;
     public String owner;
@@ -94,8 +97,10 @@ class FlooHandler {
         this.workspace = workspace;
         this.conn = new FlooConn(this);
         this.conn.start();
-        // TODO: wait for conn to be ready
-        this.conn.write(new FlooAuth(this.settings, owner, workspace));
+    }
+
+    public void on_ready() {
+        this.conn.write(new FlooAuth(new Settings(), this.owner, this.workspace));
     }
 
     public void on_data(String name, JsonObject obj) {
