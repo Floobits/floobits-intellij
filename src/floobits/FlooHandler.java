@@ -198,24 +198,41 @@ class FlooHandler {
         String s = Utils.readFile(absPath);
 
         Log.info(String.format("Got _on_patch"));
+
+        String md5Before = Utils.md5(s);
+        if (!md5Before.equals(pr.md5_before)) {
+            Log.info("MD5 before mismatch. Sending get_buf.");
+            this.send_get_buf(pr.id);
+            return;
+        }
+
         LinkedList<Patch> patches;
         patches = (LinkedList) dmp.patch_fromText(pr.patch);
         Object[] results = dmp.patch_apply(patches, s);
+        String text = (String) results[0];
         boolean[] boolArray = (boolean[]) results[1];
+
         boolean cleanPatch = true;
         for (boolean clean : boolArray) {
             if (clean == false) {
                 cleanPatch = false;
-                Log.info("Patch not clean. Sending get_buf.");
                 break;
             }
         }
 
-        if (cleanPatch) {
-            Utils.writeFile(absPath, (String) results[0]);
-        } else {
+        if (!cleanPatch) {
+            Log.info("Patch not clean. Sending get_buf.");
             this.send_get_buf(pr.id);
+            return;
         }
+
+        String md5After = Utils.md5(text);
+        if (!md5After.equals(pr.md5_after)) {
+            this.send_get_buf(pr.id);
+            return;
+        }
+
+        Utils.writeFile(absPath, text);
     }
 
     @SuppressWarnings("unused")

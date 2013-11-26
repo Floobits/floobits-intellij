@@ -6,6 +6,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.security.MessageDigest;
+import java.nio.charset.Charset;
+import org.apache.commons.codec.binary.Hex;
 
 import floobits.Shared;
 
@@ -56,5 +59,17 @@ class Utils {
                 out.close();
             }
         }
+    }
+
+    public static String md5 (String s) {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (Exception e) {
+            return "";
+        }
+        md.update(s.getBytes(Charset.forName("UTF8")));
+        byte[] digest = md.digest();
+        return new String(Hex.encodeHex(digest));
     }
 }
