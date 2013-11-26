@@ -10,6 +10,9 @@ import com.google.gson.*;
 import java.util.Map.Entry;
 import java.lang.reflect.Method;
 
+import dmp.diff_match_patch;
+import dmp.diff_match_patch.Patch;
+
 import floobits.FlooUrl;
 import floobits.Settings;
 import floobits.PersistentJson;
@@ -35,7 +38,7 @@ class FlooAuth implements Serializable {
     }
 }
 
-class Buf implements Serializable {
+class RiBuf implements Serializable {
     private Integer id;
     private String md5;
     private String path;
@@ -78,7 +81,7 @@ class RoomInfoResponse implements Serializable {
     public String room_name;
     public Boolean secret;
     public HashMap<Integer, User> users;
-    public HashMap<Integer, Buf> bufs;
+    public HashMap<Integer, RiBuf> bufs;
 
 //    private ??? temp_data;
 //    private ??? terms;
@@ -101,23 +104,39 @@ class GetBufResponse implements Serializable {
     public String encoding;
 }
 
+class PatchResponse implements Serializable {
+    public Integer user_id;
+    public String md5_after;
+    public String md5_before;
+    public Integer id;
+    public String patch;
+
+    // Deprecated
+    public String path;
+    public String username;
+}
+
 class FlooHandler {
     private static Logger Log = Logger.getInstance(FlooHandler.class);
+    protected diff_match_patch dmp;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public Tree tree;
-    public String shareDir;
+    public String colabDir;
 
     public FlooUrl url;
     public FlooConn conn;
 
     public FlooHandler(FlooUrl f) {
         this.url = f;
+        this.dmp = new diff_match_patch();
+
         PersistentJson p = new PersistentJson();
         try {
-            // this.shareDir = p.workspaces.workspaces.get(f.owner).name.get(f.workspace).path;
+            this.colabDir = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
             Log.error(e);
+            // TODO: colab dir isn't in persistent.json. ask user for dir to save to
             return;
         }
         this.conn = new FlooConn(f.host, this);
@@ -131,23 +150,24 @@ class FlooHandler {
     public void on_data (String name, JsonObject obj) {
         String method_name = "_on_" + name;
         Method method;
-
+        Class c;
         try {
             method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
+            Object arglist[] = new Object[1];
+            arglist[0] = obj;
+            try {
+                method.invoke(this, arglist);
+            } catch (Exception e) {
+                Log.error(e);
+            }
         } catch (NoSuchMethodException e) {
             Log.error(e);
             return;
         }
-        Object arglist[] = new Object[1];
-        arglist[0] = obj;
-        try {
-            method.invoke(this, arglist);
-        } catch (Exception e) {
-            Log.error(e);
-        }
     }
 
-    private void _on_room_info (JsonObject obj) {
+    @SuppressWarnings("unused")
+    protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
@@ -155,18 +175,61 @@ class FlooHandler {
 
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
-            // Buf value = (Buf) entry.getValue();
             this.send_get_buf(buf_id);
         }
     }
 
-    protected void _on_get_buf (JsonObject obj) {
+    @SuppressWarnings("unused")
+    protected void _on_get_buf (JsonObject obj) throws IOException {
         // TODO: be nice about this and update the existing view
         GetBufResponse gb = new Gson().fromJson(obj, GetBufResponse.class);
+        String absPath = Utils.pathJoin(this.colabDir, gb.path);
+        File f = new File(absPath);
+        File parent = new File(f.getParent());
+        parent.mkdirs();
+        Utils.writeFile(absPath, gb.buf);
         Log.info(String.format("Got buf %s %s", gb.id, gb.path));
     }
 
-    private void _on_disconnect (JsonObject obj) {
+    @SuppressWarnings("unused")
+    protected void _on_patch (JsonObject obj) throws IOException {
+        PatchResponse pr = new Gson().fromJson(obj, PatchResponse.class);
+        String absPath = Utils.pathJoin(this.colabDir, pr.path);
+        String s = Utils.readFile(absPath);
+
+        LinkedList<Patch> patches;
+        patches = (LinkedList) dmp.patch_fromText(pr.patch);
+        Object[] results = dmp.patch_apply(patches, s);
+        boolean[] boolArray = (boolean[]) results[1];
+        
+        Utils.writeFile(absPath, (String) results[0]);
+        String resultStr = results[0] + "\t" + boolArray.length;
+        
+        Log.info(String.format("Got _on_patch"));
+    }
+
+    @SuppressWarnings("unused")
+    protected void _on_highlight (JsonObject obj) {
+        Log.info(String.format("Got _on_highlight"));
+    }
+
+    @SuppressWarnings("unused")
+    protected void _on_saved (JsonObject obj) {
+        Log.info(String.format("Got _on_saved"));
+    }
+
+    @SuppressWarnings("unused")
+    protected void _on_join (JsonObject obj) {
+        Log.info(String.format("Got _on_join"));
+    }
+
+    @SuppressWarnings("unused")
+    protected void _on_part (JsonObject obj) {
+        Log.info(String.format("Got _on_part"));
+    }
+
+    @SuppressWarnings("unused")
+    protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Log.warn(String.format("Disconnected: %s", reason));
     }

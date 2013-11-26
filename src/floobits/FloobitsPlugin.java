@@ -9,7 +9,6 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import dmp.diff_match_patch;
 import floobits.Settings;
 import floobits.FlooConn;
 import floobits.FlooHandler;
