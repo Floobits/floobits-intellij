@@ -13,19 +13,6 @@ import java.lang.reflect.Method;
 
 import floobits.FlooHandler;
 
-class Path {
-    public static String combine(String... paths)
-    {
-        File file = new File(paths[0]);
-
-        for (int i = 1; i < paths.length ; i++) {
-            file = new File(file, paths[i]);
-        }
-
-        return file.getPath();
-    }
-}
-
 public class FlooConn extends Thread {
     private static Logger Log = Logger.getInstance(Listener.class);
 

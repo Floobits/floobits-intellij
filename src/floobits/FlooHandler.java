@@ -2,6 +2,7 @@ package floobits;
 
 import java.util.*;
 import java.io.*;
+
 import com.google.gson.Gson;
 import com.intellij.openapi.diagnostic.Logger;
 import com.google.gson.JsonParser;
@@ -9,6 +10,7 @@ import com.google.gson.*;
 import java.util.Map.Entry;
 import java.lang.reflect.Method;
 
+import floobits.FlooUrl;
 import floobits.Settings;
 
 class FlooAuth implements Serializable {
@@ -104,20 +106,18 @@ class FlooHandler {
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public Tree tree;
-    public String owner;
-    public String workspace;
 
+    public FlooUrl url;
     public FlooConn conn;
 
-    public FlooHandler(String host, String owner, String workspace) {
-        this.owner = owner;
-        this.workspace = workspace;
-        this.conn = new FlooConn(host, this);
+    public FlooHandler(FlooUrl f) {
+        this.url = f;
+        this.conn = new FlooConn(f.host, this);
         this.conn.start();
     }
 
     public void on_ready () {
-        this.conn.write(new FlooAuth(new Settings(), this.owner, this.workspace));
+        this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {

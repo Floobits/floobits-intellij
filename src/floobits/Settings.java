@@ -4,13 +4,15 @@ import java.io.*;
 import java.util.HashMap;
 import com.intellij.openapi.diagnostic.Logger;
 
+import floobits.Utils;
+
 class Settings {
     protected HashMap<String, String> settings;
     private static Logger Log = Logger.getInstance(Settings.class);
 
     public Settings () {
-        String userHome = System.getProperty( "user.home" );
-        String floorcPath = Path.combine(userHome, ".floorc");
+        String userHome = System.getProperty("user.home");
+        String floorcPath = Utils.pathJoin(userHome, ".floorc");
         BufferedReader br = null;
         this.settings = new HashMap<String, String>();
         try {

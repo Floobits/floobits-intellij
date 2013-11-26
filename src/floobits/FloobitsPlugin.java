@@ -1,5 +1,7 @@
 package floobits;
 
+import java.net.*;
+
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -11,7 +13,7 @@ import dmp.diff_match_patch;
 import floobits.Settings;
 import floobits.FlooConn;
 import floobits.FlooHandler;
-import java.net.*;
+import floobits.FlooUrl;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
@@ -25,14 +27,11 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
 
     public static void joinWorkspace(String url) {
         try {
-            URL u = new URL(url);
-            String path = u.getPath();
-            String[] parts = path.split("/");
-            FlooHandler handler = new FlooHandler(u.getHost(), parts[1], parts[2]);
+            FlooUrl f = new FlooUrl(url);
+            FlooHandler handler = new FlooHandler(f);
         } catch (Exception e) {
             Log.error(e);
         }
-
     }
 
     @Override
