@@ -197,15 +197,25 @@ class FlooHandler {
         String absPath = Utils.pathJoin(this.colabDir, pr.path);
         String s = Utils.readFile(absPath);
 
+        Log.info(String.format("Got _on_patch"));
         LinkedList<Patch> patches;
         patches = (LinkedList) dmp.patch_fromText(pr.patch);
         Object[] results = dmp.patch_apply(patches, s);
         boolean[] boolArray = (boolean[]) results[1];
-        
-        Utils.writeFile(absPath, (String) results[0]);
-        String resultStr = results[0] + "\t" + boolArray.length;
-        
-        Log.info(String.format("Got _on_patch"));
+        boolean cleanPatch = true;
+        for (boolean clean : boolArray) {
+            if (clean == false) {
+                cleanPatch = false;
+                Log.info("Patch not clean. Sending get_buf.");
+                break;
+            }
+        }
+
+        if (cleanPatch) {
+            Utils.writeFile(absPath, (String) results[0]);
+        } else {
+            this.send_get_buf(pr.id);
+        }
     }
 
     @SuppressWarnings("unused")
