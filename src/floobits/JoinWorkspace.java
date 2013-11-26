@@ -26,8 +26,7 @@ public class JoinWorkspace extends AnAction {
             try {
                 final URL url = new URL(inputString);
                 return StringUtil.isNotEmpty(url.getHost());
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 return false;
             }
         }

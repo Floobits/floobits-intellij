@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 
 import floobits.FlooUrl;
 import floobits.Settings;
+import floobits.PersistentJson;
 
 class FlooAuth implements Serializable {
     private String username;
@@ -98,7 +99,6 @@ class GetBufResponse implements Serializable {
     public String path;
     public String buf;
     public String encoding;
-    
 }
 
 class FlooHandler {
@@ -106,12 +106,20 @@ class FlooHandler {
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public Tree tree;
+    public String shareDir;
 
     public FlooUrl url;
     public FlooConn conn;
 
     public FlooHandler(FlooUrl f) {
         this.url = f;
+        PersistentJson p = new PersistentJson();
+        try {
+            this.shareDir = p.workspaces.workspaces.get(f.owner).name.get(f.workspace).path;
+        } catch (Exception e) {
+            Log.error(e);
+            return;
+        }
         this.conn = new FlooConn(f.host, this);
         this.conn.start();
     }
