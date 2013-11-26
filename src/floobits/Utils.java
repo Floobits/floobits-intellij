@@ -6,14 +6,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
-import java.security.MessageDigest;
-import java.nio.charset.Charset;
-import org.apache.commons.codec.binary.Hex;
+
+import org.apache.commons.codec.digest.DigestUtils;
+
+import com.intellij.openapi.diagnostic.Logger;
 
 import floobits.Shared;
 
 
 class Utils {
+    private static Logger Log = Logger.getInstance(Listener.class);
     
     public static String pathJoin(String... paths)
     {
@@ -62,14 +64,8 @@ class Utils {
     }
 
     public static String md5 (String s) {
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (Exception e) {
-            return "";
-        }
-        md.update(s.getBytes(Charset.forName("UTF8")));
-        byte[] digest = md.digest();
-        return new String(Hex.encodeHex(digest));
+        Log.info(String.format("md5 is %s.", DigestUtils.md5Hex(s)));
+        Log.info(String.format("data is %s", s));
+        return DigestUtils.md5Hex(s);
     }
 }

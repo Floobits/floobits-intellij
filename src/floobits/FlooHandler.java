@@ -183,12 +183,12 @@ class FlooHandler {
     protected void _on_get_buf (JsonObject obj) throws IOException {
         // TODO: be nice about this and update the existing view
         GetBufResponse gb = new Gson().fromJson(obj, GetBufResponse.class);
+        Log.info(String.format("Got buf %s %s", gb.id, gb.path));
         String absPath = Utils.pathJoin(this.colabDir, gb.path);
         File f = new File(absPath);
         File parent = new File(f.getParent());
         parent.mkdirs();
         Utils.writeFile(absPath, gb.buf);
-        Log.info(String.format("Got buf %s %s", gb.id, gb.path));
     }
 
     @SuppressWarnings("unused")
@@ -201,7 +201,7 @@ class FlooHandler {
 
         String md5Before = Utils.md5(s);
         if (!md5Before.equals(pr.md5_before)) {
-            Log.info("MD5 before mismatch. Sending get_buf.");
+            Log.info(String.format("MD5 before mismatch (ours %s remote %s). Sending get_buf.", md5Before, pr.md5_before));
             this.send_get_buf(pr.id);
             return;
         }
@@ -228,10 +228,12 @@ class FlooHandler {
 
         String md5After = Utils.md5(text);
         if (!md5After.equals(pr.md5_after)) {
+            Log.info(String.format("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, pr.md5_after));
             this.send_get_buf(pr.id);
             return;
         }
 
+        Log.info(String.format("Writing patch to buf %s %s", pr.id, pr.path));
         Utils.writeFile(absPath, text);
     }
 
