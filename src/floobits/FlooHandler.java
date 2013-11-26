@@ -115,7 +115,7 @@ class FlooHandler {
         this.url = f;
         PersistentJson p = new PersistentJson();
         try {
-            this.shareDir = p.workspaces.workspaces.get(f.owner).name.get(f.workspace).path;
+            // this.shareDir = p.workspaces.workspaces.get(f.owner).name.get(f.workspace).path;
         } catch (Exception e) {
             Log.error(e);
             return;
