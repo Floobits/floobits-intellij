@@ -11,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonParser;
 import com.google.gson.*;
 import com.intellij.openapi.diagnostic.Logger;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import floobits.Shared;
 import floobits.Utils;
@@ -23,15 +25,14 @@ class Workspace implements Serializable {
 class PersistentJson {
     private static Logger Log = Logger.getInstance(Listener.class);
     public JsonObject json;
-    public String path;
+    public File path;
     public Map<String, Map<String, Workspace>> workspaces;
 
     public PersistentJson () {
-        String path;
         String s;
         try {
-            this.path = Utils.pathJoin(Shared.baseDir, "persistent.json");
-            s = Utils.readFile(this.path);
+            this.path = new File(FilenameUtils.concat(Shared.baseDir, "persistent.json"));
+            s = FileUtils.readFileToString(this.path, "UTF-8");
         } catch (Exception e) {
             Log.info(e);
             s = "{}";
@@ -44,6 +45,7 @@ class PersistentJson {
 
     // TODO: don't delete everything except workspaces key in json
     public void write () throws IOException {
-        Utils.writeFile(this.path, new Gson().toJson(this.json));
+        // FileUtils.write(new File(absPath), text, "UTF-8");
+        // Utils.writeFile(this.path, new Gson().toJson(this.json));
     }
 }
