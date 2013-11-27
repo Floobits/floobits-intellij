@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
@@ -53,11 +54,14 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     public void documentChanged(DocumentEvent event) {
         Flog.info(String.format("documentChanged, %s", event));
         Document d = event.getDocument();
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
+        String path = virtualFile.getPath();
         Project project = this.getCurrentProject();
         if (project == null) {
             return;
         }
         PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(d);
+
     }
 
     @Override
