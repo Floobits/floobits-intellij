@@ -1,3 +1,9 @@
-# Floobits plugin for Intellij
+# Floobits plugin for IntelliJ
 
-### Development status: not even close to working. Ignore this repository for now.
+### (and RubyMine, PhpStorm, PyCharm, etc)
+
+### Development status: not working. Ignore this repository for now.
+
+<a href="https://floobits.com/Floobits/intellij-plugin/redirect">
+  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
+</a>
