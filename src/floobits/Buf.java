@@ -56,9 +56,9 @@ abstract class Buf <T> {
 
     public Buf (String path, Integer id, T buf, String md5) {
         this.id = id;
-        this.path = path;
+        this.path = new String(path);
         this.buf = buf;
-        this.md5 = md5;
+        this.md5 = new String(md5);
         this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
 
         if (buf == null) {
@@ -74,7 +74,7 @@ abstract class Buf <T> {
     }
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
-    abstract public void set (String buf);
+    abstract public void set (String s, String md5);
 
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
@@ -108,8 +108,9 @@ class BinaryBuf extends Buf <byte[]> {
         FileUtils.writeByteArrayToFile(f, this.buf);
     }
 
-    public void set (String s) {
+    public void set (String s, String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
+        this.md5 = new String(md5);
     }
 }
 
@@ -131,7 +132,8 @@ class TextBuf extends Buf <String> {
         FileUtils.write(f, this.buf, "UTF-8");
     }
 
-    public void set (String buf) {
-        this.buf = new String(buf);
+    public void set (String s, String md5) {
+        this.buf = new String(s);
+        this.md5 = new String(md5);
     }
 }
