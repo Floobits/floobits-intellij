@@ -104,17 +104,28 @@ class GetBufResponse implements Serializable {
 }
 
 class FlooPatch implements Serializable {
+    public String name = "patch";
+    public Integer id;
     public Integer user_id;
     public String md5_after;
     public String md5_before;
-    public Integer id;
     public String patch;
 
     // Deprecated
     public String path;
     public String username;
-    public FlooPatch () {
-        
+
+    public FlooPatch (String current, Buf buf) {
+        // TODO: don't create a new dmp every time!
+        diff_match_patch dmp = new diff_match_patch();
+        // TODO: handle binary bufs
+        LinkedList<Patch> patches = dmp.patch_make((String) buf.buf, current);
+
+        this.path = buf.path;
+        this.md5_before = buf.md5;
+        this.md5_after = DigestUtils.md5Hex(current);
+        this.id = buf.id;
+        this.patch = dmp.patch_toText(patches);
     }
 }
 
@@ -242,6 +253,8 @@ class FlooHandler {
             this.send_get_buf(res.id);
             return;
         }
+        Flog.log("Patched %s", res.path);
+
         b.set(text, res.md5_after);
         b.writeToDisk();
     }
@@ -255,11 +268,16 @@ class FlooHandler {
     }
 
     protected void _on_join (JsonObject obj) {
-        Flog.info("Got _on_join");
+        User u = new Gson().fromJson(obj, User.class);
+        Flog.info("%s joined the workspace", u.username);
+        this.users.put(u.user_id, u);
     }
 
     protected void _on_part (JsonObject obj) {
-        Flog.info("Got _on_part");
+        Integer userId = obj.get("user_id").getAsInt();
+        User u = users.get(userId);
+        Flog.info("%s left the workspace", u.username);
+        this.users.remove(userId);
     }
 
     protected void _on_disconnect (JsonObject obj) {
@@ -271,8 +289,8 @@ class FlooHandler {
         this.conn.write(new GetBufRequest(buf_id));
     }
 
-    public void send_patch () {
-        FlooPatch req = new FlooPatch();
+    public void send_patch (String current, Buf buf) {
+        FlooPatch req = new FlooPatch(current, buf);
         
         this.conn.write(req);
     }
