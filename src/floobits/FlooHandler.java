@@ -130,7 +130,6 @@ class FlooHandler {
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     public Tree tree;
-    public String colabDir;
 
     public FlooUrl url;
     public FlooConn conn;
@@ -141,7 +140,7 @@ class FlooHandler {
 
         PersistentJson p = new PersistentJson();
         try {
-            this.colabDir = p.workspaces.get(f.owner).get(f.workspace).path;
+            Shared.colabDir = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
             Log.error(e);
             // TODO: colab dir isn't in persistent.json. ask user for dir to save to
@@ -195,33 +194,39 @@ class FlooHandler {
     @SuppressWarnings("unused")
     protected void _on_get_buf (JsonObject obj) throws IOException {
         // TODO: be nice about this and update the existing view
-        GetBufResponse gb = new Gson().fromJson(obj, GetBufResponse.class);
-        Log.info(String.format("Got buf %s %s", gb.id, gb.path));
-        String absPath = FilenameUtils.concat(this.colabDir, gb.path);
-        File f = new File(absPath);
-        File parent = new File(f.getParent());
-        parent.mkdirs();
-        FileUtils.write(f, gb.buf, "UTF-8");
+        GetBufResponse res = new Gson().fromJson(obj, GetBufResponse.class);
+
+        Buf b = this.bufs.get(res.id);
+        b.set(res.buf);
+        b.writeToDisk();
     }
 
     @SuppressWarnings("unused")
     protected void _on_patch (JsonObject obj) throws IOException {
-        PatchResponse pr = new Gson().fromJson(obj, PatchResponse.class);
-        File absPath = new File(FilenameUtils.concat(this.colabDir, pr.path));
-        String s = FileUtils.readFileToString(absPath, "UTF-8");
+        PatchResponse res = new Gson().fromJson(obj, PatchResponse.class);
+        Buf b = this.bufs.get(res.id);
+        if (b.buf == null) {
+            Log.warn("no buffer");
+            this.send_get_buf(res.id);
+            return;
+        }
+
+        if (res.patch.length() == 0) {
+            Log.warn("wtf? no patches to apply. server is being stupid");
+            return;
+        }
 
         Log.info(String.format("Got _on_patch"));
 
-        String md5Before = DigestUtils.md5Hex(s);
-        if (!md5Before.equals(pr.md5_before)) {
-            Log.info(String.format("MD5 before mismatch (ours %s remote %s). Sending get_buf.", md5Before, pr.md5_before));
-            this.send_get_buf(pr.id);
+        if (!b.md5.equals(res.md5_before)) {
+            Log.info(String.format("MD5 before mismatch (ours %s remote %s). Sending get_buf.", b.md5, res.md5_before));
+            this.send_get_buf(res.id);
             return;
         }
 
         LinkedList<Patch> patches;
-        patches = (LinkedList) dmp.patch_fromText(pr.patch);
-        Object[] results = dmp.patch_apply(patches, s);
+        patches = (LinkedList) dmp.patch_fromText(res.patch);
+        Object[] results = dmp.patch_apply(patches, (String) b.buf);
         String text = (String) results[0];
         boolean[] boolArray = (boolean[]) results[1];
 
@@ -235,19 +240,18 @@ class FlooHandler {
 
         if (!cleanPatch) {
             Log.info("Patch not clean. Sending get_buf.");
-            this.send_get_buf(pr.id);
+            this.send_get_buf(res.id);
             return;
         }
 
         String md5After = DigestUtils.md5Hex(text);
-        if (!md5After.equals(pr.md5_after)) {
-            Log.info(String.format("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, pr.md5_after));
-            this.send_get_buf(pr.id);
+        if (!md5After.equals(res.md5_after)) {
+            Log.info(String.format("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, res.md5_after));
+            this.send_get_buf(res.id);
             return;
         }
-
-        Log.info(String.format("Writing patch to buf %s %s", pr.id, pr.path));
-        FileUtils.write(absPath, text, "UTF-8");
+        b.set(text);
+        b.writeToDisk();
     }
 
     @SuppressWarnings("unused")

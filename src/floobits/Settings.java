@@ -3,8 +3,7 @@ package floobits;
 import java.io.*;
 import java.util.HashMap;
 import com.intellij.openapi.diagnostic.Logger;
-
-import floobits.Utils;
+import org.apache.commons.io.FilenameUtils;
 
 class Settings {
     protected HashMap<String, String> settings;
@@ -12,7 +11,7 @@ class Settings {
 
     public Settings () {
         String userHome = System.getProperty("user.home");
-        String floorcPath = Utils.pathJoin(userHome, ".floorc");
+        String floorcPath =  FilenameUtils.concat(userHome, ".floorc");
         BufferedReader br = null;
         this.settings = new HashMap<String, String>();
         try {

@@ -2,6 +2,7 @@ package floobits;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -11,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.*;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
@@ -21,6 +23,7 @@ import dmp.diff_match_patch.Patch;
 
 import floobits.FlooUrl;
 import floobits.Settings;
+import floobits.Shared;
 import floobits.PersistentJson;
 
 enum Encoding {
@@ -58,7 +61,7 @@ abstract class Buf <T>{
         this.path = path;
         this.buf = buf;
         this.md5 = md5;
-        this.f = new File(path);
+        this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
 
         if (buf == null) {
             try {
@@ -72,7 +75,9 @@ abstract class Buf <T>{
         }
     }
     abstract public void readFromDisk () throws IOException;
-    
+    abstract public void writeToDisk () throws IOException;
+    abstract public void set (String buf);
+
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
     }
@@ -98,6 +103,16 @@ class BinaryBuf extends Buf <byte[]> {
         this.buf = FileUtils.readFileToByteArray(this.f);
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
+
+    public void writeToDisk () throws IOException {
+        File parent = new File(this.f.getParent());
+        parent.mkdirs();
+        FileUtils.writeByteArrayToFile(f, this.buf);
+    }
+
+    public void set (String s) {
+        this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
+    }
 }
 
 class TextBuf extends Buf <String> {
@@ -110,5 +125,15 @@ class TextBuf extends Buf <String> {
     public void readFromDisk () throws IOException {
         this.buf = FileUtils.readFileToString(this.f, "UTF-8");
         this.md5 = DigestUtils.md5Hex(this.buf);
+    }
+
+    public void writeToDisk () throws IOException {
+        File parent = new File(this.f.getParent());
+        parent.mkdirs();
+        FileUtils.write(f, this.buf, "UTF-8");
+    }
+
+    public void set (String buf) {
+        this.buf = new String(buf);
     }
 }

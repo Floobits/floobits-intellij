@@ -4,6 +4,7 @@ import floobits.Utils;
 
 class Shared {
     static public String baseDir = Utils.defaultBaseDir();
+    static public String colabDir;
     static public String version = "0.10";
     static public String pluginVersion = "0.01";
     static public boolean debug = false;
