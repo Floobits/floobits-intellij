@@ -5,7 +5,6 @@ import java.io.*;
 import java.security.*;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
-import com.intellij.openapi.diagnostic.Logger;
 import com.google.gson.JsonParser;
 import com.google.gson.*;
 import java.util.Map.Entry;
@@ -14,7 +13,6 @@ import java.lang.reflect.Method;
 import floobits.FlooHandler;
 
 public class FlooConn extends Thread {
-    private static Logger Log = Logger.getInstance(Listener.class);
 
     protected Writer out;
     protected FlooHandler handler;
@@ -27,7 +25,7 @@ public class FlooConn extends Thread {
     }
 
     private void handle (String line) {
-        // Log.info(String.format("response: %s", line));
+        // Flog.info(String.format("response: %s", line));
         JsonObject obj = (JsonObject)new JsonParser().parse(line);
         JsonElement name = obj.get("name");
         this.handler.on_data(name.getAsString(), obj);
@@ -35,12 +33,12 @@ public class FlooConn extends Thread {
 
     public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
-        Log.debug(data);
+        Flog.debug(data);
         try {
             this.out.write(data + "\n");
             this.out.flush();
         } catch (Exception e) {
-            Log.error(e);
+            Flog.error(e);
         }
     }
 
@@ -81,12 +79,12 @@ public class FlooConn extends Thread {
                 try {
                     line = in.readLine();
                     if (line == null) {
-                        Log.warn("socket died");
+                        Flog.warn("socket died");
                         break;
                     }
                     this.handle(line);
                 } catch (IOException e) {
-                    Log.error(e);
+                    Flog.error(e);
                     break;
                 }
             }
@@ -94,7 +92,7 @@ public class FlooConn extends Thread {
             in.close();
             socket.close();
         } catch (Exception e) {
-            Log.error(e);
+            Flog.error(e);
         }
     }
 }

@@ -4,19 +4,17 @@ import java.net.*;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.diagnostic.Logger;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import floobits.Settings;
+import floobits.Flog;
 import floobits.FlooConn;
 import floobits.FlooHandler;
 import floobits.FlooUrl;
+import floobits.Settings;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
-    private static Logger Log = Logger.getInstance(FloobitsPlugin.class);
-
     public FloobitsPlugin() {
     }
 
@@ -29,7 +27,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
             FlooUrl f = new FlooUrl(url);
             FlooHandler handler = new FlooHandler(f);
         } catch (Exception e) {
-            Log.error(e);
+            Flog.error(e);
         }
     }
 

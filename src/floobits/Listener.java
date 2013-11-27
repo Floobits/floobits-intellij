@@ -2,7 +2,7 @@ package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
+import floobits.Flog;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -16,7 +16,7 @@ import java.util.List;
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener{
-    private static Logger Log = Logger.getInstance(Listener.class);
+
 
     private final MessageBusConnection connection;
     private final EditorEventMulticaster em;
@@ -36,17 +36,17 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void beforeDocumentChange(DocumentEvent event) {
-        Log.info(String.format("beforeDocumentChange, %s", event));
+        Flog.info(String.format("beforeDocumentChange, %s", event));
     }
 
     @Override
     public void documentChanged(DocumentEvent event) {
-        Log.info(String.format("documentChanged, %s", event));
+        Flog.info(String.format("documentChanged, %s", event));
     }
 
     @Override
     public void selectionChanged(SelectionEvent event) {
-        Log.info(String.format("selectionChanged, %s", event));
+        Flog.info(String.format("selectionChanged, %s", event));
     }
 
     public void disposeComponent() {
@@ -57,11 +57,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void before(@NotNull List<? extends VFileEvent> events) {
-        Log.info("before");
+        Flog.info("before");
     }
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        Log.info("after");
+        Flog.info("after");
     }
 
     @NotNull

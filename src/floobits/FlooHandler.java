@@ -5,8 +5,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.intellij.openapi.diagnostic.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.*;
 import com.google.gson.JsonParser;
@@ -124,7 +122,6 @@ class PatchResponse implements Serializable {
 }
 
 class FlooHandler {
-    private static Logger Log = Logger.getInstance(FlooHandler.class);
     protected diff_match_patch dmp;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
@@ -142,7 +139,7 @@ class FlooHandler {
         try {
             Shared.colabDir = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
-            Log.error(e);
+            Flog.error(e);
             // TODO: colab dir isn't in persistent.json. ask user for dir to save to
             return;
         }
@@ -165,10 +162,10 @@ class FlooHandler {
             try {
                 method.invoke(this, arglist);
             } catch (Exception e) {
-                Log.error(e);
+                Flog.error(e);
             }
         } catch (NoSuchMethodException e) {
-            Log.error(e);
+            Flog.error(e);
             return;
         }
     }
@@ -185,7 +182,8 @@ class FlooHandler {
             RiBuf b = (RiBuf) entry.getValue();
             buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             if (buf.buf == null) {
-                this.send_get_buf(buf_id);
+                Flog.log("Getting buf %s", buf.id);
+                this.send_get_buf(buf.id);
             }
             this.bufs.put(buf_id, buf);
         }
@@ -206,20 +204,20 @@ class FlooHandler {
         PatchResponse res = new Gson().fromJson(obj, PatchResponse.class);
         Buf b = this.bufs.get(res.id);
         if (b.buf == null) {
-            Log.warn("no buffer");
+            Flog.warn("no buffer");
             this.send_get_buf(res.id);
             return;
         }
 
         if (res.patch.length() == 0) {
-            Log.warn("wtf? no patches to apply. server is being stupid");
+            Flog.warn("wtf? no patches to apply. server is being stupid");
             return;
         }
 
-        Log.info(String.format("Got _on_patch"));
+        Flog.info(String.format("Got _on_patch"));
 
         if (!b.md5.equals(res.md5_before)) {
-            Log.info(String.format("MD5 before mismatch (ours %s remote %s). Sending get_buf.", b.md5, res.md5_before));
+            Flog.info(String.format("MD5 before mismatch (ours %s remote %s). Sending get_buf.", b.md5, res.md5_before));
             this.send_get_buf(res.id);
             return;
         }
@@ -239,14 +237,14 @@ class FlooHandler {
         }
 
         if (!cleanPatch) {
-            Log.info("Patch not clean. Sending get_buf.");
+            Flog.info("Patch not clean. Sending get_buf.");
             this.send_get_buf(res.id);
             return;
         }
 
         String md5After = DigestUtils.md5Hex(text);
         if (!md5After.equals(res.md5_after)) {
-            Log.info(String.format("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, res.md5_after));
+            Flog.info(String.format("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, res.md5_after));
             this.send_get_buf(res.id);
             return;
         }
@@ -256,28 +254,28 @@ class FlooHandler {
 
     @SuppressWarnings("unused")
     protected void _on_highlight (JsonObject obj) {
-        Log.info(String.format("Got _on_highlight"));
+        Flog.info(String.format("Got _on_highlight"));
     }
 
     @SuppressWarnings("unused")
     protected void _on_saved (JsonObject obj) {
-        Log.info(String.format("Got _on_saved"));
+        Flog.info(String.format("Got _on_saved"));
     }
 
     @SuppressWarnings("unused")
     protected void _on_join (JsonObject obj) {
-        Log.info(String.format("Got _on_join"));
+        Flog.info(String.format("Got _on_join"));
     }
 
     @SuppressWarnings("unused")
     protected void _on_part (JsonObject obj) {
-        Log.info(String.format("Got _on_part"));
+        Flog.info(String.format("Got _on_part"));
     }
 
     @SuppressWarnings("unused")
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
-        Log.warn(String.format("Disconnected: %s", reason));
+        Flog.warn(String.format("Disconnected: %s", reason));
     }
 
     public void send_get_buf (Integer buf_id) {

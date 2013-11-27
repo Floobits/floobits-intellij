@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonParser;
 import com.google.gson.*;
-import com.intellij.openapi.diagnostic.Logger;
+import floobits.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -23,7 +23,7 @@ class Workspace implements Serializable {
 }
 
 class PersistentJson {
-    private static Logger Log = Logger.getInstance(Listener.class);
+
     public JsonObject json;
     public File path;
     public Map<String, Map<String, Workspace>> workspaces;
@@ -34,7 +34,7 @@ class PersistentJson {
             this.path = new File(FilenameUtils.concat(Shared.baseDir, "persistent.json"));
             s = FileUtils.readFileToString(this.path, "UTF-8");
         } catch (Exception e) {
-            Log.info(e);
+            Flog.error(e);
             s = "{}";
         }
 

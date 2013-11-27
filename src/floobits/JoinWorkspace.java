@@ -2,7 +2,7 @@ package floobits;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
+import floobits.Flog;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.util.text.StringUtil;
 import java.net.MalformedURLException;
@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 
 
 public class JoinWorkspace extends AnAction {
-    private static Logger Log = Logger.getInstance(Listener.class);
+
 
     private static class URLInputVaslidator implements InputValidator {
 
@@ -38,7 +38,7 @@ public class JoinWorkspace extends AnAction {
         String inputValue = JOptionPane.showInputDialog("Workspace URL", "https://floobits.com/kansface/asdf");
 //        JOptionPane.showMessageDialog(frame, "asdf");
 //        JoinWorkspaceDialog dialog = new JoinWorkspaceDialog();
-        Log.info(inputValue);
+        Flog.info(inputValue);
         FloobitsPlugin.joinWorkspace(inputValue);
     }
 }

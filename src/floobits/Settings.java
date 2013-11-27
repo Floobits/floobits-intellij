@@ -2,12 +2,11 @@ package floobits;
 
 import java.io.*;
 import java.util.HashMap;
-import com.intellij.openapi.diagnostic.Logger;
+import floobits.Flog;
 import org.apache.commons.io.FilenameUtils;
 
 class Settings {
     protected HashMap<String, String> settings;
-    private static Logger Log = Logger.getInstance(Settings.class);
 
     public Settings () {
         String userHome = System.getProperty("user.home");
@@ -19,7 +18,7 @@ class Settings {
             String line = br.readLine();
 
             while (line != null) {
-                Log.debug(line);
+                Flog.debug(line);
                 if (line.length() < 1 || line.substring(0, 1).equals("#")){
                     line = br.readLine();
                     continue;
@@ -29,7 +28,7 @@ class Settings {
                 line = br.readLine();
             }
         } catch (Exception e) {
-            Log.error(e);
+            Flog.error(e);
         }
     }
 
