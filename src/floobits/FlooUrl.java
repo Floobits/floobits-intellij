@@ -2,6 +2,7 @@ package floobits;
 
 import java.net.*;
 
+
 class FlooUrl {
     public String proto;
     public String host;

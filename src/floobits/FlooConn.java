@@ -1,19 +1,15 @@
 package floobits;
 
-import java.util.*;
 import java.io.*;
 import java.security.*;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.*;
-import java.util.Map.Entry;
-import java.lang.reflect.Method;
 
-import floobits.FlooHandler;
 
 public class FlooConn extends Thread {
-
     protected Writer out;
     protected FlooHandler handler;
     protected String host;

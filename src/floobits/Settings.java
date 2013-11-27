@@ -2,8 +2,9 @@ package floobits;
 
 import java.io.*;
 import java.util.HashMap;
-import floobits.Flog;
+
 import org.apache.commons.io.FilenameUtils;
+
 
 class Settings {
     protected HashMap<String, String> settings;

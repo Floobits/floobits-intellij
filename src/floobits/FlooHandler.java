@@ -6,21 +6,14 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.gson.Gson;
-import com.google.gson.*;
-import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 
-import floobits.FlooUrl;
-import floobits.Settings;
-import floobits.PersistentJson;
-import floobits.Buf;
 
 class FlooAuth implements Serializable {
     public String username;
@@ -29,12 +22,12 @@ class FlooAuth implements Serializable {
 
     public String room;
     public String room_owner;
-    public String platform = "???";
-    public String version = "0.03";
-    public String[] supported_encodings = {"utf8"};
-    public String client = "untellij";
+    public String client = "IntelliJ";
+    public String platform = System.getProperty("os.name");
+    public String version = "0.10";
+    public String[] supported_encodings = { "utf8", "base64" };
 
-    public FlooAuth(Settings settings, String owner, String workspace) {
+    public FlooAuth (Settings settings, String owner, String workspace) {
         this.username = settings.get("username");
         this.api_key = settings.get("api_key");
         this.room = workspace;
@@ -62,7 +55,7 @@ class User implements Serializable {
 class Tree implements Serializable {
     public HashMap<String, Integer> bufs;
     public HashMap<String, Tree> folders;
-    public Tree(JsonObject obj) {
+    public Tree (JsonObject obj) {
         this.bufs = new HashMap<String, Integer>();
         this.folders = new HashMap<String, Tree>();
         for (Entry<String, JsonElement> entry : obj.entrySet()) {
@@ -88,8 +81,8 @@ class RoomInfoResponse implements Serializable {
     public HashMap<Integer, User> users;
     public HashMap<Integer, RiBuf> bufs;
 
-//    private ??? temp_data;
-//    private ??? terms;
+//    public ??? temp_data;
+//    public HashMap<Integer, Term> terms;
 }
 
 class GetBufRequest implements Serializable {
@@ -110,7 +103,7 @@ class GetBufResponse implements Serializable {
     public String md5;
 }
 
-class PatchResponse implements Serializable {
+class FlooPatch implements Serializable {
     public Integer user_id;
     public String md5_after;
     public String md5_before;
@@ -120,6 +113,9 @@ class PatchResponse implements Serializable {
     // Deprecated
     public String path;
     public String username;
+    public FlooPatch () {
+        
+    }
 }
 
 class FlooHandler {
@@ -132,7 +128,7 @@ class FlooHandler {
     public FlooUrl url;
     public FlooConn conn;
 
-    public FlooHandler(FlooUrl f) {
+    public FlooHandler (FlooUrl f) {
         this.url = f;
         this.dmp = new diff_match_patch();
 
@@ -171,7 +167,6 @@ class FlooHandler {
         }
     }
 
-    @SuppressWarnings("unused")
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
         this.tree = new Tree(obj.getAsJsonObject("tree"));
@@ -190,7 +185,6 @@ class FlooHandler {
         }
     }
 
-    @SuppressWarnings("unused")
     protected void _on_get_buf (JsonObject obj) throws IOException {
         // TODO: be nice about this and update the existing view
         GetBufResponse res = new Gson().fromJson(obj, GetBufResponse.class);
@@ -200,9 +194,8 @@ class FlooHandler {
         b.writeToDisk();
     }
 
-    @SuppressWarnings("unused")
     protected void _on_patch (JsonObject obj) throws IOException {
-        PatchResponse res = new Gson().fromJson(obj, PatchResponse.class);
+        FlooPatch res = new Gson().fromJson(obj, FlooPatch.class);
         Buf b = this.bufs.get(res.id);
         if (b.buf == null) {
             Flog.warn("no buffer");
@@ -231,7 +224,7 @@ class FlooHandler {
 
         boolean cleanPatch = true;
         for (boolean clean : boolArray) {
-            if (clean == false) {
+            if (!clean) {
                 cleanPatch = false;
                 break;
             }
@@ -253,27 +246,22 @@ class FlooHandler {
         b.writeToDisk();
     }
 
-    @SuppressWarnings("unused")
     protected void _on_highlight (JsonObject obj) {
         Flog.info("Got _on_highlight");
     }
 
-    @SuppressWarnings("unused")
     protected void _on_saved (JsonObject obj) {
         Flog.info("Got _on_saved");
     }
 
-    @SuppressWarnings("unused")
     protected void _on_join (JsonObject obj) {
         Flog.info("Got _on_join");
     }
 
-    @SuppressWarnings("unused")
     protected void _on_part (JsonObject obj) {
         Flog.info("Got _on_part");
     }
 
-    @SuppressWarnings("unused")
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Flog.warn("Disconnected: %s", reason);
@@ -284,6 +272,20 @@ class FlooHandler {
     }
 
     public void send_patch () {
+        FlooPatch req = new FlooPatch();
         
+        this.conn.write(req);
+    }
+
+    @SuppressWarnings("unused")
+    public void testHandlers () throws IOException {
+        JsonObject obj = new JsonObject();
+        this._on_room_info(obj);
+        this._on_get_buf(obj);
+        this._on_patch(obj);
+        this._on_highlight(obj);
+        this._on_saved(obj);
+        this._on_join(obj);
+        this._on_part(obj);
     }
 }

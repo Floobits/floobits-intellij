@@ -1,18 +1,11 @@
 package floobits;
 
-import java.net.*;
-
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import floobits.Flog;
-import floobits.FlooConn;
-import floobits.FlooHandler;
-import floobits.FlooUrl;
-import floobits.Settings;
 
 public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
     public FloobitsPlugin() {

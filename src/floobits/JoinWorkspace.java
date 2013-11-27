@@ -1,21 +1,19 @@
 package floobits;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.Flog;
-import com.intellij.openapi.ui.InputValidator;
-import com.intellij.openapi.util.text.StringUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.InputValidator;
+import com.intellij.openapi.util.text.StringUtil;
+
 
 public class JoinWorkspace extends AnAction {
 
-
-    private static class URLInputVaslidator implements InputValidator {
-
+    private static class URLInputValidator implements InputValidator {
         @Override
         public boolean canClose(String inputString) {
             return true;
@@ -31,7 +29,6 @@ public class JoinWorkspace extends AnAction {
             }
         }
     }
-
 
     public void actionPerformed(AnActionEvent e) {
         JFrame frame = new JFrame("JOptionPane showMessageDialog example");

@@ -1,6 +1,5 @@
 package floobits;
 
-import floobits.Utils;
 
 class Shared {
     static public String baseDir = Utils.defaultBaseDir();

@@ -1,18 +1,17 @@
 package floobits;
 
-import com.intellij.openapi.components.ApplicationComponent;
+import java.util.List;
+
 import com.intellij.openapi.application.ApplicationManager;
-import floobits.Flog;
+import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
-import com.intellij.openapi.editor.EditorFactory;
 import org.jetbrains.annotations.NotNull;
 
-
-import java.util.List;
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener{

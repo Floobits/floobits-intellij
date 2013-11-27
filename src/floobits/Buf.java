@@ -1,14 +1,7 @@
 package floobits;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.util.*;
-import java.util.Map.Entry;
-
-import com.google.gson.Gson;
-import com.google.gson.*;
-import com.google.gson.JsonParser;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -18,11 +11,6 @@ import org.apache.commons.io.FileUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 
-import floobits.FlooUrl;
-import floobits.Settings;
-import floobits.Shared;
-import floobits.PersistentJson;
-import floobits.Flog;
 
 enum Encoding {
     BASE64("base64"), UTF8("utf-8");

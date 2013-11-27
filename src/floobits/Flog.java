@@ -2,6 +2,7 @@ package floobits;
 
 import com.intellij.openapi.diagnostic.Logger;
 
+
 class Flog {
     public static Logger Log = Logger.getInstance(Flog.class);
     public static void log (String s, Object... args) {
