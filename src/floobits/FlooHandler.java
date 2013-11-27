@@ -20,7 +20,11 @@ import dmp.diff_match_patch.Patch;
 // LocalFileSystem.getInstance().findFileByPathIfCached();
 // guessCurrentProject1
 // ProjectRootManager.getInstance(project).getFileIndex().iterateContent()
-            
+// open new project : http://devnet.jetbrains.com/message/5492018#5492018
+// list all open projects ProjectManager.getInstance().getOpenProjects()
+// open arbitrary file : FileEditorManager.openFile
+// create a new project: http://devnet.jetbrains.com/message/5106735#5106735
+
 class FlooAuth implements Serializable {
     public String username;
     public String api_key;
