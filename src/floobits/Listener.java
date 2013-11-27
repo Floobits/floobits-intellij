@@ -9,8 +9,19 @@ import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.psi.*;
+import com.intellij.openapi.editor.Document;
+
 import org.jetbrains.annotations.NotNull;
+
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFileManager;
 
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
@@ -41,6 +52,12 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void documentChanged(DocumentEvent event) {
         Flog.info(String.format("documentChanged, %s", event));
+        Document d = event.getDocument();
+        Project project = this.getCurrentProject();
+        if (project == null) {
+            return;
+        }
+        PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(d);
     }
 
     @Override
@@ -63,9 +80,16 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Flog.info("after");
     }
 
-    @NotNull
     @Override
     public String getComponentName() {
         return "asdf";  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    private Project getCurrentProject() {
+        // The other option is to save link to current project from inside of action,
+        @SuppressWarnings({"deprecation"}) // but this way is ok for now
+                DataContext dataContext = DataManager.getInstance().getDataContext();
+        Project project = DataKeys.PROJECT.getData(dataContext);
+        return project;
     }
 }

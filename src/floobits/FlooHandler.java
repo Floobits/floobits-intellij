@@ -192,6 +192,7 @@ class FlooHandler {
                 Flog.log("Getting buf %s", buf.id);
                 this.send_get_buf(buf.id);
             }
+            //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
             this.bufs.put(buf_id, buf);
         }
     }
