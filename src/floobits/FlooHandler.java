@@ -9,12 +9,18 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import com.intellij.openapi.vfs.LocalFileSystem;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 
-
+// NOTES:
+//  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
+// LocalFileSystem.getInstance().findFileByPathIfCached();
+// guessCurrentProject1
+// ProjectRootManager.getInstance(project).getFileIndex().iterateContent()
+            
 class FlooAuth implements Serializable {
     public String username;
     public String api_key;
@@ -192,7 +198,6 @@ class FlooHandler {
                 Flog.log("Getting buf %s", buf.id);
                 this.send_get_buf(buf.id);
             }
-            //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
             this.bufs.put(buf_id, buf);
         }
     }

@@ -9,10 +9,6 @@ import floobits.Flog;
 
 class Utils {
 
-    public static String defaultBaseDir () {
-        return FilenameUtils.concat(System.getProperty("user.home"), "floobits");
-    }
-
     public static String unFuckPath (String path) {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }

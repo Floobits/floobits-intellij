@@ -1,8 +1,9 @@
 package floobits;
 
+import org.apache.commons.io.FilenameUtils;
 
 class Shared {
-    static public String baseDir = Utils.defaultBaseDir();
+    static public String baseDir = FilenameUtils.concat(System.getProperty("user.home"), "floobits");
     static public String colabDir;
     static public String version = "0.10";
     static public String pluginVersion = "0.01";

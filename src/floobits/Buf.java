@@ -61,6 +61,10 @@ abstract class Buf <T> {
         }
     }
 
+    public String toAbsolutePath (String path) {
+        return FilenameUtils.concat(Shared.colabDir, this.path);
+    }
+
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
