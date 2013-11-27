@@ -23,16 +23,16 @@ import floobits.Settings;
 import floobits.PersistentJson;
 
 class FlooAuth implements Serializable {
-    private String username;
-    private String api_key;
-    private String secret;
+    public String username;
+    public String api_key;
+    public String secret;
 
-    private String room;
-    private String room_owner;
-    private String platform = "???";
-    private String version = "0.03";
-    private String[] supported_encodings =  {"utf8"};
-    private String client = "untellij";
+    public String room;
+    public String room_owner;
+    public String platform = "???";
+    public String version = "0.03";
+    public String[] supported_encodings = {"utf8"};
+    public String client = "untellij";
 
     public FlooAuth(Settings settings, String owner, String workspace) {
         this.username = settings.get("username");
@@ -44,10 +44,10 @@ class FlooAuth implements Serializable {
 }
 
 class RiBuf implements Serializable {
-    private Integer id;
-    private String md5;
-    private String path;
-    private String encoding;
+    public Integer id;
+    public String md5;
+    public String path;
+    public String encoding;
 }
 
 class User implements Serializable {
@@ -121,37 +121,67 @@ class PatchResponse implements Serializable {
     public String username;
 }
 
+enum Encoding {
+    BASE64("base64"), UTF8("utf-8");
+    private final String enc;
+
+    Encoding (String enc) {
+        this.enc = enc;
+    }
+
+    @Override
+    public String toString () {
+        return this.enc;
+    }
+
+    public static Encoding get (String str) {
+        for(Encoding v : Encoding.values()) {
+            if(v.toString().equals(str)) {
+                return v;
+            }
+        }
+        return null;
+    }
+}
+
 abstract class Buf {
     public String path;
     public File f;
     public Integer id;
-
-    public enum Encoding { BASE64, UTF8 }
-    public static BinaryBuf createBuf (String path, Integer id, byte[] buf) {
-        return new BinaryBuf(path, id, buf);
+    public String md5;
+    public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
+        return new BinaryBuf(path, id, buf, md5);
     }
-    public static TextBuf createBuf (String path, Integer id, String buf) {
-        return new TextBuf(path, id, buf);
+    public static TextBuf createBuf (String path, Integer id, String buf, String md5) {
+        return new TextBuf(path, id, buf, md5);
+    }
+    public static Buf createBuf (String path, Integer id, Encoding enc, String md5) {
+        if (enc == Encoding.BASE64) {
+            return new BinaryBuf(path, id, null, md5);
+        }
+        return new TextBuf(path, id, null, md5);
     }
 }
 
 class BinaryBuf extends Buf {
-    public Buf.Encoding encoding = Buf.Encoding.BASE64;
+    public Encoding encoding = Encoding.BASE64;
     public byte[] buf;
-    public BinaryBuf (String path, Integer id, byte[] buf) {
+    public BinaryBuf (String path, Integer id, byte[] buf, String md5) {
         this.id = id;
         this.path = path;
         this.buf = buf;
+        this.md5 = md5;
     }
 }
 
 class TextBuf extends Buf {
-    public Buf.Encoding encoding = Buf.Encoding.UTF8;
+    public Encoding encoding = Encoding.UTF8;
     public String buf;
-    public TextBuf (String path, Integer id, String buf) {
+    public TextBuf (String path, Integer id, String buf, String md5) {
         this.id = id;
         this.path = path;
         this.buf = buf;
+        this.md5 = md5;
     }
 }
 
@@ -160,6 +190,7 @@ class FlooHandler {
     protected diff_match_patch dmp;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
+    public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     public Tree tree;
     public String colabDir;
 
@@ -214,6 +245,8 @@ class FlooHandler {
 
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
+            RiBuf b = (RiBuf) entry.getValue();
+            this.bufs.put(buf_id, Buf.createBuf(b.path, b.id, Encoding.get(b.encoding), b.md5));
             this.send_get_buf(buf_id);
         }
     }
