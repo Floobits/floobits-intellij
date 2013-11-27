@@ -196,7 +196,7 @@ class FlooHandler {
         GetBufResponse res = new Gson().fromJson(obj, GetBufResponse.class);
 
         Buf b = this.bufs.get(res.id);
-        b.set(res.buf, res.);
+        b.set(res.buf, res.md5);
         b.writeToDisk();
     }
 
@@ -249,7 +249,7 @@ class FlooHandler {
             this.send_get_buf(res.id);
             return;
         }
-        b.set(text, res.md5);
+        b.set(text, res.md5_after);
         b.writeToDisk();
     }
 
