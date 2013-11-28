@@ -2,6 +2,7 @@ package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.project.Project;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,15 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
         try {
             FlooUrl f = new FlooUrl(url);
             FlooHandler handler = new FlooHandler(f);
+        } catch (Exception e) {
+            Flog.error(e);
+        }
+    }
+
+    public static void shareProject(Project p) {
+        String project_path = p.getBasePath();
+        try {
+            FlooHandler handler = new FlooHandler(project_path);
         } catch (Exception e) {
             Flog.error(e);
         }

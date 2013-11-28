@@ -41,6 +41,11 @@
           <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>
       </action>
+      <action id="FloobitsShareProject" class="floobits.ShareProject" text="Floobits: Share Project"
+              description="Share your current project">
+          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt K"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

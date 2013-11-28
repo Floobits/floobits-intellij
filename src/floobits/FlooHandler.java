@@ -2,12 +2,14 @@ package floobits;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.commons.io.FilenameUtils;
 
 import com.intellij.openapi.vfs.LocalFileSystem;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -163,6 +165,31 @@ class FlooHandler {
         }
         this.conn = new FlooConn(f.host, this);
         this.conn.start();
+    }
+
+    public FlooHandler (String project_path) {
+        PersistentJson p = new PersistentJson();
+
+        for (Entry<String, Map<String, Workspace>> i : p.workspaces.entrySet()) {
+            Map<String, Workspace> workspaces = i.getValue();
+            for (Entry<String, Workspace> j : workspaces.entrySet()) {
+                Workspace w = j.getValue();
+                if (FilenameUtils.equalsNormalized(w.path, project_path)) {
+                    try {
+                        this.url = new FlooUrl(w.url);
+                    } catch (MalformedURLException e) {
+                        Flog.error(e);
+                        break;
+                    }
+                    this.dmp = new diff_match_patch();
+                    Shared.colabDir = w.path;
+                    this.conn = new FlooConn(this.url.host, this);
+                    this.conn.start();
+                }
+            }
+        }
+        Flog.warn("No workspace was found that with path: %s", project_path);
+
     }
 
     public void on_ready () {
