@@ -8,6 +8,7 @@ class Shared {
     static public String version = "0.10";
     static public String pluginVersion = "0.01";
     static public boolean debug = false;
+    static public String defaultHost = "floobits.com";
 
     // # Config settings
     // USERNAME = ''

@@ -189,7 +189,6 @@ class FlooHandler {
             }
         }
         Flog.warn("No workspace was found that with path: %s", project_path);
-
     }
 
     public void on_ready () {
