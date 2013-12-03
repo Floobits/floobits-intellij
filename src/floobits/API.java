@@ -37,7 +37,10 @@ public class API {
         }
 	}
     static public void createWorkspace(String owner, String workspace) {
-        final String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
+//        final String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
+        final String url = String.format("https://staging.floobits.com/api/workspace/%s/%s/",  owner, workspace);
+
+
         final PostMethod method = new PostMethod(url);
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
