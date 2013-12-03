@@ -1,6 +1,7 @@
 package floobits;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -189,8 +190,26 @@ class FlooHandler {
             }
         }
         Settings settings = new Settings();
-        API.createWorkspace(settings.get("username"), new File(project_path).getName());
-//        Flog.warn("No workspace was found that with path: %s", project_path);
+        String owner = settings.get("username");
+        String name = new File(project_path).getName();
+        Integer code = API.createWorkspace(owner, name);
+        if (code == 201) {
+            this.url = new FlooUrl(Shared.defaultHost, owner, name, -1, true);
+            this.conn = new FlooConn(this.url.host, this);
+            this.conn.start();
+            return;
+        }
+
+        if (Arrays.asList(400, 402, 409).contains(code)) {
+            Flog.error("Can not make workspace");
+        } else if (code == 400) {
+            Flog.error("Invalid Workspace name");
+        } else if (code == 402) {
+//            TODO: check body.detail
+            Flog.error("Error thing.");
+        } else {
+            Flog.error("Can't make workspace because I don't know why");
+        }
     }
 
     public void on_ready () {

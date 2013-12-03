@@ -11,6 +11,7 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,69 +28,51 @@ class Request implements Serializable {
 }
 // https://floobits.com/awreece/timothy-interview
 public class API {
-    static public void getWorkspace(String owner, String workspace) {
+    static public Integer getWorkspace(String owner, String workspace) {
 		String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
         final GetMethod method = new GetMethod(url);
         try{
-            apiRequest(method, url);
+            return apiRequest(method, url);
         } catch (Exception e) {
             Flog.error(e);
+            return -1;
         }
 	}
-    static public void createWorkspace(String owner, String workspace) {
-//        final String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
-        final String url = String.format("https://staging.floobits.com/api/workspace/%s/%s/",  owner, workspace);
-
-
+    static public Integer createWorkspace(String owner, String workspace) {
+        final String url = String.format("https://%s/api/workspace/", Shared.defaultHost);
         final PostMethod method = new PostMethod(url);
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
         try{
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, url);
+            return apiRequest(method, url);
         } catch (Exception e) {
             Flog.error(e);
+            return -1;
         }
     }
 
-	static public void apiRequest(HttpMethod method, String url) throws Exception{
+	static public Integer apiRequest(HttpMethod method, String url) throws Exception{
 		final HttpClient client = new HttpClient();
 		client.setTimeout(3000);
 		client.setConnectionTimeout(3000);
 		try {
             Settings settings = new Settings();
+            client.getParams().setAuthenticationPreemptive(true);
             Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
             client.getState().setCredentials(AuthScope.ANY, credentials);
-            final int code = client.executeMethod(method);
-            switch (code) {
-                case HttpStatus.SC_OK:
-                case HttpStatus.SC_CREATED:
-                case HttpStatus.SC_ACCEPTED:
-                case HttpStatus.SC_NO_CONTENT:
-                    return;
-                case HttpStatus.SC_BAD_REQUEST:
-                case HttpStatus.SC_UNAUTHORIZED:
-                case HttpStatus.SC_PAYMENT_REQUIRED:
-                case HttpStatus.SC_FORBIDDEN:
-                    // String message = getErrorMessage(method);
-                    // if (message.contains("API rate limit exceeded")) {
-                    //   throw new GithubRateLimitExceededException(message);
-                    // }
-                    throw new Exception("Request response: ");
-                default:
-                    throw new Exception("Thing");
-            }
+            return client.executeMethod(method);
 		} catch (UnknownHostException e) {
 		 Flog.error(e);
-		 return;
+		 return -1;
 		}
 		catch (IOException e) {
 		 Flog.error(e);
-		 return;
+		 return -1;
 		}
 		catch (IllegalArgumentException e) {
 		 Flog.error(e);
-		 return;
+		 return -1;
 		}
 	}
 
