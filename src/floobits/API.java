@@ -1,17 +1,31 @@
 package floobits;
 
+import com.google.gson.Gson;
+import org.json.JSONObject;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
-
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.UnknownHostException;
 
+class Request implements Serializable {
+    public String owner;
+    public String name;
+
+    public Request(String owner, String name){
+        this.owner = owner;
+        this.name = name;
+    }
+}
 // https://floobits.com/awreece/timothy-interview
 public class API {
     static public void getWorkspace(String owner, String workspace) {
@@ -26,7 +40,10 @@ public class API {
     static public void createWorkspace(String owner, String workspace) {
         final String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
         final PostMethod method = new PostMethod(url);
+        Gson gson = new Gson();
+        String json = gson.toJson(new Request(owner, workspace));
         try{
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             apiRequest(method, url);
         } catch (Exception e) {
             Flog.error(e);
