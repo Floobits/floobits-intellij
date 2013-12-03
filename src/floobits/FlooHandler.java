@@ -142,7 +142,7 @@ class FlooPatch implements Serializable {
 }
 
 class FlooHandler {
-    protected diff_match_patch dmp;
+    protected static diff_match_patch dmp = new diff_match_patch();
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -153,7 +153,6 @@ class FlooHandler {
 
     public FlooHandler (FlooUrl f) {
         this.url = f;
-        this.dmp = new diff_match_patch();
 
         PersistentJson p = new PersistentJson();
         try {
@@ -181,12 +180,14 @@ class FlooHandler {
                         Flog.error(e);
                         break;
                     }
-                    this.dmp = new diff_match_patch();
                     Shared.colabDir = w.path;
+                    API.getWorkspace(url.owner, url.workspace);
                     this.conn = new FlooConn(this.url.host, this);
                     this.conn.start();
+                    return;
                 }
             }
+            API.createWorkspace();
         }
         Flog.warn("No workspace was found that with path: %s", project_path);
     }

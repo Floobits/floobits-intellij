@@ -3,6 +3,8 @@ package floobits;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 
@@ -13,21 +15,29 @@ import java.net.UnknownHostException;
 // https://floobits.com/awreece/timothy-interview
 public class API {
     static public void getWorkspace(String owner, String workspace) {
-		String url = String.format("https://%s/api/workspace/%s/%s/", (Shared.defaultHost, owner, workspace));
+		String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
+        final GetMethod method = new GetMethod(url);
         try{
-            apiRequest(url);
+            apiRequest(method, url);
         } catch (Exception e) {
             Flog.error(e);
         }
-
 	}
+    static public void createWorkspace(String owner, String workspace) {
+        final String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
+        final PostMethod method = new PostMethod(url);
+        try{
+            apiRequest(method, url);
+        } catch (Exception e) {
+            Flog.error(e);
+        }
+    }
 
-	static public void apiRequest(String url) throws Exception{
+	static public void apiRequest(HttpMethod method, String url) throws Exception{
 		final HttpClient client = new HttpClient();
 		client.setTimeout(3000);
 		client.setConnectionTimeout(3000);
 		try {
-            final GetMethod method = new GetMethod(url);
             Settings settings = new Settings();
             Credentials credentials = new UsernamePasswordCredentials(settings.get("usernmae"), settings.get("secret"));
             client.getState().setCredentials(AuthScope.ANY, credentials);
