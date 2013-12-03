@@ -187,7 +187,8 @@ class FlooHandler {
                     return;
                 }
             }
-            API.createWorkspace();
+            Settings settings = new Settings();
+            API.createWorkspace(settings.get("username"), new File(project_path).getName());
         }
         Flog.warn("No workspace was found that with path: %s", project_path);
     }

@@ -1,7 +1,6 @@
 package floobits;
 
 import com.google.gson.Gson;
-import org.json.JSONObject;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -56,7 +55,7 @@ public class API {
 		client.setConnectionTimeout(3000);
 		try {
             Settings settings = new Settings();
-            Credentials credentials = new UsernamePasswordCredentials(settings.get("usernmae"), settings.get("secret"));
+            Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
             client.getState().setCredentials(AuthScope.ANY, credentials);
             final int code = client.executeMethod(method);
             switch (code) {
