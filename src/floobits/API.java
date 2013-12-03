@@ -2,94 +2,65 @@ package floobits;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.auth.AuthScope;
+
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-package org.apache.http.examples.client;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-
-/**
- * A simple example that uses HttpClient to execute an HTTP request against
- * a target site that requires user authentication.
- */
-public class ClientAuthentication {
-
-    public static void main(String[] args) throws Exception {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope("localhost", 443),
-                new UsernamePasswordCredentials("username", "password"));
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider).build();
-        try {
-            HttpGet httpget = new HttpGet("https://localhost/protected");
-
-            System.out.println("executing request" + httpget.getRequestLine());
-            CloseableHttpResponse response = httpclient.execute(httpget);
-            try {
-                HttpEntity entity = response.getEntity();
-
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
-                if (entity != null) {
-                    System.out.println("Response content length: " + entity.getContentLength());
-                }
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-        } finally {
-            httpclient.close();
-        }
-    }
-}
-
+// https://floobits.com/awreece/timothy-interview
 public class API {
     static public void getWorkspace(String owner, String workspace) {
 		String url = String.format("https://%s/api/workspace/%s/%s/", (Shared.defaultHost, owner, workspace));
-		apiRequest(url);
+        try{
+            apiRequest(url);
+        } catch (Exception e) {
+            Flog.error(e);
+        }
+
 	}
 
-	static public void apiRequest(String url) {
+	static public void apiRequest(String url) throws Exception{
 		final HttpClient client = new HttpClient();
 		client.setTimeout(3000);
 		client.setConnectionTimeout(3000);
-		// see http://hc.apache.org/httpclient-3.x/cookies.html
-		client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
 		try {
-		 final GetMethod method = new GetMethod(url);
-		 final int code = client.executeMethod(method);
-         client.setParams(new HttpClientParams());
-
-		 return code == HttpStatus.SC_OK || code == HttpStatus.SC_REQUEST_TIMEOUT
-		        ? MyFetchResult.OK 
-		        : MyFetchResult.NONEXISTENCE;
-		}
-		catch (UnknownHostException e) {
-		 LOG.info(e);
-		 return MyFetchResult.UNKNOWN_HOST;
+            final GetMethod method = new GetMethod(url);
+            Settings settings = new Settings();
+            Credentials credentials = new UsernamePasswordCredentials(settings.get("usernmae"), settings.get("secret"));
+            client.getState().setCredentials(AuthScope.ANY, credentials);
+            final int code = client.executeMethod(method);
+            switch (code) {
+                case HttpStatus.SC_OK:
+                case HttpStatus.SC_CREATED:
+                case HttpStatus.SC_ACCEPTED:
+                case HttpStatus.SC_NO_CONTENT:
+                    return;
+                case HttpStatus.SC_BAD_REQUEST:
+                case HttpStatus.SC_UNAUTHORIZED:
+                case HttpStatus.SC_PAYMENT_REQUIRED:
+                case HttpStatus.SC_FORBIDDEN:
+                    // String message = getErrorMessage(method);
+                    // if (message.contains("API rate limit exceeded")) {
+                    //   throw new GithubRateLimitExceededException(message);
+                    // }
+                    throw new Exception("Request response: ");
+                default:
+                    throw new Exception("Thing");
+            }
+		} catch (UnknownHostException e) {
+		 Flog.error(e);
+		 return;
 		}
 		catch (IOException e) {
-		 LOG.info(e);
-		 return MyFetchResult.OK;
+		 Flog.error(e);
+		 return;
 		}
 		catch (IllegalArgumentException e) {
-		 LOG.debug(e);
-		 return MyFetchResult.OK;
+		 Flog.error(e);
+		 return;
 		}
 	}
 
