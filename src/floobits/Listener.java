@@ -55,7 +55,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Flog.info(String.format("documentChanged, %s", event));
         Document d = event.getDocument();
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
-        String path = virtualFile.getPath();
+        try {
+            String path = virtualFile.getPath();
+        } catch (NullPointerException e) {
+            return;
+        }
         Project project = this.getCurrentProject();
         if (project == null) {
             return;
