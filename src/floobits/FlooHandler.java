@@ -117,6 +117,9 @@ class GetBufResponse implements Serializable {
     public String md5;
 }
 
+class CreateBufResponse extends GetBufResponse {
+}
+
 class FlooPatch implements Serializable {
     public String name = "patch";
     public Integer id;
@@ -384,6 +387,16 @@ class FlooHandler {
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
+    }
+
+    protected void _on_create_buf (JsonObject obj) {
+//        TODO: be nice about this and update the existing view
+        Gson gson = new Gson();
+        GetBufResponse res = gson.fromJson(obj, CreateBufResponse.class);
+        Buf buf = Buf.createBuf(res.path, res.id, res.buf, res.md5);
+        this.bufs.put(buf.id, buf);
+        this.paths_to_ids.put(buf.path, buf.id);
+        buf.update();
     }
 
     protected void _on_patch (JsonObject obj) throws IOException {
