@@ -26,9 +26,8 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     }
 
     public static void shareProject(Project p) {
-        String project_path = p.getBasePath();
         try {
-            FlooHandler handler = new FlooHandler(project_path);
+            FlooHandler handler = new FlooHandler(p);
         } catch (Exception e) {
             Flog.error(e);
         }

@@ -9,6 +9,10 @@ import floobits.Flog;
 
 class Utils {
 
+    public static String absPath(String path) {
+        return FilenameUtils.concat(Shared.colabDir, path);
+    }
+
     public static String unFuckPath (String path) {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }

@@ -10,14 +10,23 @@ import java.util.Map.Entry;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.roots.ProjectRootManager;
 import org.apache.commons.io.FilenameUtils;
-
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.project.Project;
 import org.apache.commons.codec.digest.DigestUtils;
-
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
-
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiFile;
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
 // LocalFileSystem.getInstance().findFileByPathIfCached();
@@ -144,6 +153,7 @@ class FlooPatch implements Serializable {
 
 class FlooHandler {
     protected static diff_match_patch dmp = new diff_match_patch();
+    protected Project project;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -167,10 +177,12 @@ class FlooHandler {
         this.conn.start();
     }
 
-    public FlooHandler (String project_path) {
-        PersistentJson p = new PersistentJson();
+    public FlooHandler (Project p) {
+        this.project = p;
+        String project_path = p.getBasePath();
+        PersistentJson persistentJson = new PersistentJson();
 
-        for (Entry<String, Map<String, Workspace>> i : p.workspaces.entrySet()) {
+        for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
             Map<String, Workspace> workspaces = i.getValue();
             for (Entry<String, Workspace> j : workspaces.entrySet()) {
                 Workspace w = j.getValue();
@@ -219,7 +231,6 @@ class FlooHandler {
     public void on_data (String name, JsonObject obj) {
         String method_name = "_on_" + name;
         Method method;
-        Class c;
         try {
             method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
             Object arglist[] = new Object[1];
@@ -245,11 +256,19 @@ class FlooHandler {
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
             buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
-            if (buf.buf == null) {
-                Flog.log("Getting buf %s", buf.id);
-                this.send_get_buf(buf.id);
-            }
             this.bufs.put(buf_id, buf);
+            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(Utils.absPath(b.path));
+            if (!virtualFile.exists()) {
+                this.send_get_buf(buf.id);
+                continue;
+            }
+            String contents = virtualFile.toString();
+            String md5 = DigestUtils.md5Hex(contents);
+            if (!md5.equals(buf.md5)) {
+                this.send_get_buf(buf.id);
+                continue;
+            }
+            buf.buf = contents;
         }
     }
 

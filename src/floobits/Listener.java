@@ -97,7 +97,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         // The other option is to save link to current project from inside of action,
         @SuppressWarnings({"deprecation"}) // but this way is ok for now
                 DataContext dataContext = DataManager.getInstance().getDataContext();
-        Project project = DataKeys.PROJECT.getData(dataContext);
+        Project project = DataKeys.PROJECT_CONTEXT.getData(dataContext);
         return project;
     }
 }
