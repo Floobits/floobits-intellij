@@ -152,18 +152,25 @@ class FlooPatch implements Serializable {
 }
 
 class FlooHandler {
+    protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Project project;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    public HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     public Tree tree;
 
     public FlooUrl url;
     public FlooConn conn;
 
+    public static FlooHandler getInstance() {
+        return flooHandler;
+    }
+
     public FlooHandler (FlooUrl f) {
         this.url = f;
+        flooHandler = this;
 
         PersistentJson p = new PersistentJson();
         try {
@@ -179,6 +186,7 @@ class FlooHandler {
 
     public FlooHandler (Project p) {
         this.project = p;
+        flooHandler = this;
         String project_path = p.getBasePath();
         Shared.colabDir = project_path;
         PersistentJson persistentJson = new PersistentJson();
@@ -259,6 +267,7 @@ class FlooHandler {
             RiBuf b = (RiBuf) entry.getValue();
             buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             this.bufs.put(buf_id, buf);
+            this.paths_to_ids.put(b.path, b.id);
             String path = Utils.absPath(b.path);
             VirtualFile virtualFile = localFileSystem.findFileByPath(path);
             if (virtualFile == null || !virtualFile.exists()) {
@@ -372,6 +381,23 @@ class FlooHandler {
         FlooPatch req = new FlooPatch(current, buf);
         
         this.conn.write(req);
+    }
+
+    public void un_change (String path, String new_doc) {
+        String relPath = Utils.toProjectRelPath(path);
+
+        Integer id = this.paths_to_ids.get(relPath);
+        if (id == null) {
+            Flog.info("no buf for id %s", id);
+            return;
+        }
+        Buf buf = bufs.get(id);
+        if (buf.buf == null) {
+            Flog.info("buf isn't populated yet");
+            return;
+        }
+        LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main((String)buf.buf, new_doc);
+        Flog.info("Made diff: %s", diffs.toString());
     }
 
     @SuppressWarnings("unused")

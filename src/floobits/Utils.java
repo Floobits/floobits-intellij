@@ -25,6 +25,9 @@ class Utils {
             return false;
         }
     }
+    public static String toProjectRelPath(String path) {
+        return getRelativePath(path, Shared.colabDir, "/");
+    }
     /** 
      * see http://stackoverflow.com/questions/204784/how-to-construct-a-relative-path-in-java-from-two-absolute-paths-or-urls/3054692#3054692
      * Get the relative path from one file to another, specifying the directory separator. 

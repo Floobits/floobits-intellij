@@ -23,7 +23,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
-
+import org.apache.commons.lang.StringUtils;
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener{
@@ -55,16 +55,18 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Flog.info(String.format("documentChanged, %s", event));
         Document d = event.getDocument();
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
+        String path;
         try {
-            String path = virtualFile.getPath();
+            path = virtualFile.getPath();
         } catch (NullPointerException e) {
             return;
         }
-        Project project = this.getCurrentProject();
-        if (project == null) {
-            return;
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler != null) {
+            flooHandler.un_change(path, d.getText());
         }
-        PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(d);
+//        String old = event.
+//        PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(d);
 
     }
 
