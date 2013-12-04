@@ -193,22 +193,20 @@ class FlooHandler {
         String owner = settings.get("username");
         String name = new File(project_path).getName();
         Integer code = API.createWorkspace(owner, name);
-        if (code == 201) {
-            this.url = new FlooUrl(Shared.defaultHost, owner, name, -1, true);
-            this.conn = new FlooConn(this.url.host, this);
-            this.conn.start();
-            return;
-        }
-
-        if (Arrays.asList(400, 402, 409).contains(code)) {
-            Flog.error("Can not make workspace");
-        } else if (code == 400) {
-            Flog.error("Invalid Workspace name");
-        } else if (code == 402) {
-//            TODO: check body.detail
-            Flog.error("Error thing.");
-        } else {
-            Flog.error("Can't make workspace because I don't know why");
+        switch (code) {
+            case 201:
+                this.url = new FlooUrl(Shared.defaultHost, owner, name, -1, true);
+                this.conn = new FlooConn(this.url.host, this);
+                this.conn.start();
+                return;
+            case 400:
+                Flog.warn("Invalid name"); return;
+            case 402:
+                Flog.warn("Details in body"); return;
+            case 409:
+                Flog.warn("Already exists"); return;
+            default:
+                Flog.warn("Unknown error"); return;
         }
     }
 
