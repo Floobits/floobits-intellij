@@ -194,19 +194,21 @@ class FlooHandler {
         String name = new File(project_path).getName();
         Integer code = API.createWorkspace(owner, name);
         switch (code) {
+            case 409:
+                Flog.warn("Already exists");
             case 201:
                 this.url = new FlooUrl(Shared.defaultHost, owner, name, -1, true);
                 this.conn = new FlooConn(this.url.host, this);
                 this.conn.start();
-                return;
+                break;
             case 400:
-                Flog.warn("Invalid name"); return;
+                Flog.warn("Invalid name");
+                break;
             case 402:
-                Flog.warn("Details in body"); return;
-            case 409:
-                Flog.warn("Already exists"); return;
+                Flog.warn("Details in body");
+               break;
             default:
-                Flog.warn("Unknown error"); return;
+                Flog.warn("Unknown error");
         }
     }
 
