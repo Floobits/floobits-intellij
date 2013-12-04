@@ -3,13 +3,15 @@ package floobits;
 import java.io.*;
 import java.nio.charset.Charset;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
-
-import dmp.diff_match_patch;
-import dmp.diff_match_patch.Patch;
 
 
 enum Encoding {
@@ -55,7 +57,7 @@ abstract class Buf <T> {
 
     }
 
-    public String toAbsolutePath (String path) {
+    public String toAbsolutePath () {
         return FilenameUtils.concat(Shared.colabDir, this.path);
     }
 
@@ -95,9 +97,38 @@ class BinaryBuf extends Buf <byte[]> {
         FileUtils.writeByteArrayToFile(f, this.buf);
     }
 
-    public void set (String s, String md5) {
+    public void set (final String s, final String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = new String(md5);
+
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
+        if (!virtualFile.exists()) {
+            try {
+                this.writeToDisk();
+            } catch (IOException e) {
+                Flog.error(e);
+            }
+            return;
+        }
+        final Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        if (d == null) {
+            try {
+                this.writeToDisk();
+            } catch (IOException e) {
+                Flog.error(e);
+            }
+            return;
+        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        d.replaceString(0, d.getTextLength(), s);
+                    }
+                });
+            }
+        });
     }
 }
 

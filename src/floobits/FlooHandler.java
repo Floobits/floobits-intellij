@@ -1,7 +1,6 @@
 package floobits;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -10,7 +9,6 @@ import java.util.Map.Entry;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.roots.ProjectRootManager;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.project.Project;
@@ -18,15 +16,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiFile;
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
 // LocalFileSystem.getInstance().findFileByPathIfCached();
@@ -148,8 +140,7 @@ class FlooPatch implements Serializable {
         this.md5_after = DigestUtils.md5Hex(current);
         this.id = buf.id;
         this.patch = dmp.patch_toText(patches);
-        buf.md5 = this.md5_after;
-        buf.buf = current;
+        buf.set(current, this.md5_after);
     }
 }
 
@@ -292,7 +283,6 @@ class FlooHandler {
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
-        b.writeToDisk();
     }
 
     protected void _on_patch (JsonObject obj) throws IOException {
@@ -320,7 +310,7 @@ class FlooHandler {
         LinkedList<Patch> patches;
         patches = (LinkedList) dmp.patch_fromText(res.patch);
         Object[] results = dmp.patch_apply(patches, (String) b.buf);
-        String text = (String) results[0];
+        final String text = (String) results[0];
         boolean[] boolArray = (boolean[]) results[1];
 
         boolean cleanPatch = true;
@@ -346,7 +336,6 @@ class FlooHandler {
         Flog.log("Patched %s", res.path);
 
         b.set(text, res.md5_after);
-        b.writeToDisk();
     }
 
     protected void _on_highlight (JsonObject obj) {
@@ -411,5 +400,6 @@ class FlooHandler {
         this._on_saved(obj);
         this._on_join(obj);
         this._on_part(obj);
+        this._on_disconnect(obj);
     }
 }
