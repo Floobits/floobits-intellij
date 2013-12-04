@@ -18,6 +18,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.codec.digest.DigestUtils;
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
 // LocalFileSystem.getInstance().findFileByPathIfCached();
@@ -154,6 +155,21 @@ class FlooSetBuf implements Serializable {
         this.id = buf.id;
         this.buf = (String) buf.buf;
         this.encoding = buf.encoding.toString();
+    }
+}
+
+class FlooCreateBuf implements Serializable {
+    public String name = "create_buf";
+    public String buf;
+    public String path;
+    public String md5;
+    public String encoding;
+    
+    public FlooCreateBuf (VirtualFile virtualFile) throws IOException {
+        this.path = Utils.toProjectRelPath(virtualFile.getCanonicalPath());
+        this.buf = new String(virtualFile.contentsToByteArray(), "UTF-8");
+        this.md5 = DigestUtils.md5Hex(this.buf);
+        this.encoding = "utf8";
     }
 }
 
@@ -306,16 +322,19 @@ class FlooHandler {
         if (!this.stomp) {
             return;
         }
+
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
 
             public boolean processFile(final VirtualFile vfile) {
                 boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
-                        !vfile.isDirectory() && !vfile.isSpecialFile() && !vfile.isSymLink();
+                        !(vfile.isDirectory() && vfile.isSpecialFile() && vfile.isSymLink());
+
                 if (!we_care) {
                     return true;
                 }
                 String path = vfile.getPath();
                 if (!Utils.isShared(path)) {
+                    Flog.info("Thing isn't shared: %s", path);
                     return true;
                 }
                 String rel_path = Utils.toProjectRelPath(path);
@@ -327,14 +346,20 @@ class FlooHandler {
             }
 
         });
-        
-        // TODO: crawl local dir and upload stuff
     }
+
     public void send_create_buf(VirtualFile virtualFile) {
-
+        FlooCreateBuf flooCreateBuf;
+        try {
+            flooCreateBuf = new FlooCreateBuf(virtualFile);
+        } catch (IOException e) {
+            Flog.error(e);
+            return;
+        }
+        this.conn.write(flooCreateBuf);
     }
 
-    protected void _on_get_buf (JsonObject obj) throws IOException {
+    protected void _on_get_buf (JsonObject obj) {
         // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, GetBufResponse.class);
