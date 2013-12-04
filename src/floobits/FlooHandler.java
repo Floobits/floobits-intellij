@@ -307,10 +307,27 @@ class FlooHandler {
                 this.send_get_buf(buf.id);
                 continue;
             }
-            String contents = virtualFile.toString();
+            byte [] bytes;
+
+            try {
+                bytes = virtualFile.contentsToByteArray();
+            } catch (IOException e) {
+                Flog.log("Can't read %s", virtualFile.getCanonicalPath());
+                continue;
+            }
+
+            String contents;
+            try {
+                contents = new String(bytes, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                Flog.log("Not handling binary stuff for now: %s", virtualFile.getCanonicalPath());
+                continue;
+            }
+
             String md5 = DigestUtils.md5Hex(contents);
             if (!md5.equals(buf.md5)) {
                 if (this.stomp) {
+                    buf.buf = contents;
                     this.send_set_buf(buf);
                 } else {
                     this.send_get_buf(buf.id);
@@ -319,6 +336,7 @@ class FlooHandler {
             }
             buf.buf = contents;
         }
+
         if (!this.stomp) {
             return;
         }
