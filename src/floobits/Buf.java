@@ -64,6 +64,37 @@ abstract class Buf <T> {
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
+    protected void update () {
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
+        if (!virtualFile.exists()) {
+            try {
+                this.writeToDisk();
+            } catch (IOException e) {
+                Flog.error(e);
+            }
+            return;
+        }
+        final Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        if (d == null) {
+            try {
+                this.writeToDisk();
+            } catch (IOException e) {
+                Flog.error(e);
+            }
+            return;
+        }
+        final String string = (String)this.buf;
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        d.replaceString(0, d.getTextLength(), string);
+                    }
+                });
+            }
+        });
+    }
 
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
@@ -97,38 +128,10 @@ class BinaryBuf extends Buf <byte[]> {
         FileUtils.writeByteArrayToFile(f, this.buf);
     }
 
-    public void set (final String s, final String md5) {
+    public void set (String s, String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = new String(md5);
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
-        if (!virtualFile.exists()) {
-            try {
-                this.writeToDisk();
-            } catch (IOException e) {
-                Flog.error(e);
-            }
-            return;
-        }
-        final Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-        if (d == null) {
-            try {
-                this.writeToDisk();
-            } catch (IOException e) {
-                Flog.error(e);
-            }
-            return;
-        }
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        d.replaceString(0, d.getTextLength(), s);
-                    }
-                });
-            }
-        });
+        this.update();
     }
 }
 
@@ -153,5 +156,6 @@ class TextBuf extends Buf <String> {
     public void set (String s, String md5) {
         this.buf = new String(s);
         this.md5 = new String(md5);
+        this.update();
     }
 }
