@@ -9,9 +9,11 @@ import java.util.Map.Entry;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.roots.ContentIterator;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectRootManager;
 import org.apache.commons.codec.digest.DigestUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
@@ -126,9 +128,9 @@ class FlooPatch implements Serializable {
     public String path;
     public String username;
 
+    private static diff_match_patch dmp = new diff_match_patch();
+
     public FlooPatch (String current, Buf buf) {
-        // TODO: don't create a new dmp every time!
-        diff_match_patch dmp = new diff_match_patch();
         // TODO: handle binary bufs
         LinkedList<Patch> patches = dmp.patch_make((String) buf.buf, current);
 
@@ -141,10 +143,25 @@ class FlooPatch implements Serializable {
     }
 }
 
+class FlooSetBuf implements Serializable {
+    public String name = "set_buf";
+    public Integer id;
+    public String buf;
+    public String md5;
+    public String encoding;
+    public FlooSetBuf (Buf buf) {
+        this.md5 = buf.md5;
+        this.id = buf.id;
+        this.buf = (String) buf.buf;
+        this.encoding = buf.encoding.toString();
+    }
+}
+
 class FlooHandler {
     protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Project project;
+    protected Boolean stomp = false;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -177,6 +194,7 @@ class FlooHandler {
     public FlooHandler (Project p) {
         this.project = p;
         flooHandler = this;
+        this.stomp = true;
         String project_path = p.getBasePath();
         Shared.colabDir = project_path;
         PersistentJson persistentJson = new PersistentJson();
@@ -235,6 +253,7 @@ class FlooHandler {
             Object arglist[] = new Object[1];
             arglist[0] = obj;
             try {
+                Flog.log("Calling %s", method_name);
                 method.invoke(this, arglist);
             } catch (Exception e) {
                 Flog.error(e);
@@ -243,6 +262,14 @@ class FlooHandler {
             Flog.error(e);
             return;
         }
+    }
+
+    protected Buf get_buf_by_path(String path) {
+        Integer id = this.paths_to_ids.get(path);
+        if (id == null) {
+            return null;
+        }
+        return this.bufs.get(id);
     }
 
     protected void _on_room_info (JsonObject obj) {
@@ -267,16 +294,50 @@ class FlooHandler {
             String contents = virtualFile.toString();
             String md5 = DigestUtils.md5Hex(contents);
             if (!md5.equals(buf.md5)) {
-                this.send_get_buf(buf.id);
+                if (this.stomp) {
+                    this.send_set_buf(buf);
+                } else {
+                    this.send_get_buf(buf.id);
+                }
                 continue;
             }
             buf.buf = contents;
         }
+        if (!this.stomp) {
+            return;
+        }
+        ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
+
+            public boolean processFile(final VirtualFile vfile) {
+                boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
+                        !vfile.isDirectory() && !vfile.isSpecialFile() && !vfile.isSymLink();
+                if (!we_care) {
+                    return true;
+                }
+                String path = vfile.getPath();
+                if (!Utils.isShared(path)) {
+                    return true;
+                }
+                String rel_path = Utils.toProjectRelPath(path);
+                Buf b = flooHandler.get_buf_by_path(rel_path);
+                if (b == null) {
+                    flooHandler.send_create_buf(vfile);
+                }
+                return true;
+            }
+
+        });
+        
+        // TODO: crawl local dir and upload stuff
+    }
+    public void send_create_buf(VirtualFile virtualFile) {
+
     }
 
     protected void _on_get_buf (JsonObject obj) throws IOException {
         // TODO: be nice about this and update the existing view
-        GetBufResponse res = new Gson().fromJson(obj, GetBufResponse.class);
+        Gson gson = new Gson();
+        GetBufResponse res = gson.fromJson(obj, GetBufResponse.class);
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
@@ -369,6 +430,10 @@ class FlooHandler {
         FlooPatch req = new FlooPatch(current, buf);
         
         this.conn.write(req);
+    }
+
+    public void send_set_buf (Buf b) {
+        this.conn.write(new FlooSetBuf(b));
     }
 
     public void un_change (String path, String current) {

@@ -14,7 +14,7 @@ class Flog {
     public static void error (String s, Object... args) {
         Log.error(String.format(s, args));
     }
-    public static void error (Object... args) {
+    public static void error (Exception... args) {
         Log.error(args);
     }
     public static void warn (String s, Object... args) {

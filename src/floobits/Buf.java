@@ -43,6 +43,7 @@ abstract class Buf <T> {
     public Integer id;
     public String md5;
     public T buf;
+    public Encoding encoding;
 
     public Buf (String path, Integer id, T buf, String md5) {
         this.id = id;
@@ -66,7 +67,7 @@ abstract class Buf <T> {
     abstract public void set (String s, String md5);
     protected void update () {
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
-        if (!virtualFile.exists()) {
+        if (virtualFile == null || !virtualFile.exists()) {
             try {
                 this.writeToDisk();
             } catch (IOException e) {
