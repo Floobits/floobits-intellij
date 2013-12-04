@@ -148,6 +148,8 @@ class FlooPatch implements Serializable {
         this.md5_after = DigestUtils.md5Hex(current);
         this.id = buf.id;
         this.patch = dmp.patch_toText(patches);
+        buf.md5 = this.md5_after;
+        buf.buf = current;
     }
 }
 
@@ -383,7 +385,7 @@ class FlooHandler {
         this.conn.write(req);
     }
 
-    public void un_change (String path, String new_doc) {
+    public void un_change (String path, String current) {
         String relPath = Utils.toProjectRelPath(path);
 
         Integer id = this.paths_to_ids.get(relPath);
@@ -396,8 +398,7 @@ class FlooHandler {
             Flog.info("buf isn't populated yet");
             return;
         }
-        LinkedList<diff_match_patch.Diff> diffs = dmp.diff_main((String)buf.buf, new_doc);
-        Flog.info("Made diff: %s", diffs.toString());
+        this.send_patch(current, buf);
     }
 
     @SuppressWarnings("unused")

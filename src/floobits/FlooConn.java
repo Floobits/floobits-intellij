@@ -29,7 +29,7 @@ public class FlooConn extends Thread {
 
     public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
-        Flog.debug(data);
+//        Flog.debug(data);
         try {
             this.out.write(data + "\n");
             this.out.flush();
