@@ -348,7 +348,7 @@ class FlooHandler {
 
             public boolean processFile(final VirtualFile vfile) {
                 boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
-                        !(vfile.isDirectory() && vfile.isSpecialFile() && vfile.isSymLink());
+                        !(vfile.isDirectory() || vfile.isSpecialFile() || vfile.isSymLink());
 
                 if (!we_care) {
                     return true;
@@ -359,6 +359,11 @@ class FlooHandler {
                     return true;
                 }
                 String rel_path = Utils.toProjectRelPath(path);
+                if (rel_path.equals(".idea/workspace.xml")) {
+                    Flog.info("Not sharing the workspace.xml file");
+                    return true;
+                }
+
                 Buf b = flooHandler.get_buf_by_path(rel_path);
                 if (b == null) {
                     flooHandler.send_create_buf(vfile);

@@ -47,12 +47,12 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void beforeDocumentChange(DocumentEvent event) {
-        Flog.info(String.format("beforeDocumentChange, %s", event));
+//        Flog.info(String.format("beforeDocumentChange, %s", event));
     }
 
     @Override
     public void documentChanged(DocumentEvent event) {
-        Flog.info(String.format("documentChanged, %s", event));
+//        Flog.info(String.format("documentChanged, %s", event));
         Document d = event.getDocument();
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
         String path;
@@ -72,7 +72,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void selectionChanged(SelectionEvent event) {
-        Flog.info(String.format("selectionChanged, %s", event));
+//        Flog.info(String.format("selectionChanged, %s", event));
     }
 
     public void disposeComponent() {
@@ -83,11 +83,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void before(@NotNull List<? extends VFileEvent> events) {
-        Flog.info("before");
+//        Flog.info("before");
     }
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        Flog.info("after");
+//        Flog.info("after");
     }
 
     @Override

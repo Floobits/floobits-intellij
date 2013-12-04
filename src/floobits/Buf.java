@@ -112,10 +112,10 @@ abstract class Buf <T> {
 }
 
 class BinaryBuf extends Buf <byte[]> {
-    public Encoding encoding = Encoding.BASE64;
 
     public BinaryBuf (String path, Integer id, byte[] buf, String md5) {
         super(path, id, buf, md5);
+        this.encoding = Encoding.BASE64;
     }
 
     public void readFromDisk () throws IOException {
@@ -137,10 +137,10 @@ class BinaryBuf extends Buf <byte[]> {
 }
 
 class TextBuf extends Buf <String> {
-    public Encoding encoding = Encoding.UTF8;
 
     public TextBuf (String path, Integer id, String buf, String md5) {
         super(path, id, buf, md5);
+        this.encoding = Encoding.UTF8;
     }
 
     public void readFromDisk () throws IOException {
