@@ -13,7 +13,7 @@ import dmp.diff_match_patch.Patch;
 
 
 enum Encoding {
-    BASE64("base64"), UTF8("utf-8");
+    BASE64("base64"), UTF8("utf8");
     private final String enc;
 
     Encoding (String enc) {
@@ -47,18 +47,12 @@ abstract class Buf <T> {
         this.path = new String(path);
         this.buf = buf;
         this.md5 = new String(md5);
-        this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
+        try {
+            this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
+        } catch (NullPointerException e) {
 
-        if (buf == null) {
-            try {
-                this.readFromDisk();
-                if (!this.md5.equals(md5)) {
-                    this.buf = null;
-                }
-            } catch (IOException e) {
-                this.buf = null;
-            }
         }
+
     }
 
     public String toAbsolutePath (String path) {

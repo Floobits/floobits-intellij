@@ -180,6 +180,7 @@ class FlooHandler {
     public FlooHandler (Project p) {
         this.project = p;
         String project_path = p.getBasePath();
+        Shared.colabDir = project_path;
         PersistentJson persistentJson = new PersistentJson();
 
         for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
@@ -251,14 +252,16 @@ class FlooHandler {
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
+        LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
         Buf buf;
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
             buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             this.bufs.put(buf_id, buf);
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(Utils.absPath(b.path));
-            if (!virtualFile.exists()) {
+            String path = Utils.absPath(b.path);
+            VirtualFile virtualFile = localFileSystem.findFileByPath(path);
+            if (virtualFile == null || !virtualFile.exists()) {
                 this.send_get_buf(buf.id);
                 continue;
             }
