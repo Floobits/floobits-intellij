@@ -612,7 +612,7 @@ class FlooHandler {
         this.conn.write(new FlooSetBuf(b));
     }
 
-    public void un_change (String path, String current) {
+    public void untellij_changed(String path, String current) {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
@@ -623,7 +623,7 @@ class FlooHandler {
         buf.set(current, DigestUtils.md5Hex(current));
     }
 
-    public void un_selection_change(String path, TextRange[] textRanges) {
+    public void untellij_selection_change(String path, TextRange[] textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
@@ -638,7 +638,7 @@ class FlooHandler {
         this.conn.write(new FlooHighlight(buf, ranges, false, false));
     }
 
-    public void un_saved(String path) {
+    public void untellij_saved(String path) {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {

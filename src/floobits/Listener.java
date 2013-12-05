@@ -17,10 +17,6 @@ import com.intellij.openapi.editor.Document;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
 
 
@@ -85,7 +81,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         this.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
-                flooHandler.un_saved(path);
+                flooHandler.untellij_saved(path);
             }
         });
     }
@@ -96,7 +92,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         this.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
-                flooHandler.un_change(path, document.getText());
+                flooHandler.untellij_changed(path, document.getText());
             }
         });
     }
@@ -108,7 +104,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 TextRange[] ranges = event.getNewRanges();
-                flooHandler.un_selection_change(path, ranges);
+                flooHandler.untellij_selection_change(path, ranges);
             }
         });
     }
