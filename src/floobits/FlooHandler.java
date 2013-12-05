@@ -518,9 +518,8 @@ class FlooHandler {
 
                         TextAttributes attributes = new TextAttributes();
                         attributes.setEffectColor(Color.green);
-                        attributes.setEffectType(EffectType.BOXED);
+                        attributes.setEffectType(EffectType.SEARCH_MATCH);
                         attributes.setBackgroundColor(Color.green);
-
                         editor.getMarkupModel().addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
                     }
                 });
