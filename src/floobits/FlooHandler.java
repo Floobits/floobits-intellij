@@ -512,9 +512,22 @@ class FlooHandler {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
                         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-                        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        if (virtualFile == null || !virtualFile.exists()) {
+                            return;
+                        }
+                        Document document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+                        if (document == null) {
+                            return;
+                        }
                         document.createRangeMarker(range.get(0), range.get(1));
-                        Editor editor = EditorFactory.getInstance().createEditor(document);
+
+                        Editor[] editors = EditorFactory.getInstance().getEditors(document);
+                        Editor editor;
+                        if (editors.length > 0) {
+                            editor = editors[0];
+                        } else {
+                            editor = EditorFactory.getInstance().createEditor(document);
+                        }
 
                         TextAttributes attributes = new TextAttributes();
                         attributes.setEffectColor(Color.green);
