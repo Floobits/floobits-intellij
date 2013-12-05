@@ -155,7 +155,6 @@ class FlooPatch implements Serializable {
         this.md5_after = DigestUtils.md5Hex(current);
         this.id = buf.id;
         this.patch = dmp.patch_toText(patches);
-        buf.set(current, this.md5_after);
     }
 }
 
@@ -430,6 +429,7 @@ class FlooHandler {
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
+        b.update();
     }
 
     protected void _on_create_buf (JsonObject obj) {
@@ -493,6 +493,7 @@ class FlooHandler {
         Flog.log("Patched %s", res.path);
 
         b.set(text, res.md5_after);
+        b.update();
     }
 
     protected void _on_highlight (JsonObject obj) {
@@ -584,6 +585,7 @@ class FlooHandler {
             return;
         }
         this.send_patch(current, buf);
+        buf.set(current, DigestUtils.md5Hex(current));
     }
 
     public void un_selection_change(String path, TextRange[] textRanges) {

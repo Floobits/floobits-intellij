@@ -65,7 +65,7 @@ abstract class Buf <T> {
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
-    protected void update () {
+    public void update () {
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
         if (virtualFile == null || !virtualFile.exists()) {
             try {
@@ -132,7 +132,6 @@ class BinaryBuf extends Buf <byte[]> {
     public void set (String s, String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = new String(md5);
-        this.update();
     }
 }
 
@@ -157,6 +156,5 @@ class TextBuf extends Buf <String> {
     public void set (String s, String md5) {
         this.buf = new String(s);
         this.md5 = new String(md5);
-        this.update();
     }
 }
