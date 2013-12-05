@@ -208,6 +208,14 @@ class FlooHighlight implements Serializable {
     }
 }
 
+class FlooSaveBuf implements Serializable {
+    public Integer id;
+    public String name = "saved";
+
+    FlooSaveBuf(Integer id) {
+        this.id = id;
+    }
+}
 interface GetDocument {
     public void if_document(Document document);
 }
@@ -628,6 +636,17 @@ class FlooHandler {
             ranges.add(Arrays.asList(r.getStartOffset(), r.getEndOffset()));
         }
         this.conn.write(new FlooHighlight(buf, ranges, false, false));
+    }
+
+    public void un_saved(String path) {
+        Buf buf = this.get_buf_by_path(path);
+
+        if (buf == null || buf.buf == null) {
+            Flog.info("buf isn't populated yet");
+            return;
+        }
+
+        this.conn.write(new FlooSaveBuf(buf.id));
     }
 
     @SuppressWarnings("unused")
