@@ -388,10 +388,11 @@ class FlooHandler {
                     return true;
                 }
 
-                Buf b = flooHandler.get_buf_by_path(rel_path);
-                if (b == null) {
-                    flooHandler.send_create_buf(vfile);
+                Buf b = flooHandler.get_buf_by_path(path);
+                if (b != null) {
+                    return true;
                 }
+                flooHandler.send_create_buf(vfile);
                 return true;
             }
 
