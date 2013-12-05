@@ -1,15 +1,19 @@
 package floobits;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.roots.ContentIterator;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -20,7 +24,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.editor.markup.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.application.ApplicationManager;
+
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
 // LocalFileSystem.getInstance().findFileByPathIfCached();
@@ -155,6 +165,7 @@ class FlooSetBuf implements Serializable {
     public String buf;
     public String md5;
     public String encoding;
+
     public FlooSetBuf (Buf buf) {
         this.md5 = buf.md5;
         this.id = buf.id;
@@ -184,6 +195,8 @@ class FlooHighlight implements Serializable {
     public Boolean ping = false;
     public Boolean summon = false;
     public List<List<Integer>> ranges;
+    public Integer user_id;
+
     public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean ping, Boolean summon) {
         this.id = buf.id;
         if (ping != null){
@@ -483,7 +496,36 @@ class FlooHandler {
     }
 
     protected void _on_highlight (JsonObject obj) {
+        FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
         Flog.info("Got _on_highlight");
+        Buf buf = this.bufs.get(res.id);
+        if (buf == null || buf.buf == null) {
+            Flog.info("not populated %s", buf.path);
+            return;
+        }
+        final String path = Utils.absPath(buf.path);
+        final List<Integer> range = res.ranges.get(0);
+
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
+                        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        document.createRangeMarker(range.get(0), range.get(1));
+                        Editor editor = EditorFactory.getInstance().createEditor(document);
+
+                        TextAttributes attributes = new TextAttributes();
+                        attributes.setEffectColor(Color.green);
+                        attributes.setEffectType(EffectType.BOXED);
+                        attributes.setBackgroundColor(Color.green);
+
+                        editor.getMarkupModel().addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
+                    }
+                });
+            }
+        });
     }
 
     protected void _on_saved (JsonObject obj) {
