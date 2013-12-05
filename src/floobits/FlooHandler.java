@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.Arrays;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -14,6 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.TextRange;
 import org.apache.commons.codec.digest.DigestUtils;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
@@ -176,6 +178,24 @@ class FlooCreateBuf implements Serializable {
     }
 }
 
+class FlooHighlight implements Serializable {
+    public String name = "highlight";
+    public Integer id;
+    public Boolean ping = false;
+    public Boolean summon = false;
+    public List<List<Integer>> ranges;
+    public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean ping, Boolean summon) {
+        this.id = buf.id;
+        if (ping != null){
+            this.ping = ping;
+        }
+        if (summon != null) {
+            this.summon = summon;
+        }
+        this.ranges = ranges;
+    }
+}
+
 class FlooHandler {
     protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
@@ -283,8 +303,12 @@ class FlooHandler {
         }
     }
 
-    protected Buf get_buf_by_path(String path) {
-        Integer id = this.paths_to_ids.get(path);
+    protected Buf get_buf_by_path(String absPath) {
+        String relPath = Utils.toProjectRelPath(absPath);
+        if (relPath == null) {
+            return null;
+        }
+        Integer id = this.paths_to_ids.get(relPath);
         if (id == null) {
             return null;
         }
@@ -489,7 +513,7 @@ class FlooHandler {
 
     public void send_patch (String current, Buf buf) {
         FlooPatch req = new FlooPatch(current, buf);
-        
+
         this.conn.write(req);
     }
 
@@ -498,19 +522,28 @@ class FlooHandler {
     }
 
     public void un_change (String path, String current) {
-        String relPath = Utils.toProjectRelPath(path);
+        Buf buf = this.get_buf_by_path(path);
 
-        Integer id = this.paths_to_ids.get(relPath);
-        if (id == null) {
-            Flog.info("no buf for id %s", id);
-            return;
-        }
-        Buf buf = bufs.get(id);
-        if (buf.buf == null) {
+        if (buf == null || buf.buf == null) {
             Flog.info("buf isn't populated yet");
             return;
         }
         this.send_patch(current, buf);
+    }
+
+    public void un_selection_change(String path, TextRange[] textRanges) {
+        Buf buf = this.get_buf_by_path(path);
+
+        if (buf == null || buf.buf == null) {
+            Flog.info("buf isn't populated yet");
+            return;
+        }
+        List<List<Integer>> ranges = new ArrayList<List<Integer>>();
+
+        for (TextRange r : textRanges) {
+            ranges.add(Arrays.asList(r.getStartOffset(), r.getEndOffset()));
+        }
+        this.conn.write(new FlooHighlight(buf, ranges, false, false));
     }
 
     @SuppressWarnings("unused")
@@ -524,5 +557,6 @@ class FlooHandler {
         this._on_join(obj);
         this._on_part(obj);
         this._on_disconnect(obj);
+        this._on_create_buf(obj);
     }
 }

@@ -47,7 +47,6 @@ class ProjectFactory {
 
         prj.save();
 
-        //code to create module and add it to project
         final JavaModuleBuilder modulebuilder = new JavaModuleBuilder();
         final ModifiableModuleModel model = ModuleManager.getInstance(prj).getModifiableModel();
         modulebuilder.setName(projectName);

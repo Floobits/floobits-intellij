@@ -10,10 +10,8 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.util.messages.MessageBusConnection;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.psi.*;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.editor.Document;
 
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +21,7 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import org.apache.commons.lang.StringUtils;
+
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener{
@@ -45,6 +43,16 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         em.addSelectionListener(this);
     }
 
+    protected String getPathForDocument(Document d) {
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
+        String path;
+        try {
+            return virtualFile.getCanonicalPath();
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
     @Override
     public void beforeDocumentChange(DocumentEvent event) {
 //        Flog.info(String.format("beforeDocumentChange, %s", event));
@@ -52,26 +60,31 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void documentChanged(DocumentEvent event) {
-//        Flog.info(String.format("documentChanged, %s", event));
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler == null) {
+            return;
+        };
         Document d = event.getDocument();
-        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(d);
-        String path;
-        try {
-            path = virtualFile.getPath();
-        } catch (NullPointerException e) {
+        String path = getPathForDocument(d);
+        if (path == null) {
             return;
         }
-        FlooHandler flooHandler = FlooHandler.getInstance();
-        if (flooHandler != null) {
-            flooHandler.un_change(path, d.getText());
-        }
-//        String old = event.
-//        PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(d);
-
+        flooHandler.un_change(path, d.getText());
     }
 
     @Override
     public void selectionChanged(SelectionEvent event) {
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler == null) {
+            return;
+        }
+        Document d = event.getEditor().getDocument();
+        String path = getPathForDocument(d);
+        if (path == null) {
+            return;
+        }
+        TextRange[] ranges = event.getNewRanges();
+        flooHandler.un_selection_change(path, ranges);
 //        Flog.info(String.format("selectionChanged, %s", event));
     }
 
