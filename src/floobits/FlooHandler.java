@@ -12,8 +12,10 @@ import java.util.Arrays;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.roots.ContentIterator;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -30,6 +32,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
@@ -216,8 +219,38 @@ class FlooSaveBuf implements Serializable {
         this.id = id;
     }
 }
-interface GetDocument {
-    public void if_document(Document document);
+interface _DocumentFetcher {
+    public void on_document(Document document);
+}
+
+abstract class DocumentFetcher implements _DocumentFetcher {
+    Boolean make_document = false;
+
+    DocumentFetcher(Boolean make_document) {
+        this.make_document = make_document;
+    }
+
+    public void fetch(String path) {
+        path = Utils.absPath(path);
+
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
+        if (virtualFile == null || !virtualFile.exists()) {
+            return;
+        }
+        Document document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        if (document != null) {
+            this.on_document(document);
+            return;
+        }
+        if (this.make_document) {
+            document = FileDocumentManager.getInstance().getDocument(virtualFile);
+        }
+
+        if (document != null) {
+            this.on_document(document);
+        }
+    }
+
 }
 
 class FlooHandler {
@@ -225,6 +258,7 @@ class FlooHandler {
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Project project;
     protected Boolean stomp = false;
+    public Boolean stalking = false;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -507,24 +541,16 @@ class FlooHandler {
         b.update();
     }
 
-    public void get_document(Integer id, GetDocument getDocument) {
+    public void get_document(Integer id, DocumentFetcher documentFetcher) {
         Buf buf = this.bufs.get(id);
         if (buf == null || buf.buf == null ) {
             return;
         }
-        this.get_document(buf.path, getDocument);
+        this.get_document(buf.path, documentFetcher);
     }
-    public void get_document(String path, GetDocument getDocument) {
-        path = Utils.absPath(path);
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-        if (virtualFile == null || !virtualFile.exists()) {
-            return;
-        }
-        Document document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-        if (document == null){
-            return;
-        }
-        getDocument.if_document(document);
+
+    public void get_document(String path, DocumentFetcher documentFetcher) {
+        documentFetcher.fetch(path);
     }
 
     protected void _on_highlight (JsonObject obj) {
@@ -544,16 +570,20 @@ class FlooHandler {
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
-                        flooHandler.get_document(path, new GetDocument() {
+                        flooHandler.get_document(path, new DocumentFetcher(true) {
                             @Override
-                            public void if_document(Document document) {
+                            public void on_document(Document document) {
+                                final FileEditorManager manager = FileEditorManager.getInstance(project);
+                                VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+                                if (flooHandler.stalking) {
+                                    if (!manager.isFileOpen(virtualFile)) {
+                                        manager.openFile(virtualFile, true);
+                                    }
+                                }
                                 document.createRangeMarker(range.get(0), range.get(1));
 
-                                Editor[] editors = EditorFactory.getInstance().getEditors(document);
-                                Editor editor;
-                                if (editors.length > 0) {
-                                    editor = editors[0];
-                                } else {
+                                Editor editor = manager.getSelectedTextEditor();
+                                if (editor == null) {
                                     editor = EditorFactory.getInstance().createEditor(document);
                                 }
 
@@ -562,6 +592,10 @@ class FlooHandler {
                                 attributes.setEffectType(EffectType.SEARCH_MATCH);
                                 attributes.setBackgroundColor(Color.green);
                                 editor.getMarkupModel().addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
+                                if (flooHandler.stalking) {
+                                    CaretModel caretModel = editor.getCaretModel();
+                                    caretModel.moveToOffset(range.get(0));
+                                }
                             }
                         });
                     }
@@ -572,9 +606,9 @@ class FlooHandler {
 
     protected void _on_saved (JsonObject obj) {
         Integer id = obj.get("id").getAsInt();
-        this.get_document(id, new GetDocument() {
+        this.get_document(id, new DocumentFetcher(false) {
             @Override
-            public void if_document(Document document) {
+            public void on_document(Document document) {
                 FileDocumentManager.getInstance().saveDocument(document);
             }
         });
@@ -616,7 +650,7 @@ class FlooHandler {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
-            Flog.info("buf isn't populated yet");
+            Flog.info("buf isn't populated yet %s", path);
             return;
         }
         this.send_patch(current, buf);
@@ -627,7 +661,7 @@ class FlooHandler {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
-            Flog.info("buf isn't populated yet");
+            Flog.info("buf isn't populated yet %s", path);
             return;
         }
         List<List<Integer>> ranges = new ArrayList<List<Integer>>();
@@ -642,7 +676,7 @@ class FlooHandler {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
-            Flog.info("buf isn't populated yet");
+            Flog.info("buf isn't populated yet %s", path);
             return;
         }
 
