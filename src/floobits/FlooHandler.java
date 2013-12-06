@@ -239,6 +239,7 @@ abstract class DocumentFetcher {
 
                         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
                         if (virtualFile == null || !virtualFile.exists()) {
+                            Flog.info("no virtual file for %s", path);
                             return;
                         }
                         Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
@@ -247,6 +248,7 @@ abstract class DocumentFetcher {
                         }
 
                         if (d == null) {
+                            Flog.info("could not make document for %s", path);
                             return;
                         }
                         on_document(d);
