@@ -15,12 +15,21 @@ public class OkCancelDialog extends DialogWrapper {
         return jPanel;
     }
 
-    protected OkCancelDialog(String title, boolean canBeParent) {
-        super(canBeParent);
+    protected OkCancelDialog(String title, String pregunta) {
+        super(true);
         jPanel = new JPanel();
         init();
         DialogWrapperPeer peer = this.getPeer();
         peer.setTitle(title);
+
+        JLabel body = new JLabel();
+        body.setText(String.format("<html><h2>%s</h2></html>", pregunta));
+        jPanel.add(body);
+    }
+
+    @Override
+    public void doCancelAction() {
+        super.doCancelAction();
     }
 
     @Override

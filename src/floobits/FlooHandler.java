@@ -384,7 +384,7 @@ class FlooHandler {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                OkCancelDialog okCancelDialog = new OkCancelDialog("stuff", true);
+                OkCancelDialog okCancelDialog = new OkCancelDialog("do stuff?", "should i do it");
                 okCancelDialog.createCenterPanel();
                 okCancelDialog.show();
             }
