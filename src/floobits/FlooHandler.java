@@ -219,16 +219,15 @@ class FlooSaveBuf implements Serializable {
         this.id = id;
     }
 }
-interface _DocumentFetcher {
-    public void on_document(Document document);
-}
 
-abstract class DocumentFetcher implements _DocumentFetcher {
+abstract class DocumentFetcher {
     Boolean make_document = false;
 
     DocumentFetcher(Boolean make_document) {
         this.make_document = make_document;
     }
+
+    abstract public void on_document(Document document);
 
     public void fetch(String path) {
         path = Utils.absPath(path);

@@ -19,18 +19,13 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.vfs.VirtualFileManager;
 
-
-interface _GetPath {
-    public void if_path(String path, FlooHandler flooHandler);
-}
-
-abstract class GetPath implements  _GetPath {
+abstract class GetPath  {
     public Document document;
+    abstract public void if_path(String path, FlooHandler flooHandler);
     public GetPath (Document document) {
         this.document = document;
     }
 }
-
 
 // see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener{
