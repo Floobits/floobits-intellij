@@ -15,8 +15,8 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.EffectType;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.ui.DialogWrapperPeer;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.project.Project;
@@ -27,7 +27,6 @@ import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.editor.markup.*;
-import org.apache.commons.codec.digest.DigestUtils;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.Editor;
@@ -382,6 +381,14 @@ class FlooHandler {
 
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                OkCancelDialog okCancelDialog = new OkCancelDialog("stuff", true);
+                okCancelDialog.createCenterPanel();
+                okCancelDialog.show();
+            }
+        });
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
