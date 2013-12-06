@@ -236,20 +236,27 @@ abstract class DocumentFetcher {
         if (virtualFile == null || !virtualFile.exists()) {
             return;
         }
-        Document document = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-        if (document != null) {
-            this.on_document(document);
+        Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        if (d == null && this.make_document) {
+            d = FileDocumentManager.getInstance().getDocument(virtualFile);
+        }
+
+        if (d == null) {
             return;
         }
-        if (this.make_document) {
-            document = FileDocumentManager.getInstance().getDocument(virtualFile);
-        }
+        final Document fuck_you_java = d;
 
-        if (document != null) {
-            this.on_document(document);
-        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        on_document(fuck_you_java);
+                    }
+                });
+            }
+        });
     }
-
 }
 
 class FlooHandler {
@@ -257,7 +264,8 @@ class FlooHandler {
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Project project;
     protected Boolean stomp = false;
-    public Boolean stalking = false;
+    protected HashMap<Integer, HashMap<Integer, RangeHighlighter>> highlights = new HashMap<Integer, HashMap<Integer, RangeHighlighter>>();
+    public Boolean stalking = true;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -553,7 +561,7 @@ class FlooHandler {
     }
 
     protected void _on_highlight (JsonObject obj) {
-        FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
+        final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
         Flog.info("Got _on_highlight");
         Buf buf = this.bufs.get(res.id);
         if (buf == null || buf.buf == null) {
@@ -564,41 +572,48 @@ class FlooHandler {
         final List<Integer> range = res.ranges.get(0);
         final String path = new String(buf.path);
 
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+       
+        flooHandler.get_document(path, new DocumentFetcher(true) {
             @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        flooHandler.get_document(path, new DocumentFetcher(true) {
-                            @Override
-                            public void on_document(Document document) {
-                                final FileEditorManager manager = FileEditorManager.getInstance(project);
-                                VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                                if (flooHandler.stalking) {
-                                    if (!manager.isFileOpen(virtualFile)) {
-                                        manager.openFile(virtualFile, true);
-                                    }
-                                }
-                                document.createRangeMarker(range.get(0), range.get(1));
-
-                                Editor editor = manager.getSelectedTextEditor();
-                                if (editor == null) {
-                                    editor = EditorFactory.getInstance().createEditor(document);
-                                }
-
-                                TextAttributes attributes = new TextAttributes();
-                                attributes.setEffectColor(Color.green);
-                                attributes.setEffectType(EffectType.SEARCH_MATCH);
-                                attributes.setBackgroundColor(Color.green);
-                                editor.getMarkupModel().addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
-                                if (flooHandler.stalking) {
-                                    CaretModel caretModel = editor.getCaretModel();
-                                    caretModel.moveToOffset(range.get(0));
-                                }
-                            }
-                        });
+            public void on_document(Document document) {
+                final FileEditorManager manager = FileEditorManager.getInstance(project);
+                VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+                if (flooHandler.stalking) {
+                    if (!manager.isFileOpen(virtualFile)) {
+                        manager.openFile(virtualFile, true);
                     }
-                });
+                }
+                document.createRangeMarker(range.get(0), range.get(1));
+
+                Editor editor = manager.getSelectedTextEditor();
+                if (editor == null) {
+                    editor = EditorFactory.getInstance().createEditor(document);
+                }
+
+                TextAttributes attributes = new TextAttributes();
+                attributes.setEffectColor(Color.green);
+                attributes.setEffectType(EffectType.SEARCH_MATCH);
+                attributes.setBackgroundColor(Color.green);
+
+                HashMap<Integer, RangeHighlighter> integerRangeHighlighterHashMap = flooHandler.highlights.get(res.user_id);
+                MarkupModel markupModel = editor.getMarkupModel();
+                if (integerRangeHighlighterHashMap != null) {
+                    RangeHighlighter rangeHighlighter = integerRangeHighlighterHashMap.get(res.id);
+                    if (rangeHighlighter != null) {
+                        markupModel.removeHighlighter(rangeHighlighter);
+                        integerRangeHighlighterHashMap.remove(res.id);
+                    }
+                } else {
+                    integerRangeHighlighterHashMap = new HashMap<Integer, RangeHighlighter>();
+                    flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                }
+                RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
+                if (flooHandler.stalking) {
+                    CaretModel caretModel = editor.getCaretModel();
+                    caretModel.moveToOffset(range.get(0));
+                }
+                integerRangeHighlighterHashMap.put(res.id, rangeHighlighter);
+
             }
         });
     }
