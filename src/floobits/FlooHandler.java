@@ -576,15 +576,16 @@ class FlooHandler {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 if (flooHandler.stalking) {
-                    if (!manager.isFileOpen(virtualFile)) {
-                        manager.openFile(virtualFile, true);
-                    }
+                    manager.openFile(virtualFile, true, true);
                 }
-                document.createRangeMarker(range.get(0), range.get(1));
+//                document.createRangeMarker(range.get(0), range.get(1));
 
-                Editor editor = manager.getSelectedTextEditor();
-                if (editor == null) {
-                    editor = EditorFactory.getInstance().createEditor(document);
+                Editor editor;
+                Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+                if (editors.length > 0) {
+                    editor = editors[0];
+                } else {
+                    editor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
                 }
 
                 TextAttributes attributes = new TextAttributes();
