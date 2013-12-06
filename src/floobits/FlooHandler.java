@@ -548,9 +548,15 @@ class FlooHandler {
 
     public void get_document(Integer id, DocumentFetcher documentFetcher) {
         Buf buf = this.bufs.get(id);
-        if (buf == null || buf.buf == null ) {
+        if (buf == null) {
+            Flog.info("Buf %d is not populated yet", id);
+            return;
+        } 
+        if (buf.buf == null) {
+            Flog.info("Buf %s is not populated yet", buf.path);
             return;
         }
+
         this.get_document(buf.path, documentFetcher);
     }
 
@@ -560,18 +566,9 @@ class FlooHandler {
 
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
-        Flog.info("Got _on_highlight");
-        Buf buf = this.bufs.get(res.id);
-        if (buf == null || buf.buf == null) {
-            Flog.info("not populated %s", buf.path);
-            return;
-        }
-
         final List<Integer> range = res.ranges.get(0);
-        final String path = new String(buf.path);
 
-       
-        flooHandler.get_document(path, new DocumentFetcher(true) {
+        flooHandler.get_document(res.id, new DocumentFetcher(true) {
             @Override
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
