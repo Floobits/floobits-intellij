@@ -621,7 +621,7 @@ class FlooHandler {
                 RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
                 if (flooHandler.stalking) {
                     CaretModel caretModel = editor.getCaretModel();
-                    caretModel.moveToOffset(range.get(0));
+                    caretModel.moveToOffset(start);
                 }
                 integerRangeHighlighterHashMap.put(res.id, rangeHighlighter);
             }
