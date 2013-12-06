@@ -265,7 +265,7 @@ class FlooHandler {
     protected Project project;
     protected Boolean stomp = false;
     protected HashMap<Integer, HashMap<Integer, RangeHighlighter>> highlights = new HashMap<Integer, HashMap<Integer, RangeHighlighter>>();
-    public Boolean stalking = true;
+    public Boolean stalking = false;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();

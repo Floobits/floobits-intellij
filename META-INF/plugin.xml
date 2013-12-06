@@ -46,6 +46,10 @@
           <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt K"/>
       </action>
+      <action id="FollowMode" class="floobits.FollowMode" text="FollowMode" description="Toogle Follow Mode">
+          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
