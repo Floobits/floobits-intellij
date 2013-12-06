@@ -32,6 +32,7 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import org.jboss.netty.channel.SucceededChannelFuture;
 
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
@@ -381,20 +382,14 @@ class FlooHandler {
 
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                OkCancelDialog okCancelDialog = new OkCancelDialog("do stuff?", "should i do it");
-                okCancelDialog.createCenterPanel();
-                okCancelDialog.show();
-            }
-        });
+
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
         LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
         Buf buf;
         byte [] bytes;
+        HashMap<Buf, String> conflicts = new HashMap<Buf, String>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
@@ -412,6 +407,7 @@ class FlooHandler {
                 bytes = virtualFile.contentsToByteArray();
             } catch (IOException e) {
                 Flog.log("Can't read %s", virtualFile.getCanonicalPath());
+                this.send_get_buf(buf.id);
                 continue;
             }
 
@@ -425,12 +421,7 @@ class FlooHandler {
 
             String md5 = DigestUtils.md5Hex(contents);
             if (!md5.equals(buf.md5)) {
-                if (this.stomp) {
-                    buf.buf = contents;
-                    this.send_set_buf(buf);
-                } else {
-                    this.send_get_buf(buf.id);
-                }
+                conflicts.put(buf, contents);
                 continue;
             }
             buf.buf = contents;
@@ -440,34 +431,51 @@ class FlooHandler {
             return;
         }
 
-        ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
-            public boolean processFile(final VirtualFile vfile) {
-                boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
-                        !(vfile.isDirectory() || vfile.isSpecialFile() || vfile.isSymLink());
+        OkCancelDialog.build("Conflicts", "Keep local files?", new RunLater(conflicts) {
+            @Override
+            void run(Object... objects) {
+                Boolean stomp = (Boolean)objects[0];
+                HashMap<Buf, String> bufs = (HashMap<Buf, String>)data;
+                for (Map.Entry<Buf, String> entry : bufs.entrySet()) {
+                    Buf buf = entry.getKey();
+                    if (stomp) {
+                        buf.buf = entry.getValue();
+                        flooHandler.send_set_buf(buf);
+                    } else {
+                        flooHandler.send_get_buf(buf.id);
+                    }
+                }
+                ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
+                    public boolean processFile(final VirtualFile vfile) {
+                        boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
+                                !(vfile.isDirectory() || vfile.isSpecialFile() || vfile.isSymLink());
 
-                if (!we_care) {
-                    return true;
-                }
-                String path = vfile.getPath();
-                if (!Utils.isShared(path)) {
-                    Flog.info("Thing isn't shared: %s", path);
-                    return true;
-                }
-                String rel_path = Utils.toProjectRelPath(path);
-                if (rel_path.equals(".idea/workspace.xml")) {
-                    Flog.info("Not sharing the workspace.xml file");
-                    return true;
-                }
+                        if (!we_care) {
+                            return true;
+                        }
+                        String path = vfile.getPath();
+                        if (!Utils.isShared(path)) {
+                            Flog.info("Thing isn't shared: %s", path);
+                            return true;
+                        }
+                        String rel_path = Utils.toProjectRelPath(path);
+                        if (rel_path.equals(".idea/workspace.xml")) {
+                            Flog.info("Not sharing the workspace.xml file");
+                            return true;
+                        }
 
-                Buf b = flooHandler.get_buf_by_path(path);
-                if (b != null) {
-                    return true;
-                }
-                flooHandler.send_create_buf(vfile);
-                return true;
+                        Buf b = flooHandler.get_buf_by_path(path);
+                        if (b != null) {
+                            return true;
+                        }
+                        flooHandler.send_create_buf(vfile);
+                        return true;
+                    }
+
+                });
             }
-
         });
+
     }
 
     public void send_create_buf(VirtualFile virtualFile) {
