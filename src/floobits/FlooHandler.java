@@ -380,6 +380,36 @@ class FlooHandler {
         return this.bufs.get(id);
     }
 
+    protected void upload() {
+        ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
+            public boolean processFile(final VirtualFile virtualFile) {
+                boolean we_care = virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
+                        !(virtualFile.isDirectory() || virtualFile.isSpecialFile() || virtualFile.isSymLink());
+
+                if (!we_care) {
+                    return true;
+                }
+                String path = virtualFile.getPath();
+                if (!Utils.isShared(path)) {
+                    Flog.info("Thing isn't shared: %s", path);
+                    return true;
+                }
+                String rel_path = Utils.toProjectRelPath(path);
+                if (rel_path.equals(".idea/workspace.xml")) {
+                    Flog.info("Not sharing the workspace.xml file");
+                    return true;
+                }
+
+                Buf b = flooHandler.get_buf_by_path(path);
+                if (b != null) {
+                    return true;
+                }
+                flooHandler.send_create_buf(virtualFile);
+                return true;
+            }
+        });
+    }
+
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
 
@@ -427,52 +457,36 @@ class FlooHandler {
             buf.buf = contents;
         }
 
-        if (!this.stomp) {
+        if (conflicts.size() == 0) {
+            this.upload();
             return;
         }
+        String dialog;
+        if (conflicts.size() > 10) {
+            dialog = "<p>%d files are different.  Do you want to overwrite them (OK)?</p> ";
+         } else {
+            dialog = "<p>The following file(s) are different.  Do you want to overwrite them (OK)?</p><ul>";
+            for (Map.Entry<Buf, String> entry : conflicts.entrySet()) {
+                dialog += String.format("<li>%s</li>", entry.getKey().path);
+            }
+            dialog += "</ul>";
+        }
 
-        OkCancelDialog.build("Conflicts", "Keep local files?", new RunLater(conflicts) {
+        OkCancelDialog.build("Resolve Conflicts", dialog, new RunLater(conflicts) {
             @Override
             void run(Object... objects) {
                 Boolean stomp = (Boolean)objects[0];
-                HashMap<Buf, String> bufs = (HashMap<Buf, String>)data;
-                for (Map.Entry<Buf, String> entry : bufs.entrySet()) {
+                HashMap<Buf, String> bufStringHashMap = (HashMap<Buf, String>)data;
+                for (Map.Entry<Buf, String> entry : bufStringHashMap.entrySet()) {
                     Buf buf = entry.getKey();
                     if (stomp) {
+                        flooHandler.send_get_buf(buf.id);
+                    } else {
                         buf.buf = entry.getValue();
                         flooHandler.send_set_buf(buf);
-                    } else {
-                        flooHandler.send_get_buf(buf.id);
                     }
                 }
-                ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
-                    public boolean processFile(final VirtualFile vfile) {
-                        boolean we_care = vfile.exists() && vfile.isInLocalFileSystem() &&
-                                !(vfile.isDirectory() || vfile.isSpecialFile() || vfile.isSymLink());
-
-                        if (!we_care) {
-                            return true;
-                        }
-                        String path = vfile.getPath();
-                        if (!Utils.isShared(path)) {
-                            Flog.info("Thing isn't shared: %s", path);
-                            return true;
-                        }
-                        String rel_path = Utils.toProjectRelPath(path);
-                        if (rel_path.equals(".idea/workspace.xml")) {
-                            Flog.info("Not sharing the workspace.xml file");
-                            return true;
-                        }
-
-                        Buf b = flooHandler.get_buf_by_path(path);
-                        if (b != null) {
-                            return true;
-                        }
-                        flooHandler.send_create_buf(vfile);
-                        return true;
-                    }
-
-                });
+                flooHandler.upload();
             }
         });
 
