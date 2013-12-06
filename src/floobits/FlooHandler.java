@@ -605,13 +605,28 @@ class FlooHandler {
                     integerRangeHighlighterHashMap = new HashMap<Integer, RangeHighlighter>();
                     flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
                 }
-                RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(range.get(0), range.get(1), HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
+                int textLength = document.getTextLength();
+                if (textLength == 0) {
+                    return;
+                }
+                int start = range.get(0);
+                int end = range.get(1);
+                if (start == end) {
+                    end += 1;
+                }
+                if (end > textLength) {
+                    end = textLength;
+                }
+                if (start >= textLength) {
+                    start = textLength - 1;
+                }
+
+                RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
                 if (flooHandler.stalking) {
                     CaretModel caretModel = editor.getCaretModel();
                     caretModel.moveToOffset(range.get(0));
                 }
                 integerRangeHighlighterHashMap.put(res.id, rangeHighlighter);
-
             }
         });
     }
