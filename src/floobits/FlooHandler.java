@@ -229,29 +229,27 @@ abstract class DocumentFetcher {
 
     abstract public void on_document(Document document);
 
-    public void fetch(String path) {
-        path = Utils.absPath(path);
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-        if (virtualFile == null || !virtualFile.exists()) {
-            return;
-        }
-        Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-        if (d == null && this.make_document) {
-            d = FileDocumentManager.getInstance().getDocument(virtualFile);
-        }
-
-        if (d == null) {
-            return;
-        }
-        final Document fuck_you_java = d;
-
+    public void fetch(final String path) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
-                        on_document(fuck_you_java);
+                        String absPath = Utils.absPath(path);
+
+                        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+                        if (virtualFile == null || !virtualFile.exists()) {
+                            return;
+                        }
+                        Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+                        if (d == null && make_document) {
+                            d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        }
+
+                        if (d == null) {
+                            return;
+                        }
+                        on_document(d);
                     }
                 });
             }
