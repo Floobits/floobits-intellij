@@ -303,7 +303,7 @@ class FlooHandler {
 
         if (this.project == null) {
             try {
-                ProjectManager.getInstance().loadAndOpenProject(Shared.colabDir);
+                this.project = ProjectManager.getInstance().loadAndOpenProject(Shared.colabDir);
             } catch (Exception e) {
                 Flog.error(e);
             }
