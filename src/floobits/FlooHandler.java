@@ -341,6 +341,17 @@ class FlooHandler {
         this.should_upload = true;
         String project_path = p.getBasePath();
         Shared.colabDir = project_path;
+        FlooUrl flooUrl = DotFloo.read();
+
+        if (flooUrl != null ) {
+            Integer code = API.getWorkspace(url.owner, url.workspace);
+            if (code > 0 && code < 400) {
+                this.conn = new FlooConn(this.url.host, this);
+                this.conn.start();
+                return;
+            }
+        }
+
         PersistentJson persistentJson = new PersistentJson();
         for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
             Map<String, Workspace> workspaces = i.getValue();
@@ -495,14 +506,7 @@ class FlooHandler {
         this.perms = ri.perms;
         LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
 
-        try {
-            File flooPath = new File(FilenameUtils.concat(Shared.colabDir, ".floo"));
-            String flooFile = String.format("{\n    \"url\": \"%s\"\n}", this.url.toString());
-            FileUtils.write(flooPath, flooFile, "UTF-8");
-        } catch (Exception e) {
-            Flog.error(e);
-        }
-        // add to persistent.json
+        DotFloo.write(this.url.toString());
 
         Buf buf;
         byte [] bytes;
