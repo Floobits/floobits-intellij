@@ -322,7 +322,33 @@ class FlooHandler {
         }
         Settings settings = new Settings();
         String owner = settings.get("username");
-        String name = new File(project_path).getName();
+        final String name = new File(project_path).getName();
+        List<String> orgs;
+
+        try {
+            orgs = API.getOrgsCanAdmin();
+        } catch (Exception e) {
+            // TODO
+            return;
+        }
+        if (orgs.size() == 0) {
+            Integer code = API.createWorkspace(owner, name);
+            createWorkspace(owner, name);
+            return;
+        }
+
+        orgs.add(0, owner);
+        SelectOwner.build(orgs, new RunLater(null) {
+            @Override
+            void run(Object... objects) {
+                String owner = (String) objects[0];
+                Integer code = API.createWorkspace(owner, name);
+                createWorkspace(owner, name);
+            }
+        });
+    }
+
+    protected void createWorkspace(String owner, String name) {
         Integer code = API.createWorkspace(owner, name);
         switch (code) {
             case 409:
@@ -701,9 +727,6 @@ class FlooHandler {
 
     public void send_summon (String current, Integer offset) {
         Buf buf = this.get_buf_by_path(current);
-        if (buf == null || buf.buf == null) {
-            return;
-        }
         List<List<Integer>> ranges = new ArrayList<List<Integer>>();
         ranges.add(Arrays.asList(offset, offset));
         this.conn.write(new FlooHighlight(buf, ranges, true));

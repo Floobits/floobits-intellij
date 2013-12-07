@@ -37,7 +37,7 @@ public class OkCancelDialog extends DialogWrapper {
         peer.setTitle(title);
 
         JLabel jLabel = new JLabel();
-        jLabel.setText(String.format("<html>%s</html>", body));
+        jLabel.setText(String.format("<html><h2>%s</h2></html>", body));
         jPanel.add(jLabel);
     }
 

@@ -1,6 +1,10 @@
 package floobits;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -16,34 +20,37 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 class Request implements Serializable {
     public String owner;
     public String name;
 
-    public Request(String owner, String name){
+    public Request (String owner, String name) {
         this.owner = owner;
         this.name = name;
     }
 }
-// https://floobits.com/awreece/timothy-interview
+
 public class API {
-    static public Integer getWorkspace(String owner, String workspace) {
-		String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
+    static public Integer getWorkspace (String owner, String workspace) {
+        String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
         final GetMethod method = new GetMethod(url);
-        try{
+        try {
             return apiRequest(method, url);
         } catch (Exception e) {
             Flog.error(e);
             return -1;
         }
-	}
-    static public Integer createWorkspace(String owner, String workspace) {
+    }
+
+    static public Integer createWorkspace (String owner, String workspace) {
         final String url = String.format("https://%s/api/workspace/", Shared.defaultHost);
         final PostMethod method = new PostMethod(url);
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
-        try{
+        try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             return apiRequest(method, url);
         } catch (Exception e) {
@@ -52,29 +59,52 @@ public class API {
         }
     }
 
-	static public Integer apiRequest(HttpMethod method, String url) throws Exception{
-		final HttpClient client = new HttpClient();
-		client.setTimeout(3000);
-		client.setConnectionTimeout(3000);
-		try {
+    static public Integer apiRequest (HttpMethod method, String url) throws Exception {
+        final HttpClient client = new HttpClient();
+        client.setTimeout(3000);
+        client.setConnectionTimeout(3000);
+        try {
             Settings settings = new Settings();
             client.getParams().setAuthenticationPreemptive(true);
             Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
             client.getState().setCredentials(AuthScope.ANY, credentials);
             return client.executeMethod(method);
-		} catch (UnknownHostException e) {
-		 Flog.error(e);
-		 return -1;
-		}
-		catch (IOException e) {
-		 Flog.error(e);
-		 return -1;
-		}
-		catch (IllegalArgumentException e) {
-		 Flog.error(e);
-		 return -1;
-		}
-	}
+        } catch (UnknownHostException e) {
+            Flog.error(e);
+            return -1;
+        } catch (IOException e) {
+            Flog.error(e);
+            return -1;
+        } catch (IllegalArgumentException e) {
+            Flog.error(e);
+            return -1;
+        }
+    }
+
+    static public List<String> getOrgsCanAdmin () throws Exception {
+        final String url = String.format("https://%s/api/orgs/can/admin/", Shared.defaultHost);
+        final GetMethod method = new GetMethod(url);
+        List<String> orgs = new ArrayList<String>();
+
+        try {
+            int code = apiRequest(method, url);
+            if (code < 0 || code >= 400) {
+                return orgs;
+            }
+        } catch (Exception e) {
+            Flog.error(e);
+            return orgs;
+        }
+
+        String response = method.getResponseBodyAsString();
+        JsonArray orgs_json = new JsonParser().parse(response).getAsJsonArray();
+
+        for (int i = 0; i < orgs_json.size(); i++) {
+            String org = orgs_json.get(i).getAsString();
+            orgs.add(org);
+        }
+        return orgs;
+    }
 
 // def get_basic_auth():
 //     # TODO: use api_key if it exists
