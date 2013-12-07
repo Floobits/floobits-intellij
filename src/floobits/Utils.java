@@ -8,14 +8,20 @@ import org.apache.commons.io.FilenameUtils;
 import floobits.Flog;
 
 class Utils {
+    public static Boolean isSamePath (String p1, String p2) {
+        p1 = FilenameUtils.normalizeNoEndSeparator(p1);
+        p2 = FilenameUtils.normalizeNoEndSeparator(p2);
+        return FilenameUtils.equalsNormalizedOnSystem(p1, p2);
+    }
 
-    public static String absPath(String path) {
+    public static String absPath (String path) {
         return FilenameUtils.concat(Shared.colabDir, path);
     }
 
     public static String unFuckPath (String path) {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }
+
     public static Boolean isShared (String path) {
     	try {
 	        return !getRelativePath(unFuckPath(path), Shared.colabDir, "/").contains("..");
@@ -25,9 +31,11 @@ class Utils {
             return false;
         }
     }
-    public static String toProjectRelPath(String path) {
+
+    public static String toProjectRelPath (String path) {
         return getRelativePath(path, Shared.colabDir, "/");
     }
+
     /** 
      * see http://stackoverflow.com/questions/204784/how-to-construct-a-relative-path-in-java-from-two-absolute-paths-or-urls/3054692#3054692
      * Get the relative path from one file to another, specifying the directory separator. 
@@ -39,8 +47,7 @@ class Utils {
      * @param pathSeparator directory separator. The platform default is not assumed so that we can test Unix behaviour when running on Windows (for example)
      * @return
      */
-    
-    public static String getRelativePath(String targetPath, String basePath, String pathSeparator) {
+    public static String getRelativePath (String targetPath, String basePath, String pathSeparator) {
 
         // Normalize the paths
         String normalizedTargetPath = FilenameUtils.normalizeNoEndSeparator(targetPath);
@@ -115,9 +122,8 @@ class Utils {
         return relative.toString();
     }
 
-
     static class PathResolutionException extends RuntimeException {
-        PathResolutionException(String msg) {
+        PathResolutionException (String msg) {
             super(msg);
         }
     }    
