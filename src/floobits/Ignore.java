@@ -2,8 +2,6 @@ package floobits;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +17,7 @@ class Ignore {
 
     //TODO: grab global git ignores:
     //gitconfig_file = popen("git config -z --get core.excludesfile", "r");
-    static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor"};
+    static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
     protected File path;
@@ -102,6 +100,7 @@ class Ignore {
                 String file_name =  relPathFile.getName();
                 if (pattern.startsWith("/")) {
                     if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
+                        Flog.log("Ignoring %s because %s", path, pattern);
                         return true;
                     }
                     continue;
@@ -110,9 +109,11 @@ class Ignore {
                     pattern = pattern.substring(0, pattern.length() - 1);
                 }
                 if (FilenameUtils.wildcardMatch(file_name, pattern)) {
+                    Flog.log("Ignoring %s because %s", path, pattern);
                     return true;
                 }
                 if (FilenameUtils.wildcardMatch(relPath, pattern)) {
+                    Flog.log("Ignoring %s because %s", path, pattern);
                     return true;
                 }
             }

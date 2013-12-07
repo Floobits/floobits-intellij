@@ -480,6 +480,7 @@ class FlooHandler {
 
         Buf b = flooHandler.get_buf_by_path(path);
         if (b != null) {
+            Flog.info("Already in workspace: %s", path);
             return true;
         }
         flooHandler.send_create_buf(virtualFile);
