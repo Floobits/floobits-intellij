@@ -15,8 +15,10 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.ui.DialogWrapperPeer;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.project.Project;
@@ -32,6 +34,7 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.ProjectUtil;
 import org.jboss.netty.channel.SucceededChannelFuture;
 
 // NOTES:
@@ -289,6 +292,33 @@ class FlooHandler {
             // TODO: colab dir isn't in persistent.json. ask user for dir to save to
             return;
         }
+
+        Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
+        for (Project project : openProjects) {
+            if (Shared.colabDir.equals(project.getBasePath())) {
+                this.project = project;
+                break;
+            }
+        }
+
+        if (this.project == null) {
+            try {
+                ProjectManager.getInstance().loadAndOpenProject(Shared.colabDir);
+            } catch (Exception e) {
+                Flog.error(e);
+            }
+        }
+
+        if (this.project == null) {
+            this.project = ProjectManager.getInstance().createProject(this.url.workspace, Shared.colabDir);
+            try {
+                ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
+            }catch (Exception e) {
+                Flog.error(e);
+                return;
+            }
+        }
+
         this.conn = new FlooConn(f.host, this);
         this.conn.start();
     }
@@ -441,6 +471,16 @@ class FlooHandler {
         this.users = ri.users;
         this.perms = ri.perms;
         LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
+        
+        try {
+            File flooPath = new File(FilenameUtils.concat(Shared.colabDir, ".floo"));
+            String flooFile = String.format("{\n    \"url\": \"%s\"\n}", this.url.toString());
+            FileUtils.write(flooPath, flooFile, "UTF-8");
+        } catch (Exception e) {
+            Flog.error(e);
+        }
+        // add to persistent.json
+
         Buf buf;
         byte [] bytes;
         HashMap<Buf, String> conflicts = new HashMap<Buf, String>();
