@@ -97,11 +97,12 @@ public class API {
         }
 
         String response = method.getResponseBodyAsString();
-        JsonArray orgs_json = new JsonParser().parse(response).getAsJsonArray();
+        JsonArray orgsJson = new JsonParser().parse(response).getAsJsonArray();
 
-        for (int i = 0; i < orgs_json.size(); i++) {
-            String org = orgs_json.get(i).getAsString();
-            orgs.add(org);
+        for (int i = 0; i < orgsJson.size(); i++) {
+            JsonObject org = orgsJson.get(i).getAsJsonObject();
+            String orgName = org.get("name").getAsString();
+            orgs.add(orgName);
         }
         return orgs;
     }

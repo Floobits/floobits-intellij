@@ -2,7 +2,6 @@ package floobits;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.DialogWrapperPeer;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.ActionEvent;
@@ -49,7 +48,7 @@ public class SelectOwner extends DialogWrapper {
         });
 
         JLabel jLabel = new JLabel();
-        jLabel.setText("<html><h2>Select the owner</h2></html>");
+        jLabel.setText("Select the owner for the workspace:");
         jPanel.add(jLabel);
         jPanel.add(orgList);
     }
