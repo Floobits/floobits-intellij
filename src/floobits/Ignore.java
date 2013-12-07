@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-
 class Ignore {
     static String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
     // TODO: make this configurable
@@ -118,6 +117,5 @@ class Ignore {
             return parent.isIgnored(path);
         }
         return false;
-
     }
 }
