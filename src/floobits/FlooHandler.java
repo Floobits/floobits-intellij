@@ -1,40 +1,46 @@
 package floobits;
 
-import java.awt.*;
-import java.io.*;
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Arrays;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.markup.EffectType;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.ui.DialogWrapperPeer;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.TextRange;
-import org.apache.commons.codec.digest.DigestUtils;
-import dmp.diff_match_patch;
-import dmp.diff_match_patch.Patch;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.editor.markup.*;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.markup.*;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.ui.DialogWrapperPeer;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import dmp.diff_match_patch.Patch;
+import dmp.diff_match_patch;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
 import org.jboss.netty.channel.SucceededChannelFuture;
 
 // NOTES:
@@ -760,6 +766,7 @@ class FlooHandler {
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Flog.warn("Disconnected: %s", reason);
+        this.flooHandler = null;
     }
 
     public void send_get_buf (Integer buf_id) {
