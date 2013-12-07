@@ -81,7 +81,7 @@ public class API {
         }
     }
 
-    static public List<String> getOrgsCanAdmin () throws Exception {
+    static public List<String> getOrgsCanAdmin () {
         final String url = String.format("https://%s/api/orgs/can/admin/", Shared.defaultHost);
         final GetMethod method = new GetMethod(url);
         List<String> orgs = new ArrayList<String>();
@@ -95,14 +95,17 @@ public class API {
             Flog.error(e);
             return orgs;
         }
-
-        String response = method.getResponseBodyAsString();
-        JsonArray orgsJson = new JsonParser().parse(response).getAsJsonArray();
-
-        for (int i = 0; i < orgsJson.size(); i++) {
-            JsonObject org = orgsJson.get(i).getAsJsonObject();
-            String orgName = org.get("name").getAsString();
-            orgs.add(orgName);
+        try {
+            String response = method.getResponseBodyAsString();
+            JsonArray orgsJson = new JsonParser().parse(response).getAsJsonArray();
+    
+            for (int i = 0; i < orgsJson.size(); i++) {
+                JsonObject org = orgsJson.get(i).getAsJsonObject();
+                String orgName = org.get("name").getAsString();
+                orgs.add(orgName);
+            }
+        } catch (Exception e) {
+            Flog.error(e);
         }
         return orgs;
     }

@@ -263,6 +263,7 @@ abstract class DocumentFetcher {
 class FlooHandler {
     protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
+    protected Boolean should_upload = false;
     protected Project project;
     protected Boolean stomp = false;
     protected HashMap<Integer, HashMap<Integer, RangeHighlighter>> highlights = new HashMap<Integer, HashMap<Integer, RangeHighlighter>>();
@@ -331,6 +332,7 @@ class FlooHandler {
         this.project = p;
         flooHandler = this;
         this.stomp = true;
+        this.should_upload = true;
         String project_path = p.getBasePath();
         Shared.colabDir = project_path;
         PersistentJson persistentJson = new PersistentJson();
@@ -361,16 +363,9 @@ class FlooHandler {
         Settings settings = new Settings();
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
-        List<String> orgs;
+        List<String> orgs = API.getOrgsCanAdmin();
 
-        try {
-            orgs = API.getOrgsCanAdmin();
-        } catch (Exception e) {
-            // TODO
-            return;
-        }
         if (orgs.size() == 0) {
-            Integer code = API.createWorkspace(owner, name);
             createWorkspace(owner, name);
             return;
         }
@@ -529,7 +524,9 @@ class FlooHandler {
         }
 
         if (conflicts.size() == 0) {
-            this.upload();
+            if (this.should_upload) {
+                this.upload();
+            }
             return;
         }
         String dialog;
@@ -557,7 +554,9 @@ class FlooHandler {
                         flooHandler.send_set_buf(buf);
                     }
                 }
-                flooHandler.upload();
+                if (should_upload){
+                    flooHandler.upload();
+                }
             }
         });
 
