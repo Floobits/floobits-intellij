@@ -283,6 +283,7 @@ class FlooHandler {
     public FlooHandler (FlooUrl f) {
         this.url = f;
         flooHandler = this;
+        ProjectManager pm = ProjectManager.getInstance();
 
         PersistentJson p = new PersistentJson();
         try {
@@ -293,7 +294,8 @@ class FlooHandler {
             return;
         }
 
-        Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
+        // Check open projects
+        Project[] openProjects = pm.getOpenProjects();
         for (Project project : openProjects) {
             if (Shared.colabDir.equals(project.getBasePath())) {
                 this.project = project;
@@ -301,19 +303,21 @@ class FlooHandler {
             }
         }
 
+        // Try to open existing project
         if (this.project == null) {
             try {
-                this.project = ProjectManager.getInstance().loadAndOpenProject(Shared.colabDir);
+                this.project = pm.loadAndOpenProject(Shared.colabDir);
             } catch (Exception e) {
                 Flog.error(e);
             }
         }
 
+        // Create project
         if (this.project == null) {
-            this.project = ProjectManager.getInstance().createProject(this.url.workspace, Shared.colabDir);
+            this.project = pm.createProject(this.url.workspace, Shared.colabDir);
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
-            }catch (Exception e) {
+            } catch (Exception e) {
                 Flog.error(e);
                 return;
             }
@@ -335,7 +339,7 @@ class FlooHandler {
             Map<String, Workspace> workspaces = i.getValue();
             for (Entry<String, Workspace> j : workspaces.entrySet()) {
                 Workspace w = j.getValue();
-                if (FilenameUtils.equalsNormalized(w.path, project_path)) {
+                if (Utils.isSamePath(w.path, project_path)) {
                     try {
                         this.url = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
@@ -343,13 +347,17 @@ class FlooHandler {
                         break;
                     }
                     Shared.colabDir = w.path;
-                    API.getWorkspace(url.owner, url.workspace);
+                    Integer code = API.getWorkspace(url.owner, url.workspace);
+                    if (code < 0 || code >= 400) {
+                        continue;
+                    }
                     this.conn = new FlooConn(this.url.host, this);
                     this.conn.start();
                     return;
                 }
             }
         }
+
         Settings settings = new Settings();
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
@@ -372,7 +380,6 @@ class FlooHandler {
             @Override
             void run(Object... objects) {
                 String owner = (String) objects[0];
-                Integer code = API.createWorkspace(owner, name);
                 createWorkspace(owner, name);
             }
         });
@@ -668,7 +675,8 @@ class FlooHandler {
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                if (flooHandler.stalking) {
+                Boolean force = flooHandler.stalking || res.ping || res.summon;
+                if (force) {
                     manager.openFile(virtualFile, true, true);
                 }
 
@@ -714,7 +722,7 @@ class FlooHandler {
                 }
 
                 RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
-                if (flooHandler.stalking) {
+                if (force) {
                     CaretModel caretModel = editor.getCaretModel();
                     caretModel.moveToOffset(start);
                 }

@@ -8,7 +8,9 @@ import org.apache.commons.io.FilenameUtils;
 import floobits.Flog;
 
 class Utils {
-
+    public static Boolean isSamePath(String p1, String p2) {
+        return FilenameUtils.equalsNormalizedOnSystem(FilenameUtils.getFullPathNoEndSeparator(p1), FilenameUtils.getFullPathNoEndSeparator(p2));
+    }
     public static String absPath(String path) {
         return FilenameUtils.concat(Shared.colabDir, path);
     }
