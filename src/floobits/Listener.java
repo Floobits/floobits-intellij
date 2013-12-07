@@ -6,7 +6,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -19,15 +18,6 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.vfs.VirtualFileManager;
 
-abstract class GetPath  {
-    public Document document;
-    abstract public void if_path(String path, FlooHandler flooHandler);
-    public GetPath (Document document) {
-        this.document = document;
-    }
-}
-
-// see https://android.googlesource.com/platform/tools/idea/+/refs/heads/snapshot-master/platform/editor-ui-api/src/com/intellij/openapi/editor/event/EditorEventMulticaster.java
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener{
 
 
@@ -53,27 +43,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         em.removeDocumentListener(this);
     }
 
-    protected void getPath(GetPath getPath) {
-        if (getPath.document == null) {
-            return;
-        }
-        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(getPath.document);
-        String path;
-        try {
-            path = virtualFile.getCanonicalPath();
-        } catch (NullPointerException e) {
-            return;
-        }
-        FlooHandler flooHandler = FlooHandler.getInstance();
-        if (flooHandler == null) {
-            return;
-        };
-        getPath.if_path(path, flooHandler);
-    }
-
     @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        this.getPath(new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 flooHandler.untellij_saved(path);
@@ -84,7 +56,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void documentChanged(DocumentEvent event) {
         Document document = event.getDocument();
-        this.getPath(new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 flooHandler.untellij_changed(path, document.getText());
@@ -95,7 +67,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void selectionChanged(final SelectionEvent event) {
         Document document = event.getEditor().getDocument();
-        this.getPath(new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 TextRange[] ranges = event.getNewRanges();

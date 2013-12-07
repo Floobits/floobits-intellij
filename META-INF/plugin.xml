@@ -50,6 +50,10 @@
           <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
       </action>
+      <action id="Summon" class="Summon" text="Summon" description="Summon everyone in the room to your location">
+          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt L"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

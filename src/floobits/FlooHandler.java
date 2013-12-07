@@ -199,13 +199,11 @@ class FlooHighlight implements Serializable {
     public List<List<Integer>> ranges;
     public Integer user_id;
 
-    public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean ping, Boolean summon) {
+    public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean summon) {
         this.id = buf.id;
-        if (ping != null){
-            this.ping = ping;
-        }
         if (summon != null) {
             this.summon = summon;
+            this.ping = summon;
         }
         this.ranges = ranges;
     }
@@ -607,7 +605,6 @@ class FlooHandler {
                 if (flooHandler.stalking) {
                     manager.openFile(virtualFile, true, true);
                 }
-//                document.createRangeMarker(range.get(0), range.get(1));
 
                 Editor editor;
                 Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
@@ -702,6 +699,16 @@ class FlooHandler {
         this.conn.write(new FlooSetBuf(b));
     }
 
+    public void send_summon (String current, Integer offset) {
+        Buf buf = this.get_buf_by_path(current);
+        if (buf == null || buf.buf == null) {
+            return;
+        }
+        List<List<Integer>> ranges = new ArrayList<List<Integer>>();
+        ranges.add(Arrays.asList(offset, offset));
+        this.conn.write(new FlooHighlight(buf, ranges, true));
+    }
+
     public void untellij_changed(String path, String current) {
         Buf buf = this.get_buf_by_path(path);
 
@@ -725,7 +732,7 @@ class FlooHandler {
         for (TextRange r : textRanges) {
             ranges.add(Arrays.asList(r.getStartOffset(), r.getEndOffset()));
         }
-        this.conn.write(new FlooHighlight(buf, ranges, false, false));
+        this.conn.write(new FlooHighlight(buf, ranges, false));
     }
 
     public void untellij_saved(String path) {
