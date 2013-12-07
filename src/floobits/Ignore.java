@@ -100,16 +100,14 @@ class Ignore {
                     }
                     continue;
                 }
-                if (pattern.length() > 0 && pattern.endsWith("/")){
-                    if (new File(path).isDirectory()) {
-                        pattern = pattern.substring(0, pattern.length() - 1);
-                    }
-                    if (FilenameUtils.wildcardMatch(file_name, pattern)) {
-                        return true;
-                    }
-                    if (FilenameUtils.wildcardMatch(relPath, pattern)) {
-                        return true;
-                    }
+                if (pattern.endsWith("/") && new File(path).isDirectory()){
+                    pattern = pattern.substring(0, pattern.length() - 1);
+                }                                                   g
+                if (FilenameUtils.wildcardMatch(file_name, pattern)) {
+                    return true;
+                }
+                if (FilenameUtils.wildcardMatch(relPath, pattern)) {
+                    return true;
                 }
             }
         }
