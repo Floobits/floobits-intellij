@@ -20,6 +20,10 @@ class FlooUrl {
         this.host = u.getHost();
         this.owner = parts[1];
         this.workspace = parts[2];
+        if (this.owner.equals("r")) {
+            this.owner = parts[2];
+            this.workspace = parts[3];
+        }
         this.port = u.getPort();
         this.proto = u.getProtocol();
 

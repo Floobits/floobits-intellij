@@ -675,7 +675,7 @@ class FlooHandler {
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                Boolean force = flooHandler.stalking || res.ping || res.summon;
+                Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
                 if (force) {
                     manager.openFile(virtualFile, true, true);
                 }
