@@ -79,14 +79,6 @@ class Ignore {
         this.ignores.put(file.getName(), igs);
     }
 
-    protected void addFile (File file) {
-        
-    }
-
-    public void buildIgnores () {
-        
-    }
-
     public Boolean isIgnored (String path) {
         String relPath = Utils.getRelativePath(path, this.path.getPath(), "/");
         File relPathFile = new File(relPath);
@@ -123,4 +115,30 @@ class Ignore {
         }
         return false;
     }
+
+    public static Boolean is_ignored(String current_path, String abs_path) {
+        if (abs_path == null)
+            abs_path = current_path;
+
+        if (!Utils.isShared(current_path))
+            return true;
+
+        if (Utils.isSamePath(current_path, Shared.colabDir))
+            return false;
+
+        File file = new File(current_path);
+        File base_path = new File(file.getParent());
+        Ignore ignore;
+        try {
+            ignore = new Ignore(base_path, null, false);
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (ignore.isIgnored(abs_path))
+            return true;
+
+        return is_ignored(base_path.getAbsolutePath(), abs_path);
+    }
+
 }

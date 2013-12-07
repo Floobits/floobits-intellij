@@ -18,6 +18,15 @@ public class AddToWorkspace extends AnAction {
             recursiveAdd(filesToAdd, virtualFile);
         }
         Ignore ignore;
+        FlooHandler flooHandler = FlooHandler.getInstance();
+
+        if (filesToAdd.size() <= 1) {
+            VirtualFile toAdd = ((VirtualFile[])filesToAdd.toArray())[0];
+            if (!Ignore.is_ignored(toAdd.getPath(), null)) {
+                flooHandler.upload(toAdd);
+            }
+            return;
+        }
         try {
             ignore = new Ignore(new File(Shared.colabDir), null, false);
         } catch (Exception ex) {
@@ -27,7 +36,7 @@ public class AddToWorkspace extends AnAction {
 
         for (VirtualFile virtualFile : filesToAdd) {
             if (!ignore.isIgnored(virtualFile.getCanonicalPath())) {
-                FlooHandler.getInstance().upload(virtualFile);
+               flooHandler.upload(virtualFile);
             }
         }
     }
