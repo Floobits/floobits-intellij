@@ -342,7 +342,6 @@ class FlooHandler {
         String project_path = p.getBasePath();
         Shared.colabDir = project_path;
         PersistentJson persistentJson = new PersistentJson();
-
         for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
             Map<String, Workspace> workspaces = i.getValue();
             for (Entry<String, Workspace> j : workspaces.entrySet()) {
@@ -443,8 +442,19 @@ class FlooHandler {
     }
 
     public void upload() {
+        final Ignore ignore;
+        try {
+            ignore = new Ignore(new File(Shared.colabDir), null, false);
+        } catch (Exception ex) {
+            Flog.error(ex);
+            return;
+        }
+
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
+                if (ignore.isIgnored(virtualFile.getCanonicalPath())){
+                    return true;
+                }
                 return upload(virtualFile);
             }
         });
@@ -483,7 +493,7 @@ class FlooHandler {
         this.users = ri.users;
         this.perms = ri.perms;
         LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
-        
+
         try {
             File flooPath = new File(FilenameUtils.concat(Shared.colabDir, ".floo"));
             String flooFile = String.format("{\n    \"url\": \"%s\"\n}", this.url.toString());

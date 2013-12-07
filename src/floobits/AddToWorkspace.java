@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class AddToWorkspace extends AnAction {
@@ -16,8 +17,18 @@ public class AddToWorkspace extends AnAction {
         for (VirtualFile virtualFile : virtualFiles) {
             recursiveAdd(filesToAdd, virtualFile);
         }
+        Ignore ignore;
+        try {
+            ignore = new Ignore(new File(Shared.colabDir), null, false);
+        } catch (Exception ex) {
+            Flog.error(ex);
+            return;
+        }
+
         for (VirtualFile virtualFile : filesToAdd) {
-            FlooHandler.getInstance().upload(virtualFile);
+            if (!ignore.isIgnored(virtualFile.getCanonicalPath())) {
+                FlooHandler.getInstance().upload(virtualFile);
+            }
         }
     }
 

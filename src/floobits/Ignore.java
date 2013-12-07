@@ -23,6 +23,7 @@ class Ignore {
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
     protected File path;
+    protected String unfuckedPath;
     protected Ignore parent;
     protected ArrayList<Ignore> children = new ArrayList<Ignore>();
 
@@ -31,8 +32,9 @@ class Ignore {
 
     protected HashMap<String, List<String>> ignores = new HashMap<String, List<String>>();
 
-    public Ignore (File basePath, Ignore parent, Boolean recurse) {
+    public Ignore (File basePath, Ignore parent, Boolean recurse) throws IOException{
         this.path = basePath;
+        unfuckedPath = this.path.getCanonicalPath();
         this.parent = parent;
         this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
@@ -93,16 +95,20 @@ class Ignore {
         for (Entry<String, List<String>> entry : ignores.entrySet()) {
             for (String pattern : entry.getValue()) {
                 String base_path = relPathFile.getParent();
+                if (base_path == null) {
+                    base_path = "";
+                }
+                base_path = Utils.absPath(base_path);
                 String file_name =  relPathFile.getName();
                 if (pattern.startsWith("/")) {
-                    if (base_path.equals(this.path.getCanonicalPath()) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
+                    if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
                         return true;
                     }
                     continue;
                 }
                 if (pattern.endsWith("/") && new File(path).isDirectory()){
                     pattern = pattern.substring(0, pattern.length() - 1);
-                }                                                   g
+                }
                 if (FilenameUtils.wildcardMatch(file_name, pattern)) {
                     return true;
                 }
