@@ -54,6 +54,10 @@
           <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt L"/>
       </action>
+      <action id="AddToWorkspace" class="floobits.AddToWorkspace" text="Add To Workspace"
+              description="Add file or folders to the Workspace">
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

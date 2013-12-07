@@ -436,34 +436,38 @@ class FlooHandler {
         return this.bufs.get(id);
     }
 
-    protected void upload() {
+    public void upload() {
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                boolean we_care = virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
-                        !(virtualFile.isDirectory() || virtualFile.isSpecialFile() || virtualFile.isSymLink());
-
-                if (!we_care) {
-                    return true;
-                }
-                String path = virtualFile.getPath();
-                if (!Utils.isShared(path)) {
-                    Flog.info("Thing isn't shared: %s", path);
-                    return true;
-                }
-                String rel_path = Utils.toProjectRelPath(path);
-                if (rel_path.equals(".idea/workspace.xml")) {
-                    Flog.info("Not sharing the workspace.xml file");
-                    return true;
-                }
-
-                Buf b = flooHandler.get_buf_by_path(path);
-                if (b != null) {
-                    return true;
-                }
-                flooHandler.send_create_buf(virtualFile);
-                return true;
+                return upload(virtualFile);
             }
         });
+    }
+
+    public boolean upload(VirtualFile virtualFile) {
+        boolean we_care = virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
+                !(virtualFile.isDirectory() || virtualFile.isSpecialFile() || virtualFile.isSymLink());
+
+        if (!we_care) {
+            return true;
+        }
+        String path = virtualFile.getPath();
+        if (!Utils.isShared(path)) {
+            Flog.info("Thing isn't shared: %s", path);
+            return true;
+        }
+        String rel_path = Utils.toProjectRelPath(path);
+        if (rel_path.equals(".idea/workspace.xml")) {
+            Flog.info("Not sharing the workspace.xml file");
+            return true;
+        }
+
+        Buf b = flooHandler.get_buf_by_path(path);
+        if (b != null) {
+            return true;
+        }
+        flooHandler.send_create_buf(virtualFile);
+        return true;
     }
 
     protected void _on_room_info (JsonObject obj) {
