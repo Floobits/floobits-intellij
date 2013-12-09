@@ -292,7 +292,7 @@ class FlooHandler {
         flooHandler = this;
         ProjectManager pm = ProjectManager.getInstance();
 
-        PersistentJson p = new PersistentJson();
+        PersistentJson p = PersistentJson.getInstance();
         try {
             Shared.colabDir = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
@@ -333,46 +333,47 @@ class FlooHandler {
         this.conn = new FlooConn(f.host, this);
         this.conn.start();
     }
-
+    public boolean joinWorkspace(FlooUrl f, String path) {
+        Integer code = API.getWorkspace(f.owner, f.workspace);
+        if (code < 0 || code >= 400) {
+            return false;
+        }
+        this.url = f;
+        Shared.colabDir = path;
+        PersistentJson persistentJson = PersistentJson.getInstance();
+        persistentJson.addWorkspace(f, path);
+        persistentJson.save();
+        this.conn = new FlooConn(this.url.host, this);
+        this.conn.start();
+        return true;
+    }
     public FlooHandler (Project p) {
         this.project = p;
         flooHandler = this;
         this.stomp = true;
         this.should_upload = true;
-        String project_path = p.getBasePath();
-        Shared.colabDir = project_path;
+        final String project_path = p.getBasePath();
         FlooUrl flooUrl = DotFloo.read();
-
-        if (flooUrl != null ) {
-            Integer code = API.getWorkspace(flooUrl.owner, flooUrl.workspace);
-            if (code > 0 && code < 400) {
-                url = flooUrl;
-                this.conn = new FlooConn(this.url.host, this);
-                this.conn.start();
-                return;
-            }
+        if (flooUrl != null && joinWorkspace(flooUrl, project_path)) {
+            return;
         }
 
-        PersistentJson persistentJson = new PersistentJson();
+        PersistentJson persistentJson = PersistentJson.getInstance();
         for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
             Map<String, Workspace> workspaces = i.getValue();
             for (Entry<String, Workspace> j : workspaces.entrySet()) {
                 Workspace w = j.getValue();
                 if (Utils.isSamePath(w.path, project_path)) {
+                    FlooUrl flooUrl1;
                     try {
-                        this.url = new FlooUrl(w.url);
+                        flooUrl1 = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
                         Flog.error(e);
-                        break;
-                    }
-                    Shared.colabDir = w.path;
-                    Integer code = API.getWorkspace(url.owner, url.workspace);
-                    if (code < 0 || code >= 400) {
                         continue;
                     }
-                    this.conn = new FlooConn(this.url.host, this);
-                    this.conn.start();
-                    return;
+                    if (joinWorkspace(flooUrl1, w.path)) {
+                        return;
+                    }
                 }
             }
         }
@@ -383,7 +384,7 @@ class FlooHandler {
         List<String> orgs = API.getOrgsCanAdmin();
 
         if (orgs.size() == 0) {
-            createWorkspace(owner, name);
+            createWorkspace(owner, name, project_path);
             return;
         }
 
@@ -392,21 +393,19 @@ class FlooHandler {
             @Override
             void run(Object... objects) {
                 String owner = (String) objects[0];
-                createWorkspace(owner, name);
+                createWorkspace(owner, name, project_path);
             }
         });
     }
 
-    protected void createWorkspace(String owner, String name) {
+    protected void createWorkspace(String owner, String name, String project_path) {
         Integer code = API.createWorkspace(owner, name);
         switch (code) {
             case 409:
                 Flog.warn("Already exists");
             case 201:
-                this.url = new FlooUrl(Shared.defaultHost, owner, name, -1, true);
-                this.conn = new FlooConn(this.url.host, this);
-                this.conn.start();
-                break;
+                joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
+                return;
             case 400:
                 Flog.warn("Invalid name");
                 break;
