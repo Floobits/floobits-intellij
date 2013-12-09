@@ -287,6 +287,56 @@ class FlooHandler {
         return flooHandler;
     }
 
+    public FlooHandler (Project p) {
+        this.project = p;
+        flooHandler = this;
+        this.stomp = true;
+        this.should_upload = true;
+        final String project_path = p.getBasePath();
+        FlooUrl flooUrl = DotFloo.read(project_path);
+        if (flooUrl != null && joinWorkspace(flooUrl, project_path)) {
+            return;
+        }
+
+        PersistentJson persistentJson = PersistentJson.getInstance();
+        for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
+            Map<String, Workspace> workspaces = i.getValue();
+            for (Entry<String, Workspace> j : workspaces.entrySet()) {
+                Workspace w = j.getValue();
+                if (Utils.isSamePath(w.path, project_path)) {
+                    FlooUrl flooUrl1;
+                    try {
+                        flooUrl1 = new FlooUrl(w.url);
+                    } catch (MalformedURLException e) {
+                        Flog.error(e);
+                        continue;
+                    }
+                    if (joinWorkspace(flooUrl1, w.path)) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        Settings settings = new Settings();
+        String owner = settings.get("username");
+        final String name = new File(project_path).getName();
+        List<String> orgs = API.getOrgsCanAdmin();
+
+        if (orgs.size() == 0) {
+            createWorkspace(owner, name, project_path);
+            return;
+        }
+
+        orgs.add(0, owner);
+        SelectOwner.build(orgs, new RunLater(null) {
+            @Override
+            void run(Object... objects) {
+                String owner = (String) objects[0];
+                createWorkspace(owner, name, project_path);
+            }
+        });
+    }
     public FlooHandler (FlooUrl f) {
         this.url = f;
         flooHandler = this;
@@ -346,56 +396,6 @@ class FlooHandler {
         this.conn = new FlooConn(this.url.host, this);
         this.conn.start();
         return true;
-    }
-    public FlooHandler (Project p) {
-        this.project = p;
-        flooHandler = this;
-        this.stomp = true;
-        this.should_upload = true;
-        final String project_path = p.getBasePath();
-        FlooUrl flooUrl = DotFloo.read();
-        if (flooUrl != null && joinWorkspace(flooUrl, project_path)) {
-            return;
-        }
-
-        PersistentJson persistentJson = PersistentJson.getInstance();
-        for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
-            Map<String, Workspace> workspaces = i.getValue();
-            for (Entry<String, Workspace> j : workspaces.entrySet()) {
-                Workspace w = j.getValue();
-                if (Utils.isSamePath(w.path, project_path)) {
-                    FlooUrl flooUrl1;
-                    try {
-                        flooUrl1 = new FlooUrl(w.url);
-                    } catch (MalformedURLException e) {
-                        Flog.error(e);
-                        continue;
-                    }
-                    if (joinWorkspace(flooUrl1, w.path)) {
-                        return;
-                    }
-                }
-            }
-        }
-
-        Settings settings = new Settings();
-        String owner = settings.get("username");
-        final String name = new File(project_path).getName();
-        List<String> orgs = API.getOrgsCanAdmin();
-
-        if (orgs.size() == 0) {
-            createWorkspace(owner, name, project_path);
-            return;
-        }
-
-        orgs.add(0, owner);
-        SelectOwner.build(orgs, new RunLater(null) {
-            @Override
-            void run(Object... objects) {
-                String owner = (String) objects[0];
-                createWorkspace(owner, name, project_path);
-            }
-        });
     }
 
     protected void createWorkspace(String owner, String name, String project_path) {

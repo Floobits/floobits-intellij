@@ -9,17 +9,18 @@ import java.io.File;
 public class DotFloo {
     String path;
 
-    public static File path() {
-        return new File(FilenameUtils.concat(Shared.colabDir, ".floo"));
+    public static File path(String base_dir) {
+        return new File(FilenameUtils.concat(base_dir, ".floo"));
     }
 
-    public static FlooUrl read() {
+    public static FlooUrl read(String base_dir) {
         String url;
         String floo;
+
         try {
-            floo = FileUtils.readFileToString(path(), "UTF-8");
+            floo = FileUtils.readFileToString(path(base_dir), "UTF-8");
         } catch (Exception e) {
-            Flog.debug("no floo file %s", path());
+            Flog.debug("no floo file %s", path(base_dir));
             return null;
         }
 
@@ -37,7 +38,7 @@ public class DotFloo {
     public static void write(String url) {
         try {
             String flooFile = String.format("{\n    \"url\": \"%s\"\n}", url);
-            FileUtils.write(path(), flooFile, "UTF-8");
+            FileUtils.write(path(Shared.colabDir), flooFile, "UTF-8");
         } catch (Exception e) {
             Flog.error(e);
         }

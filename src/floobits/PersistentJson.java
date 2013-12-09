@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -18,6 +19,12 @@ class Workspace implements Serializable {
     Workspace(String url, String path) {
         this.url = url;
         this.path = path;
+    }
+
+    public void clean() {
+      if (!this.url.endsWith("/")) {
+          this.url += "/";
+      }
     }
 }
 
@@ -44,21 +51,23 @@ public class PersistentJson {
             workspace.url = flooUrl.toString();
         }
         this.recent_workspaces.add(workspace);
-        HashSet<Workspace> seen = new HashSet<Workspace>();
+        HashSet<String> seen = new HashSet<String>();
         ArrayList<Workspace> unique = new ArrayList<Workspace>();
         for (Workspace w : this.recent_workspaces) {
-            if (seen.contains(w)) {
+            w.clean();
+            if (seen.contains(w.url)) {
                 continue;
             }
-            seen.add(w);
+            seen.add(w.url);
             unique.add(w);
         }
         this.recent_workspaces = unique;
     }
 
     public void save ()  {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try {
-            FileUtils.write(getFile(), new Gson().toJson(this), "UTF-8");
+            FileUtils.write(getFile(), gson.toJson(this), "UTF-8");
         } catch (Exception e) {
             Flog.error(e);
         }
