@@ -42,10 +42,12 @@ public class PersistentJson {
         Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);
         if (workspaces == null) {
             workspaces = new HashMap<String, Workspace>();
+            this.workspaces.put(flooUrl.owner, workspaces);
         }
         Workspace workspace = workspaces.get(flooUrl.workspace);
         if (workspace == null) {
             workspace = new Workspace(flooUrl.toString(), path);
+            workspaces.put(flooUrl.workspace, workspace);
         } else {
             workspace.path = path;
             workspace.url = flooUrl.toString();
