@@ -39,6 +39,11 @@
       <action id="FloobitsJoinWorkspace" class="floobits.JoinWorkspace" text="Floobits: Join Workspace"
               description="Join Floobits workspace">
           <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
+      </action>
+      <action id="FloobitsJoinRecentWorkspace" class="floobits.SelectRecentWorkspace" text="Floobits: Join Recent Workspace"
+              description="Join RecentFloobits workspace">
+          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>
       </action>
       <action id="FloobitsShareProject" class="floobits.ShareProject" text="Floobits: Share Project"
