@@ -344,7 +344,7 @@ class FlooHandler {
 
         PersistentJson p = PersistentJson.getInstance();
         try {
-            p.workspaces.get(f.owner).get(f.workspace).path;
+            p.workspaces.get(f.owner).get(f.workspace);
         } catch (Exception e) {
             Flog.error(e);
             // TODO: colab dir isn't in persistent.json. ask user for dir to save to

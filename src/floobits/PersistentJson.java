@@ -29,10 +29,10 @@ class Workspace implements Serializable {
 }
 
 public class PersistentJson {
-    public Map<String, Map<String, Workspace>> workspaces;
-    public Boolean auto_generated_account;
-    public Boolean disable_account_creation;
-    public ArrayList<Workspace> recent_workspaces;
+    public Map<String, Map<String, Workspace>> workspaces = new HashMap<String, Map<String,Workspace>>();
+    public Boolean auto_generated_account = false;
+    public Boolean disable_account_creation = true;
+    public ArrayList<Workspace> recent_workspaces = new ArrayList<Workspace>();
 
     public PersistentJson () {
         File f = new File(FilenameUtils.concat(Shared.baseDir, "persistent.json"));
