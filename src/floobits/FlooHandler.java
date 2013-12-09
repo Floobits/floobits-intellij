@@ -344,8 +344,9 @@ class FlooHandler {
         FlooUrl flooUrl = DotFloo.read();
 
         if (flooUrl != null ) {
-            Integer code = API.getWorkspace(url.owner, url.workspace);
+            Integer code = API.getWorkspace(flooUrl.owner, flooUrl.workspace);
             if (code > 0 && code < 400) {
+                url = flooUrl;
                 this.conn = new FlooConn(this.url.host, this);
                 this.conn.start();
                 return;
