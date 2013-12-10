@@ -29,19 +29,14 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.ui.DialogWrapperPeer;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.diff_match_patch.Patch;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
-import org.jboss.netty.channel.SucceededChannelFuture;
 
 // NOTES:
 //  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
@@ -272,7 +267,8 @@ class FlooHandler {
     protected Boolean should_upload = false;
     protected Project project;
     protected Boolean stomp = false;
-    protected HashMap<Integer, HashMap<Integer, RangeHighlighter>> highlights = new HashMap<Integer, HashMap<Integer, RangeHighlighter>>();
+    protected HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
+            new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
     public String[] perms;
     public Map<Integer, User> users = new HashMap<Integer, User>();
@@ -690,9 +686,56 @@ class FlooHandler {
         documentFetcher.fetch(path);
     }
 
+    protected Editor get_editor_for_document(Document document) {
+        Editor editor;
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+        if (editors.length > 0) {
+            editor = editors[0];
+        } else {
+            VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+            editor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
+        }
+        return editor;
+    }
+
+    public void remove_highlight (Integer userId, Integer bufId, Document document) {
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(userId);
+        if (integerRangeHighlighterHashMap == null) {
+            return;
+        }
+        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(userId);
+        if (rangeHighlighters == null) {
+            return;
+        }
+        if (document != null) {
+            Editor editor = get_editor_for_document(document);
+            MarkupModel markupModel = editor.getMarkupModel();
+
+            for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                markupModel.removeHighlighter(rangeHighlighter);
+            }
+            rangeHighlighters.clear();
+            return;
+        }
+
+        flooHandler.get_document(bufId, new DocumentFetcher(false) {
+            @Override
+            public void on_document(Document document) {
+                Editor editor = get_editor_for_document(document);
+                MarkupModel markupModel = editor.getMarkupModel();
+
+                for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                    markupModel.removeHighlighter(rangeHighlighter);
+                }
+                rangeHighlighters.clear();
+            }
+        });
+
+    }
+
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
-        final List<Integer> range = res.ranges.get(0);
+        final List<List<Integer>> range = res.ranges;
 
         flooHandler.get_document(res.id, new DocumentFetcher(true) {
             @Override
@@ -704,53 +747,53 @@ class FlooHandler {
                     manager.openFile(virtualFile, true, true);
                 }
 
-                Editor editor;
-                Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
-                if (editors.length > 0) {
-                    editor = editors[0];
-                } else {
-                    editor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
-                }
+                Editor editor = flooHandler.get_editor_for_document(document);
 
                 TextAttributes attributes = new TextAttributes();
                 attributes.setEffectColor(Color.green);
                 attributes.setEffectType(EffectType.SEARCH_MATCH);
                 attributes.setBackgroundColor(Color.green);
 
-                HashMap<Integer, RangeHighlighter> integerRangeHighlighterHashMap = flooHandler.highlights.get(res.user_id);
-                MarkupModel markupModel = editor.getMarkupModel();
-                if (integerRangeHighlighterHashMap != null) {
-                    RangeHighlighter rangeHighlighter = integerRangeHighlighterHashMap.get(res.id);
-                    if (rangeHighlighter != null) {
-                        markupModel.removeHighlighter(rangeHighlighter);
-                        integerRangeHighlighterHashMap.remove(res.id);
-                    }
-                } else {
-                    integerRangeHighlighterHashMap = new HashMap<Integer, RangeHighlighter>();
-                    flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
-                }
+                flooHandler.remove_highlight(res.user_id, res.id, document);
+
                 int textLength = document.getTextLength();
                 if (textLength == 0) {
                     return;
                 }
-                int start = range.get(0);
-                int end = range.get(1);
-                if (start == end) {
-                    end += 1;
-                }
-                if (end > textLength) {
-                    end = textLength;
-                }
-                if (start >= textLength) {
-                    start = textLength - 1;
-                }
+                RangeHighlighter rangeHighlighter;
+                boolean first = false;
+                MarkupModel markupModel = editor.getMarkupModel();
+                LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
+                for (List<Integer> range : res.ranges) {
+                    int start = range.get(0);
+                    int end = range.get(1);
+                    if (start == end) {
+                        end += 1;
+                    }
+                    if (end > textLength) {
+                        end = textLength;
+                    }
+                    if (start >= textLength) {
+                        start = textLength - 1;
+                    }
 
-                RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
-                if (force) {
-                    CaretModel caretModel = editor.getCaretModel();
-                    caretModel.moveToOffset(start);
+                    rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
+                            attributes, HighlighterTargetArea.EXACT_RANGE);
+
+                    rangeHighlighters.add(rangeHighlighter);
+                    if (force && first) {
+                        CaretModel caretModel = editor.getCaretModel();
+                        caretModel.moveToOffset(start);
+                        first = false;
+                    }
                 }
-                integerRangeHighlighterHashMap.put(res.id, rangeHighlighter);
+                HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(res.user_id);
+
+                if (integerRangeHighlighterHashMap == null) {
+                    integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
+                    flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                }
+                integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
             }
         });
     }
@@ -776,6 +819,13 @@ class FlooHandler {
         User u = users.get(userId);
         Flog.info("%s left the workspace", u.username);
         this.users.remove(userId);
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(userId);
+        if (integerRangeHighlighterHashMap == null) {
+            return;
+        }
+        for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
+            remove_highlight(userId, entry.getKey(), null);
+        }
     }
 
     protected void _on_disconnect (JsonObject obj) {
