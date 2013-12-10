@@ -12,14 +12,11 @@ import com.google.gson.JsonParser;
 public class FlooConn extends Thread {
     protected Writer out;
     protected BufferedReader in;
-    SSLSocket socket;
+    protected SSLSocket socket;
     protected FlooHandler handler;
-    protected String host;
-    protected int port = 3448;
 
-    public FlooConn(String host, FlooHandler handler) {
+    public FlooConn(FlooHandler handler) {
         this.handler = handler;
-        this.host = host;
     }
 
     private void handle (String line) {
@@ -51,9 +48,10 @@ public class FlooConn extends Thread {
 
     public void connect() {
         try {
+            FlooUrl flooUrl = handler.getUrl();
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            socket = (SSLSocket) factory.createSocket(host, port);
+            socket = (SSLSocket) factory.createSocket(flooUrl.host, flooUrl.port);
             out = new OutputStreamWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 

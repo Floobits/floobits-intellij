@@ -413,7 +413,7 @@ class FlooHandler extends ConnectionInterface {
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(f, path);
         persistentJson.save();
-        this.conn = new FlooConn(this.url.host, this);
+        this.conn = new FlooConn(this);
         this.conn.start();
         return true;
     }
