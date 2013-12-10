@@ -339,8 +339,9 @@ class FlooHandler {
         ProjectManager pm = ProjectManager.getInstance();
 
         PersistentJson p = PersistentJson.getInstance();
+        String path;
         try {
-            p.workspaces.get(f.owner).get(f.workspace);
+            path = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
             Flog.error(e);
             // TODO: colab dir isn't in persistent.json. ask user for dir to save to
@@ -350,7 +351,7 @@ class FlooHandler {
         // Check open projects
         Project[] openProjects = pm.getOpenProjects();
         for (Project project : openProjects) {
-            if (Shared.colabDir.equals(project.getBasePath())) {
+            if (path.equals(project.getBasePath())) {
                 this.project = project;
                 break;
             }
@@ -359,7 +360,7 @@ class FlooHandler {
         // Try to open existing project
         if (this.project == null) {
             try {
-                this.project = pm.loadAndOpenProject(Shared.colabDir);
+                this.project = pm.loadAndOpenProject(path);
             } catch (Exception e) {
                 Flog.error(e);
             }
@@ -367,7 +368,7 @@ class FlooHandler {
 
         // Create project
         if (this.project == null) {
-            this.project = pm.createProject(this.url.workspace, Shared.colabDir);
+            this.project = pm.createProject(this.url.workspace, path);
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
             } catch (Exception e) {

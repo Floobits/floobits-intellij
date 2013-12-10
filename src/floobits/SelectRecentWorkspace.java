@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.ui.components.JBList;
+import com.intellij.ui.components.JBScrollPane;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.ActionEvent;
@@ -18,7 +19,7 @@ import javax.swing.event.*;
 import java.awt.*;
 
 class SelectRecentWorkspaceDialog extends DialogWrapper {
-    private JPanel jPanel;
+    private JPanel jPanel = new JPanel();
     private String selection;
 
     @Nullable
@@ -29,9 +30,7 @@ class SelectRecentWorkspaceDialog extends DialogWrapper {
 
     SelectRecentWorkspaceDialog(final List<String> items) {
         super(true);
-        jPanel = new JPanel();
-        init();
-        this.setTitle("Select Workspace");
+        this.setTitle("Select a Workspace");
 
         JList list = new JBList(items);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -42,18 +41,23 @@ class SelectRecentWorkspaceDialog extends DialogWrapper {
 
             }
         });
-        JPanel listContainer = new JPanel(new GridLayout(1,1));
+
+        JScrollPane scrollPane = new JBScrollPane(list);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        JPanel listContainer = new JPanel();
         listContainer.setBorder(BorderFactory.createTitledBorder(
                 "Recent Workspaces"));
-        listContainer.add(list);
-        jPanel.add(listContainer);
-        jPanel.add(list);
+        listContainer.add(scrollPane);
+        jPanel.add(listContainer, BorderLayout.CENTER);
+        jPanel.setSize(500, 300);
+        init();
+
     }
 
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        // runLater.run(false);
     }
 
     @Override
