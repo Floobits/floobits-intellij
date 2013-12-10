@@ -2,22 +2,29 @@ package floobits;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.DialogWrapperPeer;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class OkCancelDialog extends DialogWrapper {
+public class DialogBuilder extends DialogWrapper {
     private JPanel jPanel;
     private RunLater runLater;
 
+
+
     public static void build(final String title, final String body, final RunLater runLater) {
+        JLabel jLabel = new JLabel();
+        jLabel.setText(String.format("<html><h2>%s</h2></html>", body));
+        build(title, jLabel, runLater);
+    }
+
+    public static void build(final String title, final JComponent component, final RunLater runLater) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                OkCancelDialog okCancelDialog = new OkCancelDialog(title, body, runLater);
-                okCancelDialog.createCenterPanel();
-                okCancelDialog.show();
+                DialogBuilder dialogBuilder = new DialogBuilder(title, component, runLater);
+                dialogBuilder.createCenterPanel();
+                dialogBuilder.show();
             }
         });
     }
@@ -28,17 +35,13 @@ public class OkCancelDialog extends DialogWrapper {
         return jPanel;
     }
 
-    protected OkCancelDialog(String title, String body, RunLater runLater) {
+    protected DialogBuilder(String title, final JComponent component, RunLater runLater) {
         super(true);
         jPanel = new JPanel();
         this.runLater = runLater;
         init();
-        DialogWrapperPeer peer = this.getPeer();
-        peer.setTitle(title);
-
-        JLabel jLabel = new JLabel();
-        jLabel.setText(String.format("<html><h2>%s</h2></html>", body));
-        jPanel.add(jLabel);
+        this.setTitle(title);
+        jPanel.add(component);
     }
 
     @Override

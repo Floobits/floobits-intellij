@@ -333,7 +333,7 @@ class FlooHandler {
             }
         });
     }
-    public FlooHandler (FlooUrl f) {
+    public FlooHandler (final FlooUrl f) {
         this.url = f;
         flooHandler = this;
         ProjectManager pm = ProjectManager.getInstance();
@@ -343,8 +343,12 @@ class FlooHandler {
         try {
             path = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
-            Flog.error(e);
-            // TODO: colab dir isn't in persistent.json. ask user for dir to save to
+            SelectFolder.build(".", new RunLater(null) {
+                @Override
+                void run(Object... objects) {
+                    joinWorkspace(f, (String)objects[0]);
+                }
+            });
             return;
         }
 
@@ -562,11 +566,11 @@ class FlooHandler {
             dialog += "</ul>";
         }
 
-        OkCancelDialog.build("Resolve Conflicts", dialog, new RunLater(conflicts) {
+        DialogBuilder.build("Resolve Conflicts", dialog, new RunLater(conflicts) {
             @Override
             void run(Object... objects) {
-                Boolean stomp = (Boolean)objects[0];
-                HashMap<Buf, String> bufStringHashMap = (HashMap<Buf, String>)data;
+                Boolean stomp = (Boolean) objects[0];
+                HashMap<Buf, String> bufStringHashMap = (HashMap<Buf, String>) data;
                 for (Map.Entry<Buf, String> entry : bufStringHashMap.entrySet()) {
                     Buf buf = entry.getKey();
                     if (stomp) {
@@ -576,7 +580,7 @@ class FlooHandler {
                         flooHandler.send_set_buf(buf);
                     }
                 }
-                if (should_upload){
+                if (should_upload) {
                     flooHandler.upload();
                 }
             }
