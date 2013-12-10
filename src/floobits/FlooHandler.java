@@ -343,7 +343,8 @@ class FlooHandler {
         try {
             path = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
-            SelectFolder.build(".", new RunLater(null) {
+
+            SelectFolder.build(Utils.unFuckPath("~"), new RunLater(null) {
                 @Override
                 void run(Object... objects) {
                     joinWorkspace(f, (String)objects[0]);

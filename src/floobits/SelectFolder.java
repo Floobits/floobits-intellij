@@ -8,10 +8,14 @@ import java.awt.event.MouseListener;
 import java.io.File;
 
 public class SelectFolder {
-    RunLater runLater;
 
     static void build(String starting_path, final RunLater runLater) {
         final JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Please choose a folder.");
+        File file = new File(starting_path);
+        if (file != null && file.exists() && file.isDirectory()){
+            fileChooser.setCurrentDirectory(file);
+        }
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.addMouseListener(new MouseListener() {
 
@@ -49,16 +53,13 @@ public class SelectFolder {
                 //To change body of implemented methods use File | Settings | File Templates.
             }
         });
-        fileChooser.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                File selectedFile = fileChooser.getSelectedFile();
-                runLater.run(selectedFile);
-            }
-        });
+
         JFrame frame = new JFrame("FileChooserDemo");
-        fileChooser.showOpenDialog(frame);
-//        frame.pack();
-//        frame.setVisible(true);
+        int retval = fileChooser.showOpenDialog(frame);
+        if (retval == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            if (selectedFile != null)
+                runLater.run(selectedFile);
+        }
     }
 }
