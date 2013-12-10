@@ -703,7 +703,7 @@ class FlooHandler {
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
-        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(userId);
+        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(bufId);
         if (rangeHighlighters == null) {
             return;
         }
@@ -736,32 +736,28 @@ class FlooHandler {
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
         final List<List<Integer>> range = res.ranges;
-
-        flooHandler.get_document(res.id, new DocumentFetcher(true) {
+        final Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
+        flooHandler.get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
                 if (force) {
                     manager.openFile(virtualFile, true, true);
                 }
-
-                Editor editor = flooHandler.get_editor_for_document(document);
-
-                TextAttributes attributes = new TextAttributes();
-                attributes.setEffectColor(Color.green);
-                attributes.setEffectType(EffectType.SEARCH_MATCH);
-                attributes.setBackgroundColor(Color.green);
-
                 flooHandler.remove_highlight(res.user_id, res.id, document);
 
                 int textLength = document.getTextLength();
                 if (textLength == 0) {
                     return;
                 }
-                RangeHighlighter rangeHighlighter;
+                TextAttributes attributes = new TextAttributes();
+                attributes.setEffectColor(Color.green);
+                attributes.setEffectType(EffectType.SEARCH_MATCH);
+                attributes.setBackgroundColor(Color.green);
+
                 boolean first = false;
+                Editor editor = flooHandler.get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
                 LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
                 for (List<Integer> range : res.ranges) {
@@ -777,7 +773,7 @@ class FlooHandler {
                         start = textLength - 1;
                     }
 
-                    rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
+                    RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
                             attributes, HighlighterTargetArea.EXACT_RANGE);
 
                     rangeHighlighters.add(rangeHighlighter);
