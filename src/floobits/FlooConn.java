@@ -11,6 +11,8 @@ import com.google.gson.JsonParser;
 
 public class FlooConn extends Thread {
     protected Writer out;
+    protected BufferedReader in;
+    SSLSocket socket;
     protected FlooHandler handler;
     protected String host;
     protected int port = 3448;
@@ -21,7 +23,6 @@ public class FlooConn extends Thread {
     }
 
     private void handle (String line) {
-        // Flog.info(String.format("response: %s", line));
         JsonObject obj = (JsonObject)new JsonParser().parse(line);
         JsonElement name = obj.get("name");
         this.handler.on_data(name.getAsString(), obj);
@@ -29,7 +30,6 @@ public class FlooConn extends Thread {
 
     public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
-//        Flog.debug(data);
         try {
             this.out.write(data + "\n");
             this.out.flush();
@@ -38,38 +38,27 @@ public class FlooConn extends Thread {
         }
     }
 
-    public void run () {
-        // String url = String.format("%s/%s/%s", host, owner, workspace);
-
-//        TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-//            new javax.net.ssl.X509TrustManager(){
-//                public java.security.cert.X509Certificate[] getAcceptedIssuers(){
-//                    return null;
-//                }
-//                public void checkClientTrusted(java.security.cert.X509Certificate[] certs,String authType){}
-//                public void checkServerTrusted(java.security.cert.X509Certificate[] certs,String authType){}
-//            }
-//        };
-//
+    protected void cleanup() {
         try {
-//
-//            // TODO: verify ssl cert
-//            javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
-//            sc.init(null, trustAll, new java.security.SecureRandom());
+            if (out != null)
+                out.close();
+            if (in != null)
+                in.close();
+            if (socket != null)
+                socket.close();
+       } catch (Exception e) {}     
+    }
 
+    public void connect() {
+        try {
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-//            SSLSocketFactory factory = (SSLSocketFactory) sc.getSocketFactory();
-            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-
-            this.out = new OutputStreamWriter(socket.getOutputStream());
-
-            // read response
-            BufferedReader in = new BufferedReader(
-            new InputStreamReader(socket.getInputStream()));
+            socket = (SSLSocket) factory.createSocket(host, port);
+            out = new OutputStreamWriter(socket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             String line;
-            this.handler.on_ready();
+            this.handler.on_connect();
 
             while (true) {
                 try {
@@ -84,11 +73,12 @@ public class FlooConn extends Thread {
                     break;
                 }
             }
-            this.out.close();
-            in.close();
-            socket.close();
         } catch (Exception e) {
             Flog.error(e);
         }
+        cleanup();
+    }
+    public void run () {
+        connect();
     }
 }

@@ -261,7 +261,7 @@ abstract class DocumentFetcher {
     }
 }
 
-class FlooHandler {
+class FlooHandler extends ConnectionInterface {
     protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Boolean should_upload = false;
@@ -275,9 +275,30 @@ class FlooHandler {
     public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     public HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     public Tree tree;
-
-    public FlooUrl url;
     public FlooConn conn;
+
+    public void on_connect () {
+        this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
+    }
+
+    public void on_data (String name, JsonObject obj) {
+        String method_name = "_on_" + name;
+        Method method;
+        try {
+            method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
+            Object arglist[] = new Object[1];
+            arglist[0] = obj;
+            try {
+                Flog.log("Calling %s", method_name);
+                method.invoke(this, arglist);
+            } catch (Exception e) {
+                Flog.error(e);
+            }
+        } catch (NoSuchMethodException e) {
+            Flog.error(e);
+            return;
+        }
+    }
 
     public static FlooHandler getInstance() {
         return flooHandler;
@@ -334,7 +355,6 @@ class FlooHandler {
         });
     }
     public FlooHandler (final FlooUrl f) {
-        this.url = f;
         flooHandler = this;
         ProjectManager pm = ProjectManager.getInstance();
 
@@ -381,9 +401,7 @@ class FlooHandler {
                 return;
             }
         }
-
-        this.conn = new FlooConn(f.host, this);
-        this.conn.start();
+        joinWorkspace(f, this.project.getBasePath());
     }
     public boolean joinWorkspace(FlooUrl f, String path) {
         Integer code = API.getWorkspace(f.owner, f.workspace);
@@ -416,29 +434,6 @@ class FlooHandler {
                break;
             default:
                 Flog.warn("Unknown error");
-        }
-    }
-
-    public void on_ready () {
-        this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
-    }
-
-    public void on_data (String name, JsonObject obj) {
-        String method_name = "_on_" + name;
-        Method method;
-        try {
-            method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
-            Object arglist[] = new Object[1];
-            arglist[0] = obj;
-            try {
-                Flog.log("Calling %s", method_name);
-                method.invoke(this, arglist);
-            } catch (Exception e) {
-                Flog.error(e);
-            }
-        } catch (NoSuchMethodException e) {
-            Flog.error(e);
-            return;
         }
     }
 
