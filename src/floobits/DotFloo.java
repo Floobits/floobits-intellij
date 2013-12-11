@@ -26,8 +26,7 @@ public class DotFloo {
 
         try {
             url = new JsonParser().parse(floo).getAsJsonObject().get("url").getAsString();
-            FlooUrl flooUrl = new FlooUrl(url);
-            return flooUrl;
+            return new FlooUrl(url);
         } catch (Exception e) {
             Flog.error(e);
         }

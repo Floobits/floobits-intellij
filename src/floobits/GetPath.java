@@ -28,7 +28,7 @@ public abstract class GetPath {
         FlooHandler flooHandler = FlooHandler.getInstance();
         if (flooHandler == null) {
             return;
-        };
+        }
         getPath.if_path(path, flooHandler);
     }
 }

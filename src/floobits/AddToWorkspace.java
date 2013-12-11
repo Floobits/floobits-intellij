@@ -39,7 +39,6 @@ public class AddToWorkspace extends AnAction {
             });
         }
 
-        Ignore ignore;
         FlooHandler flooHandler = FlooHandler.getInstance();
 
         if (filesToAdd.size() <= 1) {
@@ -49,6 +48,8 @@ public class AddToWorkspace extends AnAction {
             }
             return;
         }
+
+        Ignore ignore;
 
         try {
             ignore = new Ignore(new File(Shared.colabDir), null, false);

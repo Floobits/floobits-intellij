@@ -27,11 +27,7 @@ class FlooUrl {
         this.port = u.getPort();
         this.proto = u.getProtocol();
 
-        if (this.proto.equals("http")) {
-            this.secure = false;
-        } else {
-            this.secure = true;
-        }
+        this.secure = !this.proto.equals("http");
 
         if (this.port < 0) {
             if (this.secure) {

@@ -88,7 +88,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @NotNull
     @Override
     public String getComponentName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return "Floobits";  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
