@@ -19,6 +19,9 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
@@ -273,8 +276,7 @@ class FlooHandler extends ConnectionInterface {
     public Tree tree;
     public FlooConn conn;
 
-    protected void status_message(final String message) {
-        Flog.log(message);
+    protected void flash_message(final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -291,9 +293,33 @@ class FlooHandler extends ConnectionInterface {
             }
         });
     }
+
+    protected void status_message(final String title, final String message, final NotificationType notificationType) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        Notifications.Bus.notify(new Notification("Floobits", title, message, notificationType), project);
+                    }
+                });
+            }
+        });
+    }
+
+    protected void status_message(String title, String message) {
+        Flog.log(message);
+        status_message(title, message, NotificationType.INFORMATION);
+    }
+
+    protected void error_message(String title, String message) {
+        Flog.log(message);
+        status_message(title, message, NotificationType.ERROR);
+    }
+
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
-        status_message(String.format(" You successfully joined %s ", url.toString()));
+        status_message("Joined Workspace", String.format(" You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) throws Exception {
@@ -821,7 +847,7 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_join (JsonObject obj) {
         User u = new Gson().fromJson(obj, (Type)User.class);
         this.users.put(u.user_id, u);
-        status_message(String.format("%s joined the workspace.", u.username));
+        status_message(String.format("%s joined", u.username), String.format("%s joined the workspace.", u.username));
     }
 
     protected void _on_part (JsonObject obj) {
@@ -835,15 +861,17 @@ class FlooHandler extends ConnectionInterface {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        status_message(String.format("%s left the workspace.", u.username));
+        status_message(String.format("%s left", u.username), String.format("%s left the workspace.", u.username));
 
     }
 
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
-        Flog.warn("Disconnected: %s", reason);
         if (reason != null) {
-            status_message(reason);
+            error_message("Disconnected", reason);
+            flash_message(reason);
+        } else {
+            status_message("Disconnected", "You have left the workspace");
         }
         flooHandler = null;
         conn.shut_down();
