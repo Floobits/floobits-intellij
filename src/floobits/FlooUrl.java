@@ -52,7 +52,6 @@ class FlooUrl {
     }
 
     public String toString() {
-        String proto = "";
         String port = "";
 
         if (this.secure) {

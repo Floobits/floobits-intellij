@@ -19,7 +19,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     public static void joinWorkspace(String url) {
         try {
             FlooUrl f = new FlooUrl(url);
-            FlooHandler handler = new FlooHandler(f);
+            new FlooHandler(f);
         } catch (Exception e) {
             Flog.error(e);
         }

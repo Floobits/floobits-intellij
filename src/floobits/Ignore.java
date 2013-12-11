@@ -37,19 +37,21 @@ class Ignore {
         this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
         File[] files = this.path.listFiles();
-        for (File file : files) {
+
+        if (files == null) {
+            return;
+        }
+        for (File file : files)
             try {
                 if (FileUtils.isSymlink(file)) {
                     continue;
                 }
                 if (recurse && file.isDirectory()) {
                     this.children.add(new Ignore(file, this, recurse));
-                    continue;
                 }
-            } catch (Exception e) {
-                continue;
+            } catch (Exception ignored) {
+
             }
-        }
 
         Flog.debug("Initializing ignores for %s", this.path);
         for (String name : IGNORE_FILES) {

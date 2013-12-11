@@ -34,6 +34,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBColor;
 import dmp.diff_match_patch.Patch;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -281,23 +282,19 @@ class FlooHandler extends ConnectionInterface {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
     }
 
-    public void on_data (String name, JsonObject obj) {
+    public void on_data (String name, JsonObject obj) throws Exception {
         String method_name = "_on_" + name;
         Method method;
         try {
             method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
-            Object arglist[] = new Object[1];
-            arglist[0] = obj;
-            try {
-                Flog.log("Calling %s", method_name);
-                method.invoke(this, arglist);
-            } catch (Exception e) {
-                Flog.error(e);
-            }
         } catch (NoSuchMethodException e) {
             Flog.error(e);
             return;
         }
+        Object objects[] = new Object[1];
+        objects[0] = obj;
+        Flog.log("Calling %s", method_name);
+        method.invoke(this, objects);
     }
 
     public static FlooHandler getInstance() {
@@ -564,6 +561,7 @@ class FlooHandler extends ConnectionInterface {
 
         DialogBuilder.build("Resolve Conflicts", dialog, new RunLater(conflicts) {
             @Override
+            @SuppressWarnings("unchecked")
             void run(Object... objects) {
                 Boolean stomp = (Boolean) objects[0];
                 HashMap<Buf, String> bufStringHashMap = (HashMap<Buf, String>) data;
@@ -688,15 +686,15 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected Editor get_editor_for_document(Document document) {
-        Editor editor;
         Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
         if (editors.length > 0) {
-            editor = editors[0];
-        } else {
-            VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-            editor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
+            return editors[0];
         }
-        return editor;
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+        if (virtualFile == null) {
+            return null;
+        }
+        return EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
     }
 
     public void remove_highlight (Integer userId, Integer bufId, Document document) {
@@ -736,14 +734,14 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
-        final List<List<Integer>> range = res.ranges;
+        final List<List<Integer>> ranges = res.ranges;
         final Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         flooHandler.get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                if (force) {
+                if (force && virtualFile != null) {
                     manager.openFile(virtualFile, true, true);
                 }
                 flooHandler.remove_highlight(res.user_id, res.id, document);
@@ -753,15 +751,15 @@ class FlooHandler extends ConnectionInterface {
                     return;
                 }
                 TextAttributes attributes = new TextAttributes();
-                attributes.setEffectColor(Color.green);
+                attributes.setEffectColor(JBColor.GREEN);
                 attributes.setEffectType(EffectType.SEARCH_MATCH);
-                attributes.setBackgroundColor(Color.green);
+                attributes.setBackgroundColor(JBColor.GREEN);
 
-                boolean first = false;
+                boolean first = true;
                 Editor editor = flooHandler.get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
                 LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
-                for (List<Integer> range : res.ranges) {
+                for (List<Integer> range : ranges) {
                     int start = range.get(0);
                     int end = range.get(1);
                     if (start == end) {
@@ -828,7 +826,9 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Flog.warn("Disconnected: %s", reason);
-        this.flooHandler = null;
+        flooHandler = null;
+//        editor.error_message(message)
+        conn.shut_down();
     }
 
     public void send_get_buf (Integer buf_id) {

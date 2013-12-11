@@ -13,7 +13,7 @@ public class SelectFolder {
         final JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Please choose a folder.");
         File file = new File(starting_path);
-        if (file != null && file.exists() && file.isDirectory()){
+        if (file.exists() && file.isDirectory()){
             fileChooser.setCurrentDirectory(file);
         }
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

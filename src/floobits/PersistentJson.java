@@ -34,10 +34,6 @@ public class PersistentJson {
     public Boolean disable_account_creation = true;
     public ArrayList<Workspace> recent_workspaces = new ArrayList<Workspace>();
 
-    public PersistentJson () {
-        File f = new File(FilenameUtils.concat(Shared.baseDir, "persistent.json"));
-    }
-
     public void addWorkspace(FlooUrl flooUrl, String path) {
         Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);
         if (workspaces == null) {

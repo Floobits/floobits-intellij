@@ -10,8 +10,6 @@ public class DialogBuilder extends DialogWrapper {
     private JPanel jPanel;
     private RunLater runLater;
 
-
-
     public static void build(final String title, final String body, final RunLater runLater) {
         JLabel jLabel = new JLabel();
         jLabel.setText(String.format("<html><h2>%s</h2></html>", body));

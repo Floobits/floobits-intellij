@@ -52,8 +52,7 @@ abstract class Buf <T> {
         this.md5 = new String(md5);
         try {
             this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
-        } catch (NullPointerException e) {
-
+        } catch (NullPointerException ignored) {
         }
 
     }
@@ -122,7 +121,7 @@ class BinaryBuf extends Buf <byte[]> {
         this.buf = FileUtils.readFileToByteArray(this.f);
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
-
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void writeToDisk () throws IOException {
         File parent = new File(this.f.getParent());
         parent.mkdirs();
@@ -147,6 +146,7 @@ class TextBuf extends Buf <String> {
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void writeToDisk () throws IOException {
         File parent = new File(this.f.getParent());
         parent.mkdirs();

@@ -12,7 +12,7 @@ class Settings {
     public Settings () {
         String userHome = System.getProperty("user.home");
         String floorcPath =  FilenameUtils.concat(userHome, ".floorc");
-        BufferedReader br = null;
+        BufferedReader br;
         this.settings = new HashMap<String, String>();
         try {
             br = new BufferedReader(new FileReader(floorcPath));

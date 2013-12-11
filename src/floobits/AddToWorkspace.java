@@ -3,20 +3,42 @@ package floobits;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.containers.hash.HashSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class AddToWorkspace extends AnAction {
     public void actionPerformed(AnActionEvent e) {
-        VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
-        HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
+        final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
+        final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
-        for (VirtualFile virtualFile : virtualFiles) {
-            recursiveAdd(filesToAdd, virtualFile);
+        if (virtualFiles == null) {
+            return;
         }
+
+        for (final VirtualFile virtualFile : virtualFiles) {
+            if (filesToAdd.contains(virtualFile)) {
+                continue;
+            }
+            if (!virtualFile.isDirectory()) {
+                add(virtualFile, filesToAdd);
+                continue;
+            }
+
+            VfsUtilCore.visitChildrenRecursively(virtualFile, new VirtualFileVisitor() {
+                @Override
+                public boolean visitFile(@NotNull VirtualFile file) {
+                    return add(file, filesToAdd);
+                }
+
+            });
+        }
+
         Ignore ignore;
         FlooHandler flooHandler = FlooHandler.getInstance();
 
@@ -27,6 +49,7 @@ public class AddToWorkspace extends AnAction {
             }
             return;
         }
+
         try {
             ignore = new Ignore(new File(Shared.colabDir), null, false);
         } catch (Exception ex) {
@@ -41,17 +64,22 @@ public class AddToWorkspace extends AnAction {
         }
     }
 
-    private void recursiveAdd(HashSet<VirtualFile> set, VirtualFile virtualFile) {
-        if (!Utils.isShared(virtualFile.getCanonicalPath())) {
-            return;
+    private boolean add(VirtualFile virtualFile, HashSet<VirtualFile> set) {
+        boolean we_donut_care = !virtualFile.isInLocalFileSystem()
+                || virtualFile.isSpecialFile()
+                || virtualFile.isSymLink()
+                || !Utils.isShared(virtualFile.getCanonicalPath());
+        if (we_donut_care) {
+            return false;
         }
-        if (!virtualFile.isDirectory()) {
-            set.add(virtualFile);
-            return;
+        if (set.contains(virtualFile)) {
+            return false;
         }
-        for (VirtualFile child : virtualFile.getChildren()) {
-            recursiveAdd(set, child);
+        if (virtualFile.isDirectory()) {
+            return true;
         }
+        set.add(virtualFile);
+        return true;
     }
 
     @Override

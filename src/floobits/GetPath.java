@@ -15,6 +15,10 @@ public abstract class GetPath {
             return;
         }
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(getPath.document);
+        if (virtualFile == null) {
+            return;
+        }
+
         String path;
         try {
             path = virtualFile.getCanonicalPath();

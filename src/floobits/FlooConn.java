@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.application.ApplicationManager;
 
 
 public class FlooConn extends Thread {
@@ -15,15 +16,14 @@ public class FlooConn extends Thread {
     protected SSLSocket socket;
     protected FlooHandler handler;
 
+    private Integer MAX_RETRIES = 20;
+    private Integer INITIAL_RECONNECT_DELAY = 500;
+    protected Integer retries = MAX_RETRIES;
+    protected Integer delay = INITIAL_RECONNECT_DELAY;
+
     public FlooConn(FlooHandler handler) {
         this.handler = handler;
     }
-
-    private void handle (String line) {
-        JsonObject obj = (JsonObject)new JsonParser().parse(line);
-        JsonElement name = obj.get("name");
-        this.handler.on_data(name.getAsString(), obj);
-    };
 
     public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
@@ -35,23 +35,78 @@ public class FlooConn extends Thread {
         }
     }
 
+    public void run () {
+        connect();
+    }
+
+    public void shut_down() {
+        retries = -1;
+        cleanup();
+    }
+
     protected void cleanup() {
         try {
             if (out != null)
                 out.close();
             if (in != null)
                 in.close();
-            if (socket != null)
+            if (socket != null)  {
+                socket.shutdownOutput();
+                socket.shutdownOutput();
                 socket.close();
-       } catch (Exception e) {}     
+            }
+       } catch (Exception ignored) {}
     }
 
-    public void connect() {
+    protected void handle (String line) {
+        JsonObject obj = (JsonObject)new JsonParser().parse(line);
+        JsonElement name = obj.get("name");
+        if (name == null) {
+            Flog.warn("No name for request, ignoring");
+            return;
+        }
+        String name1 = name.getAsString();
         try {
-            FlooUrl flooUrl = handler.getUrl();
-            Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            this.handler.on_data(name1, obj);
+        } catch (Exception e) {
+            Flog.error(e);
+            if (name1.equals("room_info")) {
+                shut_down();
+            }
+        }
+    }
+
+    protected void reconnect() {
+        cleanup();
+        delay = Math.min(10000, Math.round((float)1.5 * delay));
+        retries -= 1;
+        if (retries <= 0) {
+            Flog.error("I give up connecting.");
+            return;
+        }
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            Flog.error(e);
+        }
+        connect();
+    }
+
+    protected void connect() {
+        FlooUrl flooUrl = handler.getUrl();
+        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+        try {
             socket = (SSLSocket) factory.createSocket(flooUrl.host, flooUrl.port);
+        } catch (IOException e) {
+            reconnect();
+        }
+
+        delay = INITIAL_RECONNECT_DELAY;
+        retries = MAX_RETRIES;
+
+        try {
             out = new OutputStreamWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
@@ -73,10 +128,7 @@ public class FlooConn extends Thread {
             }
         } catch (Exception e) {
             Flog.error(e);
+            reconnect();
         }
-        cleanup();
-    }
-    public void run () {
-        connect();
     }
 }

@@ -10,6 +10,9 @@ import com.intellij.openapi.editor.Editor;
 public class Summon extends AnAction {
     public void actionPerformed(final AnActionEvent e) {
         final Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
+        if (editor == null) {
+            return;
+        }
         Document document = editor.getDocument();
 
         GetPath getPath = new GetPath(document) {

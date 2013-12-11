@@ -85,9 +85,10 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 //        Flog.info("after");
     }
 
+    @NotNull
     @Override
     public String getComponentName() {
-        return "asdf";  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
