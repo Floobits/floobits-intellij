@@ -1,14 +1,13 @@
 package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.project.Project;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public class FloobitsPlugin implements ApplicationComponent, PersistentStateComponent<Element> {
+public class FloobitsPlugin implements ApplicationComponent {
     public FloobitsPlugin() {
     }
 
@@ -19,7 +18,7 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     public static void joinWorkspace(String url) {
         try {
             FlooUrl f = new FlooUrl(url);
-            new FlooHandler(f);
+            FlooHandler handler = new FlooHandler(f);
         } catch (Exception e) {
             Flog.error(e);
         }
@@ -68,15 +67,16 @@ public class FloobitsPlugin implements ApplicationComponent, PersistentStateComp
     public String getComponentName() {
         return "floobits";
     }
-
-    @Nullable
-    @Override
-    public Element getState() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void loadState(Element element) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
+//    TODO: we can store state using intellij if we want
+//
+//    @Nullable
+//    @Override
+//    public Element getState() {
+//        return null;  //To change body of implemented methods use File | Settings | File Templates.
+//    }
+//
+//    @Override
+//    public void loadState(Element element) {
+//        //To change body of implemented methods use File | Settings | File Templates.
+//    }
 }

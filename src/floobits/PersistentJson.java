@@ -1,6 +1,7 @@
 package floobits;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ class Workspace implements Serializable {
 }
 
 public class PersistentJson {
-    public Map<String, Map<String, Workspace>> workspaces = new HashMap<String, Map<String,Workspace>>();
+    public HashMap<String, Map<String, Workspace>> workspaces = new HashMap<String, Map<String,Workspace>>();
     public Boolean auto_generated_account = false;
     public Boolean disable_account_creation = true;
     public ArrayList<Workspace> recent_workspaces = new ArrayList<Workspace>();
@@ -83,6 +84,6 @@ public class PersistentJson {
             Flog.error(e);
             s = "{}";
         }
-        return new Gson().fromJson(s, PersistentJson.class);
+        return new Gson().fromJson(s, (Type) PersistentJson.class);
     }
 }

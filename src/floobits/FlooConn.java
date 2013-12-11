@@ -46,10 +46,12 @@ public class FlooConn extends Thread {
 
     protected void cleanup() {
         try {
-            if (out != null)
+            if (out != null) {
                 out.close();
-            if (in != null)
+            }
+            if (in != null) {
                 in.close();
+            }
             if (socket != null)  {
                 socket.shutdownOutput();
                 socket.shutdownOutput();
@@ -78,12 +80,12 @@ public class FlooConn extends Thread {
 
     protected void reconnect() {
         cleanup();
-        delay = Math.min(10000, Math.round((float)1.5 * delay));
         retries -= 1;
         if (retries <= 0) {
             Flog.error("I give up connecting.");
             return;
         }
+        delay = Math.min(10000, Math.round((float)1.5 * delay));
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {

@@ -28,9 +28,6 @@
       <component>
           <implementation-class>floobits.Listener</implementation-class>
       </component>
-      <component>
-          <implementation-class>floobits.FloobitsPlugin</implementation-class>
-      </component>
   </application-components>
 
   <project-components>

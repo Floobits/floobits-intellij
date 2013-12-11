@@ -1,11 +1,11 @@
 package floobits;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,16 +38,6 @@ import com.intellij.ui.JBColor;
 import dmp.diff_match_patch.Patch;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.digest.DigestUtils;
-
-// NOTES:
-//  TODO: check LocalFileSystem.getInstance().findFileByIoFile() or maybe FileDocumentManager.getCachedDocument()
-// LocalFileSystem.getInstance().findFileByPathIfCached();
-// guessCurrentProject1
-// ProjectRootManager.getInstance(project).getFileIndex().iterateContent()
-// open new project : http://devnet.jetbrains.com/message/5492018#5492018
-// list all open projects ProjectManager.getInstance().getOpenProjects()
-// open arbitrary file : FileEditorManager.openFile
-// create a new project: http://devnet.jetbrains.com/message/5106735#5106735
 
 class FlooAuth implements Serializable {
     public String username;
@@ -457,10 +447,7 @@ class FlooHandler extends ConnectionInterface {
 
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                if (ignore.isIgnored(virtualFile.getCanonicalPath())){
-                    return true;
-                }
-                return upload(virtualFile);
+            return ignore.isIgnored(virtualFile.getCanonicalPath()) || upload(virtualFile);
             }
         });
     }
@@ -493,7 +480,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_room_info (JsonObject obj) {
-        RoomInfoResponse ri = new Gson().fromJson(obj, RoomInfoResponse.class);
+        RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
 
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
@@ -549,7 +536,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         String dialog;
-        if (conflicts.size() > 10) {
+        if (conflicts.size() > 15) {
             dialog = "<p>%d files are different.  Do you want to overwrite them (OK)?</p> ";
          } else {
             dialog = "<p>The following file(s) are different.  Do you want to overwrite them (OK)?</p><ul>";
@@ -596,7 +583,7 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_get_buf (JsonObject obj) {
         // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
-        GetBufResponse res = gson.fromJson(obj, GetBufResponse.class);
+        GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
@@ -606,15 +593,15 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_create_buf (JsonObject obj) {
 //        TODO: be nice about this and update the existing view
         Gson gson = new Gson();
-        GetBufResponse res = gson.fromJson(obj, CreateBufResponse.class);
+        GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
         Buf buf = Buf.createBuf(res.path, res.id, res.buf, res.md5);
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);
         buf.update();
     }
 
-    protected void _on_patch (JsonObject obj) throws IOException {
-        FlooPatch res = new Gson().fromJson(obj, FlooPatch.class);
+    protected void _on_patch (JsonObject obj) {
+        FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
         Buf b = this.bufs.get(res.id);
         if (b.buf == null) {
             Flog.warn("no buffer");
@@ -733,7 +720,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_highlight (JsonObject obj) {
-        final FlooHighlight res = new Gson().fromJson(obj, FlooHighlight.class);
+        final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
         final List<List<Integer>> ranges = res.ranges;
         final Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         flooHandler.get_document(res.id, new DocumentFetcher(force) {
@@ -803,8 +790,12 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
+    protected void _on_request_perms(JsonObject obj) {
+        Flog.log("got perms request");
+    }
+
     protected void _on_join (JsonObject obj) {
-        User u = new Gson().fromJson(obj, User.class);
+        User u = new Gson().fromJson(obj, (Type)User.class);
         Flog.info("%s joined the workspace", u.username);
         this.users.put(u.user_id, u);
     }
@@ -901,5 +892,6 @@ class FlooHandler extends ConnectionInterface {
         this._on_part(obj);
         this._on_disconnect(obj);
         this._on_create_buf(obj);
+        this._on_request_perms(obj);
     }
 }
