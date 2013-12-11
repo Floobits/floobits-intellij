@@ -8,13 +8,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -962,5 +958,26 @@ class FlooHandler extends ConnectionInterface {
         this._on_disconnect(obj);
         this._on_create_buf(obj);
         this._on_request_perms(obj);
+    }
+
+    public void clear_highlights(VirtualFile[] virtualFiles) {
+        HashSet<Integer> bufs = new HashSet<Integer>();
+
+        for (VirtualFile virtualFile : virtualFiles) {
+            Buf buf = get_buf_by_path(virtualFile.getCanonicalPath());
+            if (buf == null) {
+                continue;
+            }
+            bufs.add(buf.id);
+        }
+
+        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : flooHandler.highlights.entrySet()) {
+            Integer user_id = entry.getKey();
+            HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
+            for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
+                Integer buf_id = integerLinkedListEntry.getKey();
+                if (bufs.contains(buf_id)) remove_highlight(user_id, buf_id, null);
+            }
+        }
     }
 }

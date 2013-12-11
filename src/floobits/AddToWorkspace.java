@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 public class AddToWorkspace extends IsJoinedAction {
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
@@ -36,8 +36,6 @@ public class AddToWorkspace extends IsJoinedAction {
 
             });
         }
-
-        FlooHandler flooHandler = FlooHandler.getInstance();
 
         if (filesToAdd.size() <= 1) {
             VirtualFile toAdd = ((VirtualFile[])filesToAdd.toArray())[0];
