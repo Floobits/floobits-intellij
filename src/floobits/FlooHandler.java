@@ -1,5 +1,6 @@
 package floobits;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,10 +35,14 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import dmp.diff_match_patch.Patch;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.digest.DigestUtils;
+
+import javax.swing.*;
 
 class FlooAuth implements Serializable {
     public String username;
@@ -268,8 +273,27 @@ class FlooHandler extends ConnectionInterface {
     public Tree tree;
     public FlooConn conn;
 
+    protected void status_message(final String message) {
+        Flog.log(message);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+                        if (statusBar == null) {
+                            return;
+                        }
+                        JLabel jLabel = new JLabel(message);
+                        statusBar.fireNotificationPopup(jLabel, JBColor.WHITE);
+                    }
+                });
+            }
+        });
+    }
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
+        status_message(String.format(" You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) throws Exception {
@@ -796,14 +820,13 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_join (JsonObject obj) {
         User u = new Gson().fromJson(obj, (Type)User.class);
-        Flog.info("%s joined the workspace", u.username);
         this.users.put(u.user_id, u);
+        status_message(String.format("%s joined the workspace.", u.username));
     }
 
     protected void _on_part (JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
         User u = users.get(userId);
-        Flog.info("%s left the workspace", u.username);
         this.users.remove(userId);
         HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
@@ -812,13 +835,17 @@ class FlooHandler extends ConnectionInterface {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
+        status_message(String.format("%s left the workspace.", u.username));
+
     }
 
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         Flog.warn("Disconnected: %s", reason);
+        if (reason != null) {
+            status_message(reason);
+        }
         flooHandler = null;
-//        editor.error_message(message)
         conn.shut_down();
     }
 
