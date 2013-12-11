@@ -128,6 +128,8 @@ public class FlooConn extends Thread {
                     break;
                 }
             }
+        } catch (IOException e) {
+            reconnect();
         } catch (Exception e) {
             Flog.error(e);
             reconnect();

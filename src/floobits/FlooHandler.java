@@ -268,13 +268,13 @@ class FlooHandler extends ConnectionInterface {
     protected Boolean stomp = false;
     protected HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
-    public Boolean stalking = false;
-    public String[] perms;
-    public Map<Integer, User> users = new HashMap<Integer, User>();
-    public HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
-    public HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
-    public Tree tree;
-    public FlooConn conn;
+    protected Boolean stalking = false;
+    protected String[] perms;
+    protected Map<Integer, User> users = new HashMap<Integer, User>();
+    protected HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    protected HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
+    protected Tree tree;
+    protected FlooConn conn;
 
     protected void flash_message(final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -294,32 +294,40 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
-    protected void status_message(final String title, final String message, final NotificationType notificationType) {
+    protected void status_message(final String message, final NotificationType notificationType) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
-                        Notifications.Bus.notify(new Notification("Floobits", title, message, notificationType), project);
+                        Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
                     }
                 });
             }
         });
     }
 
-    protected void status_message(String title, String message) {
+    protected void status_message(String message) {
         Flog.log(message);
-        status_message(title, message, NotificationType.INFORMATION);
+        status_message(message, NotificationType.INFORMATION);
     }
 
-    protected void error_message(String title, String message) {
+    protected void error_message(String message) {
         Flog.log(message);
-        status_message(title, message, NotificationType.ERROR);
+        status_message(message, NotificationType.ERROR);
+    }
+
+    protected String get_username(Integer user_id) {
+        User user = users.get(user_id);
+        if (user == null) {
+            return null;
+        }
+        return user.username;
     }
 
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
-        status_message("Joined Workspace", String.format(" You successfully joined %s ", url.toString()));
+        status_message(String.format(" You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) throws Exception {
@@ -672,7 +680,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        LinkedList<Patch> patches;
+        LinkedList patches;
         patches = (LinkedList) dmp.patch_fromText(res.patch);
         Object[] results = dmp.patch_apply(patches, (String) b.buf);
         final String text = (String) results[0];
@@ -779,6 +787,10 @@ class FlooHandler extends ConnectionInterface {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 if (force && virtualFile != null) {
+                    String username = get_username(res.user_id);
+                    if (username != null) {
+                        status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+                    }
                     manager.openFile(virtualFile, true, true);
                 }
                 flooHandler.remove_highlight(res.user_id, res.id, document);
@@ -847,7 +859,7 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_join (JsonObject obj) {
         User u = new Gson().fromJson(obj, (Type)User.class);
         this.users.put(u.user_id, u);
-        status_message(String.format("%s joined", u.username), String.format("%s joined the workspace.", u.username));
+        status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
     }
 
     protected void _on_part (JsonObject obj) {
@@ -861,17 +873,17 @@ class FlooHandler extends ConnectionInterface {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        status_message(String.format("%s left", u.username), String.format("%s left the workspace.", u.username));
+        status_message(String.format("%s left the workspace.", u.username));
 
     }
 
     protected void _on_disconnect (JsonObject obj) {
         String reason = obj.get("reason").getAsString();
         if (reason != null) {
-            error_message("Disconnected", reason);
+            error_message(reason);
             flash_message(reason);
         } else {
-            status_message("Disconnected", "You have left the workspace");
+            status_message("You have left the workspace");
         }
         flooHandler = null;
         conn.shut_down();
