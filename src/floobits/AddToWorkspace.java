@@ -1,6 +1,5 @@
 package floobits;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -10,9 +9,8 @@ import com.intellij.util.containers.hash.HashSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 
-public class AddToWorkspace extends AnAction {
+public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e) {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
@@ -91,6 +89,5 @@ public class AddToWorkspace extends AnAction {
         } else {
             e.getPresentation().setEnabled(true);
         }
-
     }
 }

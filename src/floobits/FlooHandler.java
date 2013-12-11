@@ -261,6 +261,7 @@ abstract class DocumentFetcher {
 }
 
 class FlooHandler extends ConnectionInterface {
+    protected static boolean is_joined  = false;
     protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Boolean should_upload = false;
@@ -539,7 +540,7 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
-
+        is_joined = true;
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
@@ -878,6 +879,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_disconnect (JsonObject obj) {
+        is_joined = false;
         String reason = obj.get("reason").getAsString();
         if (reason != null) {
             error_message(reason);

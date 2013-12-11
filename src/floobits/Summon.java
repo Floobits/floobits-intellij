@@ -1,13 +1,12 @@
 package floobits;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 
 
-public class Summon extends AnAction {
+public class Summon extends IsJoinedAction {
     public void actionPerformed(final AnActionEvent e) {
         final Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null) {

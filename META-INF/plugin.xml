@@ -1,8 +1,8 @@
 <idea-plugin version="2">
-  <id>com.yourcompany.unique.plugin.id</id>
-  <name>Plugin display name here</name>
+  <id>com.floobits.unique.plugin.id</id>
+  <name>Floobits</name>
   <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+  <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
       Enter short description for your plugin here.<br>
@@ -35,34 +35,43 @@
   </project-components>
 
   <actions>
-    <!-- Add your actions here -->
+      <!-- Add your actions here -->
       <action id="FloobitsJoinWorkspace" class="floobits.JoinWorkspace" text="Floobits: Join Workspace"
               description="Join Floobits workspace">
-          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
       </action>
       <action id="FloobitsJoinRecentWorkspace" class="floobits.SelectRecentWorkspace" text="Floobits: Join Recent Workspace"
               description="Join RecentFloobits workspace">
-          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>
       </action>
       <action id="FloobitsShareProject" class="floobits.ShareProject" text="Floobits: Share Project"
               description="Share your current project">
-          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt K"/>
       </action>
-      <action id="FollowMode" class="floobits.FollowMode" text="FollowMode" description="Toogle Follow Mode">
-          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+      <action id="FollowMode" class="floobits.FollowMode" text="Toggle Follow Mode" description="Follow mode will cause your editor to follow the cursor of others in the workspace.">
+          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
       </action>
       <action id="Summon" class="floobits.Summon" text="Summon" description="Summon everyone in the room to your location">
-          <add-to-group group-id="FileMenu" anchor="before" relative-to-action="Exit"/>
+          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt L"/>
       </action>
-      <action id="AddToWorkspace" class="floobits.AddToWorkspace" text="Add To Workspace"
-              description="Add file or folders to the Workspace">
+      <action id="AddToWorkspace" class="floobits.AddToWorkspace" text="Floobits: Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
+      <group id="Floobits" text="Floobits" description="Floobits" popup="true">
+          <reference ref="FloobitsJoinWorkspace"/>
+          <reference ref="FloobitsJoinRecentWorkspace"/>
+          <reference ref="FloobitsShareProject"/>
+          <separator/>
+          <reference ref="FollowMode"/>
+          <reference ref="Summon"/>
+          <action id="AddToWorkspace2" class="floobits.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
+          <add-to-group group-id="MainMenu" relative-to-action="HelpMenu" anchor="before"/>
+      </group>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
