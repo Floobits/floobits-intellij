@@ -14,9 +14,13 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -434,6 +438,11 @@ class FlooHandler extends ConnectionInterface {
         // Create project
         if (this.project == null) {
             this.project = pm.createProject(this.url.workspace, path);
+            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
+            Module moduleForFile = ModuleUtil.findModuleForFile(virtualFile, project);
+            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
+            modifiableModel.addContentEntry(virtualFile);
+            modifiableModel.commit();
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
             } catch (Exception e) {
@@ -853,6 +862,7 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_rename_buf (JsonObject jsonObject) {
         String name = jsonObject.get("old_path").getAsString();
         PsiFile[] filesByName = FilenameIndex.getFilesByName(project, name, GlobalSearchScope.projectScope(project));
+//        LocalFileSystem.getInstance().findFileByIoFile();
         if ((filesByName == null) || (filesByName.length == 0)) {
             return;
         }
