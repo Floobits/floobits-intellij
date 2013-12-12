@@ -1,6 +1,5 @@
 package floobits;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -258,7 +257,6 @@ abstract class DocumentFetcher {
 
 class FlooHandler extends ConnectionInterface {
     protected static boolean is_joined  = false;
-    protected static FlooHandler flooHandler;
     protected static diff_match_patch dmp = new diff_match_patch();
     protected Boolean should_upload = false;
     protected Project project;
@@ -343,12 +341,11 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public static FlooHandler getInstance() {
-        return flooHandler;
+        return FloobitsPlugin.flooHandler;
     }
 
     public FlooHandler (Project p) {
         this.project = p;
-        flooHandler = this;
         this.stomp = true;
         this.should_upload = true;
         final String project_path = p.getBasePath();
@@ -397,7 +394,6 @@ class FlooHandler extends ConnectionInterface {
         });
     }
     public FlooHandler (final FlooUrl f) {
-        flooHandler = this;
         ProjectManager pm = ProjectManager.getInstance();
 
         PersistentJson p = PersistentJson.getInstance();
@@ -445,18 +441,21 @@ class FlooHandler extends ConnectionInterface {
         }
         joinWorkspace(f, this.project.getBasePath());
     }
-    public boolean joinWorkspace(FlooUrl f, String path) {
+
+    public boolean joinWorkspace(final FlooUrl f, final String path) {
         Integer code = API.getWorkspace(f.owner, f.workspace);
         if (code < 0 || code >= 400) {
             return false;
         }
-        this.url = f;
+
+        url = f;
         Shared.colabDir = path;
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(f, path);
         persistentJson.save();
-        this.conn = new FlooConn(this);
-        this.conn.start();
+        conn = new FlooConn(this);
+        conn.start();
+
         return true;
     }
 
@@ -525,12 +524,12 @@ class FlooHandler extends ConnectionInterface {
             return true;
         }
 
-        Buf b = flooHandler.get_buf_by_path(path);
+        Buf b = FloobitsPlugin.flooHandler.get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
             return true;
         }
-        flooHandler.send_create_buf(virtualFile);
+        FloobitsPlugin.flooHandler.send_create_buf(virtualFile);
         return true;
     }
 
@@ -610,14 +609,14 @@ class FlooHandler extends ConnectionInterface {
                 for (Map.Entry<Buf, String> entry : bufStringHashMap.entrySet()) {
                     Buf buf = entry.getKey();
                     if (stomp) {
-                        flooHandler.send_get_buf(buf.id);
+                        FloobitsPlugin.flooHandler.send_get_buf(buf.id);
                     } else {
                         buf.buf = entry.getValue();
-                        flooHandler.send_set_buf(buf);
+                        FloobitsPlugin.flooHandler.send_set_buf(buf);
                     }
                 }
                 if (should_upload) {
-                    flooHandler.upload();
+                    FloobitsPlugin.flooHandler.upload();
                 }
             }
         });
@@ -740,7 +739,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void remove_highlight (Integer userId, Integer bufId, Document document) {
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(userId);
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
@@ -759,7 +758,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        flooHandler.get_document(bufId, new DocumentFetcher(false) {
+        FloobitsPlugin.flooHandler.get_document(bufId, new DocumentFetcher(false) {
             @Override
             public void on_document(Document document) {
                 Editor editor = get_editor_for_document(document);
@@ -777,8 +776,8 @@ class FlooHandler extends ConnectionInterface {
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
         final List<List<Integer>> ranges = res.ranges;
-        final Boolean force = flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
-        flooHandler.get_document(res.id, new DocumentFetcher(force) {
+        final Boolean force = FloobitsPlugin.flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
+        FloobitsPlugin.flooHandler.get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
@@ -790,7 +789,7 @@ class FlooHandler extends ConnectionInterface {
                     }
                     manager.openFile(virtualFile, true, true);
                 }
-                flooHandler.remove_highlight(res.user_id, res.id, document);
+                FloobitsPlugin.flooHandler.remove_highlight(res.user_id, res.id, document);
 
                 int textLength = document.getTextLength();
                 if (textLength == 0) {
@@ -802,7 +801,7 @@ class FlooHandler extends ConnectionInterface {
                 attributes.setBackgroundColor(JBColor.GREEN);
 
                 boolean first = true;
-                Editor editor = flooHandler.get_editor_for_document(document);
+                Editor editor = FloobitsPlugin.flooHandler.get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
                 LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
                 for (List<Integer> range : ranges) {
@@ -828,11 +827,11 @@ class FlooHandler extends ConnectionInterface {
                         first = false;
                     }
                 }
-                HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(res.user_id);
+                HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(res.user_id);
 
                 if (integerRangeHighlighterHashMap == null) {
                     integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
-                    flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                    FloobitsPlugin.flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
                 }
                 integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
             }
@@ -863,7 +862,7 @@ class FlooHandler extends ConnectionInterface {
         Integer userId = obj.get("user_id").getAsInt();
         User u = users.get(userId);
         this.users.remove(userId);
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = flooHandler.highlights.get(userId);
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
@@ -883,7 +882,7 @@ class FlooHandler extends ConnectionInterface {
         } else {
             status_message("You have left the workspace");
         }
-        flooHandler = null;
+        FloobitsPlugin.flooHandler = null;
         conn.shut_down();
     }
 
@@ -961,12 +960,18 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void clear_highlights() {
-        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : flooHandler.highlights.entrySet()) {
+        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : FloobitsPlugin.flooHandler.highlights.entrySet()) {
             Integer user_id = entry.getKey();
             HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
             for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
                 remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
             }
         }
+    }
+
+
+    public void shut_down() {
+        this.conn.shut_down();
+        is_joined = false;
     }
 }

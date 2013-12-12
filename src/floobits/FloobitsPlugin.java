@@ -2,12 +2,12 @@ package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 
 public class FloobitsPlugin implements ApplicationComponent {
+    protected static FlooHandler flooHandler;
+
     public FloobitsPlugin() {
     }
 
@@ -15,21 +15,55 @@ public class FloobitsPlugin implements ApplicationComponent {
     public void initComponent() {
     }
 
-    public static void joinWorkspace(String url) {
-        try {
-            FlooUrl f = new FlooUrl(url);
-            FlooHandler handler = new FlooHandler(f);
-        } catch (Exception e) {
-            Flog.error(e);
+    public static void shareProject(final Project project) {
+        FlooHandler f = flooHandler;
+        if (!FlooHandler.is_joined) {
+            flooHandler = new FlooHandler(project);
+            return;
         }
+
+        String title = String.format("Really leave %s?", f.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", f.url.toString(), f.url.toString());
+        DialogBuilder.build(title, body, new RunLater(null) {
+            @Override
+            void run(Object... objects) {
+                boolean join = (Boolean) objects[0];
+                if (!join) {
+                    return;
+                }
+                flooHandler.shut_down();
+                shareProject(project);
+            }
+        });
     }
 
-    public static void shareProject(Project p) {
-        try {
-            FlooHandler handler = new FlooHandler(p);
-        } catch (Exception e) {
-            Flog.error(e);
+    public static void joinWorkspace(final String url) {
+        if (!FlooHandler.is_joined) {
+            FlooUrl f;
+            try {
+                f = new FlooUrl(url);
+            } catch (Exception e) {
+                Flog.error(e);
+                return;
+            }
+            flooHandler = new FlooHandler(f);
+            return;
         }
+
+        String title = String.format("Really leave %s?", flooHandler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
+        DialogBuilder.build(title, body, new RunLater(null) {
+            @Override
+            void run(Object... objects) {
+                boolean join = (Boolean) objects[0];
+                if (!join) {
+                    return;
+                }
+                flooHandler.shut_down();
+                joinWorkspace(url);
+            }
+        });
+
     }
 
     @Override

@@ -12,7 +12,7 @@ public class DialogBuilder extends DialogWrapper {
 
     public static void build(final String title, final String body, final RunLater runLater) {
         JLabel jLabel = new JLabel();
-        jLabel.setText(String.format("<html><h2>%s</h2></html>", body));
+        jLabel.setText(String.format("<html><p>%s</p></html>", body));
         build(title, jLabel, runLater);
     }
 

@@ -124,7 +124,7 @@ public class FlooConn extends Thread {
                     }
                     this.handle(line);
                 } catch (IOException e) {
-                    Flog.error(e);
+                    Flog.warn(e);
                     break;
                 }
             }
