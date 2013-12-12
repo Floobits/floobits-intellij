@@ -960,23 +960,12 @@ class FlooHandler extends ConnectionInterface {
         this._on_request_perms(obj);
     }
 
-    public void clear_highlights(VirtualFile[] virtualFiles) {
-        HashSet<Integer> bufs = new HashSet<Integer>();
-
-        for (VirtualFile virtualFile : virtualFiles) {
-            Buf buf = get_buf_by_path(virtualFile.getCanonicalPath());
-            if (buf == null) {
-                continue;
-            }
-            bufs.add(buf.id);
-        }
-
+    public void clear_highlights() {
         for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : flooHandler.highlights.entrySet()) {
             Integer user_id = entry.getKey();
             HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
             for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
-                Integer buf_id = integerLinkedListEntry.getKey();
-                if (bufs.contains(buf_id)) remove_highlight(user_id, buf_id, null);
+                remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
             }
         }
     }
