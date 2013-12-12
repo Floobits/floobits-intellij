@@ -45,7 +45,7 @@ class Utils {
      * @param targetPath targetPath is calculated to this file
      * @param basePath basePath is calculated from this file
      * @param pathSeparator directory separator. The platform default is not assumed so that we can test Unix behaviour when running on Windows (for example)
-     * @return
+     * @return String
      */
     public static String getRelativePath (String targetPath, String basePath, String pathSeparator) {
 
@@ -71,7 +71,7 @@ class Utils {
 
         // First get all the common elements. Store them as a string,
         // and also count how many of them there are.
-        StringBuffer common = new StringBuffer();
+        StringBuilder common = new StringBuilder();
 
         int commonIndex = 0;
         while (commonIndex < target.length && commonIndex < base.length
@@ -109,7 +109,7 @@ class Utils {
             baseIsFile = false;
         }
 
-        StringBuffer relative = new StringBuffer();
+        StringBuilder relative = new StringBuilder();
 
         if (base.length != commonIndex) {
             int numDirsUp = baseIsFile ? base.length - commonIndex - 1 : base.length - commonIndex;

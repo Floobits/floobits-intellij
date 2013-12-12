@@ -851,7 +851,6 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_rename_buf (JsonObject jsonObject) {
-        VirtualFileManager.getInstance();
         String name = jsonObject.get("old_path").getAsString();
         PsiFile[] filesByName = FilenameIndex.getFilesByName(project, name, GlobalSearchScope.projectScope(project));
         if ((filesByName == null) || (filesByName.length == 0)) {
