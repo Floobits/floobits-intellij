@@ -1,16 +1,5 @@
 package floobits;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.List;
-import java.util.Map.Entry;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -23,7 +12,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.markup.*;
-import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -33,14 +21,28 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.ui.JBColor;
-import dmp.diff_match_patch.Patch;
 import dmp.diff_match_patch;
+import dmp.diff_match_patch.Patch;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.util.*;
+import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
     public String username;
@@ -848,6 +850,19 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
+    protected void _on_rename_buf (JsonObject jsonObject) {
+        VirtualFileManager.getInstance();
+        String name = jsonObject.get("old_path").getAsString();
+        PsiFile[] filesByName = FilenameIndex.getFilesByName(project, name, GlobalSearchScope.projectScope(project));
+        if ((filesByName == null) || (filesByName.length == 0)) {
+            return;
+        }
+        RefactoringFactory refactoringFactory = RefactoringFactory.getInstance(project);
+        for (PsiFile psiFile : filesByName) {
+            refactoringFactory.createRename(psiFile, jsonObject.get("new_path").getAsString());
+        }
+    }
+
     protected void _on_request_perms(JsonObject obj) {
         Flog.log("got perms request");
     }
@@ -964,6 +979,7 @@ class FlooHandler extends ConnectionInterface {
         _on_create_buf(obj);
         _on_request_perms(obj);
         _on_msg(obj);
+        _on_rename_buf(obj);
     }
 
     public void clear_highlights() {

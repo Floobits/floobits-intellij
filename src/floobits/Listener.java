@@ -10,6 +10,9 @@ import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
+import com.intellij.psi.PsiTreeChangeEvent;
+import com.intellij.psi.PsiTreeChangeListener;
+import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.editor.Document;
@@ -18,17 +21,25 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.vfs.VirtualFileManager;
 
-public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener{
+public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener {
 
 
-    private final MessageBusConnection connection;
-    private final EditorEventMulticaster em;
+    private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
+    private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
     public Listener() {
-        connection = ApplicationManager.getApplication().getMessageBus().connect();
-        em = EditorFactory.getInstance().getEventMulticaster();
+        VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
+            public void beforePropertyChange(final VirtualFilePropertyEvent event) {
+                if (event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
+                    String newValue = (String) event.getNewValue();
+                    String oldValue = (String) event.getOldValue();
+                    Flog.log("% : %s", oldValue, newValue);
+                }
+            }
+        });
     }
+
 
 
     public void initComponent() {
