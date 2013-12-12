@@ -873,9 +873,9 @@ class FlooHandler extends ConnectionInterface {
 
     }
 
-    protected void _on_disconnect (JsonObject obj) {
+    protected void _on_disconnect (JsonObject jsonObject) {
         is_joined = false;
-        String reason = obj.get("reason").getAsString();
+        String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
             error_message(reason);
             flash_message(reason);
@@ -884,6 +884,12 @@ class FlooHandler extends ConnectionInterface {
         }
         FloobitsPlugin.flooHandler = null;
         conn.shut_down();
+    }
+
+    public void _on_msg (JsonObject jsonObject){
+        String msg = jsonObject.get("data").getAsString();
+        String username = jsonObject.get("username").getAsString();
+        status_message(String.format("%s: %s", username, msg));
     }
 
     public void send_get_buf (Integer buf_id) {
@@ -947,16 +953,17 @@ class FlooHandler extends ConnectionInterface {
     @SuppressWarnings("unused")
     public void testHandlers () throws IOException {
         JsonObject obj = new JsonObject();
-        this._on_room_info(obj);
-        this._on_get_buf(obj);
-        this._on_patch(obj);
-        this._on_highlight(obj);
-        this._on_saved(obj);
-        this._on_join(obj);
-        this._on_part(obj);
-        this._on_disconnect(obj);
-        this._on_create_buf(obj);
-        this._on_request_perms(obj);
+        _on_room_info(obj);
+        _on_get_buf(obj);
+        _on_patch(obj);
+        _on_highlight(obj);
+        _on_saved(obj);
+        _on_join(obj);
+        _on_part(obj);
+        _on_disconnect(obj);
+        _on_create_buf(obj);
+        _on_request_perms(obj);
+        _on_msg(obj);
     }
 
     public void clear_highlights() {
