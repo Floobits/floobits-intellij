@@ -407,11 +407,20 @@ class FlooHandler extends ConnectionInterface {
         try {
             path = p.workspaces.get(f.owner).get(f.workspace).path;
         } catch (Exception e) {
-
             SelectFolder.build(Utils.unFuckPath("~"), new RunLater(null) {
                 @Override
                 void run(Object... objects) {
-                    joinWorkspace(f, (String)objects[0]);
+                    File file = (File)objects[0];
+                    String path;
+                    try {
+                        path = file.getCanonicalPath();
+                    } catch (IOException e) {
+                        Flog.error(e);
+                        return;
+                    }
+                    if (joinWorkspace(f, path) >= 400) {
+
+                    }
                 }
             });
             return;
