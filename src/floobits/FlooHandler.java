@@ -3,6 +3,7 @@ package floobits;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -498,24 +499,39 @@ class FlooHandler extends ConnectionInterface {
         try {
             method = API.createWorkspace(owner, name);
         } catch (IOException e) {
-            Flog.warn("Could not create workspace: %s", e.toString());
+            error_message(String.format("Could not create workspace: %s", e.toString()));
             return;
         }
         int code = method.getStatusCode();
         switch (code) {
+            case 400:
+//                Todo: pick a new name or something
+                error_message("Invalid workspace name.");
+                return;
+            case 402:
+                String details;
+                try {
+                    String res = method.getResponseBodyAsString();
+                    JsonObject obj = (JsonObject)new JsonParser().parse(res);
+                    details = obj.get("detail").getAsString();
+                } catch (IOException e) {
+                    Flog.error(e);
+                    return;
+                }
+                error_message(details);
+                return;
             case 409:
-                Flog.warn("Already exists");
+                Flog.warn("The workspace already exists so I am joining it.");
             case 201:
+                Flog.log("Workspace created.");
                 joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
                 return;
-            case 400:
-                Flog.warn("Invalid name");
-                break;
-            case 402:
-                Flog.warn("Details in body");
-               break;
             default:
-                Flog.warn("Unknown error");
+                try {
+                    Flog.error(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
+                } catch (IOException e) {
+                    Flog.error(e);
+                }
         }
     }
 
