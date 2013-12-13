@@ -36,6 +36,7 @@ import com.intellij.ui.JBColor;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
 import java.io.File;
@@ -356,7 +357,8 @@ class FlooHandler extends ConnectionInterface {
         this.should_upload = true;
         final String project_path = p.getBasePath();
         FlooUrl flooUrl = DotFloo.read(project_path);
-        if (flooUrl != null && joinWorkspace(flooUrl, project_path)) {
+        if (workspaceExists(flooUrl)) {
+            joinWorkspace(flooUrl, project_path);
             return;
         }
 
@@ -366,14 +368,14 @@ class FlooHandler extends ConnectionInterface {
             for (Entry<String, Workspace> j : workspaces.entrySet()) {
                 Workspace w = j.getValue();
                 if (Utils.isSamePath(w.path, project_path)) {
-                    FlooUrl flooUrl1;
                     try {
-                        flooUrl1 = new FlooUrl(w.url);
+                        flooUrl = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
                         Flog.error(e);
                         continue;
                     }
-                    if (joinWorkspace(flooUrl1, w.path)) {
+                    if (workspaceExists(flooUrl)) {
+                        joinWorkspace(flooUrl, project_path);
                         return;
                     }
                 }
@@ -399,13 +401,16 @@ class FlooHandler extends ConnectionInterface {
             }
         });
     }
-    public FlooHandler (final FlooUrl f) {
+    public FlooHandler (final FlooUrl flooUrl) {
+        if (!workspaceExists(flooUrl)) {
+            error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
+        }
         ProjectManager pm = ProjectManager.getInstance();
 
         PersistentJson p = PersistentJson.getInstance();
         String path;
         try {
-            path = p.workspaces.get(f.owner).get(f.workspace).path;
+            path = p.workspaces.get(flooUrl.owner).get(flooUrl.workspace).path;
         } catch (Exception e) {
             SelectFolder.build(Utils.unFuckPath("~"), new RunLater(null) {
                 @Override
@@ -418,9 +423,7 @@ class FlooHandler extends ConnectionInterface {
                         Flog.error(e);
                         return;
                     }
-                    if (joinWorkspace(f, path) >= 400) {
-
-                    }
+                    joinWorkspace(flooUrl, path);
                 }
             });
             return;
@@ -459,15 +462,28 @@ class FlooHandler extends ConnectionInterface {
                 return;
             }
         }
-        joinWorkspace(f, this.project.getBasePath());
+        joinWorkspace(flooUrl, this.project.getBasePath());
     }
 
-    public boolean joinWorkspace(final FlooUrl f, final String path) {
-        Integer code = API.getWorkspace(f.owner, f.workspace);
-        if (code < 0 || code >= 400) {
+    public Boolean workspaceExists(final FlooUrl f) {
+        if (f == null) {
+            return false;
+        }
+        HttpMethod method;
+        try {
+            method = API.getWorkspace(f.owner, f.workspace);
+        } catch (IOException e) {
+            Flog.warn(e);
             return false;
         }
 
+        if (method.getStatusCode() >= 400) {
+            return false;
+        }
+        return true;
+    }
+
+    public void joinWorkspace(final FlooUrl f, final String path) {
         url = f;
         Shared.colabDir = path;
         PersistentJson persistentJson = PersistentJson.getInstance();
@@ -475,12 +491,17 @@ class FlooHandler extends ConnectionInterface {
         persistentJson.save();
         conn = new FlooConn(this);
         conn.start();
-
-        return true;
     }
 
     protected void createWorkspace(String owner, String name, String project_path) {
-        Integer code = API.createWorkspace(owner, name);
+        HttpMethod method;
+        try {
+            method = API.createWorkspace(owner, name);
+        } catch (IOException e) {
+            Flog.warn("Could not create workspace: %s", e.toString());
+            return;
+        }
+        int code = method.getStatusCode();
         switch (code) {
             case 409:
                 Flog.warn("Already exists");

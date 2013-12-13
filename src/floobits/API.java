@@ -15,6 +15,7 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 
 import java.io.IOException;
@@ -34,51 +35,32 @@ class Request implements Serializable {
 }
 
 public class API {
-    static public Integer getWorkspace (String owner, String workspace) {
+    static public HttpMethod getWorkspace (String owner, String workspace) throws IOException {
         String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
-        final GetMethod method = new GetMethod(url);
-        try {
-            return apiRequest(method, url);
-        } catch (Exception e) {
-            Flog.error(e);
-            return -1;
-        }
+        return apiRequest(new GetMethod(url));
     }
 
-    static public Integer createWorkspace (String owner, String workspace) {
+    static public HttpMethod createWorkspace (String owner, String workspace) throws IOException {
         final String url = String.format("https://%s/api/workspace/", Shared.defaultHost);
         final PostMethod method = new PostMethod(url);
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
-        try {
-            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            return apiRequest(method, url);
-        } catch (Exception e) {
-            Flog.error(e);
-            return -1;
-        }
+
+        method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+        return apiRequest(method);
     }
 
-    static public Integer apiRequest (HttpMethod method, String url) throws Exception {
+    static public HttpMethod apiRequest (HttpMethod method) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
+//        client.setParams(new HttpClientParams());
         client.setTimeout(3000);
         client.setConnectionTimeout(3000);
-        try {
-            Settings settings = new Settings();
-            client.getParams().setAuthenticationPreemptive(true);
-            Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
-            client.getState().setCredentials(AuthScope.ANY, credentials);
-            return client.executeMethod(method);
-        } catch (UnknownHostException e) {
-            Flog.error(e);
-            return -1;
-        } catch (IOException e) {
-            Flog.error(e);
-            return -1;
-        } catch (IllegalArgumentException e) {
-            Flog.error(e);
-            return -1;
-        }
+        Settings settings = new Settings();
+        client.getParams().setAuthenticationPreemptive(true);
+        Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
+        client.getState().setCredentials(AuthScope.ANY, credentials);
+        client.executeMethod(method);
+        return method;
     }
 
     static public List<String> getOrgsCanAdmin () {
@@ -87,14 +69,16 @@ public class API {
         List<String> orgs = new ArrayList<String>();
 
         try {
-            int code = apiRequest(method, url);
-            if (code < 0 || code >= 400) {
-                return orgs;
-            }
+            apiRequest(method);
         } catch (Exception e) {
             Flog.error(e);
             return orgs;
         }
+
+        if (method.getStatusCode() >= 400) {
+            return orgs;
+        }
+
         try {
             String response = method.getResponseBodyAsString();
             JsonArray orgsJson = new JsonParser().parse(response).getAsJsonArray();
@@ -107,6 +91,7 @@ public class API {
         } catch (Exception e) {
             Flog.error(e);
         }
+
         return orgs;
     }
 
