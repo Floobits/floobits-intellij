@@ -16,14 +16,13 @@ import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -451,11 +450,12 @@ class FlooHandler extends ConnectionInterface {
         // Create project
         if (this.project == null) {
             this.project = pm.createProject(this.url.workspace, path);
-            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-            Module moduleForFile = ModuleUtil.findModuleForFile(virtualFile, project);
-            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
-            modifiableModel.addContentEntry(virtualFile);
-            modifiableModel.commit();
+//            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
+//            virtualFile.getChildren();
+//            Module moduleForFile = ModuleUtil.findModuleForFile(virtualFile, project);
+//            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
+//            modifiableModel.addContentEntry(virtualFile);
+//            modifiableModel.commit();
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
             } catch (Exception e) {
@@ -478,10 +478,7 @@ class FlooHandler extends ConnectionInterface {
             return false;
         }
 
-        if (method.getStatusCode() >= 400) {
-            return false;
-        }
-        return true;
+        return method.getStatusCode() < 400;
     }
 
     public void joinWorkspace(final FlooUrl f, final String path) {
@@ -558,16 +555,13 @@ class FlooHandler extends ConnectionInterface {
 
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-            return ignore.isIgnored(virtualFile.getCanonicalPath()) || upload(virtualFile);
+                return ignore.isIgnored(virtualFile.getCanonicalPath()) || upload(virtualFile);
             }
         });
     }
 
     public boolean upload(VirtualFile virtualFile) {
-        boolean we_care = virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
-                !(virtualFile.isDirectory() || virtualFile.isSpecialFile() || virtualFile.isSymLink());
-
-        if (!we_care) {
+        if (!Utils.isSharableFile(virtualFile)) {
             return true;
         }
         String path = virtualFile.getPath();
@@ -604,6 +598,7 @@ class FlooHandler extends ConnectionInterface {
         byte [] bytes;
         HashMap<Buf, String> conflicts = new HashMap<Buf, String>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
+
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
             buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
