@@ -22,6 +22,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.*;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -37,6 +38,7 @@ import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -902,14 +904,33 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_rename_buf (JsonObject jsonObject) {
         String name = jsonObject.get("old_path").getAsString();
-        PsiFile[] filesByName = FilenameIndex.getFilesByName(project, name, GlobalSearchScope.projectScope(project));
-//        LocalFileSystem.getInstance().findFileByIoFile();
-        if ((filesByName == null) || (filesByName.length == 0)) {
+        String oldPath = Utils.absPath(name);
+        String newPath = Utils.absPath(jsonObject.get("path").getAsString());
+        PsiFile[] filesByName = FilenameIndex.getFilesByName(project, oldPath, GlobalSearchScope.projectScope(project));
+
+        if (filesByName != null) {
+            RefactoringFactory refactoringFactory = RefactoringFactory.getInstance(project);
+            for (PsiFile psiFile : filesByName) {
+                refactoringFactory.createRename(psiFile, newPath);
+            }
             return;
         }
-        RefactoringFactory refactoringFactory = RefactoringFactory.getInstance(project);
-        for (PsiFile psiFile : filesByName) {
-            refactoringFactory.createRename(psiFile, jsonObject.get("new_path").getAsString());
+        File oldFile = new File(oldPath);
+        File newFile = new File(newPath);
+        VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(oldPath);
+        if (fileByPath != null) {
+            try {
+                fileByPath.rename(FlooHandler.class, newPath);
+                return;
+            } catch (IOException e) {
+                Flog.warn(e);
+            }
+        }
+//            Just move the thing on disk
+        try {
+            FileUtils.moveFile(oldFile, newFile);
+        } catch (IOException e) {
+            Flog.error(e);
         }
     }
 
