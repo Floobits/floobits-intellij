@@ -34,7 +34,10 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 if (event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
                     String newValue = (String) event.getNewValue();
                     String oldValue = (String) event.getOldValue();
-                    Flog.log("% : %s", oldValue, newValue);
+                    FlooHandler instance = FlooHandler.getInstance();
+                    if (instance != null) {
+                        instance.untellij_moved(oldValue, newValue);
+                    }
                 }
             }
         });

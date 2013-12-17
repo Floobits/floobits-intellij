@@ -999,6 +999,10 @@ class FlooHandler extends ConnectionInterface {
         this.conn.write(new FlooHighlight(buf, ranges, true));
     }
 
+    public void untellij_moved(String path, String newPath) {
+        Flog.log("%s - %s", path, newPath);
+    }
+
     public void untellij_changed(String path, String current) {
         Buf buf = this.get_buf_by_path(path);
 
