@@ -1069,6 +1069,7 @@ class FlooHandler extends ConnectionInterface {
 
 
     public void shut_down() {
+        status_message(String.format(" Leaving workspace: %s.", url.toString()));
         this.conn.shut_down();
         is_joined = false;
     }

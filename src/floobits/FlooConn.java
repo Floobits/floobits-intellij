@@ -31,7 +31,7 @@ public class FlooConn extends Thread {
             this.out.write(data + "\n");
             this.out.flush();
         } catch (Exception e) {
-            Flog.error(e);
+            if (retries > -1) Flog.error(e);
         }
     }
 
@@ -119,19 +119,19 @@ public class FlooConn extends Thread {
                 try {
                     line = in.readLine();
                     if (line == null) {
-                        Flog.warn("socket died");
+                        if (retries != -1) Flog.warn("socket died");
                         break;
                     }
                     this.handle(line);
                 } catch (IOException e) {
-                    Flog.warn(e);
+                    if (retries != -1) Flog.warn(e);
                     break;
                 }
             }
         } catch (IOException e) {
             reconnect();
         } catch (Exception e) {
-            Flog.error(e);
+            if (retries != -1) Flog.error(e);
             reconnect();
         }
     }

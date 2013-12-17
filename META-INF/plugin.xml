@@ -60,10 +60,12 @@
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt L"/>
       </action>
       <action id="floobits.ClearHighlights" class="floobits.ClearHighlights" text="Clear Highlights"/>
+      <action id="floobits.LeaveWorkspace" class="floobits.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
       <action id="floobits.AddToWorkspace" class="floobits.AddToWorkspace" text="Floobits: Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
       <group id="Floobits" text="Floobits" description="Floobits" popup="true">
+          <reference ref="floobits.LeaveWorkspace"/>
           <reference ref="floobits.JoinWorkspace"/>
           <reference ref="floobits.JoinRecentWorkspace"/>
           <reference ref="floobits.ShareProject"/>
