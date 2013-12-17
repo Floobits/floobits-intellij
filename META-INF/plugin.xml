@@ -61,6 +61,7 @@
       </action>
       <action id="floobits.ClearHighlights" class="floobits.ClearHighlights" text="Clear Highlights"/>
       <action id="floobits.LeaveWorkspace" class="floobits.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
+      <action id="floobits.OpenWorkspaceInBrowser" class="floobits.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
       <action id="floobits.AddToWorkspace" class="floobits.AddToWorkspace" text="Floobits: Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
@@ -73,9 +74,11 @@
           <reference ref="floobits.FollowMode"/>
           <reference ref="floobits.Summon"/>
           <reference ref="floobits.ClearHighlights"/>
+          <reference ref="floobits.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
           <add-to-group group-id="MainMenu" relative-to-action="HelpMenu" anchor="before"/>
       </group>
+
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

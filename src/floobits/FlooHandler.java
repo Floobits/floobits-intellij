@@ -331,7 +331,7 @@ class FlooHandler extends ConnectionInterface {
 
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
-        status_message(String.format(" You successfully joined %s ", url.toString()));
+        status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) throws Exception {
@@ -1069,7 +1069,7 @@ class FlooHandler extends ConnectionInterface {
 
 
     public void shut_down() {
-        status_message(String.format(" Leaving workspace: %s.", url.toString()));
+        status_message(String.format("Leaving workspace: %s.", url.toString()));
         this.conn.shut_down();
         is_joined = false;
     }
