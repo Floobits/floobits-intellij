@@ -134,8 +134,7 @@ class GetBufResponse implements Serializable {
     public String md5;
 }
 
-class CreateBufResponse extends GetBufResponse {
-}
+class CreateBufResponse extends GetBufResponse {}
 
 class FlooPatch implements Serializable {
     public String name = "patch";
@@ -150,6 +149,8 @@ class FlooPatch implements Serializable {
     public String username;
 
     private static diff_match_patch dmp = new diff_match_patch();
+
+    public FlooPatch(){}
 
     public FlooPatch (String current, Buf buf) {
         // TODO: handle binary bufs
@@ -200,6 +201,8 @@ class FlooHighlight implements Serializable {
     public Boolean summon = false;
     public List<List<Integer>> ranges;
     public Integer user_id;
+
+    public FlooHighlight(){}
 
     public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean summon) {
         this.id = buf.id;
@@ -335,7 +338,7 @@ class FlooHandler extends ConnectionInterface {
         try {
             method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
         } catch (NoSuchMethodException e) {
-            Flog.error(e);
+            Flog.error(String.format("Could not find %s method.\n%s", method_name, e.toString()));
             return;
         }
         Object objects[] = new Object[1];
@@ -552,7 +555,8 @@ class FlooHandler extends ConnectionInterface {
 
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                return ignore.isIgnored(virtualFile.getCanonicalPath()) || upload(virtualFile);
+                if (!ignore.isIgnored(virtualFile.getCanonicalPath())) upload(virtualFile);
+                return true;
             }
         });
     }
