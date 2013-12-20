@@ -3,6 +3,7 @@ package floobits;
 import java.io.File;
 import java.util.regex.Pattern;
 
+import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
 
@@ -11,7 +12,7 @@ import floobits.Flog;
 class Utils {
     public static Boolean isSharableFile(VirtualFile virtualFile) {
         return (virtualFile != null && virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
-                !(virtualFile.isDirectory() || virtualFile.isSpecialFile() || virtualFile.isSymLink()));
+                !(virtualFile.isDirectory() || virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)));
     }
     public static Boolean isSamePath (String p1, String p2) {
         p1 = FilenameUtils.normalizeNoEndSeparator(p1);

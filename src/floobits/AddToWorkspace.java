@@ -62,11 +62,7 @@ public class AddToWorkspace extends IsJoinedAction {
     }
 
     private boolean add(VirtualFile virtualFile, HashSet<VirtualFile> set) {
-        boolean we_donut_care = !virtualFile.isInLocalFileSystem()
-                || virtualFile.isSpecialFile()
-                || virtualFile.isSymLink()
-                || !Utils.isShared(virtualFile.getCanonicalPath());
-        if (we_donut_care) {
+        if (!Utils.isSharableFile(virtualFile)) {
             return false;
         }
         if (set.contains(virtualFile)) {
