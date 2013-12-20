@@ -2,10 +2,7 @@ package floobits;
 
 import java.io.*;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,6 +13,10 @@ import org.apache.commons.io.FileUtils;
 class Workspace implements Serializable {
     String url;
     String path;
+
+    Workspace () {
+
+    }
 
     Workspace(String url, String path) {
         this.url = url;
@@ -33,7 +34,7 @@ public class PersistentJson {
     public HashMap<String, Map<String, Workspace>> workspaces = new HashMap<String, Map<String,Workspace>>();
     public Boolean auto_generated_account = false;
     public Boolean disable_account_creation = true;
-    public ArrayList<Workspace> recent_workspaces = new ArrayList<Workspace>();
+    public LinkedList<Workspace> recent_workspaces = new LinkedList<Workspace>();
 
     public void addWorkspace(FlooUrl flooUrl, String path) {
         Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);
@@ -51,7 +52,7 @@ public class PersistentJson {
         }
         this.recent_workspaces.add(workspace);
         HashSet<String> seen = new HashSet<String>();
-        ArrayList<Workspace> unique = new ArrayList<Workspace>();
+        LinkedList<Workspace> unique = new LinkedList<Workspace>();
         for (Workspace w : this.recent_workspaces) {
             w.clean();
             if (seen.contains(w.url)) {
