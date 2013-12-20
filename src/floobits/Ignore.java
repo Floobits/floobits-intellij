@@ -23,6 +23,7 @@ class Ignore {
     protected File path;
     protected String unfuckedPath;
     protected Ignore parent;
+    protected String stringPath;
     protected ArrayList<Ignore> children = new ArrayList<Ignore>();
 
     protected ArrayList<File> files = new ArrayList<File>();
@@ -32,6 +33,7 @@ class Ignore {
 
     public Ignore (File basePath, Ignore parent, Boolean recurse) throws IOException{
         this.path = basePath;
+        this.stringPath = basePath.getCanonicalPath();
         unfuckedPath = this.path.getCanonicalPath();
         this.parent = parent;
         this.ignores.put("/TOO_BIG/", new ArrayList<String>());
@@ -82,7 +84,13 @@ class Ignore {
     }
 
     public Boolean isIgnored (String path) {
-        String relPath = Utils.getRelativePath(path, this.path.getPath(), "/");
+        String relPath = null;
+        if (path.equals(this.stringPath)) {
+            return false;
+        }
+
+        relPath = Utils.getRelativePath(path, this.path.getPath(), "/");
+
         File relPathFile = new File(relPath);
         for (Entry<String, List<String>> entry : ignores.entrySet()) {
             for (String pattern : entry.getValue()) {
