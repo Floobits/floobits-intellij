@@ -90,7 +90,7 @@ abstract class Buf <T> {
         if (document == null) {
             return;
         }
-        final String string = (String)this.buf;
+
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -98,21 +98,22 @@ abstract class Buf <T> {
                     public void run() {
                         for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
                             int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
-                            String text = document.getText();
-                            String newText = text.substring(0, flooPatchPosition.start) + flooPatchPosition.text;
-                            if (end < text.length()) {
-                                newText += text.substring(end, text.length());
-                            }
-                            if (!newText.equals(string)) {
-                                Flog.log("not the same?");
-                            }
+//                            String text = document.getText();
+//                            String string = (String)buf;
+//                            String newText = text.substring(0, flooPatchPosition.start) + flooPatchPosition.text;
+//                            if (end < text.length()) {
+//                                newText += text.substring(end, text.length());
+//                            }
+//                            if (!newText.equals(string)) {
+//                                Flog.log("not the same?");
+//                            }
                             try {
                                 document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text);
                             } catch (Exception e) {
                                 Flog.error(e);
+                                FlooHandler.getInstance().send_get_buf(id);
                             }
                         }
-//                        d.replaceString(0, d.getTextLength(), string);
                     }
                 });
             }

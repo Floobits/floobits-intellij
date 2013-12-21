@@ -1023,8 +1023,13 @@ class FlooHandler extends ConnectionInterface {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
+        String s = DigestUtils.md5Hex(current);
+        if (s.equals(buf.md5)) {
+            Flog.debug("Expected change");
+            return;
+        }
         this.send_patch(current, buf);
-        buf.set(current, DigestUtils.md5Hex(current));
+        buf.set(current, s);
     }
 
     public void untellij_selection_change(String path, TextRange[] textRanges) {
