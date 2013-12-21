@@ -83,7 +83,7 @@ public class diff_match_patch {
   /**
    * The number of bits in an int.
    */
-  private short Match_MaxBits = 32;
+  protected short Match_MaxBits = 32;
 
   /**
    * Internal class for returning results from diff_linesToChars().

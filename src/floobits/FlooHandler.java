@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.ide.util.projectWizard.ProjectBuilder;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -15,10 +16,15 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.ModifiableModuleModel;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.impl.SdkFinder;
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,11 +35,14 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.ui.JBColor;
+import dmp.FlooDmp;
+import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
@@ -264,7 +273,7 @@ abstract class DocumentFetcher {
 
 class FlooHandler extends ConnectionInterface {
     protected static boolean is_joined  = false;
-    protected static diff_match_patch dmp = new diff_match_patch();
+    protected static FlooDmp dmp = new FlooDmp();
     protected Boolean should_upload = false;
     protected Project project;
     protected Boolean stomp = false;
@@ -405,7 +414,7 @@ class FlooHandler extends ConnectionInterface {
         if (!workspaceExists(flooUrl)) {
             error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
         }
-        ProjectManager pm = ProjectManager.getInstance();
+
 
         PersistentJson p = PersistentJson.getInstance();
         String path;
@@ -428,7 +437,8 @@ class FlooHandler extends ConnectionInterface {
             });
             return;
         }
-
+        ProjectManager pm = ProjectManager.getInstance();
+//        Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
         // Check open projects
         Project[] openProjects = pm.getOpenProjects();
         for (Project project : openProjects) {
@@ -733,7 +743,8 @@ class FlooHandler extends ConnectionInterface {
         patches = (LinkedList) dmp.patch_fromText(res.patch);
         Object[] results = dmp.patch_apply(patches, (String) b.buf);
         final String text = (String) results[0];
-        boolean[] boolArray = (boolean[]) results[1];
+        final boolean[] boolArray = (boolean[]) results[1];
+        final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];
 
         boolean cleanPatch = true;
         for (boolean clean : boolArray) {
@@ -977,6 +988,9 @@ class FlooHandler extends ConnectionInterface {
         status_message(String.format("%s: %s", username, msg));
     }
 
+    public void _on_term_stdout(JsonObject jsonObject) {}
+    public void _on_term_stdin(JsonObject jsonObject) {}
+
     public void send_get_buf (Integer buf_id) {
         this.conn.write(new GetBufRequest(buf_id));
     }
@@ -1054,6 +1068,8 @@ class FlooHandler extends ConnectionInterface {
         _on_request_perms(obj);
         _on_msg(obj);
         _on_rename_buf(obj);
+        _on_term_stdin(obj);
+        _on_term_stdout(obj);
     }
 
     public void clear_highlights() {
