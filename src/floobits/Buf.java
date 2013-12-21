@@ -97,9 +97,20 @@ abstract class Buf <T> {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
                         for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
-                            document.replaceString(flooPatchPosition.start,
-                                    flooPatchPosition.start + flooPatchPosition.end,
-                                    flooPatchPosition.text);
+                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
+                            String text = document.getText();
+                            String newText = text.substring(0, flooPatchPosition.start) + flooPatchPosition.text;
+                            if (end < text.length()) {
+                                newText += text.substring(end, text.length());
+                            }
+                            if (!newText.equals(string)) {
+                                Flog.log("not the same?");
+                            }
+                            try {
+                                document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text);
+                            } catch (Exception e) {
+                                Flog.error(e);
+                            }
                         }
 //                        d.replaceString(0, d.getTextLength(), string);
                     }
