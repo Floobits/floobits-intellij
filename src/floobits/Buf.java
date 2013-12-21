@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import dmp.FlooPatchPosition;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -64,7 +65,7 @@ abstract class Buf <T> {
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
-    public void update () {
+    public Document update() {
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
         if (virtualFile == null || !virtualFile.exists()) {
             try {
@@ -72,7 +73,7 @@ abstract class Buf <T> {
             } catch (IOException e) {
                 Flog.error(e);
             }
-            return;
+            return null;
         }
         final Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
         if (d == null) {
@@ -81,6 +82,12 @@ abstract class Buf <T> {
             } catch (IOException e) {
                 Flog.error(e);
             }
+        }
+        return d;
+    }
+    public void update (final FlooPatchPosition[] flooPatchPositions) {
+        final Document document = update();
+        if (document == null) {
             return;
         }
         final String string = (String)this.buf;
@@ -89,7 +96,12 @@ abstract class Buf <T> {
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
-                        d.replaceString(0, d.getTextLength(), string);
+                        for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
+                            document.replaceString(flooPatchPosition.start,
+                                    flooPatchPosition.start + flooPatchPosition.end,
+                                    flooPatchPosition.text);
+                        }
+//                        d.replaceString(0, d.getTextLength(), string);
                     }
                 });
             }

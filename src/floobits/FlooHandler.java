@@ -769,7 +769,7 @@ class FlooHandler extends ConnectionInterface {
         Flog.log("Patched %s", res.path);
 
         b.set(text, res.md5_after);
-        b.update();
+        b.update(positions);
     }
 
     public void get_document(Integer id, DocumentFetcher documentFetcher) {
