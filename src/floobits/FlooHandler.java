@@ -286,6 +286,7 @@ class FlooHandler extends ConnectionInterface {
     protected HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     protected Tree tree;
     protected FlooConn conn;
+    protected Timeouts timeouts = Timeouts.create();
 
     protected void flash_message(final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -414,7 +415,6 @@ class FlooHandler extends ConnectionInterface {
         if (!workspaceExists(flooUrl)) {
             error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
         }
-
 
         PersistentJson p = PersistentJson.getInstance();
         String path;
@@ -741,7 +741,7 @@ class FlooHandler extends ConnectionInterface {
 
         LinkedList patches;
         patches = (LinkedList) dmp.patch_fromText(res.patch);
-        Object[] results = dmp.patch_apply(patches, (String) b.buf);
+        final Object[] results = dmp.patch_apply(patches, (String) b.buf);
         final String text = (String) results[0];
         final boolean[] boolArray = (boolean[]) results[1];
         final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];

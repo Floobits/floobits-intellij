@@ -1,13 +1,11 @@
 package floobits;
 
-import java.io.File;
-import java.util.regex.Pattern;
-
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
 
-import floobits.Flog;
+import java.io.File;
+import java.util.regex.Pattern;
 
 class Utils {
     public static Boolean isSharableFile(VirtualFile virtualFile) {
