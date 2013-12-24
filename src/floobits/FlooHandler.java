@@ -1061,6 +1061,7 @@ class FlooHandler extends ConnectionInterface {
             Flog.debug("Expected change");
             return;
         }
+        buf.forced_patch = false;
         this.send_patch(current, buf);
         buf.set(current, s);
     }
