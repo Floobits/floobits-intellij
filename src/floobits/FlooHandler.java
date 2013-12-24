@@ -245,30 +245,29 @@ abstract class DocumentFetcher {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        String absPath = Utils.absPath(path);
+            ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                public void run() {
+                    String absPath = Utils.absPath(path);
 
-                        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-                        if (virtualFile == null || !virtualFile.exists()) {
-                            Flog.info("no virtual file for %s", path);
-                            return;
-                        }
-                        Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-                        if (d == null && make_document) {
-                            d = FileDocumentManager.getInstance().getDocument(virtualFile);
-                        }
-
-                        if (d == null) {
-                            Flog.info("could not make document for %s", path);
-                            return;
-                        }
-                        on_document(d);
+                    VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+                    if (virtualFile == null || !virtualFile.exists()) {
+                        Flog.info("no virtual file for %s", path);
+                        return;
                     }
-                });
-            }
-        });
-    }
+                    Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+                    if (d == null && make_document) {
+                        d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                    }
+
+                    if (d == null) {
+                        Flog.info("could not make document for %s", path);
+                        return;
+                    }
+                    on_document(d);
+                }
+            });
+        }});
+    };
 }
 
 class FlooHandler extends ConnectionInterface {
@@ -335,6 +334,11 @@ class FlooHandler extends ConnectionInterface {
             return null;
         }
         return user.username;
+    }
+
+    protected Timeout setTimeout(final Timeout timeout) {
+        timeouts.setTimeout(timeout);
+        return timeout;
     }
 
     public void on_connect () {
@@ -718,8 +722,8 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_patch (JsonObject obj) {
-        FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
-        Buf b = this.bufs.get(res.id);
+        final FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
+        final Buf b = this.bufs.get(res.id);
         if (b.buf == null) {
             Flog.warn("no buffer");
             this.send_get_buf(res.id);
@@ -732,44 +736,73 @@ class FlooHandler extends ConnectionInterface {
         }
 
         Flog.info("Got _on_patch");
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                String oldText = bufs.toString();
+                Document d;
 
-        if (!b.md5.equals(res.md5_before)) {
-            Flog.info("MD5 before mismatch (ours %s remote %s). Sending get_buf.", b.md5, res.md5_before);
-            this.send_get_buf(res.id);
-            return;
-        }
+                String absPath = Utils.absPath(b.path);
+                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
 
-        LinkedList patches;
-        patches = (LinkedList) dmp.patch_fromText(res.patch);
-        final Object[] results = dmp.patch_apply(patches, (String) b.buf);
-        final String text = (String) results[0];
-        final boolean[] boolArray = (boolean[]) results[1];
-        final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];
+                if (virtualFile != null && virtualFile.exists()) {
+                    d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+                    if (d != null) {
+                        String viewText = d.getText();
+                        if (viewText.equals(bufs.toString())) {
+                            b.forced_patch = false;
+                        } else if (!b.forced_patch) {
+                            b.forced_patch = true;
+                            oldText = viewText;
+                            send_patch(viewText, b);
+                        }
+                    }
+                }
 
-        boolean cleanPatch = true;
-        for (boolean clean : boolArray) {
-            if (!clean) {
-                cleanPatch = false;
-                break;
+                Timeout timeout = b.timeout;
+                if (timeout != null) {
+                    b.timeout.cancel();
+                    b.timeout = null;
+                }
+
+                String md5Before = DigestUtils.md5Hex(oldText);
+                if (!md5Before.equals(res.md5_before)) {
+                    Flog.warn("starting md5s don't match for %s. this is dangerous!", b.path);
+                }
+
+                LinkedList patches = (LinkedList) dmp.patch_fromText(res.patch);
+                final Object[] results = dmp.patch_apply(patches, oldText);
+                final String text = (String) results[0];
+                final boolean[] boolArray = (boolean[]) results[1];
+                final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];
+
+                for (boolean clean : boolArray) {
+                    if (!clean) {
+                        Flog.info("Patch not clean. Sending get_buf.");
+                        send_get_buf(res.id);
+                        return;
+                    }
+                }
+
+                String md5After = DigestUtils.md5Hex(text);
+                if (!md5After.equals(res.md5_after)) {
+                    Flog.info("MD5 after mismatch (ours %s remote %s). Sending get_buf soon.", md5After, res.md5_after);
+                    final Integer buf_id = b.id;
+
+                    b.timeout = setTimeout(new Timeout(2000) {
+                        @Override
+                        void run(Object... objects) {
+                            send_get_buf(buf_id);
+                        }
+                    });
+                    return;
+                }
+                Flog.log("Patched %s", res.path);
+
+                b.set(text, res.md5_after);
+                b.update(positions);
             }
-        }
-
-        if (!cleanPatch) {
-            Flog.info("Patch not clean. Sending get_buf.");
-            this.send_get_buf(res.id);
-            return;
-        }
-
-        String md5After = DigestUtils.md5Hex(text);
-        if (!md5After.equals(res.md5_after)) {
-            Flog.info("MD5 after mismatch (ours %s remote %s). Sending get_buf.", md5After, res.md5_after);
-            this.send_get_buf(res.id);
-            return;
-        }
-        Flog.log("Patched %s", res.path);
-
-        b.set(text, res.md5_after);
-        b.update(positions);
+        });
     }
 
     public void get_document(Integer id, DocumentFetcher documentFetcher) {

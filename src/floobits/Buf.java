@@ -45,6 +45,8 @@ abstract class Buf <T> {
     public String md5;
     public T buf;
     public Encoding encoding;
+    public Timeout timeout;
+    public boolean forced_patch = false;
 
     public Buf (String path, Integer id, T buf, String md5) {
         this.id = id;
@@ -94,10 +96,10 @@ abstract class Buf <T> {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
-                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
+            ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                public void run() {
+                    for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
+                        int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
 //                            String text = document.getText();
 //                            String string = (String)buf;
 //                            String newText = text.substring(0, flooPatchPosition.start) + flooPatchPosition.text;
@@ -107,15 +109,16 @@ abstract class Buf <T> {
 //                            if (!newText.equals(string)) {
 //                                Flog.log("not the same?");
 //                            }
-                            try {
-                                document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text);
-                            } catch (Exception e) {
-                                Flog.error(e);
-                                FlooHandler.getInstance().send_get_buf(id);
-                            }
+                        try {
+                            document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text);
+                        } catch (Exception e) {
+                            Flog.error(e);
+                            FlooHandler.getInstance().send_get_buf(id);
                         }
                     }
-                });
+                    }
+                }
+            );
             }
         });
     }
