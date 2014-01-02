@@ -113,7 +113,7 @@ public class FlooDmp extends diff_match_patch {
             final int text_len = text.length();
             if (position.start < np_len) {
                 position.end -= np_len - position.start;
-                position.text = position.text.substring(np_len - position.start);
+                position.text = position.text.substring(Math.min(np_len - position.start, position.text.length()));
                 position.start = 0;
             } else {
                 position.start -= np_len;
@@ -121,7 +121,10 @@ public class FlooDmp extends diff_match_patch {
 
             final int too_close = (position.start + position.text.length()) - (text_len - 2 * np_len);
             if (too_close > 0){
-                position.text = position.text.substring(0, position.text.length() - too_close);
+
+                int start = position.text.length() - too_close;
+                start = start < 0 ? 0 : start;
+                position.text = position.text.substring(0, start);
             }
             positions[x] = position;
             x++;
