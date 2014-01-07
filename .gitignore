@@ -1,5 +1,4 @@
 *.class
-*.jar
 *.war
 *.ear
 .sublime-project
