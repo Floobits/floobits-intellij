@@ -352,7 +352,7 @@ class FlooHandler extends ConnectionInterface {
         try {
             method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
         } catch (NoSuchMethodException e) {
-            Flog.error(String.format("Could not find %s method.\n%s", method_name, e.toString()));
+            Flog.warn(String.format("Could not find %s method.\n%s", method_name, e.toString()));
             return;
         }
         Object objects[] = new Object[1];
@@ -1015,6 +1015,41 @@ class FlooHandler extends ConnectionInterface {
         conn.shut_down();
     }
 
+    protected void _on_delete_buf(JsonObject jsonObject) {
+        Integer id = jsonObject.get("id").getAsInt();
+        Buf buf = bufs.get(id);
+        if (buf == null) {
+            Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", id));
+            return;
+        }
+        String absPath = Utils.absPath(buf.path);
+
+        if (buf.timeout != null) {
+            buf.timeout.cancel();
+            buf.timeout = null;
+        }
+        bufs.remove(id);
+        paths_to_ids.remove(buf.path);
+        final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
+        if (fileByPath == null) {
+            return;
+        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        try {
+                            fileByPath.delete(FlooHandler.getInstance());
+                        } catch (IOException e) {
+                            Flog.error(e);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     public void _on_msg (JsonObject jsonObject){
         String msg = jsonObject.get("data").getAsString();
         String username = jsonObject.get("username").getAsString();
@@ -1027,6 +1062,7 @@ class FlooHandler extends ConnectionInterface {
     public void send_get_buf (Integer buf_id) {
         this.conn.write(new GetBufRequest(buf_id));
     }
+
 
     public void send_patch (String current, Buf buf) {
         FlooPatch req = new FlooPatch(current, buf);
@@ -1109,6 +1145,7 @@ class FlooHandler extends ConnectionInterface {
         _on_rename_buf(obj);
         _on_term_stdin(obj);
         _on_term_stdout(obj);
+        _on_delete_buf(obj);
     }
 
     public void clear_highlights() {

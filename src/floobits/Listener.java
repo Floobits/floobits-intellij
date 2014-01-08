@@ -92,7 +92,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void before(@NotNull List<? extends VFileEvent> events) {
-//        Flog.info("before");
+        Flog.info("before");
     }
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {

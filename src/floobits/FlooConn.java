@@ -176,16 +176,11 @@ public class FlooConn extends Thread {
             }
         };
 
-        SSLContext sc = null;
+        SSLContext sc;
         try {
             sc = SSLContext.getInstance("SSL");
-        } catch (NoSuchAlgorithmException e) {
-            Flog.error(e);
-            return;
-        }
-        try {
             sc.init(null, new javax.net.ssl.TrustManager[]{x509TrustManager}, new SecureRandom());
-        } catch (KeyManagementException e) {
+        } catch (Exception e) {
             Flog.error(e);
             return;
         }
