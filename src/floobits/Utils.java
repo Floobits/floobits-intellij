@@ -9,8 +9,11 @@ import java.util.regex.Pattern;
 
 class Utils {
     public static Boolean isSharableFile(VirtualFile virtualFile) {
-        return (virtualFile != null && virtualFile.exists() && virtualFile.isInLocalFileSystem() &&
-                !(virtualFile.isDirectory() || virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)));
+        return (isFile(virtualFile) && virtualFile.exists() && virtualFile.isInLocalFileSystem());
+    }
+    public static Boolean isFile(VirtualFile virtualFile) {
+        return (virtualFile != null  && !(virtualFile.isDirectory() || virtualFile.is(VFileProperty.SPECIAL) ||
+                virtualFile.is(VFileProperty.SYMLINK)));
     }
     public static Boolean isSamePath (String p1, String p2) {
         p1 = FilenameUtils.normalizeNoEndSeparator(p1);

@@ -64,6 +64,13 @@ abstract class Buf <T> {
         return FilenameUtils.concat(Shared.colabDir, this.path);
     }
 
+    public void cancelTimeout () {
+        if (timeout != null) {
+            timeout.cancel();
+            timeout = null;
+        }
+    }
+
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);

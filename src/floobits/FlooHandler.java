@@ -232,6 +232,15 @@ class FlooSaveBuf implements Serializable {
     }
 }
 
+class FlooDeleteBuf implements Serializable {
+    public Integer id;
+    public String name = "delete_buf";
+
+    FlooDeleteBuf(Integer id) {
+        this.id = id;
+    }
+}
+
 abstract class DocumentFetcher {
     Boolean make_document = false;
 
@@ -496,6 +505,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void joinWorkspace(final FlooUrl f, final String path) {
+        Flog.warn("join workspace");
         url = f;
         Shared.colabDir = path;
         PersistentJson persistentJson = PersistentJson.getInstance();
@@ -759,11 +769,7 @@ class FlooHandler extends ConnectionInterface {
                     }
                 }
 
-                Timeout timeout = b.timeout;
-                if (timeout != null) {
-                    b.timeout.cancel();
-                    b.timeout = null;
-                }
+                b.cancelTimeout();
 
                 String md5Before = DigestUtils.md5Hex(oldText);
                 if (!md5Before.equals(res.md5_before)) {
@@ -1023,11 +1029,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         String absPath = Utils.absPath(buf.path);
-
-        if (buf.timeout != null) {
-            buf.timeout.cancel();
-            buf.timeout = null;
-        }
+        buf.cancelTimeout();
         bufs.remove(id);
         paths_to_ids.remove(buf.path);
         final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
@@ -1126,6 +1128,16 @@ class FlooHandler extends ConnectionInterface {
         }
 
         this.conn.write(new FlooSaveBuf(buf.id));
+    }
+
+    public void untellij_deleted(String path) {
+        Buf buf = this.get_buf_by_path(path);
+        if (buf == null) {
+            Flog.info("buf is not populated");
+            return;
+        }
+        buf.cancelTimeout();
+        this.conn.write(new FlooDeleteBuf(buf.id));
     }
 
     @SuppressWarnings("unused")

@@ -92,11 +92,28 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void before(@NotNull List<? extends VFileEvent> events) {
-        Flog.info("before");
+        Flog.info("Before");
     }
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-//        Flog.info("after");
+        FlooHandler handler = FlooHandler.getInstance();
+        if (handler == null) {
+            return;
+        }
+        for (VFileEvent event : events) {
+            Flog.info(" Before event type %s", event.getClass().getSimpleName());
+            if (event == null) {
+                continue;
+            }
+            if (!Utils.isFile(event.getFile())) {
+                continue;
+            }
+            if (!(event instanceof VFileDeleteEvent)) {
+                continue;
+            }
+            Flog.info("deleting a file %s", event.getPath());
+            handler.untellij_deleted(event.getPath());
+        }
     }
 
     @NotNull
