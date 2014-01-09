@@ -1096,7 +1096,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         buf.cancelTimeout();
-        this.conn.write(new FlooRenameBuf(buf.id, newPath));
+        this.conn.write(new FlooRenameBuf(buf.id, Utils.toProjectRelPath(newPath)));
     }
 
     public void untellij_changed(String path, String current) {

@@ -32,8 +32,10 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
                 if (event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
-                    String newValue = (String) event.getNewValue();
-                    String oldValue = (String) event.getOldValue();
+                    VirtualFile parent = event.getParent();
+                    String parentPath = parent.getPath();
+                    String newValue = parentPath + "/" + event.getNewValue().toString();
+                    String oldValue = parentPath + "/" + event.getOldValue().toString();
                     FlooHandler instance = FlooHandler.getInstance();
                     if (instance != null) {
                         instance.untellij_renamed(oldValue, newValue);

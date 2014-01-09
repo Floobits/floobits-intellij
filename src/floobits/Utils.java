@@ -127,7 +127,6 @@ class Utils {
                 relative.append(".." + pathSeparator);
             }
         }
-        common.trimToSize();
         String commonStr = common.toString();
         // Handle missing trailing slash issues with base project directory:
         if (normalizedTargetPath.equals(commonStr.substring(0, commonStr.length() - 1))) {
