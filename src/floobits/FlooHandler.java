@@ -241,6 +241,17 @@ class FlooDeleteBuf implements Serializable {
     }
 }
 
+class FlooRenameBuf implements Serializable {
+    public Integer id;
+    public String name = "rename_buf";
+    public String path;
+
+    FlooRenameBuf(Integer id, String path) {
+        this.id = id;
+        this.path = path;
+    }
+}
+
 abstract class DocumentFetcher {
     Boolean make_document = false;
 
@@ -473,12 +484,6 @@ class FlooHandler extends ConnectionInterface {
         // Create project
         if (this.project == null) {
             this.project = pm.createProject(this.url.workspace, path);
-//            VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(path);
-//            virtualFile.getChildren();
-//            Module moduleForFile = ModuleUtil.findModuleForFile(virtualFile, project);
-//            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(moduleForFile).getModifiableModel();
-//            modifiableModel.addContentEntry(virtualFile);
-//            modifiableModel.commit();
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
             } catch (Exception e) {
@@ -1083,8 +1088,15 @@ class FlooHandler extends ConnectionInterface {
         this.conn.write(new FlooHighlight(buf, ranges, true));
     }
 
-    public void untellij_moved(String path, String newPath) {
-        Flog.log("%s - %s", path, newPath);
+    public void untellij_renamed(String path, String newPath) {
+        Flog.log("Renamed buf: %s - %s", path, newPath);
+        Buf buf = this.get_buf_by_path(path);
+        if (buf == null) {
+            Flog.info("buf does not exist.");
+            return;
+        }
+        buf.cancelTimeout();
+        this.conn.write(new FlooRenameBuf(buf.id, newPath));
     }
 
     public void untellij_changed(String path, String current) {
@@ -1133,7 +1145,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_deleted(String path) {
         Buf buf = this.get_buf_by_path(path);
         if (buf == null) {
-            Flog.info("buf is not populated");
+            Flog.info("buf does not exist");
             return;
         }
         buf.cancelTimeout();

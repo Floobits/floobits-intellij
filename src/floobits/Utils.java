@@ -31,7 +31,9 @@ class Utils {
 
     public static Boolean isShared (String path) {
     	try {
-	        return !getRelativePath(unFuckPath(path), Shared.colabDir, "/").contains("..");
+            String unFuckedPath = unFuckPath(path);
+            String relativePath = getRelativePath(unFuckedPath, Shared.colabDir, "/");
+	        return !relativePath.contains("..");
     	} catch (PathResolutionException e) {
     		return false;
     	} catch (StringIndexOutOfBoundsException e) {
@@ -57,8 +59,8 @@ class Utils {
     public static String getRelativePath (String targetPath, String basePath, String pathSeparator) {
 
         // Normalize the paths
-        String normalizedTargetPath = FilenameUtils.normalizeNoEndSeparator(targetPath);
         String normalizedBasePath = FilenameUtils.normalizeNoEndSeparator(basePath);
+        String normalizedTargetPath = FilenameUtils.normalizeNoEndSeparator(targetPath);
 
         // Undo the changes to the separators made by normalization
         if (pathSeparator.equals("/")) {
@@ -125,7 +127,13 @@ class Utils {
                 relative.append(".." + pathSeparator);
             }
         }
-        relative.append(normalizedTargetPath.substring(common.length()));
+        common.trimToSize();
+        String commonStr = common.toString();
+        // Handle missing trailing slash issues with base project directory:
+        if (normalizedTargetPath.equals(commonStr.substring(0, commonStr.length() - 1))) {
+            return "";
+        }
+        relative.append(normalizedTargetPath.substring(commonStr.length()));
         return relative.toString();
     }
 

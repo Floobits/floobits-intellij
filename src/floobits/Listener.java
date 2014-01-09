@@ -36,7 +36,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     String oldValue = (String) event.getOldValue();
                     FlooHandler instance = FlooHandler.getInstance();
                     if (instance != null) {
-                        instance.untellij_moved(oldValue, newValue);
+                        instance.untellij_renamed(oldValue, newValue);
                     }
                 }
             }
