@@ -957,35 +957,46 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_rename_buf (JsonObject jsonObject) {
-        String name = jsonObject.get("old_path").getAsString();
-        String oldPath = Utils.absPath(name);
-        String newPath = Utils.absPath(jsonObject.get("path").getAsString());
-        PsiFile[] filesByName = FilenameIndex.getFilesByName(project, oldPath, GlobalSearchScope.projectScope(project));
-
-        if (filesByName != null) {
-            RefactoringFactory refactoringFactory = RefactoringFactory.getInstance(project);
-            for (PsiFile psiFile : filesByName) {
-                refactoringFactory.createRename(psiFile, newPath);
-            }
+        final String name = jsonObject.get("old_path").getAsString();
+        final String oldPath = Utils.absPath(name);
+        final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
+        final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+        if (foundFile == null) {
+            Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
             return;
         }
-        File oldFile = new File(oldPath);
-        File newFile = new File(newPath);
-        VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(oldPath);
-        if (fileByPath != null) {
-            try {
-                fileByPath.rename(FlooHandler.class, newPath);
-                return;
-            } catch (IOException e) {
-                Flog.warn(e);
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        File oldFile = new File(oldPath);
+                        File newFile = new File(newPath);
+                        String newFileName = newFile.getName();
+                        // Rename file
+                        try {
+                            foundFile.rename(null, newFileName);
+                        } catch (IOException e) {
+                            Flog.error("Error renaming file %s %s %s", e, oldPath, newPath);
+                        }
+                        // Move file
+                        String newParentDirectoryPath = newFile.getParent();
+                        String oldParentDirectoryPath = oldFile.getParent();
+                        if (newParentDirectoryPath == oldParentDirectoryPath) {
+                            Flog.info("Only renamed file, don't need to move %s %s", oldPath, newPath);
+                            return;
+                        }
+                        newFile.getParentFile().mkdirs();
+                        VirtualFile directory = LocalFileSystem.getInstance().findFileByPath(newParentDirectoryPath);
+                        try {
+                            foundFile.move(null, directory);
+                        } catch (IOException e) {
+                            Flog.error("Error moving file %s %s %s", e,oldPath, newPath);
+                        }
+                    }
+                });
             }
-        }
-//            Just move the thing on disk
-        try {
-            FileUtils.moveFile(oldFile, newFile);
-        } catch (IOException e) {
-            Flog.error(e);
-        }
+        });
     }
 
     protected void _on_request_perms(JsonObject obj) {
