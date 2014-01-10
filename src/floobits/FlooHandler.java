@@ -754,9 +754,9 @@ class FlooHandler extends ConnectionInterface {
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
             public void run() {
-                String oldText = bufs.toString();
                 Document d;
 
+                String oldText = b.toString();
                 String absPath = Utils.absPath(b.path);
                 VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
 
@@ -764,7 +764,7 @@ class FlooHandler extends ConnectionInterface {
                     d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
                     if (d != null) {
                         String viewText = d.getText();
-                        if (viewText.equals(bufs.toString())) {
+                        if (viewText.equals(oldText)) {
                             b.forced_patch = false;
                         } else if (!b.forced_patch) {
                             b.forced_patch = true;

@@ -187,6 +187,10 @@ class TextBuf extends Buf <String> {
         FileUtils.write(f, this.buf, "UTF-8");
     }
 
+    public String toString () {
+        return this.buf.toString();
+    };
+
     public void set (String s, String md5) {
         this.buf = new String(s);
         this.md5 = new String(md5);
