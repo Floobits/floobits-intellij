@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.ide.util.projectWizard.ProjectBuilder;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -16,25 +15,17 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.ModifiableModuleModel;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.roots.impl.SdkFinder;
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.FilenameIndex;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.refactoring.RefactoringFactory;
 import com.intellij.ui.JBColor;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
@@ -42,8 +33,6 @@ import dmp.diff_match_patch;
 import dmp.diff_match_patch.Patch;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
@@ -1004,12 +993,13 @@ class FlooHandler extends ConnectionInterface {
                             Flog.info("Only renamed file, don't need to move %s %s", oldPath, newPath);
                             return;
                         }
-                        if (!newFile.getParentFile().mkdirs()) {
-                            Flog.error("Failed to make dirs required to move file. %s %s", oldPath, newPath);
-                            return;
+                        VirtualFile directory = null;
+                        try {
+                            directory = VfsUtil.createDirectories(newParentDirectoryPath);
+                        } catch (IOException e) {
+                            Flog.error("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+
                         }
-                        VirtualFileManager.getInstance().syncRefresh();
-                        VirtualFile directory = LocalFileSystem.getInstance().findFileByPath(newParentDirectoryPath);
                         if (directory == null) {
                             Flog.error("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
                             return;
