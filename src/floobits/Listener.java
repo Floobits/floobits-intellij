@@ -103,18 +103,29 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             return;
         }
         for (VFileEvent event : events) {
-            Flog.info(" Before event type %s", event.getClass().getSimpleName());
+            Flog.info(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {
                 continue;
             }
             if (!Utils.isFile(event.getFile())) {
                 continue;
             }
-            if (!(event instanceof VFileDeleteEvent)) {
+            if (event instanceof VFileMoveEvent) {
+                VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
+                VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
+                VirtualFile movedFile = event.getFile();
+                String fileName = movedFile.getName();
+                FlooHandler.getInstance().untellij_renamed(
+                        oldParent.getPath() + "/" + fileName,
+                        newParent.getPath() + "/" + fileName);
+                Flog.info("move event %s", event);
                 continue;
             }
-            Flog.info("deleting a file %s", event.getPath());
-            handler.untellij_deleted(event.getPath());
+            if (event instanceof VFileDeleteEvent) {
+                Flog.info("deleting a file %s", event.getPath());
+                handler.untellij_deleted(event.getPath());
+                continue;
+            }
         }
     }
 

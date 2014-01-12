@@ -28,6 +28,7 @@ import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiFile;
@@ -1003,8 +1004,16 @@ class FlooHandler extends ConnectionInterface {
                             Flog.info("Only renamed file, don't need to move %s %s", oldPath, newPath);
                             return;
                         }
-                        newFile.getParentFile().mkdirs();
+                        if (!newFile.getParentFile().mkdirs()) {
+                            Flog.error("Failed to make dirs required to move file. %s %s", oldPath, newPath);
+                            return;
+                        }
+                        VirtualFileManager.getInstance().syncRefresh();
                         VirtualFile directory = LocalFileSystem.getInstance().findFileByPath(newParentDirectoryPath);
+                        if (directory == null) {
+                            Flog.error("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                            return;
+                        }
                         try {
                             foundFile.move(null, directory);
                         } catch (IOException e) {
