@@ -16,7 +16,9 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.httpclient.params.HttpParams;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -52,9 +54,10 @@ public class API {
 
     static public HttpMethod apiRequest (HttpMethod method) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
-//        client.setParams(new HttpClientParams());
-        client.setTimeout(3000);
-        client.setConnectionTimeout(3000);
+        HttpConnectionManager connectionManager = client.getHttpConnectionManager();
+        HttpConnectionParams connectionParams = connectionManager.getParams();
+        connectionParams.setSoTimeout(3000);
+        connectionParams.setConnectionTimeout(3000);
         Settings settings = new Settings();
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));

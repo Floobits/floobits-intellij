@@ -956,15 +956,32 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
+    private void set_buf_path(Buf buf, String newPath) {
+        paths_to_ids.remove(buf.path);
+        buf.path = newPath;
+        this.paths_to_ids.put(buf.path, buf.id);
+    }
+
     protected void _on_rename_buf (JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = Utils.absPath(name);
         final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
         final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+        Buf buf = get_buf_by_path(oldPath);
+        if (buf == null) {
+            if (get_buf_by_path(newPath) == null) {
+                Flog.error("Rename oldPath and newPath don't exist. %s %s", oldPath, newPath);
+            } else {
+                Flog.info("We probably renamed this, nothing to rename.");
+            }
+            return;
+        }
         if (foundFile == null) {
             Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
             return;
         }
+        String newRelativePath = Utils.toProjectRelPath(newPath);
+        set_buf_path(buf, newRelativePath);
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -1106,12 +1123,14 @@ class FlooHandler extends ConnectionInterface {
             Flog.info("buf does not exist.");
             return;
         }
-        buf.cancelTimeout();
         String newRelativePath = Utils.toProjectRelPath(newPath);
+        if (buf.path.equals(newRelativePath)) {
+            Flog.info("untellij_renamed handling workspace rename, aborting.");
+            return;
+        }
+        buf.cancelTimeout();
         this.conn.write(new FlooRenameBuf(buf.id, newRelativePath));
-        paths_to_ids.remove(buf.path);
-        buf.path = newRelativePath;
-        this.paths_to_ids.put(buf.path, buf.id);
+        set_buf_path(buf, newRelativePath);
     }
 
     public void untellij_changed(String path, String current) {
