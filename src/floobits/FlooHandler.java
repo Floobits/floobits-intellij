@@ -22,7 +22,6 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
@@ -111,8 +110,6 @@ class RoomInfoResponse implements Serializable {
     public HashMap<Integer, User> users;
     public HashMap<Integer, RiBuf> bufs;
 
-//    public ??? temp_data;
-//    public HashMap<Integer, Term> terms;
 }
 
 class GetBufRequest implements Serializable {
@@ -452,7 +449,6 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         ProjectManager pm = ProjectManager.getInstance();
-//        Sdk projectSdk = ProjectRootManager.getInstance(project).getProjectSdk();
         // Check open projects
         Project[] openProjects = pm.getOpenProjects();
         for (Project project : openProjects) {
@@ -521,7 +517,7 @@ class FlooHandler extends ConnectionInterface {
         int code = method.getStatusCode();
         switch (code) {
             case 400:
-//                Todo: pick a new name or something
+                // Todo: pick a new name or something
                 error_message("Invalid workspace name.");
                 return;
             case 402:
@@ -717,7 +713,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_create_buf (JsonObject obj) {
-//        TODO: be nice about this and update the existing view
+        // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
         Buf buf = Buf.createBuf(res.path, res.id, res.buf, res.md5);

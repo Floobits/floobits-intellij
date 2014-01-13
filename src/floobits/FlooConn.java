@@ -7,13 +7,11 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.openapi.application.ApplicationManager;
 
 public class FlooConn extends Thread {
     private String cert =
@@ -67,6 +65,7 @@ public class FlooConn extends Thread {
     protected FlooHandler handler;
 
     private Integer MAX_RETRIES = 20;
+    private Integer SOCKET_TIMEOUT = 0; // Inifinity right now, which is default.
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
@@ -129,10 +128,12 @@ public class FlooConn extends Thread {
     }
 
     protected void reconnect() {
+        Flog.info("reconnecting");
         cleanup();
         retries -= 1;
         if (retries <= 0) {
             Flog.error("I give up connecting.");
+            FloobitsPlugin.flooHandler.shut_down();
             return;
         }
         delay = Math.min(10000, Math.round((float)1.5 * delay));
@@ -183,18 +184,17 @@ public class FlooConn extends Thread {
             Flog.error(e);
             return;
         }
-
-        //        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-
         FlooUrl flooUrl = handler.getUrl();
         try{
             socket = (SSLSocket) sc.getSocketFactory().createSocket(flooUrl.host, flooUrl.port);
+            socket.setSoTimeout(SOCKET_TIMEOUT);
         } catch (IOException e) {
+            Flog.warn("Error connecting %s", e);
             reconnect();
+            return;
         }
 
-        delay = INITIAL_RECONNECT_DELAY;
-        retries = MAX_RETRIES;
+
 
         try {
             out = new OutputStreamWriter(socket.getOutputStream());
@@ -202,6 +202,8 @@ public class FlooConn extends Thread {
 
             String line;
             this.handler.on_connect();
+            retries = MAX_RETRIES;
+            delay = INITIAL_RECONNECT_DELAY;
 
             while (true) {
                 try {
@@ -216,10 +218,9 @@ public class FlooConn extends Thread {
                     break;
                 }
             }
-        } catch (IOException e) {
-            reconnect();
         } catch (Exception e) {
             if (retries != -1) Flog.error(e);
+        } finally {
             reconnect();
         }
     }

@@ -101,16 +101,5 @@ public class FloobitsPlugin implements ApplicationComponent {
     public String getComponentName() {
         return "floobits";
     }
-//    TODO: we can store state using intellij if we want
-//
-//    @Nullable
-//    @Override
-//    public Element getState() {
-//        return null;  //To change body of implemented methods use File | Settings | File Templates.
-//    }
-//
-//    @Override
-//    public void loadState(Element element) {
-//        //To change body of implemented methods use File | Settings | File Templates.
-//    }
+    // TODO: we can store state using intellij if we want with getState and loadState
 }
