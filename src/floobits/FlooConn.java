@@ -188,13 +188,13 @@ public class FlooConn extends Thread {
         try{
             socket = (SSLSocket) sc.getSocketFactory().createSocket(flooUrl.host, flooUrl.port);
             socket.setSoTimeout(SOCKET_TIMEOUT);
+            socket.setKeepAlive(true);
+            socket.setTcpNoDelay(true);
         } catch (IOException e) {
             Flog.warn("Error connecting %s", e);
             reconnect();
             return;
         }
-
-
 
         try {
             out = new OutputStreamWriter(socket.getOutputStream());

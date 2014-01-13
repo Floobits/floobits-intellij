@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 class Utils {
@@ -140,5 +141,17 @@ class Utils {
         PathResolutionException (String msg) {
             super(msg);
         }
-    }    
+    }
+
+    static ArrayList<String> getAllNestedFilePaths(VirtualFile directory) {
+        ArrayList<String> filePaths = new ArrayList<String>();
+        for (VirtualFile file : directory.getChildren()) {
+            if (file.isDirectory()) {
+                filePaths.addAll(getAllNestedFilePaths(file));
+                continue;
+            }
+            filePaths.add(file.getPath());
+        }
+        return filePaths;
+    }
 }

@@ -107,10 +107,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             if (event == null) {
                 continue;
             }
-            if (!Utils.isFile(event.getFile())) {
-                continue;
-            }
             if (event instanceof VFileMoveEvent) {
+                if (!Utils.isFile(event.getFile())) {
+                    Flog.info("File does not exist..");
+                    continue;
+                }
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
                 VirtualFile movedFile = event.getFile();
@@ -123,6 +124,10 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
+                VirtualFile file = event.getFile();
+                if (file.isDirectory()) {
+                    handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(file));
+                }
                 handler.untellij_deleted(event.getPath());
                 continue;
             }

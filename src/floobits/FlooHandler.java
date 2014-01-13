@@ -1181,6 +1181,12 @@ class FlooHandler extends ConnectionInterface {
         this.conn.write(new FlooDeleteBuf(buf.id));
     }
 
+    public void untellij_deleted_directory(ArrayList<String> filePaths) {
+        for (String filePath : filePaths) {
+            untellij_deleted(filePath);
+        }
+    }
+
     @SuppressWarnings("unused")
     public void testHandlers () throws IOException {
         JsonObject obj = new JsonObject();
