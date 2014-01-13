@@ -31,6 +31,9 @@ public class JoinWorkspace extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
         String inputValue = JOptionPane.showInputDialog("Workspace URL", "https://floobits.com/");
+        if (inputValue == null) {
+            return;
+        }
         Flog.info(inputValue);
         FloobitsPlugin.joinWorkspace(inputValue);
     }
