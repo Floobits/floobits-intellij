@@ -11,6 +11,7 @@
     <orderEntry type="library" name="gson-2.2.4" level="project" />
     <orderEntry type="library" name="commons-io-2.4" level="project" />
     <orderEntry type="library" name="commons-codec-1.9" level="project" />
+    <orderEntry type="library" name="Node.js v0.10.12 Core Modules" level="application" />
   </component>
 </module>
 

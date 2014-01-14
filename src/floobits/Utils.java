@@ -143,14 +143,37 @@ class Utils {
         }
     }
 
-    static ArrayList<String> getAllNestedFilePaths(VirtualFile directory) {
+    static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile) {
         ArrayList<String> filePaths = new ArrayList<String>();
-        for (VirtualFile file : directory.getChildren()) {
+        if (!vFile.isDirectory()) {
+            filePaths.add(vFile.getPath());
+            return filePaths;
+        }
+        for (VirtualFile file : vFile.getChildren()) {
             if (file.isDirectory()) {
                 filePaths.addAll(getAllNestedFilePaths(file));
                 continue;
             }
             filePaths.add(file.getPath());
+        }
+        return filePaths;
+    }
+
+    static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile, Ignore ignore) {
+        ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
+        if (!vFile.isDirectory()) {
+            filePaths.add(vFile);
+            return filePaths;
+        }
+        for (VirtualFile file : vFile.getChildren()) {
+            if (ignore.isIgnored(file.getPath())) {
+                continue;
+            }
+            if (file.isDirectory()) {
+                filePaths.addAll(getAllNestedFiles(file, ignore));
+                continue;
+            }
+            filePaths.add(file);
         }
         return filePaths;
     }

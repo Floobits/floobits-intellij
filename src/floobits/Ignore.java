@@ -63,6 +63,10 @@ class Ignore {
         }
     }
 
+    public Ignore() throws IOException{
+        this(new File(Shared.colabDir), null, false);
+    }
+
     protected void loadIgnore (File file) {
         String ignores[];
         try {

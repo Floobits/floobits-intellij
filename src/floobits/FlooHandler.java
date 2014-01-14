@@ -184,7 +184,7 @@ class FlooCreateBuf implements Serializable {
     
     public FlooCreateBuf (VirtualFile virtualFile) throws IOException {
         this.path = Utils.toProjectRelPath(virtualFile.getCanonicalPath());
-        this.buf = new String(virtualFile.contentsToByteArray(), "UTF-8");
+        this.buf = Buf.getBufferContents(virtualFile);;
         this.md5 = DigestUtils.md5Hex(this.buf);
         this.encoding = "utf8";
     }
@@ -600,6 +600,8 @@ class FlooHandler extends ConnectionInterface {
         return true;
     }
 
+
+
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
         is_joined = true;
@@ -626,23 +628,7 @@ class FlooHandler extends ConnectionInterface {
                 this.send_get_buf(buf.id);
                 continue;
             }
-
-            try {
-                bytes = virtualFile.contentsToByteArray();
-            } catch (IOException e) {
-                Flog.log("Can't read %s", virtualFile.getCanonicalPath());
-                this.send_get_buf(buf.id);
-                continue;
-            }
-
-            String contents;
-            try {
-                contents = new String(bytes, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                Flog.log("Not handling binary stuff for now: %s", virtualFile.getCanonicalPath());
-                continue;
-            }
-
+            String contents = Buf.getBufferContents(virtualFile);
             String md5 = DigestUtils.md5Hex(contents);
             if (!md5.equals(buf.md5)) {
                 conflicts.put(buf, contents);
@@ -710,6 +696,7 @@ class FlooHandler extends ConnectionInterface {
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
         b.update();
+        Flog.info("on get buffed. %s", b.path);
     }
 
     protected void _on_create_buf (JsonObject obj) {
@@ -756,6 +743,7 @@ class FlooHandler extends ConnectionInterface {
                             b.forced_patch = true;
                             oldText = viewText;
                             send_patch(viewText, b);
+                            Flog.warn("Sending force patch for %s. this is dangerous!", b.path);
                         }
                     }
                 }
@@ -797,7 +785,7 @@ class FlooHandler extends ConnectionInterface {
                 Flog.log("Patched %s", res.path);
 
                 b.set(text, res.md5_after);
-                b.update(positions);
+                b.update(positions, patches);
             }
         });
     }

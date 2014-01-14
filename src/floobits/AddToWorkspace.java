@@ -49,7 +49,7 @@ public class AddToWorkspace extends IsJoinedAction {
         Ignore ignore;
 
         try {
-            ignore = new Ignore(new File(Shared.colabDir), null, false);
+            ignore = new Ignore();
         } catch (Exception ex) {
             Flog.error(ex);
             return;

@@ -6,7 +6,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Timeouts extends Thread {
-    protected ConcurrentSkipListSet<Timeout> timeouts = new ConcurrentSkipListSet<Timeout>();
+        protected ConcurrentSkipListSet<Timeout> timeouts = new ConcurrentSkipListSet<Timeout>();
 
     public static Timeouts create() {
         final Timeouts timeouts1 = new Timeouts();
@@ -32,11 +32,12 @@ public class Timeouts extends Thread {
                        return;
                    }
                    if (!t.isCanceled()) {
+                       Flog.info("timeout ran %s", t);
                        t.run();
                    }
                    timeouts.remove(t);
                }
             }
-        }, 0, 50000);
+        }, 0, 250);
     }
 }

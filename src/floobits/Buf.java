@@ -2,6 +2,7 @@ package floobits;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
@@ -9,6 +10,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooPatchPosition;
+import dmp.diff_match_patch;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -74,6 +76,17 @@ abstract class Buf <T> {
     abstract public void readFromDisk () throws IOException;
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
+    static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
+        return FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+    }
+    static String getBufferContents(VirtualFile virtualFile) {
+        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+        if (d != null) {
+            return d.getText();
+        }
+        Flog.warn("Did not find document for %s", virtualFile);
+        return "";
+    }
     public Document update() {
         VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
         if (virtualFile == null || !virtualFile.exists()) {
@@ -84,7 +97,7 @@ abstract class Buf <T> {
             }
             return null;
         }
-        final Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        final Document d = Buf.getDocumentForVirtualFile(virtualFile);
         if (d == null) {
             try {
                 this.writeToDisk();
@@ -94,7 +107,7 @@ abstract class Buf <T> {
         }
         return d;
     }
-    public void update (final FlooPatchPosition[] flooPatchPositions) {
+    public void update (final FlooPatchPosition[] flooPatchPositions, final LinkedList patches) {
         final Document document = update();
         if (document == null) {
             return;
@@ -103,21 +116,29 @@ abstract class Buf <T> {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                public void run() {
-                    for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
-                        int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
-                        try {
-                            document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text);
-                        } catch (Exception e) {
-                            Flog.error(e);
-                            FlooHandler.getInstance().send_get_buf(id);
-                            return;
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        String oldText = document.getText();
+                        diff_match_patch dmp = new diff_match_patch();
+                        for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
+                            final Object[] results = dmp.patch_apply(patches, oldText);
+                            final String text = ((String) results[0]).replace("\r", "");
+                            final boolean[] boolArray = (boolean[]) results[1];
+
+                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
+                            try {
+                                document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text.replace("\r", ""));
+                            } catch (Exception e) {
+                                Flog.error(e);
+                                FlooHandler.getInstance().send_get_buf(id);
+                                return;
+                            }
+                            if (!document.getText().equals(text)) {
+                                Flog.warn("oh shit");
+                            }
                         }
                     }
-                    }
-                }
-            );
+                });
             }
         });
     }

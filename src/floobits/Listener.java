@@ -1,5 +1,6 @@
 package floobits;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -10,9 +11,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
-import com.intellij.psi.PsiTreeChangeEvent;
-import com.intellij.psi.PsiTreeChangeListener;
-import com.intellij.refactoring.RefactoringFactory;
+import java.util.ArrayList;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.editor.Document;
@@ -71,13 +70,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void documentChanged(DocumentEvent event) {
-        Document document = event.getDocument();
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path, FlooHandler flooHandler) {
-                flooHandler.untellij_changed(path, document.getText());
-            }
-        });
+        // Do nothing here.
     }
 
     @Override
@@ -108,27 +101,48 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 continue;
             }
             if (event instanceof VFileMoveEvent) {
+                Flog.info("move event %s", event);
                 if (!Utils.isFile(event.getFile())) {
                     Flog.info("File does not exist..");
                     continue;
                 }
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
-                VirtualFile movedFile = event.getFile();
-                String fileName = movedFile.getName();
+                String fileName = event.getFile().getName();
                 FlooHandler.getInstance().untellij_renamed(
                         oldParent.getPath() + "/" + fileName,
                         newParent.getPath() + "/" + fileName);
-                Flog.info("move event %s", event);
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                VirtualFile file = event.getFile();
-                if (file.isDirectory()) {
-                    handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(file));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile()));
+                continue;
+            }
+            if (event instanceof VFileCreateEvent) {
+                Flog.info("creating a file %s", event);
+                ArrayList<VirtualFile> createdFiles = null;
+                try {
+                    createdFiles = (Utils.getAllNestedFiles(event.getFile(), new Ignore()));
+                } catch (IOException e) {
+                    Flog.warn("Unable to delete files %s", e);
+                    continue;
                 }
-                handler.untellij_deleted(event.getPath());
+                for (VirtualFile createdFile : createdFiles) {
+                    handler.upload(createdFile);
+                }
+                continue;
+            }
+            if (event instanceof VFileContentChangeEvent) {
+                ArrayList<VirtualFile> changedFiles = null;
+                try {
+                    changedFiles = Utils.getAllNestedFiles(event.getFile(), new Ignore());
+                } catch (IOException e) {
+                    Flog.warn("Unable to change file. %s %s", e, event);
+                }
+                for (VirtualFile file : changedFiles) {
+                    handler.untellij_changed(file.getPath(), Buf.getBufferContents(file));
+                }
                 continue;
             }
         }

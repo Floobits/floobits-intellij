@@ -1,6 +1,7 @@
 package floobits;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -65,7 +66,7 @@ public class FlooConn extends Thread {
     protected FlooHandler handler;
 
     private Integer MAX_RETRIES = 20;
-    private Integer SOCKET_TIMEOUT = 0; // Inifinity right now, which is default.
+    private Integer SOCKET_TIMEOUT = 10000; // Inifinity right now, which is default.
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
@@ -80,7 +81,7 @@ public class FlooConn extends Thread {
             this.out.write(data + "\n");
             this.out.flush();
         } catch (Exception e) {
-            if (retries > -1) Flog.error(e);
+            if (retries > -1) Flog.warn(e);
         }
     }
 
@@ -120,7 +121,7 @@ public class FlooConn extends Thread {
         try {
             this.handler.on_data(name1, obj);
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
             if (name1.equals("room_info")) {
                 shut_down();
             }
@@ -132,7 +133,7 @@ public class FlooConn extends Thread {
         cleanup();
         retries -= 1;
         if (retries <= 0) {
-            Flog.error("I give up connecting.");
+            Flog.warn("I give up connecting.");
             FloobitsPlugin.flooHandler.shut_down();
             return;
         }
@@ -140,7 +141,7 @@ public class FlooConn extends Thread {
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
         connect();
     }
@@ -181,7 +182,7 @@ public class FlooConn extends Thread {
             sc = SSLContext.getInstance("SSL");
             sc.init(null, new javax.net.ssl.TrustManager[]{x509TrustManager}, new SecureRandom());
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
             return;
         }
         FlooUrl flooUrl = handler.getUrl();
@@ -213,13 +214,19 @@ public class FlooConn extends Thread {
                         break;
                     }
                     this.handle(line);
+                } catch (SocketTimeoutException e) {
+                    Flog.info("Caught timeout on socket. %s", socket.isClosed());
+                    if (socket.isClosed()) {
+                        reconnect();
+                        return;
+                    }
                 } catch (IOException e) {
                     if (retries != -1) Flog.warn(e);
                     break;
                 }
             }
         } catch (Exception e) {
-            if (retries != -1) Flog.error(e);
+            if (retries != -1) Flog.warn(e);
         } finally {
             reconnect();
         }
