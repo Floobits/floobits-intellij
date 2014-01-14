@@ -37,7 +37,6 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -184,7 +183,7 @@ class FlooCreateBuf implements Serializable {
     
     public FlooCreateBuf (VirtualFile virtualFile) throws IOException {
         this.path = Utils.toProjectRelPath(virtualFile.getCanonicalPath());
-        this.buf = Buf.getBufferContents(virtualFile);;
+        this.buf = Buf.getBufferContentsFromVF(virtualFile);
         this.md5 = DigestUtils.md5Hex(this.buf);
         this.encoding = "utf8";
     }
@@ -628,7 +627,7 @@ class FlooHandler extends ConnectionInterface {
                 this.send_get_buf(buf.id);
                 continue;
             }
-            String contents = Buf.getBufferContents(virtualFile);
+            String contents = Buf.getBufferContentsFromVF(virtualFile);
             String md5 = DigestUtils.md5Hex(contents);
             if (!md5.equals(buf.md5)) {
                 conflicts.put(buf, contents);

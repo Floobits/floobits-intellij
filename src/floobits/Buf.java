@@ -3,6 +3,7 @@ package floobits;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
@@ -41,6 +42,7 @@ enum Encoding {
 }
 
 abstract class Buf <T> {
+    static Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
     public String path;
     public File f;
     public Integer id;
@@ -79,12 +81,12 @@ abstract class Buf <T> {
     static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
         return FileDocumentManager.getInstance().getCachedDocument(virtualFile);
     }
-    static String getBufferContents(VirtualFile virtualFile) {
-        Document d = Buf.getDocumentForVirtualFile(virtualFile);
-        if (d != null) {
-            return d.getText();
+    static String getBufferContentsFromVF(VirtualFile virtualFile) {
+        try {
+            return new String(virtualFile.contentsToByteArray(), "UTF-8");
+        } catch (IOException e) {
+            Flog.warn("Could not get contents for %s", virtualFile);
         }
-        Flog.warn("Did not find document for %s", virtualFile);
         return "";
     }
     public Document update() {
@@ -121,13 +123,12 @@ abstract class Buf <T> {
                         String oldText = document.getText();
                         diff_match_patch dmp = new diff_match_patch();
                         for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
-                            final Object[] results = dmp.patch_apply(patches, oldText);
-                            final String text = ((String) results[0]).replace("\r", "");
-                            final boolean[] boolArray = (boolean[]) results[1];
-
+                            Object[] results = dmp.patch_apply(patches, oldText);
+                            String text = NEW_LINE.matcher((String) results[0]).replaceAll("\n");
                             int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
+                            String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                             try {
-                                document.replaceString(flooPatchPosition.start, end, flooPatchPosition.text.replace("\r", ""));
+                                document.replaceString(flooPatchPosition.start, end, contents);
                             } catch (Exception e) {
                                 Flog.error(e);
                                 FlooHandler.getInstance().send_get_buf(id);

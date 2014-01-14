@@ -141,7 +141,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Unable to change file. %s %s", e, event);
                 }
                 for (VirtualFile file : changedFiles) {
-                    handler.untellij_changed(file.getPath(), Buf.getBufferContents(file));
+                    handler.untellij_changed(file.getPath(), Buf.getBufferContentsFromVF(file));
                 }
                 continue;
             }
