@@ -26,11 +26,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
-import dmp.FlooDmp;
-import dmp.FlooPatchPosition;
-import dmp.diff_match_patch;
-import dmp.diff_match_patch.Patch;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
@@ -143,19 +138,15 @@ class FlooPatch implements Serializable {
     public String path;
     public String username;
 
-    private static diff_match_patch dmp = new diff_match_patch();
 
     public FlooPatch(){}
 
-    public FlooPatch (String current, Buf buf) {
-        // TODO: handle binary bufs
-        LinkedList<Patch> patches = dmp.patch_make((String) buf.buf, current);
-
+    public FlooPatch (String patch, String md5_before, Buf buf) {
         this.path = buf.path;
-        this.md5_before = buf.md5;
-        this.md5_after = DigestUtils.md5Hex(current);
+        this.md5_before = md5_before;
+        this.md5_after = buf.md5;
         this.id = buf.id;
-        this.patch = dmp.patch_toText(patches);
+        this.patch = patch;
     }
 }
 
@@ -169,7 +160,7 @@ class FlooSetBuf implements Serializable {
     public FlooSetBuf (Buf buf) {
         this.md5 = buf.md5;
         this.id = buf.id;
-        this.buf = (String) buf.buf;
+        this.buf = buf.serializedBufferContents();
         this.encoding = buf.encoding.toString();
     }
 }
@@ -181,11 +172,11 @@ class FlooCreateBuf implements Serializable {
     public String md5;
     public String encoding;
     
-    public FlooCreateBuf (VirtualFile virtualFile) throws IOException {
-        this.path = Utils.toProjectRelPath(virtualFile.getCanonicalPath());
-        this.buf = Buf.getBufferContentsFromVF(virtualFile);
-        this.md5 = DigestUtils.md5Hex(this.buf);
-        this.encoding = "utf8";
+    public FlooCreateBuf (Buf buf) {
+        this.path = buf.path;
+        this.buf = buf.toString();
+        this.md5 = buf.md5;
+        this.encoding = buf.encoding.toString();
     }
 }
 
@@ -278,7 +269,6 @@ abstract class DocumentFetcher {
 
 class FlooHandler extends ConnectionInterface {
     protected static boolean is_joined  = false;
-    protected static FlooDmp dmp = new FlooDmp();
     protected Boolean should_upload = false;
     protected Project project;
     protected Boolean stomp = false;
@@ -374,6 +364,7 @@ class FlooHandler extends ConnectionInterface {
     public FlooHandler (Project p) {
         this.project = p;
         this.stomp = true;
+        // TODO: Should upload should be an explicit argument to the constructor.
         this.should_upload = true;
         final String project_path = p.getBasePath();
         FlooUrl flooUrl = DotFloo.read(project_path);
@@ -611,29 +602,22 @@ class FlooHandler extends ConnectionInterface {
 
         DotFloo.write(this.url.toString());
 
-        Buf buf;
-        byte [] bytes;
-        HashMap<Buf, String> conflicts = new HashMap<Buf, String>();
+        LinkedList<Buf> conflicts = new LinkedList<Buf>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
-
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
-            buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
+            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             this.bufs.put(buf_id, buf);
             this.paths_to_ids.put(b.path, b.id);
-            String path = Utils.absPath(b.path);
-            VirtualFile virtualFile = localFileSystem.findFileByPath(path);
-            if (virtualFile == null || !virtualFile.exists()) {
+            buf.readFromDisk();
+            if (buf.buf == null) {
                 this.send_get_buf(buf.id);
                 continue;
             }
-            String contents = Buf.getBufferContentsFromVF(virtualFile);
-            String md5 = DigestUtils.md5Hex(contents);
-            if (!md5.equals(buf.md5)) {
-                conflicts.put(buf, contents);
+            if (!b.md5.equals(buf.md5)) {
+                conflicts.add(buf);
                 continue;
             }
-            buf.buf = contents;
         }
 
         if (conflicts.size() == 0) {
@@ -647,8 +631,8 @@ class FlooHandler extends ConnectionInterface {
             dialog = "<p>%d files are different.  Do you want to overwrite them (OK)?</p> ";
          } else {
             dialog = "<p>The following file(s) are different.  Do you want to overwrite them (OK)?</p><ul>";
-            for (Map.Entry<Buf, String> entry : conflicts.entrySet()) {
-                dialog += String.format("<li>%s</li>", entry.getKey().path);
+            for (Buf buf : conflicts) {
+                dialog += String.format("<li>%s</li>", buf.path);
             }
             dialog += "</ul>";
         }
@@ -658,13 +642,13 @@ class FlooHandler extends ConnectionInterface {
             @SuppressWarnings("unchecked")
             void run(Object... objects) {
                 Boolean stomp = (Boolean) objects[0];
-                HashMap<Buf, String> bufStringHashMap = (HashMap<Buf, String>) data;
-                for (Map.Entry<Buf, String> entry : bufStringHashMap.entrySet()) {
-                    Buf buf = entry.getKey();
+                LinkedList<Buf> conflicts = (LinkedList<Buf>) data;
+                for (Buf buf : conflicts) {
                     if (stomp) {
                         FloobitsPlugin.flooHandler.send_get_buf(buf.id);
+                        buf.buf = null;
+                        buf.md5 = null;
                     } else {
-                        buf.buf = entry.getValue();
                         FloobitsPlugin.flooHandler.send_set_buf(buf);
                     }
                 }
@@ -677,14 +661,11 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void send_create_buf(VirtualFile virtualFile) {
-        FlooCreateBuf flooCreateBuf;
-        try {
-            flooCreateBuf = new FlooCreateBuf(virtualFile);
-        } catch (IOException e) {
-            Flog.error(e);
+        Buf buf = Buf.createBuf(virtualFile);
+        if (buf == null) {
             return;
         }
-        this.conn.write(flooCreateBuf);
+        this.conn.write(new FlooCreateBuf(buf));
     }
 
     protected void _on_get_buf (JsonObject obj) {
@@ -721,72 +702,7 @@ class FlooHandler extends ConnectionInterface {
             Flog.warn("wtf? no patches to apply. server is being stupid");
             return;
         }
-
-        Flog.info("Got _on_patch");
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                Document d;
-
-                String oldText = b.toString();
-                String absPath = Utils.absPath(b.path);
-                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-
-                if (virtualFile != null && virtualFile.exists()) {
-                    d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-                    if (d != null) {
-                        String viewText = d.getText();
-                        if (viewText.equals(oldText)) {
-                            b.forced_patch = false;
-                        } else if (!b.forced_patch) {
-                            b.forced_patch = true;
-                            oldText = viewText;
-                            send_patch(viewText, b);
-                            Flog.warn("Sending force patch for %s. this is dangerous!", b.path);
-                        }
-                    }
-                }
-
-                b.cancelTimeout();
-
-                String md5Before = DigestUtils.md5Hex(oldText);
-                if (!md5Before.equals(res.md5_before)) {
-                    Flog.warn("starting md5s don't match for %s. this is dangerous!", b.path);
-                }
-
-                LinkedList patches = (LinkedList) dmp.patch_fromText(res.patch);
-                final Object[] results = dmp.patch_apply(patches, oldText);
-                final String text = (String) results[0];
-                final boolean[] boolArray = (boolean[]) results[1];
-                final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];
-
-                for (boolean clean : boolArray) {
-                    if (!clean) {
-                        Flog.info("Patch not clean. Sending get_buf.");
-                        send_get_buf(res.id);
-                        return;
-                    }
-                }
-
-                String md5After = DigestUtils.md5Hex(text);
-                if (!md5After.equals(res.md5_after)) {
-                    Flog.info("MD5 after mismatch (ours %s remote %s). Sending get_buf soon.", md5After, res.md5_after);
-                    final Integer buf_id = b.id;
-
-                    b.timeout = setTimeout(new Timeout(2000) {
-                        @Override
-                        void run(Object... objects) {
-                            send_get_buf(buf_id);
-                        }
-                    });
-                    return;
-                }
-                Flog.log("Patched %s", res.path);
-
-                b.set(text, res.md5_after);
-                b.update(positions, patches);
-            }
-        });
+        b.patch(res);
     }
 
     public void get_document(Integer id, DocumentFetcher documentFetcher) {
@@ -1081,9 +997,8 @@ class FlooHandler extends ConnectionInterface {
     }
 
 
-    public void send_patch (String current, Buf buf) {
-        FlooPatch req = new FlooPatch(current, buf);
-
+    public void send_patch (String textPatch, String before_md5, TextBuf buf) {
+        FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
         this.conn.write(req);
     }
 
@@ -1115,21 +1030,15 @@ class FlooHandler extends ConnectionInterface {
         set_buf_path(buf, newRelativePath);
     }
 
-    public void untellij_changed(String path, String current) {
+    public void untellij_changed(VirtualFile file) {
+        String path = Utils.toProjectRelPath(file.getPath());
         Buf buf = this.get_buf_by_path(path);
 
-        if (buf == null || buf.buf == null) {
+        if (buf == null || !buf.isPopulated()) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
-        String s = DigestUtils.md5Hex(current);
-        if (s.equals(buf.md5)) {
-            Flog.debug("Expected change");
-            return;
-        }
-        buf.forced_patch = false;
-        this.send_patch(current, buf);
-        buf.set(current, s);
+        buf.send_patch(file);
     }
 
     public void untellij_selection_change(String path, TextRange[] textRanges) {

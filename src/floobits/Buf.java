@@ -9,13 +9,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
+import dmp.diff_match_patch;
 
 
 enum Encoding {
@@ -57,11 +59,6 @@ abstract class Buf <T> {
         this.path = new String(path);
         this.buf = buf;
         this.md5 = new String(md5);
-        try {
-            this.f = new File(FilenameUtils.concat(Shared.colabDir, path));
-        } catch (NullPointerException ignored) {
-        }
-
     }
 
     public String toAbsolutePath () {
@@ -75,22 +72,39 @@ abstract class Buf <T> {
         }
     }
 
-    abstract public void readFromDisk () throws IOException;
+    public VirtualFile getVirtualFile() {
+        return LocalFileSystem.getInstance().findFileByPath(Utils.absPath(this.path));
+    }
+
+    public void createDirectories(VirtualFile virtualFile) {
+        if (virtualFile == null) {
+            virtualFile = this.getVirtualFile();
+        }
+        try {
+            VfsUtil.createDirectories(virtualFile.getParent().getPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Boolean isPopulated() {
+        return this.id != null && this.buf != null;
+    }
+
+    abstract public void readFromDisk ();
     abstract public void writeToDisk () throws IOException;
     abstract public void set (String s, String md5);
+    abstract public void patch (FlooPatch res);
+    abstract public void send_patch (VirtualFile virtualFile);
+    abstract public String serializedBufferContents ();
+
     static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
-        return FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+        return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-    static String getBufferContentsFromVF(VirtualFile virtualFile) {
-        try {
-            return new String(virtualFile.contentsToByteArray(), "UTF-8");
-        } catch (IOException e) {
-            Flog.warn("Could not get contents for %s", virtualFile);
-        }
-        return "";
-    }
+
+
     public Document update() {
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(this.toAbsolutePath());
+        VirtualFile virtualFile = this.getVirtualFile();
         if (virtualFile == null || !virtualFile.exists()) {
             try {
                 this.writeToDisk();
@@ -109,40 +123,6 @@ abstract class Buf <T> {
         }
         return d;
     }
-    public void update (final FlooPatchPosition[] flooPatchPositions, final LinkedList patches) {
-        final Document document = update();
-        if (document == null) {
-            return;
-        }
-
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        String oldText = document.getText();
-                        diff_match_patch dmp = new diff_match_patch();
-                        for(FlooPatchPosition flooPatchPosition : flooPatchPositions){
-                            Object[] results = dmp.patch_apply(patches, oldText);
-                            String text = NEW_LINE.matcher((String) results[0]).replaceAll("\n");
-                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, document.getTextLength());
-                            String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-                            try {
-                                document.replaceString(flooPatchPosition.start, end, contents);
-                            } catch (Exception e) {
-                                Flog.error(e);
-                                FlooHandler.getInstance().send_get_buf(id);
-                                return;
-                            }
-                            if (!document.getText().equals(text)) {
-                                Flog.warn("oh shit");
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    }
 
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
@@ -156,6 +136,24 @@ abstract class Buf <T> {
         }
         return new TextBuf(path, id, null, md5);
     }
+    public static Buf createBuf (VirtualFile virtualFile) {
+        try {
+            byte[] originalBytes = virtualFile.contentsToByteArray();
+            String encodedContents = new String(originalBytes, "UTF-8");
+            byte[] decodedContents = encodedContents.getBytes();
+            String filePath = Utils.toProjectRelPath(virtualFile.getPath());
+            if (decodedContents.equals(originalBytes)) {
+                String md5 = DigestUtils.md5Hex(encodedContents);
+                return new TextBuf(filePath, null, encodedContents, md5);
+            } else {
+                String md5 = DigestUtils.md5Hex(originalBytes);
+                return new BinaryBuf(filePath, null, originalBytes, md5);
+            }
+        } catch (IOException e) {
+            Flog.warn("Error getting virtual file contents in createBuf %s", virtualFile);
+        }
+        return null;
+    }
 }
 
 class BinaryBuf extends Buf <byte[]> {
@@ -165,40 +163,103 @@ class BinaryBuf extends Buf <byte[]> {
         this.encoding = Encoding.BASE64;
     }
 
-    public void readFromDisk () throws IOException {
-        this.buf = FileUtils.readFileToByteArray(this.f);
+    public void readFromDisk () {
+        VirtualFile virtualFile = this.getVirtualFile();
+        if (virtualFile == null) {
+            Flog.warn("Couldn't get virtual file in readFromDisk %s", this);
+            return;
+        }
+        try {
+            this.buf = virtualFile.contentsToByteArray();
+        } catch (IOException e) {
+            Flog.warn("Could not get byte array contents for file %s", this);
+            return;
+        }
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+
     public void writeToDisk () throws IOException {
-        File parent = new File(this.f.getParent());
-        parent.mkdirs();
-        FileUtils.writeByteArrayToFile(f, this.buf);
+        VirtualFile virtualFile = this.getVirtualFile();
+        this.createDirectories(virtualFile);
+        virtualFile.setBinaryContent(this.buf);
     }
 
     public void set (String s, String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
-        this.md5 = new String(md5);
+        this.md5 = md5;
     }
+
+    public void set (byte[] s, String md5) {
+        this.buf = s;
+        this.md5 = md5;
+    }
+
+    public String serializedBufferContents () {
+        return Base64.encodeBase64String(buf);
+    }
+
+    public void patch(FlooPatch res) {
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler == null) {
+            return;
+        }
+        flooHandler.send_get_buf(this.id);
+        this.buf = null;
+        this.md5 = null;
+    }
+
+    public void send_patch(VirtualFile virtualFile) {
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler == null) {
+            return;
+        }
+        byte[] contents;
+        try {
+            contents = virtualFile.contentsToByteArray();
+        } catch (IOException e) {
+            Flog.warn("Couldn't read contents of binary file. %s", virtualFile);
+            return;
+        }
+        String after_md5 = DigestUtils.md5Hex(contents);
+        if (md5.equals(after_md5)) {
+            Flog.debug("Binary file changed event but no change in md5 %s", virtualFile);
+            return;
+        }
+        set(contents, after_md5);
+        flooHandler.send_set_buf(this);
+    };
+
+
 }
 
 class TextBuf extends Buf <String> {
-
+    protected static FlooDmp dmp = new FlooDmp();
+    protected Timeouts timeouts = Timeouts.create();
     public TextBuf (String path, Integer id, String buf, String md5) {
         super(path, id, buf, md5);
         this.encoding = Encoding.UTF8;
     }
 
-    public void readFromDisk () throws IOException {
-        this.buf = FileUtils.readFileToString(this.f, "UTF-8");
+    public void readFromDisk () {
+        VirtualFile virtualFile = this.getVirtualFile();
+        if (virtualFile == null) {
+            Flog.warn("Can't get virtual file to read from disk %s", this);
+            return;
+        }
+        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+        if (d == null) {
+            Flog.warn("Can't get document to read from disk %s", this);
+            return;
+        }
+        this.buf = d.getText();
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void writeToDisk () throws IOException {
-        File parent = new File(this.f.getParent());
-        parent.mkdirs();
-        FileUtils.write(f, this.buf, "UTF-8");
+    public void writeToDisk () {
+        VirtualFile virtualFile = this.getVirtualFile();
+        this.createDirectories(virtualFile);
+        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+        d.setText(this.buf);
     }
 
     public String toString () {
@@ -206,7 +267,130 @@ class TextBuf extends Buf <String> {
     };
 
     public void set (String s, String md5) {
-        this.buf = new String(s);
-        this.md5 = new String(md5);
+        this.buf = s;
+        this.md5 = md5;
+    }
+
+    public String serializedBufferContents () {
+        return buf;
+    }
+
+    public void send_patch(VirtualFile virtualFile) {
+        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+        if (d == null) {
+            Flog.warn("Can't get document to read from disk for sending patch %s", this);
+            return;
+        }
+        send_patch(d.getText());
+    }
+
+    public void send_patch(String current) {
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler != null) {
+            return;
+        }
+        String previous = buf;
+        String before_md5 = md5;
+        String after_md5 = DigestUtils.md5Hex(current);
+        LinkedList<diff_match_patch.Patch> patches = dmp.patch_make(previous, current);
+        String textPatch = dmp.patch_toText(patches);
+        set(current, after_md5);
+        flooHandler.send_patch(textPatch, before_md5, this);
+    }
+
+    public void patch(final FlooPatch res) {
+        final TextBuf b = this;
+        Flog.info("Got _on_patch");
+        ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                Document d;
+
+                String oldText = this.toString();
+                VirtualFile virtualFile = b.getVirtualFile();
+                if (virtualFile == null) {
+                    Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
+                    return;
+                }
+
+                d = Buf.getDocumentForVirtualFile(virtualFile);
+                if (d == null) {
+                    Flog.warn("Document not found for %s", virtualFile);
+                    return;
+                }
+                String viewText;
+                if (virtualFile.exists()) {
+                    viewText = d.getText();
+                    if (viewText.equals(oldText)) {
+                        b.forced_patch = false;
+                    } else if (!b.forced_patch) {
+                        b.forced_patch = true;
+                        oldText = viewText;
+                        b.send_patch(viewText);
+                        Flog.warn("Sending force patch for %s. this is dangerous!", b.path);
+                    }
+                } else {
+                    viewText = oldText;
+                }
+
+                b.cancelTimeout();
+
+                String md5Before = DigestUtils.md5Hex(viewText);
+                if (!md5Before.equals(res.md5_before)) {
+                    Flog.warn("starting md5s don't match for %s. this is dangerous!", b.path);
+                }
+
+                LinkedList patches = (LinkedList) dmp.patch_fromText(res.patch);
+                final Object[] results = dmp.patch_apply(patches, oldText);
+                final String patchedContents = (String) results[0];
+                final boolean[] patchesClean = (boolean[]) results[1];
+                final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];
+
+                for (boolean clean : patchesClean) {
+                    if (!clean) {
+                        Flog.info("Patch not clean. Sending get_buf.");
+                        FlooHandler.getInstance().send_get_buf(res.id);
+                        return;
+                    }
+                }
+                // XXX: If patchedContents have carriage returns this will be a problem:
+                String md5After = DigestUtils.md5Hex(patchedContents);
+                if (!md5After.equals(res.md5_after)) {
+                    Flog.info("MD5 after mismatch (ours %s remote %s). Sending get_buf soon.", md5After, res.md5_after);
+                    final Integer buf_id = b.id;
+                    Timeout timeout = new Timeout(2000) {
+                        @Override
+                        void run(Object... objects) {
+                            b.timeout = null;
+                            Flog.info("Sending get buf because md5s did not match.");
+                            FlooHandler.getInstance().send_get_buf(buf_id);
+                        }
+                    };
+                    timeouts.setTimeout(timeout);
+                    b.timeout = timeout;
+                    return;
+                }
+                Flog.log("Patched %s", res.path);
+                // XXX: inefficient to create new diff match patch;
+                diff_match_patch dmp = new diff_match_patch();
+                for(FlooPatchPosition flooPatchPosition : positions){
+                    Object[] patchCheckResults = dmp.patch_apply(patches, d.getText());
+                    String newCheckText = NEW_LINE.matcher((String) patchCheckResults[0]).replaceAll("\n");
+                    int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
+                    String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
+                    try {
+                        d.replaceString(flooPatchPosition.start, end, contents);
+                    } catch (Exception e) {
+                        Flog.error(e);
+                        FlooHandler.getInstance().send_get_buf(id);
+                        return;
+                    }
+                    if (!d.getText().equals(newCheckText)) {
+                        Flog.warn("oh shit");
+                    }
+                }
+                b.set(d.getText(), res.md5_after);
+            }
+        });
     }
 }
