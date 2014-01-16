@@ -160,7 +160,7 @@ class FlooSetBuf implements Serializable {
     public FlooSetBuf (Buf buf) {
         this.md5 = buf.md5;
         this.id = buf.id;
-        this.buf = buf.serializedBufferContents();
+        this.buf = buf.serialize();
         this.encoding = buf.encoding.toString();
     }
 }
@@ -174,7 +174,7 @@ class FlooCreateBuf implements Serializable {
     
     public FlooCreateBuf (Buf buf) {
         this.path = buf.path;
-        this.buf = buf.toString();
+        this.buf = buf.serialize();
         this.md5 = buf.md5;
         this.encoding = buf.encoding.toString();
     }
@@ -239,31 +239,27 @@ abstract class DocumentFetcher {
     abstract public void on_document(Document document);
 
     public void fetch(final String path) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
+        ThreadSafe.write(new Runnable() {
             public void run() {
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                public void run() {
-                    String absPath = Utils.absPath(path);
+                String absPath = Utils.absPath(path);
 
-                    VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-                    if (virtualFile == null || !virtualFile.exists()) {
-                        Flog.info("no virtual file for %s", path);
-                        return;
-                    }
-                    Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-                    if (d == null && make_document) {
-                        d = FileDocumentManager.getInstance().getDocument(virtualFile);
-                    }
-
-                    if (d == null) {
-                        Flog.info("could not make document for %s", path);
-                        return;
-                    }
-                    on_document(d);
+                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+                if (virtualFile == null || !virtualFile.exists()) {
+                    Flog.info("no virtual file for %s", path);
+                    return;
                 }
-            });
-        }});
+                Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
+                if (d == null && make_document) {
+                    d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                }
+
+                if (d == null) {
+                    Flog.info("could not make document for %s", path);
+                    return;
+                }
+                on_document(d);
+            }
+        });
     };
 }
 

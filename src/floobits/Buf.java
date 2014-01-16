@@ -81,8 +81,8 @@ abstract class Buf <T> {
         }
         try {
             VfsUtil.createDirectories(virtualFile.getParent().getPath());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Flog.debug("Couldn't make directory for %s", virtualFile);
         }
     }
 
@@ -90,18 +90,20 @@ abstract class Buf <T> {
         return this.id != null && this.buf != null;
     }
 
+    public String toString() {
+        return String.format("id: %s path: %s", id, path);
+    }
+
     abstract public void read ();
     abstract public void write();
     abstract public void set (String s, String md5);
     abstract public void patch (FlooPatch res);
     abstract public void send_patch (VirtualFile virtualFile);
-    abstract public String serializedBufferContents ();
+    abstract public String serialize();
 
     static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-
-
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
     }
@@ -181,7 +183,7 @@ class BinaryBuf extends Buf <byte[]> {
         this.md5 = md5;
     }
 
-    public String serializedBufferContents () {
+    public String serialize() {
         return Base64.encodeBase64String(buf);
     }
 
@@ -251,10 +253,6 @@ class TextBuf extends Buf <String> {
         });
     }
 
-    public String toString () {
-        return this.buf.toString();
-    };
-
     public void set (String s, String md5) {
         String contents = NEW_LINE.matcher(s).replaceAll("\n");
         // XXX: This should be handled by workspace.
@@ -272,7 +270,7 @@ class TextBuf extends Buf <String> {
         this.md5 = md5;
     }
 
-    public String serializedBufferContents () {
+    public String serialize() {
         return buf;
     }
 
@@ -376,7 +374,7 @@ class TextBuf extends Buf <String> {
                 ThreadSafe.write(new Runnable() {
                     @Override
                     public void run() {
-                        for(FlooPatchPosition flooPatchPosition : positions){
+                        for (FlooPatchPosition flooPatchPosition : positions) {
                             int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                             try {

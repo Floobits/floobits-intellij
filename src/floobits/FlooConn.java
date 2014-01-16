@@ -66,7 +66,7 @@ public class FlooConn extends Thread {
     protected FlooHandler handler;
 
     private Integer MAX_RETRIES = 20;
-    private Integer SOCKET_TIMEOUT = 10000; // Inifinity right now, which is default.
+    private Integer SOCKET_TIMEOUT = 0; // Inifinity right now, which is default.
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
