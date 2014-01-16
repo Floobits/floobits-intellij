@@ -624,7 +624,7 @@ class FlooHandler extends ConnectionInterface {
         }
         String dialog;
         if (conflicts.size() > 15) {
-            dialog = "<p>%d files are different.  Do you want to overwrite them (OK)?</p> ";
+            dialog = String.format("<p>%d files are different.  Do you want to overwrite them (OK)?</p> ", conflicts.size());
          } else {
             dialog = "<p>The following file(s) are different.  Do you want to overwrite them (OK)?</p><ul>";
             for (Buf buf : conflicts) {
