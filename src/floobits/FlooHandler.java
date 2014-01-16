@@ -609,7 +609,7 @@ class FlooHandler extends ConnectionInterface {
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             this.bufs.put(buf_id, buf);
             this.paths_to_ids.put(b.path, b.id);
-            buf.readFromDisk();
+            buf.read();
             if (buf.buf == null) {
                 this.send_get_buf(buf.id);
                 continue;
@@ -675,7 +675,7 @@ class FlooHandler extends ConnectionInterface {
 
         Buf b = this.bufs.get(res.id);
         b.set(res.buf, res.md5);
-        b.update();
+        b.write();
         Flog.info("on get buffed. %s", b.path);
     }
 
@@ -686,7 +686,7 @@ class FlooHandler extends ConnectionInterface {
         Buf buf = Buf.createBuf(res.path, res.id, res.buf, res.md5);
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);
-        buf.update();
+        buf.write();
     }
 
     protected void _on_patch (JsonObject obj) {
@@ -1031,11 +1031,10 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void untellij_changed(VirtualFile file) {
-        String path = Utils.toProjectRelPath(file.getPath());
-        Buf buf = this.get_buf_by_path(path);
+        Buf buf = this.get_buf_by_path(file.getPath());
 
         if (buf == null || !buf.isPopulated()) {
-            Flog.info("buf isn't populated yet %s", path);
+            Flog.info("buf isn't populated yet %s", buf);
             return;
         }
         buf.send_patch(file);

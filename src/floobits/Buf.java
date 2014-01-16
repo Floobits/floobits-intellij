@@ -17,7 +17,6 @@ import dmp.diff_match_patch;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
-import dmp.diff_match_patch;
 
 
 enum Encoding {
@@ -91,8 +90,8 @@ abstract class Buf <T> {
         return this.id != null && this.buf != null;
     }
 
-    abstract public void readFromDisk ();
-    abstract public void writeToDisk () throws IOException;
+    abstract public void read ();
+    abstract public void write();
     abstract public void set (String s, String md5);
     abstract public void patch (FlooPatch res);
     abstract public void send_patch (VirtualFile virtualFile);
@@ -102,27 +101,6 @@ abstract class Buf <T> {
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
 
-
-    public Document update() {
-        VirtualFile virtualFile = this.getVirtualFile();
-        if (virtualFile == null || !virtualFile.exists()) {
-            try {
-                this.writeToDisk();
-            } catch (IOException e) {
-                Flog.error(e);
-            }
-            return null;
-        }
-        final Document d = Buf.getDocumentForVirtualFile(virtualFile);
-        if (d == null) {
-            try {
-                this.writeToDisk();
-            } catch (IOException e) {
-                Flog.error(e);
-            }
-        }
-        return d;
-    }
 
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
         return new BinaryBuf(path, id, buf, md5);
@@ -163,7 +141,7 @@ class BinaryBuf extends Buf <byte[]> {
         this.encoding = Encoding.BASE64;
     }
 
-    public void readFromDisk () {
+    public void read () {
         VirtualFile virtualFile = this.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("Couldn't get virtual file in readFromDisk %s", this);
@@ -178,10 +156,19 @@ class BinaryBuf extends Buf <byte[]> {
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
 
-    public void writeToDisk () throws IOException {
-        VirtualFile virtualFile = this.getVirtualFile();
-        this.createDirectories(virtualFile);
-        virtualFile.setBinaryContent(this.buf);
+    public void write() {
+        ThreadSafe.write(new Runnable() {
+            @Override
+            public void run() {
+                VirtualFile virtualFile = getVirtualFile();
+                createDirectories(virtualFile);
+                try {
+                    virtualFile.setBinaryContent(buf);
+                } catch (IOException e) {
+                    Flog.warn("Writing binary content to disk failed. %s", path);
+                }
+            }
+        });
     }
 
     public void set (String s, String md5) {
@@ -228,8 +215,6 @@ class BinaryBuf extends Buf <byte[]> {
         set(contents, after_md5);
         flooHandler.send_set_buf(this);
     };
-
-
 }
 
 class TextBuf extends Buf <String> {
@@ -240,7 +225,7 @@ class TextBuf extends Buf <String> {
         this.encoding = Encoding.UTF8;
     }
 
-    public void readFromDisk () {
+    public void read () {
         VirtualFile virtualFile = this.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("Can't get virtual file to read from disk %s", this);
@@ -255,11 +240,15 @@ class TextBuf extends Buf <String> {
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
 
-    public void writeToDisk () {
-        VirtualFile virtualFile = this.getVirtualFile();
-        this.createDirectories(virtualFile);
-        Document d = Buf.getDocumentForVirtualFile(virtualFile);
-        d.setText(this.buf);
+    public void write() {
+        ThreadSafe.write(new Runnable() {
+            public void run() {
+                VirtualFile virtualFile = getVirtualFile();
+                createDirectories(virtualFile);
+                Document d = Buf.getDocumentForVirtualFile(virtualFile);
+                d.setText(buf);
+            }
+        });
     }
 
     public String toString () {
@@ -267,6 +256,18 @@ class TextBuf extends Buf <String> {
     };
 
     public void set (String s, String md5) {
+        String contents = NEW_LINE.matcher(s).replaceAll("\n");
+        // XXX: This should be handled by workspace.
+        if (!contents.equals(s)) {
+            Flog.warn("Contents have \\r! Replacing and calling set_buf %s", path);
+            this.buf = contents;
+            this.md5 = DigestUtils.md5Hex(contents);
+            FlooHandler flooHandler = FlooHandler.getInstance();
+            if (flooHandler != null) {
+                flooHandler.send_set_buf(this);
+            }
+            return;
+        }
         this.buf = s;
         this.md5 = md5;
     }
@@ -278,7 +279,7 @@ class TextBuf extends Buf <String> {
     public void send_patch(VirtualFile virtualFile) {
         Document d = Buf.getDocumentForVirtualFile(virtualFile);
         if (d == null) {
-            Flog.warn("Can't get document to read from disk for sending patch %s", this);
+            Flog.warn("Can't get document to read from disk for sending patch %s", path);
             return;
         }
         send_patch(d.getText());
@@ -301,10 +302,10 @@ class TextBuf extends Buf <String> {
     public void patch(final FlooPatch res) {
         final TextBuf b = this;
         Flog.info("Got _on_patch");
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
+        ThreadSafe.read(new Runnable() {
             @Override
             public void run() {
-                Document d;
+                final Document d;
 
                 String oldText = this.toString();
                 VirtualFile virtualFile = b.getVirtualFile();
@@ -372,24 +373,23 @@ class TextBuf extends Buf <String> {
                 }
                 Flog.log("Patched %s", res.path);
                 // XXX: inefficient to create new diff match patch;
-                diff_match_patch dmp = new diff_match_patch();
-                for(FlooPatchPosition flooPatchPosition : positions){
-                    Object[] patchCheckResults = dmp.patch_apply(patches, d.getText());
-                    String newCheckText = NEW_LINE.matcher((String) patchCheckResults[0]).replaceAll("\n");
-                    int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
-                    String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-                    try {
-                        d.replaceString(flooPatchPosition.start, end, contents);
-                    } catch (Exception e) {
-                        Flog.error(e);
-                        FlooHandler.getInstance().send_get_buf(id);
-                        return;
+                ThreadSafe.write(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(FlooPatchPosition flooPatchPosition : positions){
+                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
+                            String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
+                            try {
+                                d.replaceString(flooPatchPosition.start, end, contents);
+                            } catch (Exception e) {
+                                Flog.error(e);
+                                FlooHandler.getInstance().send_get_buf(id);
+                                return;
+                            }
+                        }
+                        b.set(d.getText(), res.md5_after);
                     }
-                    if (!d.getText().equals(newCheckText)) {
-                        Flog.warn("oh shit");
-                    }
-                }
-                b.set(d.getText(), res.md5_after);
+                });
             }
         });
     }
