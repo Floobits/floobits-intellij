@@ -25,6 +25,7 @@ public class AddToWorkspace extends IsJoinedAction {
             }
             if (!virtualFile.isDirectory()) {
                 add(virtualFile, filesToAdd);
+                virtualFile.findOrCreateChildData()
                 continue;
             }
 
@@ -34,7 +35,6 @@ public class AddToWorkspace extends IsJoinedAction {
                     add(file, filesToAdd);
                     return true;
                 }
-
             });
         }
 

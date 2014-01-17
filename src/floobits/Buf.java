@@ -337,9 +337,13 @@ class TextBuf extends Buf <String> {
                 VirtualFile virtualFile = b.getVirtualFile();
                 if (virtualFile == null) {
                     Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
+                    FlooHandler flooHandler = FlooHandler.getInstance();
+                    buf = null;
+                    if (flooHandler != null) {
+                        flooHandler.send_get_buf(id);
+                    }
                     return;
                 }
-
                 d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d == null) {
                     Flog.warn("Document not found for %s", virtualFile);
