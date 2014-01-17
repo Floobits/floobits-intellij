@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
