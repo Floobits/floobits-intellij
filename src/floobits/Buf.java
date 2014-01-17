@@ -101,6 +101,9 @@ abstract class Buf <T> {
     abstract public String serialize();
 
     static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
+        if (virtualFile == null) {
+            return null;
+        }
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
     public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
@@ -247,6 +250,10 @@ class TextBuf extends Buf <String> {
                 VirtualFile virtualFile = getVirtualFile();
                 createDirectories(virtualFile);
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
+                if (d == null) {
+                    Flog.warn("Tried to write to null document: %s", virtualFile);
+                    return;
+                }
                 d.setText(buf);
             }
         });
