@@ -185,12 +185,12 @@ class FlooHighlight implements Serializable {
     public Integer id;
     public Boolean ping = false;
     public Boolean summon = false;
-    public List<List<Integer>> ranges;
+    public ArrayList<ArrayList<Integer>> ranges;
     public Integer user_id;
 
     public FlooHighlight(){}
 
-    public FlooHighlight (Buf buf, List<List<Integer>> ranges, Boolean summon) {
+    public FlooHighlight (Buf buf, ArrayList<ArrayList<Integer>> ranges, Boolean summon) {
         this.id = buf.id;
         if (summon != null) {
             this.summon = summon;
@@ -768,7 +768,7 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_highlight (JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
-        final List<List<Integer>> ranges = res.ranges;
+        final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = FloobitsPlugin.flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         FloobitsPlugin.flooHandler.get_document(res.id, new DocumentFetcher(force) {
             @Override
@@ -1004,8 +1004,8 @@ class FlooHandler extends ConnectionInterface {
 
     public void send_summon (String current, Integer offset) {
         Buf buf = this.get_buf_by_path(current);
-        List<List<Integer>> ranges = new ArrayList<List<Integer>>();
-        ranges.add(Arrays.asList(offset, offset));
+        ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
+        ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
         this.conn.write(new FlooHighlight(buf, ranges, true));
     }
 
@@ -1036,19 +1036,14 @@ class FlooHandler extends ConnectionInterface {
         buf.send_patch(file);
     }
 
-    public void untellij_selection_change(String path, TextRange[] textRanges) {
+    public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
         if (buf == null || buf.buf == null) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
-        List<List<Integer>> ranges = new ArrayList<List<Integer>>();
-
-        for (TextRange r : textRanges) {
-            ranges.add(Arrays.asList(r.getStartOffset(), r.getEndOffset()));
-        }
-        this.conn.write(new FlooHighlight(buf, ranges, false));
+        this.conn.write(new FlooHighlight(buf, textRanges, false));
     }
 
     public void untellij_saved(String path) {

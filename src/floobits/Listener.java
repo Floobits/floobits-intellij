@@ -1,11 +1,14 @@
 package floobits;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.vfs.*;
@@ -20,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.vfs.VirtualFileManager;
 
-public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener {
+public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
 
 
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
@@ -74,12 +77,35 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     }
 
     @Override
+    public void caretPositionChanged(final CaretEvent event) {
+        Document document = event.getEditor().getDocument();
+        final Editor[] editors = EditorFactory.getInstance().getEditors(document);
+        GetPath.getPath(new GetPath(document) {
+            @Override
+            public void if_path(String path, FlooHandler flooHandler) {
+                if (editors.length <= 0) {
+                    return;
+                }
+                Editor editor = editors[0];
+                ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
+                Integer offset = editor.getCaretModel().getOffset();
+                range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
+                flooHandler.untellij_selection_change(path, range);
+            }
+        });
+    }
+
+    @Override
     public void selectionChanged(final SelectionEvent event) {
         Document document = event.getEditor().getDocument();
         GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
-                TextRange[] ranges = event.getNewRanges();
+                TextRange[] textRanges = event.getNewRanges();
+                ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
+                for(TextRange r : textRanges) {
+                    ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
+                }
                 flooHandler.untellij_selection_change(path, ranges);
             }
         });
