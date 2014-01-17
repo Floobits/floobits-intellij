@@ -16,7 +16,6 @@ class Ignore {
     static String[] HIDDEN_WHITELIST = {".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"};
 
     //TODO: grab global git ignores:
-    //gitconfig_file = popen("git config -z --get core.excludesfile", "r");
     static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
