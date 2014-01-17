@@ -74,23 +74,33 @@ abstract class Buf <T> {
         return LocalFileSystem.getInstance().findFileByPath(Utils.absPath(this.path));
     }
 
-    public void createDirectories(VirtualFile virtualFile) {
-        if (virtualFile == null) {
-            virtualFile = this.getVirtualFile();
-        }
-        try {
-            VfsUtil.createDirectories(virtualFile.getParent().getPath());
-        } catch (Exception e) {
-            Flog.debug("Couldn't make directory for %s", virtualFile);
-        }
-    }
-
     public Boolean isPopulated() {
         return this.id != null && this.buf != null;
     }
 
     public String toString() {
         return String.format("id: %s path: %s", id, path);
+    }
+
+    public VirtualFile createFile() {
+        File file = new File(Utils.absPath(path));
+        String name = file.getName();
+        String parentPath = file.getParent();
+        try {
+            VfsUtil.createDirectories(parentPath);
+        } catch (IOException e) {
+            Flog.error("createFile error %s", e);
+            return null;
+        }
+        VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
+        VirtualFile newFile;
+        try {
+            newFile = parent.findOrCreateChildData(FlooHandler.getInstance(), name);
+        } catch (IOException e) {
+            Flog.error("Create file error %s", e);
+            return null;
+        }
+        return newFile;
     }
 
     abstract public void read ();
@@ -165,7 +175,13 @@ class BinaryBuf extends Buf <byte[]> {
             @Override
             public void run() {
                 VirtualFile virtualFile = getVirtualFile();
-                createDirectories(virtualFile);
+                if (virtualFile == null) {
+                    virtualFile = createFile();
+                    if (virtualFile == null) {
+                        Flog.error("Unable to write file.");
+                        return;
+                    }
+                }
                 try {
                     virtualFile.setBinaryContent(buf);
                 } catch (IOException e) {
@@ -248,10 +264,16 @@ class TextBuf extends Buf <String> {
         ThreadSafe.write(new Runnable() {
             public void run() {
                 VirtualFile virtualFile = getVirtualFile();
-                createDirectories(virtualFile);
+                if (virtualFile == null) {
+                    virtualFile = createFile();
+                    if (virtualFile == null) {
+                        Flog.error("Unable to write file.");
+                        return;
+                    }
+                }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d == null) {
-                    Flog.warn("Tried to write to null document: %s", virtualFile);
+                    Flog.warn("Tried to write to null document: %s", path);
                     return;
                 }
                 d.setText(buf);

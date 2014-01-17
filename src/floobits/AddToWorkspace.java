@@ -31,7 +31,8 @@ public class AddToWorkspace extends IsJoinedAction {
             VfsUtilCore.visitChildrenRecursively(virtualFile, new VirtualFileVisitor() {
                 @Override
                 public boolean visitFile(@NotNull VirtualFile file) {
-                    return add(file, filesToAdd);
+                    add(file, filesToAdd);
+                    return true;
                 }
 
             });
@@ -62,18 +63,17 @@ public class AddToWorkspace extends IsJoinedAction {
         }
     }
 
-    private boolean add(VirtualFile virtualFile, HashSet<VirtualFile> set) {
+    private void add(VirtualFile virtualFile, HashSet<VirtualFile> set) {
         if (!Utils.isSharableFile(virtualFile)) {
-            return false;
+            return;
         }
         if (set.contains(virtualFile)) {
-            return false;
+            return;
         }
         if (virtualFile.isDirectory()) {
-            return true;
+            return;
         }
         set.add(virtualFile);
-        return true;
     }
 
     @Override
