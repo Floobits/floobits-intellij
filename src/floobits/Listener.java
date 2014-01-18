@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.*;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.vfs.*;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -73,7 +74,22 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void documentChanged(DocumentEvent event) {
-        // Do nothing here.
+        Flog.info("Document changed.");
+        FlooHandler flooHandler = FlooHandler.getInstance();
+        if (flooHandler == null) {
+            return;
+        }
+        Document document = event.getDocument();
+        if (document == null) {
+            Flog.warn("No document? %s", event);
+            return;
+        }
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+        if (virtualFile == null) {
+            Flog.warn("No virtual file for document %s", event);
+            return;
+        }
+        flooHandler.untellij_changed(virtualFile);
     }
 
     @Override
