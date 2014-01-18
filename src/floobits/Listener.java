@@ -25,7 +25,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
 
-
+    protected Timeouts timeouts = Timeouts.create();
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
@@ -134,10 +134,21 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 }
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
-                String fileName = event.getFile().getName();
-                FlooHandler.getInstance().untellij_renamed(
-                        oldParent.getPath() + "/" + fileName,
-                        newParent.getPath() + "/" + fileName);
+                String oldPath = oldParent.getPath();
+                String newPath = newParent.getPath();
+                VirtualFile virtualFile = event.getFile();
+                ArrayList<VirtualFile> files;
+                try {
+                    files = Utils.getAllNestedFiles(virtualFile, new Ignore());
+                } catch (IOException e) {
+                    Flog.warn("Unable to get nested files for move event %s.", virtualFile);
+                    continue;
+                }
+                for (VirtualFile file: files) {
+                    String oldFilePath = file.getPath();
+                    String newFilePath = oldFilePath.replace(oldPath, newPath);
+                    FlooHandler.getInstance().untellij_renamed(oldFilePath, newFilePath);
+                }
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
@@ -154,8 +165,15 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Unable to delete files %s", e);
                     continue;
                 }
-                for (VirtualFile createdFile : createdFiles) {
-                    handler.upload(createdFile);
+                for (final VirtualFile createdFile : createdFiles) {
+                    Timeout timeout = new Timeout(1000) {
+                        @Override
+                        void run(Object... objects) {
+                            FlooHandler newFlooHandler = FlooHandler.getInstance();
+                            newFlooHandler.upload(createdFile);
+                        }
+                    };
+                    timeouts.setTimeout(timeout);
                 }
                 continue;
             }
@@ -165,6 +183,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     changedFiles = Utils.getAllNestedFiles(event.getFile(), new Ignore());
                 } catch (IOException e) {
                     Flog.warn("Unable to change file. %s %s", e, event);
+                    continue;
                 }
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);

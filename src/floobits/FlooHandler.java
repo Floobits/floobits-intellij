@@ -328,11 +328,6 @@ class FlooHandler extends ConnectionInterface {
         return user.username;
     }
 
-    protected Timeout setTimeout(final Timeout timeout) {
-        timeouts.setTimeout(timeout);
-        return timeout;
-    }
-
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
         status_message(String.format("You successfully joined %s ", url.toString()));

@@ -2,6 +2,7 @@ package floobits;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
@@ -134,7 +135,7 @@ abstract class Buf <T> {
             String encodedContents = new String(originalBytes, "UTF-8");
             byte[] decodedContents = encodedContents.getBytes();
             String filePath = Utils.toProjectRelPath(virtualFile.getPath());
-            if (decodedContents.equals(originalBytes)) {
+            if (Arrays.equals(decodedContents, originalBytes)) {
                 String md5 = DigestUtils.md5Hex(encodedContents);
                 return new TextBuf(filePath, null, encodedContents, md5);
             } else {
@@ -313,7 +314,7 @@ class TextBuf extends Buf <String> {
 
     public void send_patch(String current) {
         FlooHandler flooHandler = FlooHandler.getInstance();
-        if (flooHandler != null) {
+        if (flooHandler == null) {
             return;
         }
         String previous = buf;
