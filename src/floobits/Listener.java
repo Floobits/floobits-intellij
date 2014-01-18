@@ -144,10 +144,6 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileMoveEvent) {
                 Flog.info("move event %s", event);
-                if (!Utils.isFile(event.getFile())) {
-                    Flog.info("File does not exist..");
-                    continue;
-                }
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
                 String oldPath = oldParent.getPath();
@@ -161,8 +157,8 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     continue;
                 }
                 for (VirtualFile file: files) {
-                    String oldFilePath = file.getPath();
-                    String newFilePath = oldFilePath.replace(oldPath, newPath);
+                    String newFilePath = file.getPath();
+                    String oldFilePath = newFilePath.replace(newPath, oldPath);
                     FlooHandler.getInstance().untellij_renamed(oldFilePath, newFilePath);
                 }
                 continue;
