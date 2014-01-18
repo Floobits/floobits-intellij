@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 class Utils {
+    static Timeouts timeouts = Timeouts.create();
     public static Boolean isSharableFile(VirtualFile virtualFile) {
         return (isFile(virtualFile) && virtualFile.exists() && virtualFile.isInLocalFileSystem());
     }
@@ -176,5 +177,19 @@ class Utils {
             filePaths.add(file);
         }
         return filePaths;
+    }
+
+    static void createFile(final VirtualFile virtualFile) {
+        Timeout timeout = new Timeout(1000) {
+            @Override
+            void run(Object... objects) {
+                FlooHandler flooHandler = FlooHandler.getInstance();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.upload(virtualFile);
+            }
+        };
+        timeouts.setTimeout(timeout);
     }
 }

@@ -26,7 +26,6 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
 
-    protected Timeouts timeouts = Timeouts.create();
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
@@ -168,6 +167,26 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile()));
                 continue;
             }
+            if (event instanceof VFileCopyEvent) {
+                // We get one copy event per file copied, which makes this easy.
+                Flog.info("Copying a file %s", event);
+                VirtualFile newParent = ((VFileCopyEvent) event).getNewParent();
+                String newChildName = ((VFileCopyEvent) event).getNewChildName();
+                String path = event.getPath();
+                VirtualFile[] children = newParent.getChildren();
+                VirtualFile copiedFile = null;
+                for (VirtualFile child : children) {
+                    if (child.getName().equals(newChildName)) {
+                        copiedFile = child;
+                    }
+                }
+                if (copiedFile == null) {
+                    Flog.warn("Couldn't find copied virtual file %s", path);
+                    continue;
+                }
+                Utils.createFile(copiedFile);
+                continue;
+            }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles = null;
@@ -178,14 +197,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     continue;
                 }
                 for (final VirtualFile createdFile : createdFiles) {
-                    Timeout timeout = new Timeout(1000) {
-                        @Override
-                        void run(Object... objects) {
-                            FlooHandler newFlooHandler = FlooHandler.getInstance();
-                            newFlooHandler.upload(createdFile);
-                        }
-                    };
-                    timeouts.setTimeout(timeout);
+                    Utils.createFile(createdFile);
                 }
                 continue;
             }
