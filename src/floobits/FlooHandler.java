@@ -8,12 +8,10 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.CaretModel;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -812,6 +810,9 @@ class FlooHandler extends ConnectionInterface {
                     if (force && first) {
                         CaretModel caretModel = editor.getCaretModel();
                         caretModel.moveToOffset(start);
+                        LogicalPosition position = caretModel.getLogicalPosition();
+                        ScrollingModel scrollingModel = editor.getScrollingModel();
+                        scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
                         first = false;
                     }
                 }

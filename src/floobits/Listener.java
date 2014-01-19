@@ -168,7 +168,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
-                // We get one copy event per file copied, which makes this easy.
+                // We get one copy event per file copied for copied directories, which makes this easy.
                 Flog.info("Copying a file %s", event);
                 VirtualFile newParent = ((VFileCopyEvent) event).getNewParent();
                 String newChildName = ((VFileCopyEvent) event).getNewChildName();
