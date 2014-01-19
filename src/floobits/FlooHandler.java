@@ -619,7 +619,11 @@ class FlooHandler extends ConnectionInterface {
         if (conflicts.size() > 15) {
             dialog = String.format("<p>%d files are different.  Do you want to overwrite them (OK)?</p> ", conflicts.size());
          } else {
-            dialog = "<p>The following file(s) are different.  Do you want to overwrite them (OK)?</p><ul>";
+            if (conflicts.size() == 1) {
+                dialog = "<p>The following remote file is different from your version. Do you want to overwrite your local file with the changes from the remote workspace (OK)?</p><ul>";
+            } else {
+                dialog = "<p>The following remote files are different from yours. Do you want to overwrite your local files with the changes from the remote workspace (OK)?</p><ul>";
+            }
             for (Buf buf : conflicts) {
                 dialog += String.format("<li>%s</li>", buf.path);
             }
