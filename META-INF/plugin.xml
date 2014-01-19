@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0</version>
+  <version>1.0.1</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -20,9 +20,7 @@
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
-  <!-- uncomment to enable plugin in all products
   <depends>com.intellij.modules.lang</depends>
-  -->
 
   <application-components>
       <component>
@@ -76,7 +74,7 @@
           <reference ref="floobits.ClearHighlights"/>
           <reference ref="floobits.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
-          <add-to-group group-id="MainMenu" relative-to-action="HelpMenu" anchor="before"/>
+          <add-to-group group-id="ToolsMenu" />
       </group>
 
   </actions>

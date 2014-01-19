@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -37,13 +38,14 @@ import java.util.*;
 import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
+    static String clientName = ApplicationInfo.getInstance().getVersionName();
     public String username;
     public String api_key;
     public String secret;
 
     public String room;
     public String room_owner;
-    public String client = "IntelliJ";
+    public String client = FlooAuth.clientName;
     public String platform = System.getProperty("os.name");
     public String version = "0.10";
     public String[] supported_encodings = { "utf8", "base64" };
