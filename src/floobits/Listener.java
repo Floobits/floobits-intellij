@@ -53,12 +53,14 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         em.addDocumentListener(this);
         em.addSelectionListener(this);
+        em.addCaretListener(this);
     }
 
     public void disposeComponent() {
         connection.disconnect();
         em.removeSelectionListener(this);
         em.removeDocumentListener(this);
+        em.removeCaretListener(this);
     }
 
     @Override
