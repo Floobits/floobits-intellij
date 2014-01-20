@@ -163,6 +163,9 @@ class Utils {
     static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile, Ignore ignore) {
         ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
         if (!vFile.isDirectory()) {
+            if (ignore.isIgnored(vFile.getPath())) {
+                return filePaths;
+            }
             filePaths.add(vFile);
             return filePaths;
         }
