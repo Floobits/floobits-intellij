@@ -15,6 +15,7 @@ public class SelectFolder {
             fileChooser.setCurrentDirectory(file);
         }
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setApproveButtonText("Select");
         fileChooser.addMouseListener(new MouseListener() {
 
             @Override
@@ -53,7 +54,7 @@ public class SelectFolder {
         });
 
         JFrame frame = new JFrame("FileChooserDemo");
-        int retval = fileChooser.showOpenDialog(frame);
+        int retval = fileChooser.showSaveDialog(frame);
         if (retval == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile != null)
