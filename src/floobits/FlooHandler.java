@@ -422,11 +422,14 @@ class FlooHandler extends ConnectionInterface {
                         Flog.error(e);
                         return;
                     }
-                    joinWorkspace(flooUrl, path);
+                    finishJoiningWorkspace(path, flooUrl);
                 }
             });
             return;
         }
+        finishJoiningWorkspace(path, flooUrl);
+    }
+    protected void finishJoiningWorkspace(String path, FlooUrl flooUrl) {
         ProjectManager pm = ProjectManager.getInstance();
         // Check open projects
         Project[] openProjects = pm.getOpenProjects();
