@@ -64,6 +64,7 @@ public class FlooConn extends Thread {
     protected BufferedReader in;
     protected SSLSocket socket;
     protected FlooHandler handler;
+    Boolean connected = false;
 
     private Integer MAX_RETRIES = 20;
     private Integer SOCKET_TIMEOUT = 0; // Inifinity right now, which is default.
@@ -89,12 +90,17 @@ public class FlooConn extends Thread {
         connect();
     }
 
-    public void shut_down() {
+    public Boolean shutDown() {
+        if (!connected) {
+            // Not connectedd.
+            return false;
+        }
         retries = -1;
-        cleanup();
+        cleanUp();
+        return true;
     }
 
-    protected void cleanup() {
+    protected void cleanUp() {
         try {
             if (out != null) {
                 out.close();
@@ -108,6 +114,7 @@ public class FlooConn extends Thread {
                 socket.close();
             }
         } catch (Exception ignored) {}
+        connected = false;
     }
 
     protected void handle (String line) {
@@ -123,14 +130,18 @@ public class FlooConn extends Thread {
         } catch (Exception e) {
             Flog.warn(e);
             if (name1.equals("room_info")) {
-                shut_down();
+                shutDown();
             }
         }
     }
 
     protected void reconnect() {
         Flog.info("reconnecting");
-        cleanup();
+        if (!connected) {
+            Flog.info("Aborting reconnect, we do not want to be connected.");
+            return;
+        }
+        cleanUp();
         retries -= 1;
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
@@ -196,13 +207,13 @@ public class FlooConn extends Thread {
             reconnect();
             return;
         }
-
         try {
             out = new OutputStreamWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             String line;
             this.handler.on_connect();
+            connected = true;
             retries = MAX_RETRIES;
             delay = INITIAL_RECONNECT_DELAY;
 

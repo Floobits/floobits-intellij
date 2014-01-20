@@ -12,13 +12,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -947,7 +945,7 @@ class FlooHandler extends ConnectionInterface {
             status_message("You have left the workspace");
         }
         FloobitsPlugin.flooHandler = null;
-        conn.shut_down();
+        conn.shutDown();
     }
 
     protected void _on_delete_buf(JsonObject jsonObject) {
@@ -1107,8 +1105,9 @@ class FlooHandler extends ConnectionInterface {
 
 
     public void shut_down() {
-        status_message(String.format("Leaving workspace: %s.", url.toString()));
-        this.conn.shut_down();
+        if (this.conn.shutDown()) {
+            status_message(String.format("Leaving workspace: %s.", url.toString()));
+        }
         is_joined = false;
     }
 }
