@@ -151,12 +151,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
                 ArrayList<VirtualFile> files;
-                try {
-                    files = Utils.getAllNestedFiles(virtualFile, new Ignore());
-                } catch (IOException e) {
-                    Flog.warn("Unable to get nested files for move event %s.", virtualFile);
-                    continue;
-                }
+                files = Utils.getAllNestedFiles(virtualFile);
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
@@ -186,18 +181,16 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
+                if (Ignore.isIgnored(copiedFile.getPath(), null)) {
+                    return;
+                }
                 Utils.createFile(copiedFile);
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles = null;
-                try {
-                    createdFiles = (Utils.getAllNestedFiles(event.getFile(), new Ignore()));
-                } catch (IOException e) {
-                    Flog.warn("Unable to delete files %s", e);
-                    continue;
-                }
+                createdFiles = Utils.getAllNestedFiles(event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(createdFile);
                 }
@@ -205,12 +198,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles = null;
-                try {
-                    changedFiles = Utils.getAllNestedFiles(event.getFile(), new Ignore());
-                } catch (IOException e) {
-                    Flog.warn("Unable to change file. %s %s", e, event);
-                    continue;
-                }
+                changedFiles = Utils.getAllNestedFiles(event.getFile());
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }

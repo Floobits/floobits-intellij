@@ -8,8 +8,6 @@ import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.containers.hash.HashSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-
 public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
@@ -40,7 +38,7 @@ public class AddToWorkspace extends IsJoinedAction {
         if (filesToAdd.size() <= 1) {
             VirtualFile[] toAdds = new VirtualFile[]{};
             VirtualFile toAdd = filesToAdd.toArray(toAdds)[0];
-            if (!Ignore.is_ignored(toAdd.getPath(), null)) {
+            if (!Ignore.isIgnored(toAdd.getPath(), null)) {
                 flooHandler.upload(toAdd);
             }
             return; 

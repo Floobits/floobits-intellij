@@ -129,7 +129,7 @@ class Ignore {
         return false;
     }
 
-    public static Boolean is_ignored(String current_path, String abs_path) {
+    public static Boolean isIgnored(String current_path, String abs_path) {
         if (abs_path == null)
             abs_path = current_path;
 
@@ -151,7 +151,7 @@ class Ignore {
         if (ignore.isIgnored(abs_path))
             return true;
 
-        return is_ignored(base_path.getAbsolutePath(), abs_path);
+        return isIgnored(base_path.getAbsolutePath(), abs_path);
     }
 
 }
