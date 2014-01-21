@@ -411,17 +411,10 @@ class FlooHandler extends ConnectionInterface {
         try {
             path = p.workspaces.get(flooUrl.owner).get(flooUrl.workspace).path;
         } catch (Exception e) {
-            SelectFolder.build(Utils.unFuckPath("~"), new RunLater(null) {
+            SelectFolder.build(new RunLater(null) {
                 @Override
                 void run(Object... objects) {
-                    File file = (File)objects[0];
-                    String path;
-                    try {
-                        path = file.getCanonicalPath();
-                    } catch (IOException e) {
-                        Flog.warn(e);
-                        return;
-                    }
+                    String path = (String)objects[0];
                     finishJoiningWorkspace(path, flooUrl);
                 }
             });
