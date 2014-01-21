@@ -28,7 +28,7 @@ public class DotFloo {
             url = new JsonParser().parse(floo).getAsJsonObject().get("url").getAsString();
             return new FlooUrl(url);
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
 
         return null;
@@ -39,7 +39,7 @@ public class DotFloo {
             String flooFile = String.format("{\n    \"url\": \"%s\"\n}", url);
             FileUtils.write(path(Shared.colabDir), flooFile, "UTF-8");
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
     }
 }

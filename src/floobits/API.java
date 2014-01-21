@@ -74,7 +74,7 @@ public class API {
         try {
             apiRequest(method);
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
             return orgs;
         }
 
@@ -92,7 +92,7 @@ public class API {
                 orgs.add(orgName);
             }
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
 
         return orgs;

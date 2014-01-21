@@ -69,7 +69,7 @@ public class PersistentJson {
         try {
             FileUtils.write(getFile(), gson.toJson(this), "UTF-8");
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
     }
 
@@ -82,7 +82,7 @@ public class PersistentJson {
         try {
             s = FileUtils.readFileToString(getFile(), "UTF-8");
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
             s = "{}";
         }
         return new Gson().fromJson(s, (Type) PersistentJson.class);

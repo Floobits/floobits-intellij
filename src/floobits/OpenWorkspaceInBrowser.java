@@ -17,9 +17,9 @@ public class OpenWorkspaceInBrowser extends IsJoinedAction {
         try {
             Desktop.getDesktop().browse(new URI(flooHandler.url.toString()));
         } catch (IOException error) {
-            Flog.error(error);
+            Flog.warn(error);
         } catch (URISyntaxException error) {
-            Flog.error(error);
+            Flog.warn(error);
         }
     }
 }

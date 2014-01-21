@@ -180,7 +180,7 @@ public class FlooConn extends Thread {
                     try {
                         a.verify(b.getPublicKey());
                     } catch (Exception e) {
-                        Flog.error(e);
+                        Flog.warn(e);
                         throw new CertificateException(e);
                     }
                     a = b;

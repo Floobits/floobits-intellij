@@ -11,10 +11,10 @@ class Flog {
     public static void debug (String s, Object... args) {
         Log.debug(String.format(s, args));
     }
-    public static void error (String s, Object... args) {
+    public static void throwAHorribleBlinkingErrorAtTheUser (String s, Object... args) {
         Log.error(String.format(s, args));
     }
-    public static void error (Throwable e) {
+    public static void throwAHorribleBlinkingErrorAtTheUser (Throwable e) {
         Log.error(e);
     }
     public static void warn (Throwable e) {

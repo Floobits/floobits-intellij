@@ -371,7 +371,7 @@ class FlooHandler extends ConnectionInterface {
                     try {
                         flooUrl = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
-                        Flog.error(e);
+                        Flog.warn(e);
                         continue;
                     }
                     if (workspaceExists(flooUrl)) {
@@ -419,7 +419,7 @@ class FlooHandler extends ConnectionInterface {
                     try {
                         path = file.getCanonicalPath();
                     } catch (IOException e) {
-                        Flog.error(e);
+                        Flog.warn(e);
                         return;
                     }
                     finishJoiningWorkspace(path, flooUrl);
@@ -445,7 +445,7 @@ class FlooHandler extends ConnectionInterface {
             try {
                 this.project = pm.loadAndOpenProject(path);
             } catch (Exception e) {
-                Flog.error(e);
+                Flog.warn(e);
             }
         }
 
@@ -455,7 +455,7 @@ class FlooHandler extends ConnectionInterface {
             try {
                 ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
             } catch (Exception e) {
-                Flog.error(e);
+                Flog.warn(e);
                 return;
             }
         }
@@ -509,7 +509,7 @@ class FlooHandler extends ConnectionInterface {
                     JsonObject obj = (JsonObject)new JsonParser().parse(res);
                     details = obj.get("detail").getAsString();
                 } catch (IOException e) {
-                    Flog.error(e);
+                    Flog.warn(e);
                     return;
                 }
                 error_message(details);
@@ -522,9 +522,9 @@ class FlooHandler extends ConnectionInterface {
                 return;
             default:
                 try {
-                    Flog.error(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
+                    Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
                 } catch (IOException e) {
-                    Flog.error(e);
+                    Flog.warn(e);
                 }
         }
     }
@@ -546,7 +546,7 @@ class FlooHandler extends ConnectionInterface {
         try {
             ignore = new Ignore(new File(Shared.colabDir), null, false);
         } catch (Exception ex) {
-            Flog.error(ex);
+            Flog.warn(ex);
             return;
         }
 
@@ -858,7 +858,7 @@ class FlooHandler extends ConnectionInterface {
         Buf buf = get_buf_by_path(oldPath);
         if (buf == null) {
             if (get_buf_by_path(newPath) == null) {
-                Flog.error("Rename oldPath and newPath don't exist. %s %s", oldPath, newPath);
+                Flog.warn("Rename oldPath and newPath don't exist. %s %s", oldPath, newPath);
             } else {
                 Flog.info("We probably renamed this, nothing to rename.");
             }
@@ -882,30 +882,30 @@ class FlooHandler extends ConnectionInterface {
                         try {
                             foundFile.rename(null, newFileName);
                         } catch (IOException e) {
-                            Flog.error("Error renaming file %s %s %s", e, oldPath, newPath);
+                            Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
                         }
                         // Move file
                         String newParentDirectoryPath = newFile.getParent();
                         String oldParentDirectoryPath = oldFile.getParent();
                         if (newParentDirectoryPath == oldParentDirectoryPath) {
-                            Flog.info("Only renamed file, don't need to move %s %s", oldPath, newPath);
+                            Flog.warn("Only renamed file, don't need to move %s %s", oldPath, newPath);
                             return;
                         }
                         VirtualFile directory = null;
                         try {
                             directory = VfsUtil.createDirectories(newParentDirectoryPath);
                         } catch (IOException e) {
-                            Flog.error("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
 
                         }
                         if (directory == null) {
-                            Flog.error("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
                             return;
                         }
                         try {
                             foundFile.move(null, directory);
                         } catch (IOException e) {
-                            Flog.error("Error moving file %s %s %s", e,oldPath, newPath);
+                            Flog.warn("Error moving file %s %s %s", e,oldPath, newPath);
                         }
                     }
                 });
@@ -974,7 +974,7 @@ class FlooHandler extends ConnectionInterface {
                         try {
                             fileByPath.delete(FlooHandler.getInstance());
                         } catch (IOException e) {
-                            Flog.error(e);
+                            Flog.warn(e);
                         }
                     }
                 });

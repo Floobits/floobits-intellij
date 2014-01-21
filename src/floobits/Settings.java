@@ -29,7 +29,7 @@ class Settings {
                 line = br.readLine();
             }
         } catch (Exception e) {
-            Flog.error(e);
+            Flog.warn(e);
         }
     }
 

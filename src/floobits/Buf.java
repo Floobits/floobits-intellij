@@ -90,7 +90,7 @@ abstract class Buf <T> {
         try {
             VfsUtil.createDirectories(parentPath);
         } catch (IOException e) {
-            Flog.error("createFile error %s", e);
+            Flog.throwAHorribleBlinkingErrorAtTheUser("createFile error %s", e);
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
@@ -98,7 +98,7 @@ abstract class Buf <T> {
         try {
             newFile = parent.findOrCreateChildData(FlooHandler.getInstance(), name);
         } catch (IOException e) {
-            Flog.error("Create file error %s", e);
+            Flog.throwAHorribleBlinkingErrorAtTheUser("Create file error %s", e);
             return null;
         }
         return newFile;
@@ -179,7 +179,7 @@ class BinaryBuf extends Buf <byte[]> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Flog.error("Unable to write file.");
+                        Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
                         return;
                     }
                 }
@@ -268,7 +268,7 @@ class TextBuf extends Buf <String> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Flog.error("Unable to write file.");
+                        Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
                         return;
                     }
                 }
@@ -413,7 +413,7 @@ class TextBuf extends Buf <String> {
                             try {
                                 d.replaceString(flooPatchPosition.start, end, contents);
                             } catch (Exception e) {
-                                Flog.error(e);
+                                Flog.throwAHorribleBlinkingErrorAtTheUser(e);
                                 FlooHandler.getInstance().send_get_buf(id);
                                 return;
                             }

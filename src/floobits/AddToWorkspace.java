@@ -49,7 +49,7 @@ public class AddToWorkspace extends IsJoinedAction {
         try {
             ignore = new Ignore();
         } catch (Exception ex) {
-            Flog.error(ex);
+            Flog.warn(ex);
             return;
         }
 

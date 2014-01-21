@@ -43,7 +43,7 @@ public class FloobitsPlugin implements ApplicationComponent {
             try {
                 f = new FlooUrl(url);
             } catch (Exception e) {
-                Flog.error(e);
+                Flog.warn(e);
                 return;
             }
             flooHandler = new FlooHandler(f);

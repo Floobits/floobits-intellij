@@ -146,6 +146,10 @@ class Utils {
 
     static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile) {
         ArrayList<String> filePaths = new ArrayList<String>();
+        if (!vFile.isValid()) {
+            // This happens when files are no longer available.
+            return filePaths;
+        }
         if (!vFile.isDirectory()) {
             filePaths.add(vFile.getPath());
             return filePaths;
@@ -165,6 +169,10 @@ class Utils {
 
     static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
         ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
+        if (!vFile.isValid()) {
+            // This happens when files are no longer available, don't remove any of these.
+            return filePaths;
+        }
         if (!vFile.isDirectory()) {
             if (Ignore.isIgnored(vFile.getPath(), null)) {
                 return filePaths;
