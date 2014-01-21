@@ -804,8 +804,8 @@ class FlooHandler extends ConnectionInterface {
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+                String username = get_username(res.user_id);
                 if (force && virtualFile != null) {
-                    String username = get_username(res.user_id);
                     if (username != null) {
                         status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
@@ -818,9 +818,10 @@ class FlooHandler extends ConnectionInterface {
                     return;
                 }
                 TextAttributes attributes = new TextAttributes();
-                attributes.setEffectColor(JBColor.GREEN);
+                JBColor color = Colors.getColorForUser(username);
+                attributes.setEffectColor(color);
                 attributes.setEffectType(EffectType.SEARCH_MATCH);
-                attributes.setBackgroundColor(JBColor.GREEN);
+                attributes.setBackgroundColor(color);
 
                 boolean first = true;
                 Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
