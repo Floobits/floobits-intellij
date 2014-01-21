@@ -262,6 +262,7 @@ abstract class DocumentFetcher {
 
 class FlooHandler extends ConnectionInterface {
 
+<<<<<<< Updated upstream
         protected int alpha =  (int)(0.8f * 255);
         protected JBColor[] colors = new JBColor[] {
             new JBColor(new Color(191, 255, 0, alpha), new Color(191, 255, 0)),
@@ -285,6 +286,8 @@ class FlooHandler extends ConnectionInterface {
 //    "teal",
 //    "yellow"
 //  ];
+=======
+>>>>>>> Stashed changes
     protected static boolean is_joined  = false;
     protected Boolean should_upload = false;
     protected Project project;
