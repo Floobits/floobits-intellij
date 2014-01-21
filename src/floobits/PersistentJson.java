@@ -79,12 +79,20 @@ public class PersistentJson {
 
     public static PersistentJson getInstance() {
         String s;
+        String defaultJSON = "{}";
         try {
             s = FileUtils.readFileToString(getFile(), "UTF-8");
         } catch (Exception e) {
             Flog.warn(e);
-            s = "{}";
+            s = defaultJSON;
         }
-        return new Gson().fromJson(s, (Type) PersistentJson.class);
+        PersistentJson pj;
+        try {
+            pj = new Gson().fromJson(s, (Type) PersistentJson.class);
+        } catch (com.google.gson.JsonSyntaxException e) {
+            Flog.warn("Bad JSON in persistent json");
+            pj = new Gson().fromJson(defaultJSON, (Type) PersistentJson.class);
+        }
+        return pj;
     }
 }
