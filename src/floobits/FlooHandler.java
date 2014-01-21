@@ -26,6 +26,8 @@ import com.intellij.ui.JBColor;
 import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +35,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.List;
+import java.util.List;
 import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
@@ -246,13 +250,8 @@ abstract class DocumentFetcher {
                     Flog.info("no virtual file for %s", path);
                     return;
                 }
-                Document d = FileDocumentManager.getInstance().getCachedDocument(virtualFile);
-                if (d == null && make_document) {
-                    d = FileDocumentManager.getInstance().getDocument(virtualFile);
-                }
-
+                Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
                 if (d == null) {
-                    Flog.info("could not make document for %s", path);
                     return;
                 }
                 on_document(d);
@@ -262,6 +261,30 @@ abstract class DocumentFetcher {
 }
 
 class FlooHandler extends ConnectionInterface {
+
+        protected int alpha =  (int)(0.8f * 255);
+        protected JBColor[] colors = new JBColor[] {
+            new JBColor(new Color(191, 255, 0, alpha), new Color(191, 255, 0)),
+            new JBColor(new Color(0, 0, 0, alpha), new Color(0, 0, 0, alpha)),
+            JBColor.BLUE,
+            new JBColor(new Color(0, 0, 139), new Color(0,0,139,alpha)),
+            new JBColor(new Color(255,0,255, alpha), new Color(255,0,255)),
+            JBColor.gray,
+            new JBColor(new Color(0,128,0, alpha), new Color(0,128,0)),
+            new JBColor(new Color(173,255,47), new Color(173,255,47)),
+            new JBColor(new Color(75,0,130), new Color(75,0,130, alpha)),
+            new JBColor(new Color(75,0,130), new Color(75,0,130, alpha))
+        };
+//    "magenta",
+//    "midnightblue",
+//    "maroon",
+//    "orange",
+//    "orangered",
+//    "purple",
+//    "red",
+//    "teal",
+//    "yellow"
+//  ];
     protected static boolean is_joined  = false;
     protected Boolean should_upload = false;
     protected Project project;
@@ -714,6 +737,9 @@ class FlooHandler extends ConnectionInterface {
 
     protected Editor get_editor_for_document(Document document) {
         Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+        for (Editor editor : editors) {
+            Flog.warn("is disposed? %s", editor.isDisposed());
+        }
         if (editors.length > 0) {
             return editors[0];
         }
@@ -734,11 +760,21 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         if (document != null) {
-            Editor editor = get_editor_for_document(document);
-            MarkupModel markupModel = editor.getMarkupModel();
+            Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+            for (Editor editor : editors) {
+                if (editor.isDisposed()) {
+                    continue;
+                }
+                MarkupModel markupModel = editor.getMarkupModel();
+                RangeHighlighter[] highlights = markupModel.getAllHighlighters();
 
-            for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
-                markupModel.removeHighlighter(rangeHighlighter);
+                for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                    for (RangeHighlighter markupHighlighter : highlights) {
+                        if (rangeHighlighter == markupHighlighter) {
+                            markupModel.removeHighlighter(rangeHighlighter);
+                        }
+                    }
+                }
             }
             rangeHighlighters.clear();
             return;
@@ -750,7 +786,7 @@ class FlooHandler extends ConnectionInterface {
                 Editor editor = get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
 
-                for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
                     markupModel.removeHighlighter(rangeHighlighter);
                 }
                 rangeHighlighters.clear();
@@ -787,42 +823,47 @@ class FlooHandler extends ConnectionInterface {
                 attributes.setBackgroundColor(JBColor.GREEN);
 
                 boolean first = true;
-                Editor editor = FloobitsPlugin.flooHandler.get_editor_for_document(document);
-                MarkupModel markupModel = editor.getMarkupModel();
-                LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
-                for (List<Integer> range : ranges) {
-                    int start = range.get(0);
-                    int end = range.get(1);
-                    if (start == end) {
-                        end += 1;
+                Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+                for (Editor editor : editors) {
+                    if (editor.isDisposed()) {
+                        continue;
                     }
-                    if (end > textLength) {
-                        end = textLength;
-                    }
-                    if (start >= textLength) {
-                        start = textLength - 1;
-                    }
+                    MarkupModel markupModel = editor.getMarkupModel();
+                    LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
+                    for (List<Integer> range : ranges) {
+                        int start = range.get(0);
+                        int end = range.get(1);
+                        if (start == end) {
+                            end += 1;
+                        }
+                        if (end > textLength) {
+                            end = textLength;
+                        }
+                        if (start >= textLength) {
+                            start = textLength - 1;
+                        }
 
-                    RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
-                            attributes, HighlighterTargetArea.EXACT_RANGE);
+                        RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
+                                attributes, HighlighterTargetArea.EXACT_RANGE);
 
-                    rangeHighlighters.add(rangeHighlighter);
-                    if (force && first) {
-                        CaretModel caretModel = editor.getCaretModel();
-                        caretModel.moveToOffset(start);
-                        LogicalPosition position = caretModel.getLogicalPosition();
-                        ScrollingModel scrollingModel = editor.getScrollingModel();
-                        scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
-                        first = false;
+                        rangeHighlighters.add(rangeHighlighter);
+                        if (force && first) {
+                            CaretModel caretModel = editor.getCaretModel();
+                            caretModel.moveToOffset(start);
+                            LogicalPosition position = caretModel.getLogicalPosition();
+                            ScrollingModel scrollingModel = editor.getScrollingModel();
+                            scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
+                            first = false;
+                        }
                     }
+                    HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(res.user_id);
+
+                    if (integerRangeHighlighterHashMap == null) {
+                        integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
+                        FloobitsPlugin.flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                    }
+                    integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
                 }
-                HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(res.user_id);
-
-                if (integerRangeHighlighterHashMap == null) {
-                    integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
-                    FloobitsPlugin.flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
-                }
-                integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
             }
         });
     }
