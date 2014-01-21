@@ -320,7 +320,7 @@ class FlooHandler extends ConnectionInterface {
     protected String get_username(Integer user_id) {
         User user = users.get(user_id);
         if (user == null) {
-            return null;
+            return "";
         }
         return user.username;
     }
