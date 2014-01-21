@@ -26,6 +26,8 @@ import com.intellij.ui.JBColor;
 import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +35,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.List;
+import java.util.List;
 import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
@@ -768,8 +772,8 @@ class FlooHandler extends ConnectionInterface {
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+                String username = get_username(res.user_id);
                 if (force && virtualFile != null) {
-                    String username = get_username(res.user_id);
                     if (username != null) {
                         status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
@@ -782,9 +786,10 @@ class FlooHandler extends ConnectionInterface {
                     return;
                 }
                 TextAttributes attributes = new TextAttributes();
-                attributes.setEffectColor(JBColor.GREEN);
+                JBColor color = Colors.getColorForUser(username);
+                attributes.setEffectColor(color);
                 attributes.setEffectType(EffectType.SEARCH_MATCH);
-                attributes.setBackgroundColor(JBColor.GREEN);
+                attributes.setBackgroundColor(color);
 
                 boolean first = true;
                 Editor editor = FloobitsPlugin.flooHandler.get_editor_for_document(document);
