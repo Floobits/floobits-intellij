@@ -261,33 +261,6 @@ abstract class DocumentFetcher {
 }
 
 class FlooHandler extends ConnectionInterface {
-
-<<<<<<< Updated upstream
-        protected int alpha =  (int)(0.8f * 255);
-        protected JBColor[] colors = new JBColor[] {
-            new JBColor(new Color(191, 255, 0, alpha), new Color(191, 255, 0)),
-            new JBColor(new Color(0, 0, 0, alpha), new Color(0, 0, 0, alpha)),
-            JBColor.BLUE,
-            new JBColor(new Color(0, 0, 139), new Color(0,0,139,alpha)),
-            new JBColor(new Color(255,0,255, alpha), new Color(255,0,255)),
-            JBColor.gray,
-            new JBColor(new Color(0,128,0, alpha), new Color(0,128,0)),
-            new JBColor(new Color(173,255,47), new Color(173,255,47)),
-            new JBColor(new Color(75,0,130), new Color(75,0,130, alpha)),
-            new JBColor(new Color(75,0,130), new Color(75,0,130, alpha))
-        };
-//    "magenta",
-//    "midnightblue",
-//    "maroon",
-//    "orange",
-//    "orangered",
-//    "purple",
-//    "red",
-//    "teal",
-//    "yellow"
-//  ];
-=======
->>>>>>> Stashed changes
     protected static boolean is_joined  = false;
     protected Boolean should_upload = false;
     protected Project project;
