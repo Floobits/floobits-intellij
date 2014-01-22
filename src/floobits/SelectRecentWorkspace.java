@@ -13,44 +13,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.event.*;
 import java.awt.*;
 
 class SelectRecentWorkspaceDialog extends DialogWrapper {
-    private JPanel jPanel = new JPanel();
-    private String selection;
+    private SelectWorkspace selectWorkspace = new SelectWorkspace();
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return jPanel;
+        return selectWorkspace.getPanel();
     }
 
     SelectRecentWorkspaceDialog(final List<String> items) {
         super(true);
         this.setTitle("Select a Workspace");
 
-        JList list = new JBList(items);
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                selection = items.get(listSelectionEvent.getFirstIndex());
-
-            }
-        });
-
-        JScrollPane scrollPane = new JBScrollPane(list);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-
-        JPanel listContainer = new JPanel();
-        listContainer.setBorder(BorderFactory.createTitledBorder(
-                "Recent Workspaces"));
-        listContainer.add(scrollPane);
-        jPanel.add(listContainer, BorderLayout.CENTER);
-        jPanel.setSize(500, 300);
+        selectWorkspace.setItems(items);
         init();
 
     }
@@ -63,7 +45,7 @@ class SelectRecentWorkspaceDialog extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        FloobitsPlugin.joinWorkspace(selection);
+        FloobitsPlugin.joinWorkspace(selectWorkspace.getSelectedItem());
     }
 }
 
