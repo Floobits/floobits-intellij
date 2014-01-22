@@ -422,14 +422,22 @@ class TextBuf extends Buf <String> {
                         for (FlooPatchPosition flooPatchPosition : positions) {
                             int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-
+                            Exception e = null;
                             try {
+                                Listener.flooDisable();
                                 d.replaceString(flooPatchPosition.start, end, contents);
-                            } catch (Exception e) {
+                            } catch (Exception exception) {
+                                e = exception;
+                            } finally {
+                                Listener.flooEnable();
+                            }
+
+                            if (e != null) {
                                 Flog.throwAHorribleBlinkingErrorAtTheUser(e);
                                 FlooHandler.getInstance().send_get_buf(id);
                                 return;
                             }
+
                             for (Editor editor : editors) {
                                 if (editor.isDisposed()) {
                                     continue;

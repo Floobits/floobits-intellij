@@ -1,31 +1,36 @@
 package floobits;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileAdapter;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
-import java.util.ArrayList;
 import com.intellij.util.messages.MessageBusConnection;
-import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.editor.Document;
-
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.openapi.vfs.VirtualFileManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
-
+    private static AtomicBoolean isListening = new AtomicBoolean(true);
+    public static synchronized void flooEnable() {
+        isListening.set(true);
+    }
+    public static synchronized void flooDisable() {
+        isListening.set(false);
+    }
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
@@ -78,6 +83,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         Flog.info("Document changed.");
         FlooHandler flooHandler = FlooHandler.getInstance();
         if (flooHandler == null) {
+            return;
+        }
+        if (!isListening.get()) {
             return;
         }
         Document document = event.getDocument();
@@ -136,6 +144,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     public void after(@NotNull List<? extends VFileEvent> events) {
         FlooHandler handler = FlooHandler.getInstance();
         if (handler == null) {
+            return;
+        }
+        if (!isListening.get()) {
             return;
         }
         for (VFileEvent event : events) {
