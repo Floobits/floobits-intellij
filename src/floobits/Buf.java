@@ -1,13 +1,17 @@
 package floobits;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -403,13 +407,19 @@ class TextBuf extends Buf <String> {
                     return;
                 }
                 Flog.log("Patched %s", res.path);
-                // XXX: inefficient to create new diff match patch;
                 ThreadSafe.write(new Runnable() {
                     @Override
                     public void run() {
+                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, FlooHandler.getInstance().project);
+                        final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
+                        for (Editor editor : editors) {
+                            ScrollingModel scrollingModel = editor.getScrollingModel();
+                            original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
+                        }
                         for (FlooPatchPosition flooPatchPosition : positions) {
                             int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
+
                             try {
                                 d.replaceString(flooPatchPosition.start, end, contents);
                             } catch (Exception e) {
@@ -417,6 +427,12 @@ class TextBuf extends Buf <String> {
                                 FlooHandler.getInstance().send_get_buf(id);
                                 return;
                             }
+                        }
+                        for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
+                            ScrollingModel model = entry.getKey();
+                            Integer[] offsets = entry.getValue();
+                            model.scrollHorizontally(offsets[0]);
+                            model.scrollVertically(offsets[1]);
                         }
                         b.set(d.getText(), res.md5_after);
                     }
