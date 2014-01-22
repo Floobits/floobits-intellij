@@ -341,7 +341,7 @@ class FlooHandler extends ConnectionInterface {
         }
         Object objects[] = new Object[1];
         objects[0] = obj;
-        Flog.log("Calling %s", method_name);
+        Flog.debug("Calling %s", method_name);
         method.invoke(this, objects);
     }
 
@@ -1008,6 +1008,7 @@ class FlooHandler extends ConnectionInterface {
 
 
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
+        Flog.log("Patching %s", buf.path);
         FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
         this.conn.write(req);
     }
