@@ -277,11 +277,16 @@ class TextBuf extends Buf <String> {
                     }
                 }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
-                if (d == null) {
-                    Flog.warn("Tried to write to null document: %s", path);
+                if (d != null) {
+                    d.setText(buf);
                     return;
                 }
-                d.setText(buf);
+                Flog.warn("Tried to write to null document: %s", path);
+                try {
+                    virtualFile.setBinaryContent(buf.getBytes());
+                } catch (IOException e) {
+                    Flog.throwAHorribleBlinkingErrorAtTheUser(e);
+                }
             }
         });
     }
@@ -449,7 +454,12 @@ class TextBuf extends Buf <String> {
                                 }
                                 int newOffset = offset + contents.length() - flooPatchPosition.end;
                                 Flog.log("Moving cursor from %s to %s", offset, newOffset);
-                                caretModel.moveToOffset(newOffset);
+
+                                try {
+                                    caretModel.moveToOffset(newOffset);
+                                } catch (Exception e1) {
+                                    Flog.info("Can't move caret: %s", e);
+                                }
                             }
                         }
                         for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {

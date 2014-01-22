@@ -103,6 +103,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
+        if (!isListening.get()) {
+            return;
+        }
         Document document = event.getEditor().getDocument();
         final Editor[] editors = EditorFactory.getInstance().getEditors(document);
         GetPath.getPath(new GetPath(document) {
@@ -122,6 +125,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void selectionChanged(final SelectionEvent event) {
+        if (!isListening.get()) {
+            return;
+        }
         Document document = event.getEditor().getDocument();
         GetPath.getPath(new GetPath(document) {
             @Override
