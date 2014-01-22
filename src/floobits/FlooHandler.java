@@ -1044,7 +1044,7 @@ class FlooHandler extends ConnectionInterface {
         Buf buf = this.get_buf_by_path(file.getPath());
 
         if (buf == null || !buf.isPopulated()) {
-            Flog.info("buf isn't populated yet %s", buf);
+            Flog.info("buf isn't populated yet %s", file.getPath());
             return;
         }
         buf.send_patch(file);

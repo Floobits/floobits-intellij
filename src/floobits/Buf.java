@@ -338,7 +338,7 @@ class TextBuf extends Buf <String> {
             public void run() {
                 final Document d;
 
-                String oldText = this.toString();
+                String oldText = buf;
                 VirtualFile virtualFile = b.getVirtualFile();
                 if (virtualFile == null) {
                     Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
@@ -413,6 +413,9 @@ class TextBuf extends Buf <String> {
                         final Editor[] editors = EditorFactory.getInstance().getEditors(d, FlooHandler.getInstance().project);
                         final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
                         for (Editor editor : editors) {
+                            if (editor.isDisposed()) {
+                                continue;
+                            }
                             ScrollingModel scrollingModel = editor.getScrollingModel();
                             original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
                         }
@@ -426,6 +429,19 @@ class TextBuf extends Buf <String> {
                                 Flog.throwAHorribleBlinkingErrorAtTheUser(e);
                                 FlooHandler.getInstance().send_get_buf(id);
                                 return;
+                            }
+                            for (Editor editor : editors) {
+                                if (editor.isDisposed()) {
+                                    continue;
+                                }
+                                CaretModel caretModel = editor.getCaretModel();
+                                int offset = caretModel.getOffset();
+                                if (offset < flooPatchPosition.start) {
+                                    continue;
+                                }
+                                int newOffset = offset + contents.length() - flooPatchPosition.end;
+                                Flog.log("Moving cursor from %s to %s", offset, newOffset);
+                                caretModel.moveToOffset(newOffset);
                             }
                         }
                         for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
