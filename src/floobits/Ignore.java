@@ -87,7 +87,7 @@ class Ignore {
     }
 
     public Boolean isIgnored (String path) {
-        String relPath = null;
+        String relPath;
         if (path.equals(this.stringPath)) {
             return false;
         }

@@ -34,5 +34,5 @@ public class Colors {
             i += (int)c;
         }
         return colors[i % colors.length];
-    };
+    }
 }

@@ -38,15 +38,20 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     public Listener() {
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
-                if (event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
-                    VirtualFile parent = event.getParent();
-                    String parentPath = parent.getPath();
-                    String newValue = parentPath + "/" + event.getNewValue().toString();
-                    String oldValue = parentPath + "/" + event.getOldValue().toString();
-                    FlooHandler instance = FlooHandler.getInstance();
-                    if (instance != null) {
-                        instance.untellij_renamed(oldValue, newValue);
-                    }
+                if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
+                    return;
+                }
+
+                VirtualFile parent = event.getParent();
+                if (parent == null) {
+                    return;
+                }
+                String parentPath = parent.getPath();
+                String newValue = parentPath + "/" + event.getNewValue().toString();
+                String oldValue = parentPath + "/" + event.getOldValue().toString();
+                FlooHandler instance = FlooHandler.getInstance();
+                if (instance != null) {
+                    instance.untellij_renamed(oldValue, newValue);
                 }
             }
         });
@@ -89,10 +94,6 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             return;
         }
         Document document = event.getDocument();
-        if (document == null) {
-            Flog.warn("No document? %s", event);
-            return;
-        }
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         if (virtualFile == null) {
             Flog.warn("No virtual file for document %s", event);
@@ -206,7 +207,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
-                ArrayList<VirtualFile> createdFiles = null;
+                ArrayList<VirtualFile> createdFiles;
                 createdFiles = Utils.getAllNestedFiles(event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(createdFile);
@@ -214,12 +215,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 continue;
             }
             if (event instanceof VFileContentChangeEvent) {
-                ArrayList<VirtualFile> changedFiles = null;
+                ArrayList<VirtualFile> changedFiles;
                 changedFiles = Utils.getAllNestedFiles(event.getFile());
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }
-                continue;
             }
         }
     }

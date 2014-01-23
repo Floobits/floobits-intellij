@@ -2,27 +2,16 @@ package floobits;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.httpclient.params.HttpParams;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 

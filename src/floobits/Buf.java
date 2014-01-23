@@ -1,17 +1,7 @@
 package floobits;
 
-import java.awt.*;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -20,7 +10,15 @@ import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 
 enum Encoding {
@@ -96,7 +94,7 @@ abstract class Buf <T> {
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
         if (parent == null) {
             Flog.warn("Virtual file is null? %s", parentPath);
-            return;
+            return null;
         }
         VirtualFile newFile;
         try {
@@ -239,7 +237,7 @@ class BinaryBuf extends Buf <byte[]> {
         }
         set(contents, after_md5);
         flooHandler.send_set_buf(this);
-    };
+    }
 }
 
 class TextBuf extends Buf <String> {
@@ -304,7 +302,7 @@ class TextBuf extends Buf <String> {
 //            }
 //            return;
 //        }
-        buf = NEW_LINE.matcher(s).replaceAll("\n");;
+        buf = NEW_LINE.matcher(s).replaceAll("\n");
         md5 = newMD5;
     }
 

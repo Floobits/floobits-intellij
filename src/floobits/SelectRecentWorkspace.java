@@ -2,22 +2,12 @@ package floobits;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.InputValidator;
-import com.intellij.ui.components.JBList;
-import com.intellij.ui.components.JBScrollPane;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.event.*;
-import java.awt.*;
 
 class SelectRecentWorkspaceDialog extends DialogWrapper {
     private SelectWorkspace selectWorkspace = new SelectWorkspace();

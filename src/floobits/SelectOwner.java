@@ -4,8 +4,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
 import com.intellij.openapi.ui.ComboBox;
 import java.util.List;
@@ -61,6 +59,6 @@ public class SelectOwner extends DialogWrapper {
         if(orgList == null) {
             return;
         }
-        runLater.run((String)orgList.getSelectedItem());
+        runLater.run(orgList.getSelectedItem());
     }
 }

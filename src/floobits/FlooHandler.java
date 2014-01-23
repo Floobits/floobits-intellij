@@ -33,7 +33,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.List;
 import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
@@ -254,7 +253,7 @@ abstract class DocumentFetcher {
                 on_document(d);
             }
         });
-    };
+    }
 }
 
 class FlooHandler extends ConnectionInterface {
@@ -577,7 +576,6 @@ class FlooHandler extends ConnectionInterface {
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
-        LocalFileSystem localFileSystem = LocalFileSystem.getInstance();
 
         DotFloo.write(this.url.toString());
 
@@ -595,7 +593,6 @@ class FlooHandler extends ConnectionInterface {
             }
             if (!b.md5.equals(buf.md5)) {
                 conflicts.add(buf);
-                continue;
             }
         }
 
@@ -891,7 +888,7 @@ class FlooHandler extends ConnectionInterface {
                         // Move file
                         String newParentDirectoryPath = newFile.getParent();
                         String oldParentDirectoryPath = oldFile.getParent();
-                        if (newParentDirectoryPath == oldParentDirectoryPath) {
+                        if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
                             Flog.warn("Only renamed file, don't need to move %s %s", oldPath, newPath);
                             return;
                         }

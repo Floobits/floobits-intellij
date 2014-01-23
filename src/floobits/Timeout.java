@@ -1,5 +1,7 @@
 package floobits;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -20,7 +22,7 @@ abstract public class Timeout extends RunLater<Void> implements Comparable {
         return this.canceled.get();
     }
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(@NotNull Object o) {
         return (int) (this.timeout - ((Timeout) o).timeout);
     }
 }
