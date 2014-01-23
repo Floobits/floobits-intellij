@@ -51,21 +51,17 @@ abstract class Buf <T> {
     public String path;
     public File f;
     public Integer id;
-    public String md5;
-    public T buf;
+    public volatile String md5;
+    public volatile T buf;
     public Encoding encoding;
     public Timeout timeout;
     public boolean forced_patch = false;
 
     public Buf (String path, Integer id, T buf, String md5) {
         this.id = id;
-        this.path = new String(path);
+        this.path = path;
         this.buf = buf;
-        this.md5 = new String(md5);
-    }
-
-    public String toAbsolutePath () {
-        return FilenameUtils.concat(Shared.colabDir, this.path);
+        this.md5 = md5;
     }
 
     public void cancelTimeout () {
@@ -98,6 +94,10 @@ abstract class Buf <T> {
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
+        if (parent == null) {
+            Flog.warn("Virtual file is null? %s", parentPath);
+            return;
+        }
         VirtualFile newFile;
         try {
             newFile = parent.findOrCreateChildData(FlooHandler.getInstance(), name);
@@ -179,29 +179,29 @@ class BinaryBuf extends Buf <byte[]> {
         ThreadSafe.write(new Runnable() {
             @Override
             public void run() {
-                VirtualFile virtualFile = getVirtualFile();
+            VirtualFile virtualFile = getVirtualFile();
+            if (virtualFile == null) {
+                virtualFile = createFile();
                 if (virtualFile == null) {
-                    virtualFile = createFile();
-                    if (virtualFile == null) {
-                        Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
-                        return;
-                    }
+                    Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
+                    return;
                 }
-                try {
-                    virtualFile.setBinaryContent(buf);
-                } catch (IOException e) {
-                    Flog.warn("Writing binary content to disk failed. %s", path);
-                }
+            }
+            try {
+                virtualFile.setBinaryContent(buf);
+            } catch (IOException e) {
+                Flog.warn("Writing binary content to disk failed. %s", path);
+            }
             }
         });
     }
 
-    public void set (String s, String md5) {
+    synchronized public void set (String s, String md5) {
         this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = md5;
     }
 
-    public void set (byte[] s, String md5) {
+    synchronized public void set (byte[] s, String md5) {
         this.buf = s;
         this.md5 = md5;
     }
@@ -291,21 +291,21 @@ class TextBuf extends Buf <String> {
         });
     }
 
-    public void set (String s, String md5) {
-        String contents = NEW_LINE.matcher(s).replaceAll("\n");
-        // XXX: This should be handled by workspace.
-        if (!contents.equals(s)) {
-            Flog.warn("Contents have \\r! Replacing and calling set_buf %s", path);
-            this.buf = contents;
-            this.md5 = DigestUtils.md5Hex(contents);
-            FlooHandler flooHandler = FlooHandler.getInstance();
-            if (flooHandler != null) {
-                flooHandler.send_set_buf(this);
-            }
-            return;
-        }
-        this.buf = s;
-        this.md5 = md5;
+    synchronized public void set(String s, String newMD5) {
+//        String contents = NEW_LINE.matcher(s).replaceAll("\n");
+//        // XXX: This should be handled by workspace.
+//        if (!contents.equals(s)) {
+//            Flog.warn("Contents have \\r! Replacing and calling set_buf %s", path);
+//            this.buf = contents;
+//            this.md5 = DigestUtils.md5Hex(contents);
+//            FlooHandler flooHandler = FlooHandler.getInstance();
+//            if (flooHandler != null) {
+//                flooHandler.send_set_buf(this);
+//            }
+//            return;
+//        }
+        buf = NEW_LINE.matcher(s).replaceAll("\n");;
+        md5 = newMD5;
     }
 
     public String serialize() {
@@ -458,7 +458,7 @@ class TextBuf extends Buf <String> {
                                 try {
                                     caretModel.moveToOffset(newOffset);
                                 } catch (Exception e1) {
-                                    Flog.info("Can't move caret: %s", e);
+                                    Flog.info("Can't move caret: %s", e1);
                                 }
                             }
                         }
