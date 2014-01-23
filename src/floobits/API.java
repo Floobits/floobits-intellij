@@ -1,19 +1,23 @@
 package floobits;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static floobits.Utils.createSSLContext;
 
 class Request implements Serializable {
     public String owner;
@@ -51,6 +55,9 @@ public class API {
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
+        SSLContext sslContext = createSSLContext();
+        SSLContext.setDefault(sslContext);
+
         client.executeMethod(method);
         return method;
     }
