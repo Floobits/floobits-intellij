@@ -26,8 +26,6 @@ import com.intellij.ui.JBColor;
 import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,7 +33,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.List;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -392,10 +389,9 @@ class FlooHandler extends ConnectionInterface {
         }
 
         orgs.add(0, owner);
-        SelectOwner.build(orgs, new RunLater(null) {
+        SelectOwner.build(orgs, new RunLater<String>() {
             @Override
-            void run(Object... objects) {
-                String owner = (String) objects[0];
+            void run(String owner) {
                 createWorkspace(owner, name, project_path);
             }
         });
@@ -410,10 +406,9 @@ class FlooHandler extends ConnectionInterface {
         try {
             path = p.workspaces.get(flooUrl.owner).get(flooUrl.workspace).path;
         } catch (Exception e) {
-            SelectFolder.build(new RunLater(null) {
+            SelectFolder.build(new RunLater<String>() {
                 @Override
-                void run(Object... objects) {
-                    String path = (String)objects[0];
+                void run(String path) {
                     finishJoiningWorkspace(path, flooUrl);
                 }
             });
@@ -586,7 +581,7 @@ class FlooHandler extends ConnectionInterface {
 
         DotFloo.write(this.url.toString());
 
-        LinkedList<Buf> conflicts = new LinkedList<Buf>();
+        final LinkedList<Buf> conflicts = new LinkedList<Buf>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RiBuf b = (RiBuf) entry.getValue();
@@ -625,12 +620,10 @@ class FlooHandler extends ConnectionInterface {
             dialog += "</ul>";
         }
 
-        DialogBuilder.build("Resolve Conflicts", dialog, new RunLater(conflicts) {
+        DialogBuilder.build("Resolve Conflicts", dialog, new RunLater<Boolean>() {
             @Override
             @SuppressWarnings("unchecked")
-            void run(Object... objects) {
-                Boolean stomp = (Boolean) objects[0];
-                LinkedList<Buf> conflicts = (LinkedList<Buf>) data;
+            void run(Boolean stomp) {
                 for (Buf buf : conflicts) {
                     if (stomp) {
                         FloobitsPlugin.flooHandler.send_get_buf(buf.id);

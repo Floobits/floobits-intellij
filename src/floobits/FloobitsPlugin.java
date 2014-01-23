@@ -1,6 +1,5 @@
 package floobits;
 
-import com.intellij.codeInsight.daemon.impl.TextEditorBackgroundHighlighter;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +24,9 @@ public class FloobitsPlugin implements ApplicationComponent {
 
         String title = String.format("Really leave %s?", f.url.workspace);
         String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", f.url.toString(), f.url.toString());
-        DialogBuilder.build(title, body, new RunLater(null) {
+        DialogBuilder.build(title, body, new RunLater<Boolean>() {
             @Override
-            void run(Object... objects) {
-                boolean join = (Boolean) objects[0];
+            void run(Boolean join) {
                 if (!join) {
                     return;
                 }
@@ -52,10 +50,9 @@ public class FloobitsPlugin implements ApplicationComponent {
         }
         String title = String.format("Really leave %s?", flooHandler.url.workspace);
         String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
-        DialogBuilder.build(title, body, new RunLater(null) {
+        DialogBuilder.build(title, body, new RunLater<Boolean>() {
             @Override
-            void run(Object... objects) {
-                boolean join = (Boolean) objects[0];
+            void run(Boolean join) {
                 if (!join) {
                     return;
                 }

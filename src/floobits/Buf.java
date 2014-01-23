@@ -401,7 +401,7 @@ class TextBuf extends Buf <String> {
                     final Integer buf_id = b.id;
                     Timeout timeout = new Timeout(2000) {
                         @Override
-                        void run(Object... objects) {
+                        void run(Void arg) {
                             b.timeout = null;
                             Flog.info("Sending get buf because md5s did not match.");
                             FlooHandler.getInstance().send_get_buf(buf_id);

@@ -196,7 +196,7 @@ class Utils {
     static void createFile(final VirtualFile virtualFile) {
         Timeout timeout = new Timeout(1000) {
             @Override
-            void run(Object... objects) {
+            void run(Void arg) {
                 FlooHandler flooHandler = FlooHandler.getInstance();
                 if (flooHandler == null) {
                     return;

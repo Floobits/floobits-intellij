@@ -3,12 +3,12 @@ package floobits;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract public class Timeout extends RunLater implements Comparable {
+abstract public class Timeout extends RunLater<Void> implements Comparable {
     long timeout = Calendar.getInstance().getTimeInMillis();
     protected AtomicBoolean canceled = new AtomicBoolean(false);
 
     protected Timeout(long timeFromNow) {
-        super(null);
+        super();
         timeout += timeFromNow;
     }
 
