@@ -5,13 +5,11 @@
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <small>most HTML tags may be used</small>
+      Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
+      You need a floobits account.
       ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <small>most HTML tags may be used</small>
       ]]>
   </change-notes>
 
