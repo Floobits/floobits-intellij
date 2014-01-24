@@ -771,7 +771,7 @@ class FlooHandler extends ConnectionInterface {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
-                if (force && virtualFile != null) {
+                if (res.ping || res.summon && virtualFile != null) {
                     if (username != null) {
                         status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
