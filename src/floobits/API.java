@@ -10,10 +10,15 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,16 +36,13 @@ class Request implements Serializable {
 
 public class API {
     static public HttpMethod getWorkspace (String owner, String workspace) throws IOException {
-        String url = String.format("https://%s/api/workspace/%s/%s/", Shared.defaultHost, owner, workspace);
-        return apiRequest(new GetMethod(url));
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)));
     }
 
     static public HttpMethod createWorkspace (String owner, String workspace) throws IOException {
-        final String url = String.format("https://%s/api/workspace/", Shared.defaultHost);
-        final PostMethod method = new PostMethod(url);
+        final PostMethod method = new PostMethod("/api/workspace/");
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
-
         method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
         return apiRequest(method);
     }
@@ -55,16 +57,35 @@ public class API {
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        SSLContext sslContext = createSSLContext();
-        SSLContext.setDefault(sslContext);
+        client.getHostConfiguration().setHost(Shared.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {
+            @Override
+            public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException, UnknownHostException {
+                return createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
+            }
 
+            @Override
+            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2) throws IOException, UnknownHostException {
+                return createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
+            }
+
+            @Override
+            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException, UnknownHostException, ConnectTimeoutException {
+                return createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
+            }
+
+            @Override
+            public Socket createSocket(String s, int i) throws IOException, UnknownHostException {
+                return createSSLContext().getSocketFactory().createSocket(s, i);
+            }
+        }, 443));
+//        SSLContext sslContext = createSSLContext();
+//        SSLContext.setDefault(sslContext);
         client.executeMethod(method);
         return method;
     }
 
     static public List<String> getOrgsCanAdmin () {
-        final String url = String.format("https://%s/api/orgs/can/admin/", Shared.defaultHost);
-        final GetMethod method = new GetMethod(url);
+        final GetMethod method = new GetMethod("/api/orgs/can/admin/");
         List<String> orgs = new ArrayList<String>();
 
         try {
