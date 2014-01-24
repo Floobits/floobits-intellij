@@ -539,7 +539,7 @@ class FlooHandler extends ConnectionInterface {
 
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                if (!ignore.isIgnored(virtualFile.getCanonicalPath())) upload(virtualFile);
+                if (!ignore.isIgnored(virtualFile.getPath())) upload(virtualFile);
                 return true;
             }
         });
@@ -1053,7 +1053,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (buf == null || buf.buf == null) {
+        if (buf == null || !buf.isPopulated()) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
