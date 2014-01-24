@@ -89,7 +89,7 @@ class Utils {
     public static Boolean isShared (String path) {
     	try {
             String unFuckedPath = unFuckPath(path);
-            String relativePath = getRelativePath(unFuckedPath, Shared.colabDir, "/");
+            String relativePath = getRelativePath(unFuckedPath, Shared.colabDir);
 	        return !relativePath.contains("..");
     	} catch (PathResolutionException e) {
     		return false;
@@ -99,7 +99,7 @@ class Utils {
     }
 
     public static String toProjectRelPath (String path) {
-        return getRelativePath(path, Shared.colabDir, "/");
+        return getRelativePath(path, Shared.colabDir);
     }
 
     /** 
@@ -110,12 +110,12 @@ class Utils {
      * 
      * @param targetPath targetPath is calculated to this file
      * @param basePath basePath is calculated from this file
-     * @param pathSeparator directory separator. The platform default is not assumed so that we can test Unix behaviour when running on Windows (for example)
      * @return String
      */
-    public static String getRelativePath (String targetPath, String basePath, String pathSeparator) {
+    public static String getRelativePath (String targetPath, String basePath) {
 
         // Normalize the paths
+        String pathSeparator = File.separator;
         String normalizedBasePath = FilenameUtils.normalizeNoEndSeparator(basePath);
         String normalizedTargetPath = FilenameUtils.normalizeNoEndSeparator(targetPath);
 
@@ -127,7 +127,6 @@ class Utils {
         } else if (pathSeparator.equals("\\")) {
             normalizedTargetPath = FilenameUtils.separatorsToWindows(normalizedTargetPath);
             normalizedBasePath = FilenameUtils.separatorsToWindows(normalizedBasePath);
-
         } else {
             throw new IllegalArgumentException("Unrecognised dir separator '" + pathSeparator + "'");
         }

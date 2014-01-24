@@ -99,6 +99,10 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             Flog.warn("No virtual file for document %s", event);
             return;
         }
+        String projectPath = flooHandler.project.getProjectFilePath();
+        if (!virtualFile.getPath().contains(projectPath)) {
+            return;
+        }
         flooHandler.untellij_changed(virtualFile);
     }
 

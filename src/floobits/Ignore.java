@@ -92,7 +92,7 @@ class Ignore {
             return false;
         }
 
-        relPath = Utils.getRelativePath(path, this.path.getPath(), "/");
+        relPath = Utils.getRelativePath(path, this.path.getPath());
 
         File relPathFile = new File(relPath);
         for (Entry<String, List<String>> entry : ignores.entrySet()) {
