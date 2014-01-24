@@ -23,6 +23,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
 
 import javax.swing.*;
@@ -661,7 +662,12 @@ class FlooHandler extends ConnectionInterface {
         // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
-        Buf buf = Buf.createBuf(res.path, res.id, res.buf, res.md5);
+        Buf buf;
+        if (res.encoding.equals(Encoding.BASE64.toString())) {
+            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5);
+        } else {
+            buf = new TextBuf(res.path, res.id, res.buf, res.md5);
+        }
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);
         buf.write();
