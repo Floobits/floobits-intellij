@@ -68,15 +68,17 @@ abstract class Buf <T> {
             timeout = null;
         }
     }
-
-    public VirtualFile getVirtualFile() {
-        return LocalFileSystem.getInstance().findFileByPath(Utils.absPath(this.path));
+    public static boolean isPopulated(Buf b) {
+        return (b != null && b.isPopulated());
     }
 
     public Boolean isPopulated() {
         return this.id != null && this.buf != null;
     }
 
+    public VirtualFile getVirtualFile() {
+        return LocalFileSystem.getInstance().findFileByPath(Utils.absPath(this.path));
+    }
     public String toString() {
         return String.format("id: %s path: %s", id, path);
     }
