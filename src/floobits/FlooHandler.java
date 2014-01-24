@@ -777,11 +777,13 @@ class FlooHandler extends ConnectionInterface {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
-                if (res.ping || res.summon && virtualFile != null) {
-                    if (username != null) {
+                if (virtualFile != null) {
+                    if ((res.ping || res.summon) && username != null) {
                         status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
-                    manager.openFile(virtualFile, true, true);
+                    if (force && virtualFile.isValid()) {
+                        manager.openFile(virtualFile, true, true);
+                    }
                 }
                 FloobitsPlugin.flooHandler.remove_highlight(res.user_id, res.id, document);
 
@@ -797,6 +799,7 @@ class FlooHandler extends ConnectionInterface {
 
                 boolean first = true;
                 Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+
                 for (Editor editor : editors) {
                     if (editor.isDisposed()) {
                         continue;
