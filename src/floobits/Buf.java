@@ -119,12 +119,6 @@ abstract class Buf <T> {
         }
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-    public static BinaryBuf createBuf (String path, Integer id, byte[] buf, String md5) {
-        return new BinaryBuf(path, id, buf, md5);
-    }
-    public static TextBuf createBuf (String path, Integer id, String buf, String md5) {
-        return new TextBuf(path, id, buf, md5);
-    }
     public static Buf createBuf (String path, Integer id, Encoding enc, String md5) {
         if (enc == Encoding.BASE64) {
             return new BinaryBuf(path, id, null, md5);
@@ -195,12 +189,12 @@ class BinaryBuf extends Buf <byte[]> {
     }
 
     synchronized public void set (String s, String md5) {
-        this.buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
+        buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = md5;
     }
 
     synchronized public void set (byte[] s, String md5) {
-        this.buf = s;
+        buf = s;
         this.md5 = md5;
     }
 
@@ -214,8 +208,7 @@ class BinaryBuf extends Buf <byte[]> {
             return;
         }
         flooHandler.send_get_buf(this.id);
-        this.buf = null;
-        this.md5 = null;
+        set((byte[]) null, null);
     }
 
     public void send_patch(VirtualFile virtualFile) {
