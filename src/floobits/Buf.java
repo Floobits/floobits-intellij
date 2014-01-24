@@ -240,7 +240,9 @@ class TextBuf extends Buf <String> {
     protected Timeouts timeouts = Timeouts.create();
     public TextBuf (String path, Integer id, String buf, String md5) {
         super(path, id, buf, md5);
-        this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
+        if (buf != null) {
+            this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
+        }
         this.encoding = Encoding.UTF8;
     }
 
