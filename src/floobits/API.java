@@ -13,12 +13,10 @@ import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,27 +57,26 @@ public class API {
         client.getState().setCredentials(AuthScope.ANY, credentials);
         client.getHostConfiguration().setHost(Shared.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {
             @Override
-            public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException, UnknownHostException {
+            public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
                 return createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
             }
 
             @Override
-            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2) throws IOException, UnknownHostException {
+            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2) throws IOException {
                 return createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
             }
 
             @Override
-            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException, UnknownHostException, ConnectTimeoutException {
+            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException, ConnectTimeoutException {
                 return createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
             }
 
             @Override
-            public Socket createSocket(String s, int i) throws IOException, UnknownHostException {
+            public Socket createSocket(String s, int i) throws IOException {
                 return createSSLContext().getSocketFactory().createSocket(s, i);
             }
         }, 443));
-//        SSLContext sslContext = createSSLContext();
-//        SSLContext.setDefault(sslContext);
+
         client.executeMethod(method);
         return method;
     }
