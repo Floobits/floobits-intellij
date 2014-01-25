@@ -1048,7 +1048,7 @@ class FlooHandler extends ConnectionInterface {
         }
         Buf buf = this.get_buf_by_path(filePath);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", file.getPath());
             return;
         }
@@ -1058,7 +1058,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
@@ -1068,7 +1068,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_saved(String path) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }

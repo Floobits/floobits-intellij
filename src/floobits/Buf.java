@@ -68,7 +68,7 @@ abstract class Buf <T> {
             timeout = null;
         }
     }
-    public static boolean isPopulated(Buf b) {
+    public static boolean isUnPopulated(Buf b) {
         return (b != null && b.isPopulated());
     }
 
