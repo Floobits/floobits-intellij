@@ -240,7 +240,7 @@ class TextBuf extends Buf <String> {
     protected Timeouts timeouts = Timeouts.create();
     public TextBuf (String path, Integer id, String buf, String md5) {
         super(path, id, buf, md5);
-        this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
+        this.buf = buf == null ? null : NEW_LINE.matcher(buf).replaceAll("\n");
         this.encoding = Encoding.UTF8;
     }
 
@@ -286,18 +286,6 @@ class TextBuf extends Buf <String> {
     }
 
     synchronized public void set(String s, String newMD5) {
-//        String contents = NEW_LINE.matcher(s).replaceAll("\n");
-//        // XXX: This should be handled by workspace.
-//        if (!contents.equals(s)) {
-//            Flog.warn("Contents have \\r! Replacing and calling set_buf %s", path);
-//            this.buf = contents;
-//            this.md5 = DigestUtils.md5Hex(contents);
-//            FlooHandler flooHandler = FlooHandler.getInstance();
-//            if (flooHandler != null) {
-//                flooHandler.send_set_buf(this);
-//            }
-//            return;
-//        }
         buf = NEW_LINE.matcher(s).replaceAll("\n");
         md5 = newMD5;
     }
@@ -419,12 +407,13 @@ class TextBuf extends Buf <String> {
                             original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
                         }
                         for (FlooPatchPosition flooPatchPosition : positions) {
-                            int end = Math.min(flooPatchPosition.start + flooPatchPosition.end, d.getTextLength());
+                            int start = Math.max(0, flooPatchPosition.start);
+                            int end = Math.min(start + flooPatchPosition.end, d.getTextLength());
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                             Exception e = null;
                             try {
                                 Listener.flooDisable();
-                                d.replaceString(flooPatchPosition.start, end, contents);
+                                d.replaceString(start, end, contents);
                             } catch (Exception exception) {
                                 e = exception;
                             } finally {
@@ -443,7 +432,7 @@ class TextBuf extends Buf <String> {
                                 }
                                 CaretModel caretModel = editor.getCaretModel();
                                 int offset = caretModel.getOffset();
-                                if (offset < flooPatchPosition.start) {
+                                if (offset < start) {
                                     continue;
                                 }
                                 int newOffset = offset + contents.length() - flooPatchPosition.end;
