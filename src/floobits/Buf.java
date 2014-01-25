@@ -69,7 +69,7 @@ abstract class Buf <T> {
         }
     }
     public static boolean isUnPopulated(Buf b) {
-        return (b != null && b.isPopulated());
+        return (b == null || !b.isPopulated());
     }
 
     public Boolean isPopulated() {
