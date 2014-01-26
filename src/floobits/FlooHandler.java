@@ -25,6 +25,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -172,7 +173,7 @@ class FlooCreateBuf implements Serializable {
     public String encoding;
     
     public FlooCreateBuf (Buf buf) {
-        this.path = buf.path;
+        this.path = FilenameUtils.separatorsToUnix(buf.path);
         this.buf = buf.serialize();
         this.md5 = buf.md5;
         this.encoding = buf.encoding.toString();
@@ -521,7 +522,7 @@ class FlooHandler extends ConnectionInterface {
         if (relPath == null) {
             return null;
         }
-        Integer id = this.paths_to_ids.get(relPath);
+        Integer id = this.paths_to_ids.get(FilenameUtils.separatorsToUnix(relPath));
         if (id == null) {
             return null;
         }
@@ -624,15 +625,15 @@ class FlooHandler extends ConnectionInterface {
             void run(Boolean stomp) {
                 for (Buf buf : conflicts) {
                     if (stomp) {
-                        FloobitsPlugin.flooHandler.send_get_buf(buf.id);
+                        send_get_buf(buf.id);
                         buf.buf = null;
                         buf.md5 = null;
                     } else {
-                        FloobitsPlugin.flooHandler.send_set_buf(buf);
+                        send_set_buf(buf);
                     }
                 }
                 if (should_upload) {
-                    FloobitsPlugin.flooHandler.upload();
+                    upload();
                 }
             }
         });
@@ -1041,9 +1042,13 @@ class FlooHandler extends ConnectionInterface {
     }
 
     public void untellij_changed(VirtualFile file) {
-        Buf buf = this.get_buf_by_path(file.getPath());
+        String filePath = file.getPath();
+        if (!Utils.isShared(filePath)) {
+            return;
+        }
+        Buf buf = this.get_buf_by_path(filePath);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", file.getPath());
             return;
         }
@@ -1053,7 +1058,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
@@ -1063,7 +1068,7 @@ class FlooHandler extends ConnectionInterface {
     public void untellij_saved(String path) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (!Buf.isPopulated(buf)) {
+        if (Buf.isUnPopulated(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
