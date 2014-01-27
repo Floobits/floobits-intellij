@@ -35,7 +35,7 @@ public class AddToWorkspace extends IsJoinedAction {
             });
         }
 
-        if (filesToAdd.size() <= 1) {
+        if (filesToAdd.size() == 1) {
             VirtualFile[] toAdds = new VirtualFile[]{};
             VirtualFile toAdd = filesToAdd.toArray(toAdds)[0];
             if (!Ignore.isIgnored(toAdd.getPath(), null)) {
@@ -44,17 +44,8 @@ public class AddToWorkspace extends IsJoinedAction {
             return; 
         }
 
-        Ignore ignore;
-
-        try {
-            ignore = new Ignore();
-        } catch (Exception ex) {
-            Flog.warn(ex);
-            return;
-        }
-
         for (VirtualFile virtualFile : filesToAdd) {
-            if (!ignore.isIgnored(virtualFile.getCanonicalPath())) {
+            if (!Ignore.isIgnored(virtualFile.getPath(), null)) {
                flooHandler.upload(virtualFile);
             }
         }

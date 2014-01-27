@@ -21,7 +21,7 @@ public abstract class GetPath {
 
         String path;
         try {
-            path = virtualFile.getCanonicalPath();
+            path = virtualFile.getPath();
         } catch (NullPointerException e) {
             return;
         }

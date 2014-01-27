@@ -32,8 +32,8 @@ class Ignore {
 
     public Ignore (File basePath, Ignore parent, Boolean recurse) throws IOException{
         this.path = basePath;
-        this.stringPath = basePath.getCanonicalPath();
-        unfuckedPath = this.path.getCanonicalPath();
+        this.stringPath = basePath.getPath();
+        unfuckedPath = this.path.getPath();
         this.parent = parent;
         this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
