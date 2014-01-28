@@ -20,7 +20,7 @@ public class FlooConn extends Thread {
     protected Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
-    protected FlooHandler handler;
+    protected ConnectionInterface handler;
     Boolean connected = false;
 
     private Integer MAX_RETRIES = 20;
@@ -29,7 +29,7 @@ public class FlooConn extends Thread {
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
-    public FlooConn(FlooHandler handler) {
+    public FlooConn(ConnectionInterface handler) {
         this.handler = handler;
     }
 

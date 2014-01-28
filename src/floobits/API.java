@@ -106,7 +106,7 @@ public class API {
                 orgs.add(orgName);
             }
         } catch (Exception e) {
-            Flog.warn(e);
+            Flog.throwAHorribleBlinkingErrorAtTheUser(e);
         }
 
         return orgs;

@@ -9,10 +9,18 @@ public class FloobitsPlugin implements ApplicationComponent {
     protected static FlooHandler flooHandler;
 
     public FloobitsPlugin() {
+        Flog.info("Floobits plugin");
     }
 
     @Override
     public void initComponent() {
+        Settings settings = new Settings();
+        String secret = settings.get("secret");
+        String apiKey = settings.get("api_key");
+        String username = settings.get("username");
+        if (secret == null || (apiKey == null && username == null)) {
+            createAccount();
+        }
     }
 
     public static void shareProject(final Project project) {
@@ -61,6 +69,15 @@ public class FloobitsPlugin implements ApplicationComponent {
             }
         });
 
+    }
+
+    public static void createAccount() {
+        if (FlooHandler.is_joined) {
+            Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
+            return;
+        }
+        CreateAccountHandler createAccountHandler = new CreateAccountHandler();
+        createAccountHandler.createAccount();
     }
 
     @Override

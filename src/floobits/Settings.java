@@ -19,7 +19,6 @@ class Settings {
             String line = br.readLine();
 
             while (line != null) {
-                Flog.debug(line);
                 if (line.length() < 1 || line.substring(0, 1).equals("#")){
                     line = br.readLine();
                     continue;

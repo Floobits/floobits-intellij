@@ -9,6 +9,7 @@ class Shared {
     static public String pluginVersion = "0.01";
     static public boolean debug = false;
     static public String defaultHost = "floobits.com";
+    static public int defaultPort = 3448;
 
     // # Config settings
     // USERNAME = ''
