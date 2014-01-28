@@ -28,14 +28,14 @@ public class ProjectWorkspace implements ProjectComponent {
 
     public void projectOpened() {
         // called when project is opened
+        Settings settings;
+        settings = new Settings();
+        if (!settings.isComplete()) {
+            setupAccount();
+        }
+    }
 
-//        Settings settings = new Settings();
-//        String secret = settings.get("secret");
-//        String apiKey = settings.get("api_key");
-//        String username = settings.get("username");
-//        if (secret == null || (apiKey == null && username == null)) {
-//            createAccount();
-//        }
+    protected void setupAccount() {
         CreateAccountDialog d = new CreateAccountDialog(project);
         d.createCenterPanel();
         d.show();

@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 class FlooAuth implements Serializable {
+    // TODO: Share this code with FlooNewAccount
     static String clientName = ApplicationInfo.getInstance().getVersionName();
     public String username;
     public String api_key;

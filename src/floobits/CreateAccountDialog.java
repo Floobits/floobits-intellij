@@ -20,6 +20,7 @@ public class CreateAccountDialog extends DialogWrapper {
         @Override
         protected void doAction(ActionEvent e) {
             Flog.info("Creating account from button press");
+            doOKAction();
         }
     }
 
@@ -33,6 +34,7 @@ public class CreateAccountDialog extends DialogWrapper {
         @Override
         protected void doAction(ActionEvent e) {
             Flog.info("Linking account from button press");
+            doCancelAction();
         }
     }
 
@@ -58,6 +60,19 @@ public class CreateAccountDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         return jPanel;
+    }
+
+    @Override
+    public void doCancelAction() {
+        super.doCancelAction();
+        Flog.info("cancel action");
+    }
+
+    @Override
+    protected void doOKAction() {
+        super.doOKAction();
+        Flog.info("ok action");
+        CreateAccountHandler.createAccount();
     }
 }
 

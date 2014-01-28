@@ -64,15 +64,6 @@ public class FloobitsPlugin implements ApplicationComponent {
 
     }
 
-    public static void createAccount() {
-        if (FlooHandler.is_joined) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
-            return;
-        }
-        CreateAccountHandler createAccountHandler = new CreateAccountHandler();
-        createAccountHandler.createAccount();
-    }
-
     @Override
     protected void finalize() throws Throwable {
         super.finalize();    //To change body of overridden methods use File | Settings | File Templates.

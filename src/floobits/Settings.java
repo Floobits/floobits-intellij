@@ -2,16 +2,16 @@ package floobits;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
 
 class Settings {
     protected HashMap<String, String> settings;
+    String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
 
     public Settings () {
-        String userHome = System.getProperty("user.home");
-        String floorcPath =  FilenameUtils.concat(userHome, ".floorc");
         BufferedReader br;
         this.settings = new HashMap<String, String>();
         try {
@@ -28,11 +28,41 @@ class Settings {
                 line = br.readLine();
             }
         } catch (Exception e) {
-            Flog.warn(e);
+            Flog.info("Got an exception %s", e);
         }
     }
 
     public String get(String k) {
         return this.settings.get(k);
+    }
+    
+    public void set(String k, String v) {
+        this.settings.put(k, v);
+    }
+    
+    public void write() {
+        PrintWriter writer = null;
+        File file = new File(floorcPath);
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't write new .floorc");
+            return;
+        }
+        try {
+            writer = new PrintWriter(file, "UTF-8");
+        } catch (FileNotFoundException e) {
+            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't write new .floorc");
+        } catch (UnsupportedEncodingException e) {
+            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't write new .floorc");
+        }
+        for (Map.Entry<String, String> setting : this.settings.entrySet()) {
+            writer.println(String.format("%s %s", setting.getKey(), setting.getValue()));
+        }
+        writer.close();
+    }
+
+    public Boolean isComplete() {
+        return (settings.get("secret") != null && (settings.get("username") != null || settings.get("api_key") != null));
     }
 }
