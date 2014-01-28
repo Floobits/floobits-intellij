@@ -18,7 +18,7 @@ public class FloobitsPlugin implements ApplicationComponent {
 
     public static void shareProject(final Project project) {
         FlooHandler f = flooHandler;
-        if (!FlooHandler.is_joined) {
+        if (!FlooHandler.isJoined) {
             flooHandler = new FlooHandler(project);
             return;
         }
@@ -31,14 +31,14 @@ public class FloobitsPlugin implements ApplicationComponent {
                 if (!join) {
                     return;
                 }
-                flooHandler.shut_down();
+                flooHandler.shutDown();
                 shareProject(project);
             }
         });
     }
 
     public static void joinWorkspace(final String url) {
-        if (!FlooHandler.is_joined) {
+        if (!FlooHandler.isJoined) {
             FlooUrl f;
             try {
                 f = new FlooUrl(url);
@@ -57,7 +57,7 @@ public class FloobitsPlugin implements ApplicationComponent {
                 if (!join) {
                     return;
                 }
-                flooHandler.shut_down();
+                flooHandler.shutDown();
                 joinWorkspace(url);
             }
         });

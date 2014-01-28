@@ -260,8 +260,8 @@ abstract class DocumentFetcher {
 }
 
 class FlooHandler extends ConnectionInterface {
-    protected static boolean is_joined  = false;
-    protected Boolean should_upload = false;
+    protected static boolean isJoined = false;
+    protected Boolean shouldUpload = false;
     protected Project project;
     protected Boolean stomp = false;
     protected HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
@@ -352,7 +352,7 @@ class FlooHandler extends ConnectionInterface {
         this.project = p;
         this.stomp = true;
         // TODO: Should upload should be an explicit argument to the constructor.
-        this.should_upload = true;
+        this.shouldUpload = true;
         final String project_path = p.getBasePath();
         FlooUrl flooUrl = DotFloo.read(project_path);
         if (workspaceExists(flooUrl)) {
@@ -575,7 +575,7 @@ class FlooHandler extends ConnectionInterface {
 
     protected void _on_room_info (JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
-        is_joined = true;
+        isJoined = true;
         this.tree = new Tree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
@@ -600,7 +600,7 @@ class FlooHandler extends ConnectionInterface {
         }
 
         if (conflicts.size() == 0) {
-            if (this.should_upload) {
+            if (this.shouldUpload) {
                 this.upload();
             }
             return;
@@ -633,7 +633,7 @@ class FlooHandler extends ConnectionInterface {
                         send_set_buf(buf);
                     }
                 }
-                if (should_upload) {
+                if (shouldUpload) {
                     upload();
                 }
             }
@@ -951,7 +951,7 @@ class FlooHandler extends ConnectionInterface {
     }
 
     protected void _on_disconnect (JsonObject jsonObject) {
-        is_joined = false;
+        isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
             error_message(reason);
@@ -1124,10 +1124,10 @@ class FlooHandler extends ConnectionInterface {
     }
 
 
-    public void shut_down() {
+    public void shutDown() {
         if (this.conn.shutDown()) {
             status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
-        is_joined = false;
+        isJoined = false;
     }
 }

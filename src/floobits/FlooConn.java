@@ -2,12 +2,6 @@ package floobits;
 
 import java.io.*;
 import java.net.SocketTimeoutException;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.net.ssl.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -102,7 +96,7 @@ public class FlooConn extends Thread {
         retries -= 1;
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
-            FloobitsPlugin.flooHandler.shut_down();
+            FloobitsPlugin.flooHandler.shutDown();
             return;
         }
         delay = Math.min(10000, Math.round((float)1.5 * delay));

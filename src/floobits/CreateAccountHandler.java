@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationInfo;
 
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.util.Map;
 
 class FlooNewAccount implements Serializable {
@@ -27,7 +26,7 @@ public class CreateAccountHandler extends ConnectionInterface {
 
 
     public static void createAccount() {
-        if (FlooHandler.is_joined) {
+        if (FlooHandler.isJoined) {
             Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
             return;
         }
@@ -60,7 +59,7 @@ public class CreateAccountHandler extends ConnectionInterface {
         p.disable_account_creation = true;
         p.save();
         shutDown();
-        // TODO: Show welcome message
+        // TODO: Show welcome message.
         Flog.info("All setup");
     }
 
