@@ -14,13 +14,6 @@ public class FloobitsPlugin implements ApplicationComponent {
 
     @Override
     public void initComponent() {
-        Settings settings = new Settings();
-        String secret = settings.get("secret");
-        String apiKey = settings.get("api_key");
-        String username = settings.get("username");
-        if (secret == null || (apiKey == null && username == null)) {
-            createAccount();
-        }
     }
 
     public static void shareProject(final Project project) {

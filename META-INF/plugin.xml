@@ -31,6 +31,9 @@
 
   <project-components>
     <!-- Add your project components here -->
+      <component>
+          <implementation-class>floobits.ProjectWorkspace</implementation-class>
+      </component>
   </project-components>
 
   <actions>
