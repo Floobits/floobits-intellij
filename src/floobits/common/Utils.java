@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Utils {
-    static final String cert =
+    private static final String cert =
         "-----BEGIN CERTIFICATE-----\n" +
         "MIIHyTCCBbGgAwIBAgIBATANBgkqhkiG9w0BAQUFADB9MQswCQYDVQQGEwJJTDEW\n" +
         "MBQGA1UEChMNU3RhcnRDb20gTHRkLjErMCkGA1UECxMiU2VjdXJlIERpZ2l0YWwg\n" +
@@ -66,7 +66,7 @@ public class Utils {
         "NOsF/5oirpt9P/FlUQqmMGqz9IgcgA38corog14=\n" +
         "-----END CERTIFICATE-----";
 
-    static Timeouts timeouts = Timeouts.create();
+    private static final Timeouts timeouts = Timeouts.create();
     public static Boolean isSharableFile(VirtualFile virtualFile) {
         return (isFile(virtualFile) && virtualFile.exists() && virtualFile.isInLocalFileSystem());
     }
@@ -143,7 +143,7 @@ public class Utils {
         int commonIndex = 0;
         while (commonIndex < target.length && commonIndex < base.length
                 && target[commonIndex].equals(base[commonIndex])) {
-            common.append(target[commonIndex] + pathSeparator);
+            common.append(target[commonIndex]).append(pathSeparator);
             commonIndex++;
         }
 
@@ -182,7 +182,7 @@ public class Utils {
             int numDirsUp = baseIsFile ? base.length - commonIndex - 1 : base.length - commonIndex;
 
             for (int i = 0; i < numDirsUp; i++) {
-                relative.append(".." + pathSeparator);
+                relative.append("..").append(pathSeparator);
             }
         }
         String commonStr = common.toString();
@@ -250,7 +250,7 @@ public class Utils {
     }
 
     public static void createFile(final VirtualFile virtualFile) {
-        Timeout timeout = new Timeout(1000) {
+        Timeout timeout = new Timeout(100) {
             @Override
             public void run(Void arg) {
                 FlooHandler flooHandler = FlooHandler.getInstance();
