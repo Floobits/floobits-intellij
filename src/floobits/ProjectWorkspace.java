@@ -3,7 +3,7 @@ package floobits;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import floobits.common.Settings;
-import floobits.dialogs.CreateAccountDialog;
+import floobits.dialogs.CreateAccount;
 import org.jetbrains.annotations.NotNull;
 
 public class ProjectWorkspace implements ProjectComponent {
@@ -38,7 +38,7 @@ public class ProjectWorkspace implements ProjectComponent {
     }
 
     protected void setupAccount() {
-        CreateAccountDialog d = new CreateAccountDialog(project);
+        CreateAccount d = new CreateAccount(project);
         d.createCenterPanel();
         d.show();
     }

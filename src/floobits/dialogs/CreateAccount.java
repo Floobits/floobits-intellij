@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class CreateAccountDialog extends DialogWrapper {
+public class CreateAccount extends DialogWrapper {
     private JPanel jPanel;
 
 
@@ -41,7 +41,7 @@ public class CreateAccountDialog extends DialogWrapper {
     }
 
 
-    public CreateAccountDialog(@Nullable Project project) {
+    public CreateAccount(@Nullable Project project) {
         super(project, true);
         jPanel = new JPanel();
         init();
