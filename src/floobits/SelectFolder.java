@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.common.RunLater;
 
 public class SelectFolder {
 

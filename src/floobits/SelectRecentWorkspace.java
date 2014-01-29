@@ -3,6 +3,8 @@ package floobits;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.common.PersistentJson;
+import floobits.common.Workspace;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

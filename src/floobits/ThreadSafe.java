@@ -2,8 +2,8 @@ package floobits;
 
 import com.intellij.openapi.application.ApplicationManager;
 
-class ThreadSafe {
-    static void write (final Runnable runnable) {
+public class ThreadSafe {
+    public static void write(final Runnable runnable) {
 			ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -11,7 +11,7 @@ class ThreadSafe {
             }
         });
     }
-    static void read (Runnable runnable) {
+    public static void read(Runnable runnable) {
         ApplicationManager.getApplication().runReadAction(runnable);
     }
 }

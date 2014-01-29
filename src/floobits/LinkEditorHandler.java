@@ -4,6 +4,7 @@ package floobits;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationInfo;
+import floobits.common.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class LinkEditorHandler extends ConnectionInterface {
 
 
     @Override
-    void on_data(String name, JsonObject obj) throws Exception {
+    public void on_data(String name, JsonObject obj) throws Exception {
         if (!name.equals("credentials")) {
             return;
         }
@@ -77,7 +78,7 @@ public class LinkEditorHandler extends ConnectionInterface {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("http://%s/dash/link_editor/%s/"), Shared.defaultHost, token));
+            Desktop.getDesktop().browse(new URI(String.format("http://%s/dash/link_editor/%s/", Shared.defaultHost, token)));
         } catch (IOException error) {
             shutDown();
             Flog.warn(error);
@@ -92,7 +93,7 @@ public class LinkEditorHandler extends ConnectionInterface {
     }
 
     @Override
-    void on_connect() {
+    public void on_connect() {
         Flog.warn("Connected.");
         this.conn.write(new FlooRequestCredentials(token));
     }

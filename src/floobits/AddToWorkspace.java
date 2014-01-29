@@ -6,6 +6,8 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.containers.hash.HashSet;
+import floobits.common.Ignore;
+import floobits.common.Utils;
 import org.jetbrains.annotations.NotNull;
 
 public class AddToWorkspace extends IsJoinedAction {

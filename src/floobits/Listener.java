@@ -16,6 +16,8 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
+import floobits.common.Ignore;
+import floobits.common.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

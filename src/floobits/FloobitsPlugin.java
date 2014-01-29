@@ -2,11 +2,13 @@ package floobits;
 
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
+import floobits.common.FlooUrl;
+import floobits.common.RunLater;
 import org.jetbrains.annotations.NotNull;
 
 
 public class FloobitsPlugin implements ApplicationComponent {
-    protected static FlooHandler flooHandler;
+    public static FlooHandler flooHandler;
 
     public FloobitsPlugin() {
         Flog.info("Floobits plugin");
@@ -27,7 +29,7 @@ public class FloobitsPlugin implements ApplicationComponent {
         String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", f.url.toString(), f.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
             @Override
-            void run(Boolean join) {
+            public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
@@ -53,7 +55,7 @@ public class FloobitsPlugin implements ApplicationComponent {
         String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
             @Override
-            void run(Boolean join) {
+            public void run(Boolean join) {
                 if (!join) {
                     return;
                 }

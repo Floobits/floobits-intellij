@@ -2,6 +2,7 @@ package floobits;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.common.CreateAccountHandler;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

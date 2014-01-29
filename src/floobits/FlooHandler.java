@@ -1,10 +1,8 @@
 package floobits;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -18,11 +16,15 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import floobits.common.*;
+import floobits.common.protocol.*;
+import floobits.common.protocol.receive.*;
+import floobits.common.protocol.send.*;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
@@ -30,205 +32,11 @@ import org.apache.commons.io.FilenameUtils;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
-
-class FlooAuth implements Serializable {
-    // TODO: Share this code with FlooNewAccount
-    static String clientName = ApplicationInfo.getInstance().getVersionName();
-    public String username;
-    public String api_key;
-    public String secret;
-
-    public String room;
-    public String room_owner;
-    public String client = FlooAuth.clientName;
-    public String platform = System.getProperty("os.name");
-    public String version = "0.10";
-    public String[] supported_encodings = { "utf8", "base64" };
-
-    public FlooAuth (Settings settings, String owner, String workspace) {
-        this.username = settings.get("username");
-        this.api_key = settings.get("api_key");
-        this.room = workspace;
-        this.room_owner = owner;
-        this.secret = settings.get("secret");
-    }
-}
-
-class RiBuf implements Serializable {
-    public Integer id;
-    public String md5;
-    public String path;
-    public String encoding;
-}
-
-class User implements Serializable {
-    public String[] perms;
-    public String client;
-    public String platform;
-    public Integer user_id;
-    public String username;
-    public String version;
-}
-
-class Tree implements Serializable {
-    public HashMap<String, Integer> bufs;
-    public HashMap<String, Tree> folders;
-    public Tree (JsonObject obj) {
-        this.bufs = new HashMap<String, Integer>();
-        this.folders = new HashMap<String, Tree>();
-        for (Entry<String, JsonElement> entry : obj.entrySet()) {
-            String key = entry.getKey();
-            JsonElement value = entry.getValue();
-            if (value.isJsonPrimitive()) {
-                this.bufs.put(key, Integer.parseInt(value.getAsString()));
-            } else {
-                this.folders.put(key, new Tree(value.getAsJsonObject()));
-            }
-        }
-    }
-}
-
-class RoomInfoResponse implements Serializable {
-    public String[] anon_perms;
-    public Integer max_size;
-    public String name;
-    public String owner;
-    public String[] perms;
-    public String room_name;
-    public Boolean secret;
-    public HashMap<Integer, User> users;
-    public HashMap<Integer, RiBuf> bufs;
-
-}
-
-class GetBufRequest implements Serializable {
-    public String name = "get_buf";
-    public Integer id;
-
-    public GetBufRequest (Integer buf_id) {
-        this.id = buf_id;
-    }
-}
-
-class GetBufResponse implements Serializable {
-    public String name;
-    public Integer id;
-    public String path;
-    public String buf;
-    public String encoding;
-    public String md5;
-}
-
-class CreateBufResponse extends GetBufResponse {}
-
-class FlooPatch implements Serializable {
-    public String name = "patch";
-    public Integer id;
-    public Integer user_id;
-    public String md5_after;
-    public String md5_before;
-    public String patch;
-
-    // Deprecated
-    public String path;
-    public String username;
-
-
-    public FlooPatch(){}
-
-    public FlooPatch (String patch, String md5_before, Buf buf) {
-        this.path = buf.path;
-        this.md5_before = md5_before;
-        this.md5_after = buf.md5;
-        this.id = buf.id;
-        this.patch = patch;
-    }
-}
-
-class FlooSetBuf implements Serializable {
-    public String name = "set_buf";
-    public Integer id;
-    public String buf;
-    public String md5;
-    public String encoding;
-
-    public FlooSetBuf (Buf buf) {
-        this.md5 = buf.md5;
-        this.id = buf.id;
-        this.buf = buf.serialize();
-        this.encoding = buf.encoding.toString();
-    }
-}
-
-class FlooCreateBuf implements Serializable {
-    public String name = "create_buf";
-    public String buf;
-    public String path;
-    public String md5;
-    public String encoding;
-    
-    public FlooCreateBuf (Buf buf) {
-        this.path = FilenameUtils.separatorsToUnix(buf.path);
-        this.buf = buf.serialize();
-        this.md5 = buf.md5;
-        this.encoding = buf.encoding.toString();
-    }
-}
-
-class FlooHighlight implements Serializable {
-    public String name = "highlight";
-    public Integer id;
-    public Boolean ping = false;
-    public Boolean summon = false;
-    public ArrayList<ArrayList<Integer>> ranges;
-    public Integer user_id;
-
-    public FlooHighlight(){}
-
-    public FlooHighlight (Buf buf, ArrayList<ArrayList<Integer>> ranges, Boolean summon) {
-        this.id = buf.id;
-        if (summon != null) {
-            this.summon = summon;
-            this.ping = summon;
-        }
-        this.ranges = ranges;
-    }
-}
-
-class FlooSaveBuf implements Serializable {
-    public Integer id;
-    public String name = "saved";
-
-    FlooSaveBuf(Integer id) {
-        this.id = id;
-    }
-}
-
-class FlooDeleteBuf implements Serializable {
-    public Integer id;
-    public String name = "delete_buf";
-
-    FlooDeleteBuf(Integer id) {
-        this.id = id;
-    }
-}
-
-class FlooRenameBuf implements Serializable {
-    public Integer id;
-    public String name = "rename_buf";
-    public String path;
-
-    FlooRenameBuf(Integer id, String path) {
-        this.id = id;
-        this.path = path;
-    }
-}
 
 abstract class DocumentFetcher {
     Boolean make_document = false;
@@ -259,23 +67,23 @@ abstract class DocumentFetcher {
     }
 }
 
-class FlooHandler extends ConnectionInterface {
-    protected static boolean isJoined = false;
-    protected Boolean shouldUpload = false;
-    protected Project project;
-    protected Boolean stomp = false;
-    protected HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
+public class FlooHandler extends ConnectionInterface {
+    public static boolean isJoined = false;
+    private Boolean shouldUpload = false;
+    public Project project;
+    private Boolean stomp = false;
+    private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     protected Boolean stalking = false;
-    protected String[] perms;
-    protected Map<Integer, User> users = new HashMap<Integer, User>();
-    protected HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
-    protected HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
-    protected Tree tree;
-    protected FlooConn conn;
+    private String[] perms;
+    private Map<Integer, User> users = new HashMap<Integer, User>();
+    private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
+    private Tree tree;
+    private FlooConn conn;
     protected Timeouts timeouts = Timeouts.create();
 
-    protected void flash_message(final String message) {
+    void flash_message(final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -293,7 +101,7 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
-    protected void status_message(final String message, final NotificationType notificationType) {
+    void status_message(final String message, final NotificationType notificationType) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -311,12 +119,12 @@ class FlooHandler extends ConnectionInterface {
         status_message(message, NotificationType.INFORMATION);
     }
 
-    protected void error_message(String message) {
+    void error_message(String message) {
         Flog.log(message);
         status_message(message, NotificationType.ERROR);
     }
 
-    protected String get_username(Integer user_id) {
+    String get_username(Integer user_id) {
         User user = users.get(user_id);
         if (user == null) {
             return "";
@@ -393,7 +201,7 @@ class FlooHandler extends ConnectionInterface {
         orgs.add(0, owner);
         SelectOwner.build(orgs, new RunLater<String>() {
             @Override
-            void run(String owner) {
+            public void run(String owner) {
                 createWorkspace(owner, name, project_path);
             }
         });
@@ -410,7 +218,7 @@ class FlooHandler extends ConnectionInterface {
         } catch (Exception e) {
             SelectFolder.build(new RunLater<String>() {
                 @Override
-                void run(String path) {
+                public void run(String path) {
                     finishJoiningWorkspace(path, flooUrl);
                 }
             });
@@ -418,7 +226,7 @@ class FlooHandler extends ConnectionInterface {
         }
         finishJoiningWorkspace(path, flooUrl);
     }
-    protected void finishJoiningWorkspace(String path, FlooUrl flooUrl) {
+    void finishJoiningWorkspace(String path, FlooUrl flooUrl) {
         ProjectManager pm = ProjectManager.getInstance();
         // Check open projects
         Project[] openProjects = pm.getOpenProjects();
@@ -451,7 +259,7 @@ class FlooHandler extends ConnectionInterface {
         joinWorkspace(flooUrl, this.project.getBasePath());
     }
 
-    public Boolean workspaceExists(final FlooUrl f) {
+    Boolean workspaceExists(final FlooUrl f) {
         if (f == null) {
             return false;
         }
@@ -466,7 +274,7 @@ class FlooHandler extends ConnectionInterface {
         return method.getStatusCode() < 400;
     }
 
-    public void joinWorkspace(final FlooUrl f, final String path) {
+    void joinWorkspace(final FlooUrl f, final String path) {
         Flog.warn("join workspace");
         url = f;
         Shared.colabDir = path;
@@ -477,7 +285,7 @@ class FlooHandler extends ConnectionInterface {
         conn.start();
     }
 
-    protected void createWorkspace(String owner, String name, String project_path) {
+    void createWorkspace(String owner, String name, String project_path) {
         HttpMethod method;
         try {
             method = API.createWorkspace(owner, name);
@@ -518,7 +326,7 @@ class FlooHandler extends ConnectionInterface {
         }
     }
 
-    protected Buf get_buf_by_path(String absPath) {
+    Buf get_buf_by_path(String absPath) {
         String relPath = Utils.toProjectRelPath(absPath);
         if (relPath == null) {
             return null;
@@ -530,7 +338,7 @@ class FlooHandler extends ConnectionInterface {
         return this.bufs.get(id);
     }
 
-    public void upload() {
+    void upload() {
         final Ignore ignore;
         try {
             ignore = new Ignore(new File(Shared.colabDir), null, false);
@@ -573,7 +381,7 @@ class FlooHandler extends ConnectionInterface {
 
 
 
-    protected void _on_room_info (JsonObject obj) {
+    void _on_room_info(JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
         isJoined = true;
         this.tree = new Tree(obj.getAsJsonObject("tree"));
@@ -623,7 +431,7 @@ class FlooHandler extends ConnectionInterface {
         DialogBuilder.build("Resolve Conflicts", dialog, new RunLater<Boolean>() {
             @Override
             @SuppressWarnings("unchecked")
-            void run(Boolean stomp) {
+            public void run(Boolean stomp) {
                 for (Buf buf : conflicts) {
                     if (stomp) {
                         send_get_buf(buf.id);
@@ -641,15 +449,15 @@ class FlooHandler extends ConnectionInterface {
 
     }
 
-    public void send_create_buf(VirtualFile virtualFile) {
+    void send_create_buf(VirtualFile virtualFile) {
         Buf buf = Buf.createBuf(virtualFile);
         if (buf == null) {
             return;
         }
-        this.conn.write(new FlooCreateBuf(buf));
+        this.conn.write(new CreateBuf(buf));
     }
 
-    protected void _on_get_buf (JsonObject obj) {
+    void _on_get_buf(JsonObject obj) {
         // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
@@ -660,7 +468,7 @@ class FlooHandler extends ConnectionInterface {
         Flog.info("on get buffed. %s", b.path);
     }
 
-    protected void _on_create_buf (JsonObject obj) {
+    void _on_create_buf(JsonObject obj) {
         // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
@@ -675,7 +483,7 @@ class FlooHandler extends ConnectionInterface {
         buf.write();
     }
 
-    protected void _on_patch (JsonObject obj) {
+    void _on_patch(JsonObject obj) {
         final FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
         final Buf b = this.bufs.get(res.id);
         if (b.buf == null) {
@@ -691,7 +499,7 @@ class FlooHandler extends ConnectionInterface {
         b.patch(res);
     }
 
-    public void get_document(Integer id, DocumentFetcher documentFetcher) {
+    void get_document(Integer id, DocumentFetcher documentFetcher) {
         Buf buf = this.bufs.get(id);
         if (buf == null) {
             Flog.info("Buf %d is not populated yet", id);
@@ -705,11 +513,11 @@ class FlooHandler extends ConnectionInterface {
         this.get_document(buf.path, documentFetcher);
     }
 
-    public void get_document(String path, DocumentFetcher documentFetcher) {
+    void get_document(String path, DocumentFetcher documentFetcher) {
         documentFetcher.fetch(path);
     }
 
-    protected Editor get_editor_for_document(Document document) {
+    Editor get_editor_for_document(Document document) {
         Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
         for (Editor editor : editors) {
             Flog.warn("is disposed? %s", editor.isDisposed());
@@ -724,7 +532,7 @@ class FlooHandler extends ConnectionInterface {
         return EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
     }
 
-    public void remove_highlight (Integer userId, Integer bufId, Document document) {
+    void remove_highlight(Integer userId, Integer bufId, Document document) {
         HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
@@ -769,7 +577,7 @@ class FlooHandler extends ConnectionInterface {
 
     }
 
-    protected void _on_highlight (JsonObject obj) {
+    void _on_highlight(JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = FloobitsPlugin.flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
@@ -846,7 +654,7 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
-    protected void _on_saved (JsonObject obj) {
+    void _on_saved(JsonObject obj) {
         Integer id = obj.get("id").getAsInt();
         this.get_document(id, new DocumentFetcher(false) {
             @Override
@@ -862,7 +670,7 @@ class FlooHandler extends ConnectionInterface {
         this.paths_to_ids.put(buf.path, buf.id);
     }
 
-    protected void _on_rename_buf (JsonObject jsonObject) {
+    void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = Utils.absPath(name);
         final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
@@ -925,17 +733,17 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
-    protected void _on_request_perms(JsonObject obj) {
-        Flog.log("got perms request");
+    void _on_request_perms(JsonObject obj) {
+        Flog.log("got perms receive");
     }
 
-    protected void _on_join (JsonObject obj) {
+    void _on_join(JsonObject obj) {
         User u = new Gson().fromJson(obj, (Type)User.class);
         this.users.put(u.user_id, u);
         status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
     }
 
-    protected void _on_part (JsonObject obj) {
+    void _on_part(JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
         User u = users.get(userId);
         this.users.remove(userId);
@@ -950,7 +758,7 @@ class FlooHandler extends ConnectionInterface {
 
     }
 
-    protected void _on_disconnect (JsonObject jsonObject) {
+    void _on_disconnect(JsonObject jsonObject) {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
@@ -963,7 +771,7 @@ class FlooHandler extends ConnectionInterface {
         conn.shutDown();
     }
 
-    protected void _on_delete_buf(JsonObject jsonObject) {
+    void _on_delete_buf(JsonObject jsonObject) {
         Integer id = jsonObject.get("id").getAsInt();
         Buf buf = bufs.get(id);
         if (buf == null) {
@@ -994,17 +802,17 @@ class FlooHandler extends ConnectionInterface {
         });
     }
 
-    public void _on_msg (JsonObject jsonObject){
+    void _on_msg(JsonObject jsonObject){
         String msg = jsonObject.get("data").getAsString();
         String username = jsonObject.get("username").getAsString();
         status_message(String.format("%s: %s", username, msg));
     }
 
-    public void _on_term_stdout(JsonObject jsonObject) {}
-    public void _on_term_stdin(JsonObject jsonObject) {}
+    void _on_term_stdout(JsonObject jsonObject) {}
+    void _on_term_stdin(JsonObject jsonObject) {}
 
     public void send_get_buf (Integer buf_id) {
-        this.conn.write(new GetBufRequest(buf_id));
+        this.conn.write(new GetBuf(buf_id));
     }
 
 
@@ -1038,7 +846,7 @@ class FlooHandler extends ConnectionInterface {
             return;
         }
         buf.cancelTimeout();
-        this.conn.write(new FlooRenameBuf(buf.id, newRelativePath));
+        this.conn.write(new RenameBuf(buf.id, newRelativePath));
         set_buf_path(buf, newRelativePath);
     }
 
@@ -1077,14 +885,14 @@ class FlooHandler extends ConnectionInterface {
         this.conn.write(new FlooSaveBuf(buf.id));
     }
 
-    public void untellij_deleted(String path) {
+    void untellij_deleted(String path) {
         Buf buf = this.get_buf_by_path(path);
         if (buf == null) {
             Flog.info("buf does not exist");
             return;
         }
         buf.cancelTimeout();
-        this.conn.write(new FlooDeleteBuf(buf.id));
+        this.conn.write(new DeleteBuf(buf.id));
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
