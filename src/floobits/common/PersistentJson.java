@@ -31,7 +31,7 @@ public class PersistentJson {
             workspace.path = path;
             workspace.url = flooUrl.toString();
         }
-        this.recent_workspaces.add(workspace);
+        this.recent_workspaces.add(0, workspace);
         HashSet<String> seen = new HashSet<String>();
         LinkedList<Workspace> unique = new LinkedList<Workspace>();
         for (Workspace w : this.recent_workspaces) {
