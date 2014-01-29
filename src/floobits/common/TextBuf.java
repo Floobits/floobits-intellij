@@ -1,10 +1,12 @@
 package floobits.common;
 
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
+import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import floobits.Listener;
