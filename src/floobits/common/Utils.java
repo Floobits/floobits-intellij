@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -200,7 +201,7 @@ public class Utils {
         }
     }
 
-    public static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile) {
+    public static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile, @Nullable Ignore ignore) {
         ArrayList<String> filePaths = new ArrayList<String>();
         if (!vFile.isValid()) {
             // This happens when files are no longer available.
@@ -215,7 +216,7 @@ public class Utils {
                 filePaths.addAll(getAllNestedFilePaths(file));
                 continue;
             }
-            if (Ignore.isIgnored(file.getPath(), null)) {
+            if (ignore != null && ignore.isIgnored(file.getPath())){
                 continue;
             }
             filePaths.add(file.getPath());
@@ -223,7 +224,18 @@ public class Utils {
         return filePaths;
     }
 
-    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
+    public static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile) {
+        Ignore ignore;
+        try {
+            ignore = new Ignore();
+        } catch(Exception e) {
+            Flog.warn(e);
+            return new ArrayList<String>();
+        }
+        return getAllNestedFilePaths(vFile, ignore);
+    }
+
+    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile, @Nullable Ignore ignore) {
         ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
         if (!vFile.isValid()) {
             // This happens when files are no longer available, don't remove any of these.
@@ -237,16 +249,26 @@ public class Utils {
             return filePaths;
         }
         for (VirtualFile file : vFile.getChildren()) {
-            if (Ignore.isIgnored(file.getPath(), null)) {
+            if (ignore != null && ignore.isIgnored(file.getPath())) {
                 continue;
             }
             if (file.isDirectory()) {
-                filePaths.addAll(getAllNestedFiles(file));
+                filePaths.addAll(getAllNestedFiles(file, ignore));
                 continue;
             }
             filePaths.add(file);
         }
         return filePaths;
+    }
+    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
+        Ignore ignore;
+        try {
+            ignore = new Ignore();
+        } catch(Exception e) {
+            Flog.warn(e);
+            return new ArrayList<VirtualFile>();
+        }
+        return getAllNestedFiles(vFile, ignore);
     }
 
     public static void createFile(final VirtualFile virtualFile) {

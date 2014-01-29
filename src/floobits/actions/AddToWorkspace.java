@@ -9,7 +9,10 @@ import com.intellij.util.containers.hash.HashSet;
 import floobits.handlers.FlooHandler;
 import floobits.common.Ignore;
 import floobits.common.Utils;
+import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
 
 public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
@@ -46,9 +49,16 @@ public class AddToWorkspace extends IsJoinedAction {
             }
             return; 
         }
+        Ignore ignore;
+        try {
+            ignore = new Ignore();
+        } catch (IOException e1) {
+            Flog.warn(e1);
+            return;
+        }
 
         for (VirtualFile virtualFile : filesToAdd) {
-            if (!Ignore.isIgnored(virtualFile.getPath(), null)) {
+            if (ignore.isIgnored(virtualFile.getPath())) {
                flooHandler.upload(virtualFile);
             }
         }
