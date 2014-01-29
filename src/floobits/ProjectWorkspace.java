@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import floobits.common.Settings;
+import floobits.dialogs.CreateAccountDialog;
 import org.jetbrains.annotations.NotNull;
 
 public class ProjectWorkspace implements ProjectComponent {

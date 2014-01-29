@@ -25,6 +25,8 @@ import floobits.common.*;
 import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
+import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.SelectOwner;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
@@ -74,7 +76,7 @@ public class FlooHandler extends ConnectionInterface {
     private Boolean stomp = false;
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
-    protected Boolean stalking = false;
+    public Boolean stalking = false;
     private String[] perms;
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -114,7 +116,7 @@ public class FlooHandler extends ConnectionInterface {
         });
     }
 
-    protected void status_message(String message) {
+    public void status_message(String message) {
         Flog.log(message);
         status_message(message, NotificationType.INFORMATION);
     }

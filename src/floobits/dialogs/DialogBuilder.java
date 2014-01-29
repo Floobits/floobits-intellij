@@ -1,4 +1,4 @@
-package floobits;
+package floobits.dialogs;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.DialogWrapper;

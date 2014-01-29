@@ -1,6 +1,7 @@
-package floobits;
+package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import floobits.FlooHandler;
 
 public class FollowMode extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {

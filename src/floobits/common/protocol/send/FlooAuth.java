@@ -7,7 +7,7 @@ import floobits.common.protocol.Base;
 import java.io.Serializable;
 
 public class FlooAuth extends Base {
-    // TODO: Share this code with FlooNewAccount
+    // TODO: Share this code with NewAccount
     static String clientName = ApplicationInfo.getInstance().getVersionName();
     public String username;
     public String api_key;

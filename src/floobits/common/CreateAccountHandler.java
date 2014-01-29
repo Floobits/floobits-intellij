@@ -3,6 +3,7 @@ package floobits.common;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import floobits.*;
+import floobits.common.protocol.send.NewAccount;
 
 import java.util.Map;
 
@@ -58,6 +59,6 @@ public class CreateAccountHandler extends ConnectionInterface {
     @Override
     public void on_connect() {
         Flog.warn("Connected.");
-        this.conn.write(new FlooNewAccount());
+        this.conn.write(new NewAccount());
     }
 }

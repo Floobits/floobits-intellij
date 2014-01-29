@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 import floobits.common.FlooUrl;
 import floobits.common.RunLater;
+import floobits.dialogs.DialogBuilder;
 import org.jetbrains.annotations.NotNull;
 
 

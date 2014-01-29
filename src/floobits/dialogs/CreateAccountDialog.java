@@ -1,7 +1,8 @@
-package floobits;
+package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.Flog;
 import floobits.common.CreateAccountHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +41,7 @@ public class CreateAccountDialog extends DialogWrapper {
     }
 
 
-    protected CreateAccountDialog(@Nullable Project project) {
+    public CreateAccountDialog(@Nullable Project project) {
         super(project, true);
         jPanel = new JPanel();
         init();
@@ -59,7 +60,7 @@ public class CreateAccountDialog extends DialogWrapper {
 
     @Nullable
     @Override
-    protected JComponent createCenterPanel() {
+    public JComponent createCenterPanel() {
         return jPanel;
     }
 

@@ -6,7 +6,7 @@ import floobits.common.protocol.Base;
 import java.io.Serializable;
 
 public class FlooRequestCredentials extends Base {
-    // TODO: Share this code with FlooAuth and FlooNewAccount
+    // TODO: Share this code with FlooAuth and NewAccount
     String name = "request_credentials";
     String username = System.getProperty("user.name");
     String client = ApplicationInfo.getInstance().getVersionName();

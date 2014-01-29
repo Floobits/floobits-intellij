@@ -1,9 +1,11 @@
-package floobits;
+package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import floobits.FlooHandler;
+import floobits.GetPath;
 
 
 public class Summon extends IsJoinedAction {

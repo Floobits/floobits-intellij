@@ -1,6 +1,8 @@
-package floobits;
+package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import floobits.Flog;
+import floobits.FlooHandler;
 
 import java.awt.*;
 import java.io.IOException;

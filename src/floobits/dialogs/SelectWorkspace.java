@@ -1,4 +1,4 @@
-package floobits;
+package floobits.dialogs;
 
 import com.intellij.ui.components.JBList;
 

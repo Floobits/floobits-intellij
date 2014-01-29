@@ -1,4 +1,4 @@
-package floobits;
+package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -6,6 +6,8 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.containers.hash.HashSet;
+import floobits.FlooHandler;
+import floobits.actions.IsJoinedAction;
 import floobits.common.Ignore;
 import floobits.common.Utils;
 import org.jetbrains.annotations.NotNull;
