@@ -4,7 +4,7 @@ import floobits.common.Buf;
 
 import java.io.Serializable;
 
-public class FlooPatch extends Base {
+public class FlooPatch implements Base {
     public String name = "patch";
     public Integer id;
     public Integer user_id;

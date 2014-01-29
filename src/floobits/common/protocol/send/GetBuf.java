@@ -2,7 +2,7 @@ package floobits.common.protocol.send;
 
 import floobits.common.protocol.Base;
 
-public class GetBuf extends Base {
+public class GetBuf implements Base {
     public String name = "get_buf";
     public Integer id;
 

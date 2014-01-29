@@ -1,6 +1,8 @@
 package floobits.common.protocol;
 
-public class FlooUser extends Base {
+import java.io.Serializable;
+
+public class FlooUser implements Serializable {
     public String[] perms;
     public String client;
     public String platform;

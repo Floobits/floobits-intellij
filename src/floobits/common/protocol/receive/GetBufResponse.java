@@ -2,8 +2,7 @@ package floobits.common.protocol.receive;
 
 import floobits.common.protocol.Base;
 
-public class GetBufResponse extends Base {
-    public String name;
+public class GetBufResponse implements Base {
     public Integer id;
     public String path;
     public String buf;

@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RoomInfoTree extends Base {
+public class RoomInfoTree implements Base {
     public HashMap<String, Integer> bufs;
     public HashMap<String, RoomInfoTree> folders;
     public RoomInfoTree(JsonObject obj) {

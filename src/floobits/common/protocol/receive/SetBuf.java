@@ -3,7 +3,7 @@ package floobits.common.protocol.receive;
 import floobits.common.Buf;
 import floobits.common.protocol.Base;
 
-public class SetBuf extends Base {
+public class SetBuf implements Base {
     public String name = "set_buf";
     public Integer id;
     public String buf;

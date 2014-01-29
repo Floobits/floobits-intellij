@@ -6,10 +6,9 @@ import floobits.common.protocol.receive.RoomInfoBuf;
 
 import java.util.HashMap;
 
-public class RoomInfoResponse extends Base {
+public class RoomInfoResponse implements Base {
     public String[] anon_perms;
     public Integer max_size;
-    public String name;
     public String owner;
     public String[] perms;
     public String room_name;

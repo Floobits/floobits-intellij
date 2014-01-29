@@ -4,7 +4,7 @@ import floobits.common.Buf;
 import floobits.common.protocol.Base;
 import org.apache.commons.io.FilenameUtils;
 
-public class CreateBuf extends Base {
+public class CreateBuf implements Base {
     public String name = "create_buf";
     public String buf;
     public String path;

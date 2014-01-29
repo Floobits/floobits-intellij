@@ -5,7 +5,7 @@ import floobits.common.protocol.Base;
 
 import java.util.ArrayList;
 
-public class FlooHighlight extends Base {
+public class FlooHighlight implements Base {
     public String name = "highlight";
     public Integer id;
     public Boolean ping = false;
