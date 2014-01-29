@@ -635,10 +635,19 @@ public class FlooHandler extends ConnectionInterface {
                         if (start >= textLength) {
                             start = textLength - 1;
                         }
-
-                        RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
-                                attributes, HighlighterTargetArea.EXACT_RANGE);
-
+                        RangeHighlighter rangeHighlighter = null;
+                        try {
+                            Listener.flooDisable();
+                            rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
+                                    attributes, HighlighterTargetArea.EXACT_RANGE);
+                        } catch (Exception e) {
+                            Flog.warn(e);
+                        } finally {
+                            Listener.flooEnable();
+                        }
+                        if (rangeHighlighter == null) {
+                            continue;
+                        }
                         rangeHighlighters.add(rangeHighlighter);
                         if (force && first) {
                             CaretModel caretModel = editor.getCaretModel();
