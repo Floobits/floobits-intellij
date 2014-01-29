@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.editor.*;
+import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
@@ -56,6 +57,7 @@ public class TextBuf extends Buf <String> {
                 }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d != null) {
+                    d.setReadOnly(false);
                     d.setText(buf);
                     return;
                 }
@@ -108,16 +110,16 @@ public class TextBuf extends Buf <String> {
             @Override
             public void run() {
                 final Document d;
-
+                final FlooHandler flooHandler = FlooHandler.getInstance();
+                if (flooHandler == null) {
+                    return;
+                }
                 String oldText = buf;
                 VirtualFile virtualFile = b.getVirtualFile();
                 if (virtualFile == null) {
                     Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
-                    FlooHandler flooHandler = FlooHandler.getInstance();
                     buf = null;
-                    if (flooHandler != null) {
-                        flooHandler.send_get_buf(id);
-                    }
+                    flooHandler.send_get_buf(id);
                     return;
                 }
                 d = Buf.getDocumentForVirtualFile(virtualFile);
@@ -155,8 +157,9 @@ public class TextBuf extends Buf <String> {
 
                 for (boolean clean : patchesClean) {
                     if (!clean) {
-                        Flog.info("Patch not clean. Sending get_buf.");
-                        FlooHandler.getInstance().send_get_buf(res.id);
+                        Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
+                        flooHandler.send_get_buf(res.id);
+                        d.setReadOnly(true);
                         return;
                     }
                 }
@@ -181,6 +184,11 @@ public class TextBuf extends Buf <String> {
                 ThreadSafe.write(new Runnable() {
                     @Override
                     public void run() {
+                        if (!ReadonlyStatusHandler.ensureDocumentWritable(flooHandler.project, d)){
+                            Flog.info("Document: %s is not writable.", d);
+                            return;
+                        }
+
                         final Editor[] editors = EditorFactory.getInstance().getEditors(d, FlooHandler.getInstance().project);
                         final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
                         for (Editor editor : editors) {
