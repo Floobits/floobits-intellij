@@ -2,11 +2,11 @@ package floobits.common.protocol.receive;
 
 import floobits.common.protocol.Base;
 
-public class DeleteBuf extends Base {
+public class SaveBuf extends Base {
     public Integer id;
-    public String name = "delete_buf";
+    public String name = "saved";
 
-    public DeleteBuf(Integer id) {
+    public SaveBuf(Integer id) {
         this.id = id;
     }
 }

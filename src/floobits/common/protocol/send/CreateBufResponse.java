@@ -1,6 +1,5 @@
 package floobits.common.protocol.send;
 
-/**
- * Created by kans on 1/28/14.
- */
+import floobits.common.protocol.receive.GetBufResponse;
+
 public class CreateBufResponse extends GetBufResponse {}

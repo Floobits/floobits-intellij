@@ -1,32 +1,24 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.*;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import dmp.FlooDmp;
-import dmp.FlooPatchPosition;
-import dmp.diff_match_patch;
-import floobits.*;
+import floobits.Flog;
+import floobits.FlooHandler;
 import floobits.common.protocol.FlooPatch;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 
 public abstract class Buf <T> {
     static Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
     public String path;
-    public File f;
     public Integer id;
     public volatile String md5;
     public volatile T buf;

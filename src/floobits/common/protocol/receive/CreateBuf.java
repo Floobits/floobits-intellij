@@ -1,11 +1,10 @@
 package floobits.common.protocol.receive;
 
 import floobits.common.Buf;
+import floobits.common.protocol.Base;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.Serializable;
-
-public class CreateBuf implements Serializable {
+public class CreateBuf extends Base {
     public String name = "create_buf";
     public String buf;
     public String path;

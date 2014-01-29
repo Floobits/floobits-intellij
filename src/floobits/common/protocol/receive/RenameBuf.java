@@ -1,11 +1,8 @@
 package floobits.common.protocol.receive;
 
-import java.io.Serializable;
+import floobits.common.protocol.Base;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class RenameBuf implements Serializable {
+public class RenameBuf extends Base {
     public Integer id;
     public String name = "rename_buf";
     public String path;

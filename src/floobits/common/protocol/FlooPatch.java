@@ -4,10 +4,7 @@ import floobits.common.Buf;
 
 import java.io.Serializable;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class FlooPatch implements Serializable {
+public class FlooPatch extends Base {
     public String name = "patch";
     public Integer id;
     public Integer user_id;

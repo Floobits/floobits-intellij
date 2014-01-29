@@ -1,14 +1,11 @@
-package floobits.common.protocol;
+package floobits.common.protocol.receive;
 
 import floobits.common.Buf;
+import floobits.common.protocol.Base;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class FlooHighlight implements Serializable {
+public class FlooHighlight extends Base {
     public String name = "highlight";
     public Integer id;
     public Boolean ping = false;

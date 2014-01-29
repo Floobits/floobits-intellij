@@ -1,14 +1,12 @@
-package floobits.common.protocol;
+package floobits.common.protocol.send;
 
 import com.intellij.openapi.application.ApplicationInfo;
 import floobits.common.Settings;
+import floobits.common.protocol.Base;
 
 import java.io.Serializable;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class FlooAuth implements Serializable {
+public class FlooAuth extends Base {
     // TODO: Share this code with FlooNewAccount
     static String clientName = ApplicationInfo.getInstance().getVersionName();
     public String username;

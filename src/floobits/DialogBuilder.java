@@ -9,15 +9,15 @@ import javax.swing.*;
 
 public class DialogBuilder extends DialogWrapper {
     private JPanel jPanel;
-    private RunLater runLater;
+    private RunLater<Boolean> runLater;
 
-    public static void build(final String title, final String body, final RunLater runLater) {
+    public static void build(final String title, final String body, final RunLater<Boolean> runLater) {
         JLabel jLabel = new JLabel();
         jLabel.setText(String.format("<html><p>%s</p></html>", body));
         build(title, jLabel, runLater);
     }
 
-    public static void build(final String title, final JComponent component, final RunLater runLater) {
+    public static void build(final String title, final JComponent component, final RunLater<Boolean> runLater) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -34,7 +34,7 @@ public class DialogBuilder extends DialogWrapper {
         return jPanel;
     }
 
-    protected DialogBuilder(String title, final JComponent component, RunLater runLater) {
+    protected DialogBuilder(String title, final JComponent component, RunLater<Boolean> runLater) {
         super(true);
         jPanel = new JPanel();
         this.runLater = runLater;

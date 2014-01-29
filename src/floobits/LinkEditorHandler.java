@@ -3,29 +3,14 @@ package floobits;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.application.ApplicationInfo;
 import floobits.common.*;
+import floobits.common.protocol.send.FlooRequestCredentials;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-
-class FlooRequestCredentials implements Serializable {
-    // TODO: Share this code with FlooAuth and FlooNewAccount
-    String name = "request_credentials";
-    String username = System.getProperty("user.name");
-    String client = ApplicationInfo.getInstance().getVersionName();
-    public String platform = System.getProperty("os.name");
-    String token;
-    public String version = "0.10";
-
-    public FlooRequestCredentials(String token) {
-        this.token = token;
-    }
-}
 
 
 public class LinkEditorHandler extends ConnectionInterface {

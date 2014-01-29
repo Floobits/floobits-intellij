@@ -11,10 +11,10 @@ import java.util.List;
 
 public class SelectOwner extends DialogWrapper {
     private JPanel jPanel;
-    private RunLater runLater;
+    private RunLater<String> runLater;
     private JComboBox orgList;
 
-    public static void build(final List<String> title, final RunLater runLater) {
+    public static void build(final List<String> title, final RunLater<String> runLater) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -31,7 +31,7 @@ public class SelectOwner extends DialogWrapper {
         return jPanel;
     }
 
-    protected SelectOwner(List<String> title, RunLater runLater) {
+    protected SelectOwner(List<String> title, RunLater<String> runLater) {
         super(true);
         jPanel = new JPanel();
         this.runLater = runLater;
@@ -60,6 +60,6 @@ public class SelectOwner extends DialogWrapper {
         if(orgList == null) {
             return;
         }
-        runLater.run(orgList.getSelectedItem());
+        runLater.run((String) orgList.getSelectedItem());
     }
 }

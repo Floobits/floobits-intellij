@@ -76,10 +76,10 @@ public class FlooHandler extends ConnectionInterface {
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     protected Boolean stalking = false;
     private String[] perms;
-    private Map<Integer, User> users = new HashMap<Integer, User>();
+    private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
-    private Tree tree;
+    private RoomInfoTree tree;
     private FlooConn conn;
     protected Timeouts timeouts = Timeouts.create();
 
@@ -125,7 +125,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     String get_username(Integer user_id) {
-        User user = users.get(user_id);
+        FlooUser user = users.get(user_id);
         if (user == null) {
             return "";
         }
@@ -384,7 +384,7 @@ public class FlooHandler extends ConnectionInterface {
     void _on_room_info(JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
         isJoined = true;
-        this.tree = new Tree(obj.getAsJsonObject("tree"));
+        this.tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = ri.perms;
 
@@ -393,7 +393,7 @@ public class FlooHandler extends ConnectionInterface {
         final LinkedList<Buf> conflicts = new LinkedList<Buf>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
-            RiBuf b = (RiBuf) entry.getValue();
+            RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
             this.bufs.put(buf_id, buf);
             this.paths_to_ids.put(b.path, b.id);
@@ -738,14 +738,14 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void _on_join(JsonObject obj) {
-        User u = new Gson().fromJson(obj, (Type)User.class);
+        FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
         status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
     }
 
     void _on_part(JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
-        User u = users.get(userId);
+        FlooUser u = users.get(userId);
         this.users.remove(userId);
         HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
@@ -823,7 +823,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void send_set_buf (Buf b) {
-        this.conn.write(new FlooSetBuf(b));
+        this.conn.write(new SetBuf(b));
     }
 
     public void send_summon (String current, Integer offset) {
@@ -882,7 +882,7 @@ public class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        this.conn.write(new FlooSaveBuf(buf.id));
+        this.conn.write(new SaveBuf(buf.id));
     }
 
     void untellij_deleted(String path) {

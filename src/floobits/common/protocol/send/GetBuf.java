@@ -1,11 +1,8 @@
 package floobits.common.protocol.send;
 
-import java.io.Serializable;
+import floobits.common.protocol.Base;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class GetBuf implements Serializable {
+public class GetBuf extends Base {
     public String name = "get_buf";
     public Integer id;
 
