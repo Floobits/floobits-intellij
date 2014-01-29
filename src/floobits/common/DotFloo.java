@@ -1,7 +1,7 @@
 package floobits.common;
 
 import com.google.gson.JsonParser;
-import floobits.Flog;
+import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 

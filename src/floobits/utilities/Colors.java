@@ -1,4 +1,4 @@
-package floobits;
+package floobits.utilities;
 
 import com.intellij.ui.JBColor;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -28,7 +28,7 @@ public class Colors {
         new JBColor(new Color(255,255,0,alpha),new Color(255,255,0,alpha)),
     };
 
-    static JBColor getColorForUser(String username) {
+    public static JBColor getColorForUser(String username) {
         int i = 0;
         for(char c : DigestUtils.md5Hex(username).toCharArray()) {
             i += (int)c;

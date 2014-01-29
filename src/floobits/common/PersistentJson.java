@@ -6,7 +6,7 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import floobits.Flog;
+import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 

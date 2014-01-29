@@ -2,7 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooHandler;
+import floobits.handlers.FlooHandler;
 
 public abstract class IsJoinedAction extends AnAction {
 

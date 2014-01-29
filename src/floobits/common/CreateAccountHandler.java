@@ -2,8 +2,9 @@ package floobits.common;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.*;
 import floobits.common.protocol.send.NewAccount;
+import floobits.handlers.FlooHandler;
+import floobits.utilities.Flog;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.Flog;
+import floobits.utilities.Flog;
 
 import java.util.Calendar;
 import java.util.Timer;

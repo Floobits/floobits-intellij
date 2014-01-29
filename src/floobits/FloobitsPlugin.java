@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project;
 import floobits.common.FlooUrl;
 import floobits.common.RunLater;
 import floobits.dialogs.DialogBuilder;
+import floobits.handlers.FlooHandler;
+import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
 
 

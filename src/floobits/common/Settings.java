@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import floobits.Flog;
+import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 
 

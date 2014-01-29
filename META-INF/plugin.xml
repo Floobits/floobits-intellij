@@ -43,7 +43,7 @@
           <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
       </action>
-      <action id="floobits.JoinRecentWorkspace" class="floobits.SelectRecentWorkspace" text="Floobits: Join Recent Workspace"
+      <action id="floobits.JoinRecentWorkspace" class="floobits.actions.SelectRecentWorkspace" text="Floobits: Join Recent Workspace"
               description="Join RecentFloobits workspace">
           <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
           <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>

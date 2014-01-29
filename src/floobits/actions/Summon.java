@@ -4,8 +4,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import floobits.FlooHandler;
-import floobits.GetPath;
+import floobits.handlers.FlooHandler;
+import floobits.utilities.GetPath;
 
 
 public class Summon extends IsJoinedAction {

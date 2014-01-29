@@ -5,10 +5,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
-import floobits.Flog;
-import floobits.FlooHandler;
+import floobits.utilities.Flog;
+import floobits.handlers.FlooHandler;
 import floobits.Listener;
-import floobits.ThreadSafe;
+import floobits.utilities.ThreadSafe;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.digest.DigestUtils;
 

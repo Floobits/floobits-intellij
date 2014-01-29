@@ -2,7 +2,7 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.Flog;
+import floobits.utilities.Flog;
 import floobits.common.CreateAccountHandler;
 import org.jetbrains.annotations.Nullable;
 

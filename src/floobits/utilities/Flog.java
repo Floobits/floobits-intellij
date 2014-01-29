@@ -1,4 +1,4 @@
-package floobits;
+package floobits.utilities;
 
 import com.intellij.openapi.diagnostic.Logger;
 

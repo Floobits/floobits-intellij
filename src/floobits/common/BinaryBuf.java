@@ -1,9 +1,9 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.Flog;
-import floobits.FlooHandler;
-import floobits.ThreadSafe;
+import floobits.utilities.Flog;
+import floobits.handlers.FlooHandler;
+import floobits.utilities.ThreadSafe;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;

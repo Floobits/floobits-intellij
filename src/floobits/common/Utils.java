@@ -2,8 +2,8 @@ package floobits.common;
 
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.Flog;
-import floobits.FlooHandler;
+import floobits.utilities.Flog;
+import floobits.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;

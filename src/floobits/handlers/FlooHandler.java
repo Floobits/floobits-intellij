@@ -1,4 +1,4 @@
-package floobits;
+package floobits.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -21,12 +21,17 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import floobits.*;
 import floobits.common.*;
 import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectOwner;
+import floobits.utilities.Colors;
+import floobits.utilities.Flog;
+import floobits.utilities.SelectFolder;
+import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
