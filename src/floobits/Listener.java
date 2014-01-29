@@ -23,6 +23,7 @@ import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -152,6 +153,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     public void before(@NotNull List<? extends VFileEvent> events) {
         Flog.info("Before");
     }
+
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         FlooHandler handler = FlooHandler.getInstance();
@@ -161,6 +163,27 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         if (!isListening.get()) {
             return;
         }
+
+
+        boolean makeIgnore = false;
+        for (VFileEvent vFileEvent : events) {
+            if (vFileEvent instanceof VFileCopyEvent || vFileEvent instanceof VFileCreateEvent) {
+                makeIgnore = true;
+                break;
+            }
+        }
+
+        Ignore ignore = null;
+        if (makeIgnore) {
+            try {
+                ignore = new Ignore();
+            } catch (IOException e) {
+                Flog.warn(e);
+                return;
+            }
+        }
+
+
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {
@@ -204,7 +227,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (Ignore.isIgnored(copiedFile.getPath(), null)) {
+                if (ignore.isIgnored(copiedFile.getPath())) {
                     return;
                 }
                 Utils.createFile(copiedFile);
@@ -215,6 +238,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 ArrayList<VirtualFile> createdFiles;
                 createdFiles = Utils.getAllNestedFiles(event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
+                    if (ignore.isIgnored(createdFile.getPath())) {
+                        continue;
+                    }
                     Utils.createFile(createdFile);
                 }
                 continue;
