@@ -9,9 +9,11 @@ import floobits.common.protocol.send.FlooRequestCredentials;
 
 import java.awt.*;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.UUID;
 
 
 public class LinkEditorHandler extends ConnectionInterface {
@@ -19,7 +21,8 @@ public class LinkEditorHandler extends ConnectionInterface {
     protected String token;
 
     public LinkEditorHandler() {
-        token = ""; // Make a token.
+        UUID uuid = UUID.randomUUID();
+        token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
     }
 
     public static void linkEditor() {
@@ -46,7 +49,8 @@ public class LinkEditorHandler extends ConnectionInterface {
             return;
         }
         Settings settings = new Settings();
-        for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
+        JsonObject credentials = (JsonObject) obj.get("credentials");
+        for (Map.Entry<String, JsonElement> thing : credentials.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }
         if (settings.isComplete()) {

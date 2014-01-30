@@ -2,6 +2,7 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.handlers.LinkEditorHandler;
 import floobits.utilities.Flog;
 import floobits.common.CreateAccountHandler;
 import org.jetbrains.annotations.Nullable;
@@ -67,13 +68,12 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        Flog.info("cancel action");
+        LinkEditorHandler.linkEditor();
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        Flog.info("ok action");
         CreateAccountHandler.createAccount();
     }
 }
