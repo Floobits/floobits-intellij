@@ -882,7 +882,7 @@ public class FlooHandler extends ConnectionInterface {
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (Buf.isUnPopulated(buf)) {
+        if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
@@ -892,7 +892,7 @@ public class FlooHandler extends ConnectionInterface {
     public void untellij_saved(String path) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (Buf.isUnPopulated(buf)) {
+        if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }

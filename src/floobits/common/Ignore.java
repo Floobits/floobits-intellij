@@ -153,7 +153,7 @@ public class Ignore {
         if (ignore.isIgnored(abs_path))
             return true;
 
-        return isIgnored(base_path.getAbsolutePath(), abs_path, null);
+        return isIgnored(base_path.getAbsolutePath(), abs_path, ignore);
     }
 
 }

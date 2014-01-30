@@ -39,7 +39,7 @@ public abstract class Buf <T> {
             timeout = null;
         }
     }
-    public static boolean isUnPopulated(Buf b) {
+    public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
     }
 
