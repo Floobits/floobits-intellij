@@ -18,6 +18,13 @@ public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
+        Ignore ignore;
+        try {
+            ignore = new Ignore();
+        } catch (IOException e1) {
+            Flog.throwAHorribleBlinkingErrorAtTheUser("Your file system is broken.");
+            return;
+        }
 
         if (virtualFiles == null) {
             return;
@@ -44,21 +51,14 @@ public class AddToWorkspace extends IsJoinedAction {
         if (filesToAdd.size() == 1) {
             VirtualFile[] toAdds = new VirtualFile[]{};
             VirtualFile toAdd = filesToAdd.toArray(toAdds)[0];
-            if (!Ignore.isIgnored(toAdd.getPath(), null)) {
+            if (!Ignore.isIgnored(toAdd.getPath(), null, ignore)) {
                 flooHandler.upload(toAdd);
             }
             return; 
         }
-        Ignore ignore;
-        try {
-            ignore = new Ignore();
-        } catch (IOException e1) {
-            Flog.warn(e1);
-            return;
-        }
 
         for (VirtualFile virtualFile : filesToAdd) {
-            if (ignore.isIgnored(virtualFile.getPath())) {
+            if (Ignore.isIgnored(virtualFile.getPath(), null, ignore)) {
                flooHandler.upload(virtualFile);
             }
         }

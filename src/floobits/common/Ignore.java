@@ -130,7 +130,7 @@ public class Ignore {
         return false;
     }
 
-    public static Boolean isIgnored(String current_path, String abs_path) {
+    public static Boolean isIgnored(String current_path, String abs_path, Ignore ignore) {
         if (abs_path == null)
             abs_path = current_path;
 
@@ -142,17 +142,18 @@ public class Ignore {
 
         File file = new File(current_path);
         File base_path = new File(file.getParent());
-        Ignore ignore;
-        try {
-            ignore = new Ignore(base_path, null, false);
-        } catch (IOException e) {
-            return false;
+        if (ignore == null) {
+            try {
+                ignore = new Ignore(base_path, null, false);
+            } catch (IOException e) {
+                return false;
+            }
         }
 
         if (ignore.isIgnored(abs_path))
             return true;
 
-        return isIgnored(base_path.getAbsolutePath(), abs_path);
+        return isIgnored(base_path.getAbsolutePath(), abs_path, null);
     }
 
 }

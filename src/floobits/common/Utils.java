@@ -242,7 +242,7 @@ public class Utils {
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (Ignore.isIgnored(vFile.getPath(), null)) {
+            if (Ignore.isIgnored(vFile.getPath(), null, ignore)) {
                 return filePaths;
             }
             filePaths.add(vFile);
@@ -259,16 +259,6 @@ public class Utils {
             filePaths.add(file);
         }
         return filePaths;
-    }
-    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
-        Ignore ignore;
-        try {
-            ignore = new Ignore();
-        } catch(Exception e) {
-            Flog.warn(e);
-            return new ArrayList<VirtualFile>();
-        }
-        return getAllNestedFiles(vFile, ignore);
     }
 
     public static void createFile(final VirtualFile virtualFile) {

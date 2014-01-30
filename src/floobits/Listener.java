@@ -197,7 +197,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
                 ArrayList<VirtualFile> files;
-                files = Utils.getAllNestedFiles(virtualFile);
+                files = Utils.getAllNestedFiles(virtualFile, ignore);
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
@@ -207,7 +207,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), null));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), ignore));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -244,7 +244,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllNestedFiles(event.getFile(), null);
+                changedFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }
