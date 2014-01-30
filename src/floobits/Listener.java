@@ -23,6 +23,7 @@ import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -152,6 +153,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     public void before(@NotNull List<? extends VFileEvent> events) {
         Flog.info("Before");
     }
+
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         FlooHandler handler = FlooHandler.getInstance();
@@ -161,6 +163,27 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         if (!isListening.get()) {
             return;
         }
+
+
+        boolean makeIgnore = false;
+        for (VFileEvent vFileEvent : events) {
+            if (vFileEvent instanceof VFileCopyEvent || vFileEvent instanceof VFileCreateEvent) {
+                makeIgnore = true;
+                break;
+            }
+        }
+
+        Ignore ignore = null;
+        if (makeIgnore) {
+            try {
+                ignore = new Ignore();
+            } catch (IOException e) {
+                Flog.warn(e);
+                return;
+            }
+        }
+
+
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {
@@ -184,7 +207,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile()));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), null));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -204,7 +227,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (Ignore.isIgnored(copiedFile.getPath(), null)) {
+                if (ignore.isIgnored(copiedFile.getPath())) {
                     return;
                 }
                 Utils.createFile(copiedFile);
@@ -213,7 +236,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllNestedFiles(event.getFile());
+                createdFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(createdFile);
                 }
@@ -221,7 +244,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllNestedFiles(event.getFile());
+                changedFiles = Utils.getAllNestedFiles(event.getFile(), null);
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }

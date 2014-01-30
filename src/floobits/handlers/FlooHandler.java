@@ -831,7 +831,6 @@ public class FlooHandler extends ConnectionInterface {
         this.conn.write(new GetBuf(buf_id));
     }
 
-
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
         Flog.log("Patching %s", buf.path);
         FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
