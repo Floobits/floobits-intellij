@@ -43,7 +43,7 @@ public class Ignore {
         if (files == null) {
             return;
         }
-        for (File file : files)
+        for (File file : files) {
             try {
                 if (FileUtils.isSymlink(file)) {
                     continue;
@@ -54,7 +54,8 @@ public class Ignore {
             } catch (Exception ignored) {
 
             }
-
+        }
+    
         Flog.debug("Initializing ignores for %s", this.path);
         for (String name : IGNORE_FILES) {
             name = FilenameUtils.concat(this.path.getPath(), name);
@@ -63,7 +64,7 @@ public class Ignore {
         }
     }
 
-    public Ignore() throws IOException{
+    public Ignore() throws IOException {
         this(new File(Shared.colabDir), null, false);
     }
 
@@ -87,7 +88,7 @@ public class Ignore {
         this.ignores.put(file.getName(), igs);
     }
 
-    public Boolean isIgnored (String path) {
+    public Boolean _isIgnored(String path) {
         String relPath;
         if (path.equals(this.stringPath)) {
             return false;
@@ -125,35 +126,38 @@ public class Ignore {
             }
         }
         if (parent != null) {
-            return parent.isIgnored(path);
+            return parent._isIgnored(path);
         }
         return false;
     }
 
-    public static Boolean isIgnored(String current_path, String abs_path, Ignore ignore) {
-        if (abs_path == null)
-            abs_path = current_path;
+    public static Boolean isIgnored(String abs_path) {
+        return isIgnored(abs_path, abs_path);
+    }
 
-        if (!Utils.isShared(current_path))
+    private static Boolean isIgnored(String current_path, String abs_path) {
+        if (!Utils.isShared(current_path)) {
             return true;
-
-        if (Utils.isSamePath(current_path, Shared.colabDir))
-            return false;
-
-        File file = new File(current_path);
-        File base_path = new File(file.getParent());
-        if (ignore == null) {
-            try {
-                ignore = new Ignore(base_path, null, false);
-            } catch (IOException e) {
-                return false;
-            }
         }
 
-        if (ignore.isIgnored(abs_path))
-            return true;
+        if (Utils.isSamePath(current_path, Shared.colabDir)) {
+            return false;
+        }
 
-        return isIgnored(base_path.getAbsolutePath(), abs_path, ignore);
+        File file = new File(current_path);
+        Ignore ignore;
+        File base_path = file.getParentFile();
+        try {
+            ignore = new Ignore(base_path, null, false);
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (ignore._isIgnored(abs_path)) {
+            return true;
+        }
+
+        return isIgnored(base_path.getAbsolutePath(), abs_path);
     }
 
 }

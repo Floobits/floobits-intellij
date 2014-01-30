@@ -216,7 +216,7 @@ public class Utils {
                 filePaths.addAll(getAllNestedFilePaths(file));
                 continue;
             }
-            if (ignore != null && ignore.isIgnored(file.getPath())){
+            if (ignore != null && ignore._isIgnored(file.getPath())) {
                 continue;
             }
             filePaths.add(file.getPath());
@@ -242,14 +242,14 @@ public class Utils {
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (Ignore.isIgnored(vFile.getPath(), null, ignore)) {
+            if (ignore != null && ignore._isIgnored(vFile.getPath())) {
                 return filePaths;
             }
             filePaths.add(vFile);
             return filePaths;
         }
         for (VirtualFile file : vFile.getChildren()) {
-            if (ignore != null && ignore.isIgnored(file.getPath())) {
+            if (ignore != null && ignore._isIgnored(file.getPath())) {
                 continue;
             }
             if (file.isDirectory()) {

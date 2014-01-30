@@ -227,7 +227,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (ignore.isIgnored(copiedFile.getPath())) {
+                if (ignore._isIgnored(copiedFile.getPath())) {
                     return;
                 }
                 Utils.createFile(copiedFile);
