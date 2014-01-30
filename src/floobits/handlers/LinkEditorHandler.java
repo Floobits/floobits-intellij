@@ -68,7 +68,7 @@ public class LinkEditorHandler extends ConnectionInterface {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("http://%s/dash/link_editor/%s/", Shared.defaultHost, token)));
+            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/%s/", Shared.defaultHost, token)));
         } catch (IOException error) {
             shutDown();
             Flog.warn(error);
