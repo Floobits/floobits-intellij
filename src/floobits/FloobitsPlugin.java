@@ -17,6 +17,14 @@ public class FloobitsPlugin implements ApplicationComponent {
         Flog.info("Floobits plugin");
     }
 
+    public static FlooHandler getHandler() {
+        return FloobitsPlugin.flooHandler;
+    }
+
+    public static void removeHandler() {
+        FloobitsPlugin.flooHandler = null;
+    }
+
     @Override
     public void initComponent() {
     }
@@ -24,7 +32,7 @@ public class FloobitsPlugin implements ApplicationComponent {
     public static void shareProject(final Project project) {
         FlooHandler f = flooHandler;
         if (!FlooHandler.isJoined) {
-            flooHandler = new FlooHandler(project);
+            FloobitsPlugin.flooHandler = new FlooHandler(project);
             return;
         }
 
@@ -36,7 +44,7 @@ public class FloobitsPlugin implements ApplicationComponent {
                 if (!join) {
                     return;
                 }
-                flooHandler.shutDown();
+                FloobitsPlugin.flooHandler.shutDown();
                 shareProject(project);
             }
         });
@@ -51,7 +59,7 @@ public class FloobitsPlugin implements ApplicationComponent {
                 Flog.warn(e);
                 return;
             }
-            flooHandler = new FlooHandler(f);
+            FloobitsPlugin.flooHandler = new FlooHandler(f);
             return;
         }
         String title = String.format("Really leave %s?", flooHandler.url.workspace);
@@ -62,7 +70,7 @@ public class FloobitsPlugin implements ApplicationComponent {
                 if (!join) {
                     return;
                 }
-                flooHandler.shutDown();
+                FloobitsPlugin.flooHandler.shutDown();
                 joinWorkspace(url);
             }
         });

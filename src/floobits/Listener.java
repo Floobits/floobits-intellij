@@ -23,7 +23,6 @@ import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,15 +54,13 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                FlooHandler instance = FlooHandler.getInstance();
+                FlooHandler instance = FloobitsPlugin.getHandler();
                 if (instance != null) {
                     instance.untellij_renamed(oldValue, newValue);
                 }
             }
         });
     }
-
-
 
     public void initComponent() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
@@ -74,7 +71,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     public void disposeComponent() {
         connection.disconnect();
-        em.removeSelectionListener(this);
+        em.removeSelectionListener(this)    ;
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
     }
@@ -92,7 +89,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void documentChanged(DocumentEvent event) {
         Flog.info("Document changed.");
-        FlooHandler flooHandler = FlooHandler.getInstance();
+        FlooHandler flooHandler = FloobitsPlugin.getHandler();
         if (flooHandler == null) {
             return;
         }
@@ -111,6 +108,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void caretPositionChanged(final CaretEvent event) {
         if (!isListening.get()) {
+            return;
+        }
+        if (FloobitsPlugin.getHandler() == null) {
             return;
         }
         Document document = event.getEditor().getDocument();
@@ -156,7 +156,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        FlooHandler handler = FlooHandler.getInstance();
+        FlooHandler handler = FloobitsPlugin.getHandler();
         if (handler == null) {
             return;
         }
@@ -199,7 +199,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    FlooHandler.getInstance().untellij_renamed(oldFilePath, newFilePath);
+                    FloobitsPlugin.getHandler().untellij_renamed(oldFilePath, newFilePath);
                 }
                 continue;
             }

@@ -2,6 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
 public abstract class IsJoinedAction extends AnAction {
@@ -12,7 +13,7 @@ public abstract class IsJoinedAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        FlooHandler instance = FlooHandler.getInstance();
+        FlooHandler instance = FloobitsPlugin.getHandler();
         if (instance == null) {
             return;
         }

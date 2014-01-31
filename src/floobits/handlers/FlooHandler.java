@@ -82,7 +82,7 @@ public class FlooHandler extends ConnectionInterface {
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
-    private HashSet<String> perms;
+    private HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
@@ -145,7 +145,7 @@ public class FlooHandler extends ConnectionInterface {
         status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
-    public void on_data (String name, JsonObject obj) throws Exception {
+    public void on_data (String name, JsonObject obj) {
         String method_name = "_on_" + name;
         Method method;
         try {
@@ -157,11 +157,14 @@ public class FlooHandler extends ConnectionInterface {
         Object objects[] = new Object[1];
         objects[0] = obj;
         Flog.debug("Calling %s", method_name);
-        method.invoke(this, objects);
-    }
-
-    public static FlooHandler getInstance() {
-        return FloobitsPlugin.flooHandler;
+        try {
+            method.invoke(this, objects);
+        } catch (Exception e) {
+            Flog.warn("on_data error %s", e);
+            if (name.equals("room_info")) {
+                shutDown();
+            }
+        }
     }
 
     public FlooHandler (Project p) {
@@ -306,6 +309,7 @@ public class FlooHandler extends ConnectionInterface {
             case 400:
                 // Todo: pick a new name or something
                 error_message("Invalid workspace name.");
+                shutDown();
                 return;
             case 402:
                 String details;
@@ -318,6 +322,7 @@ public class FlooHandler extends ConnectionInterface {
                     return;
                 }
                 error_message(details);
+                shutDown();
                 return;
             case 409:
                 Flog.warn("The workspace already exists so I am joining it.");
@@ -325,12 +330,23 @@ public class FlooHandler extends ConnectionInterface {
                 Flog.log("Workspace created.");
                 joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
                 return;
+            case 401:
+                Flog.log("Auth failed");
+                error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
+                VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
+                if (floorc == null) {
+                    return;
+                }
+                FileEditorManager.getInstance(project).openFile(floorc, true);
+                shutDown();
+                return;
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
                 } catch (IOException e) {
                     Flog.warn(e);
                 }
+                shutDown();
         }
     }
 
@@ -794,8 +810,7 @@ public class FlooHandler extends ConnectionInterface {
         } else {
             status_message("You have left the workspace");
         }
-        FloobitsPlugin.flooHandler = null;
-        conn.shutDown();
+        shutDown();
     }
 
     void _on_delete_buf(JsonObject jsonObject) {
@@ -819,7 +834,7 @@ public class FlooHandler extends ConnectionInterface {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
                         try {
-                            fileByPath.delete(FlooHandler.getInstance());
+                            fileByPath.delete(FloobitsPlugin.getHandler());
                         } catch (IOException e) {
                             Flog.warn(e);
                         }
@@ -843,8 +858,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
-        if (!perms.contains("patch")) {
-            Flog.info("we cant patch because perms");
+        if (!can("patch")) {
             return;
         }
         Flog.log("Patching %s", buf.path);
@@ -853,16 +867,14 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void send_set_buf (Buf b) {
-        if (!perms.contains("patch")) {
-            Flog.info("we cant patch because perms");
+        if (!can("patch")) {
             return;
         }
         this.conn.write(new SetBuf(b));
     }
 
     public void send_summon (String current, Integer offset) {
-        if (!perms.contains("highlight")) {
-            Flog.info("we cant highlight because perms");
+        if (!can("patch")) {
             return;
         }
         Buf buf = this.get_buf_by_path(current);
@@ -894,8 +906,7 @@ public class FlooHandler extends ConnectionInterface {
 
     public void untellij_changed(VirtualFile file) {
         String filePath = file.getPath();
-        if (!perms.contains("patch")) {
-            Flog.info("we cant patch because perms");
+        if (!can("patch")) {
             return;
         }
         if (!Utils.isShared(filePath)) {
@@ -912,8 +923,7 @@ public class FlooHandler extends ConnectionInterface {
 
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
-        if (!perms.contains("highlight")) {
-            Flog.info("we cant highlight because perms");
+        if (!can("highlight")) {
             return;
         }
         if (Buf.isBad(buf)) {
@@ -930,7 +940,9 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
-
+        if (!can("patch")) {
+            return;
+        }
         this.conn.write(new SaveBuf(buf.id));
     }
 
@@ -940,8 +952,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("buf does not exist");
             return;
         }
-        if (!perms.contains("patch")) {
-            Flog.info("we cant patch because perms");
+        if (!can("patch")) {
             return;
         }
         buf.cancelTimeout();
@@ -949,13 +960,24 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
-        if (!perms.contains("patch")) {
-            Flog.info("we cant patch because perms");
+        if (!can("patch")) {
             return;
         }
+
         for (String filePath : filePaths) {
             untellij_deleted(filePath);
         }
+    }
+
+    private boolean can(String perm) {
+        if (!isJoined)
+            return false;
+
+        if (!perms.contains(perm)) {
+            Flog.info("we can't do that because perms");
+            return false;
+        }
+        return true;
     }
 
     @SuppressWarnings("unused")
@@ -989,11 +1011,12 @@ public class FlooHandler extends ConnectionInterface {
         }
     }
 
-
     public void shutDown() {
-        if (this.conn.shutDown()) {
+        if (this.conn != null && this.conn.shutDown()) {
+            this.conn = null;
             status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
         isJoined = false;
+        FloobitsPlugin.removeHandler();
     }
 }

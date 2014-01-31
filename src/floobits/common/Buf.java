@@ -5,8 +5,8 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
-import floobits.handlers.FlooHandler;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -71,7 +71,7 @@ public abstract class Buf <T> {
         }
         VirtualFile newFile;
         try {
-            newFile = parent.findOrCreateChildData(FlooHandler.getInstance(), name);
+            newFile = parent.findOrCreateChildData(FloobitsPlugin.getHandler(), name);
         } catch (IOException e) {
             Flog.throwAHorribleBlinkingErrorAtTheUser("Create file error %s", e);
             return null;

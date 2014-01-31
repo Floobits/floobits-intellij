@@ -2,6 +2,7 @@ package floobits.utilities;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
+import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
 public class ThreadSafe {
@@ -9,7 +10,7 @@ public class ThreadSafe {
 			ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                FlooHandler instance = FlooHandler.getInstance();
+                FlooHandler instance = FloobitsPlugin.getHandler();
                 if (instance == null) {
                     return;
                 }

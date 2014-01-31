@@ -2,6 +2,7 @@ package floobits.common;
 
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
@@ -120,7 +121,9 @@ public class Utils {
      * @return String
      */
     public static String getRelativePath (String targetPath, String basePath) {
-
+        if (targetPath == null || basePath == null) {
+            return null;
+        }
         // Normalize the paths
         String pathSeparator = File.separator;
         String normalizedBasePath = FilenameUtils.normalizeNoEndSeparator(basePath);
@@ -290,7 +293,7 @@ public class Utils {
         Timeout timeout = new Timeout(100) {
             @Override
             public void run(Void arg) {
-                FlooHandler flooHandler = FlooHandler.getInstance();
+                FlooHandler flooHandler = FloobitsPlugin.getHandler();
                 if (flooHandler == null) {
                     return;
                 }

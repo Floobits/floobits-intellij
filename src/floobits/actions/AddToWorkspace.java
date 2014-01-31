@@ -6,13 +6,12 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.util.containers.hash.HashSet;
+import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 import floobits.common.Ignore;
 import floobits.common.Utils;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
@@ -78,7 +77,7 @@ public class AddToWorkspace extends IsJoinedAction {
     @Override
     public void update(AnActionEvent e) {
         super.update(e);    //To change body of overridden methods use File | Settings | File Templates.
-        if (FlooHandler.getInstance() == null) {
+        if (FloobitsPlugin.getHandler() == null) {
             e.getPresentation().setEnabled(false);
         } else {
             e.getPresentation().setEnabled(true);

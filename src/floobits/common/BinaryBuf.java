@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FloobitsPlugin;
 import floobits.Listener;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
@@ -74,7 +75,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void patch(FlooPatch res) {
-        FlooHandler flooHandler = FlooHandler.getInstance();
+        FlooHandler flooHandler = FloobitsPlugin.getHandler();
         if (flooHandler == null) {
             return;
         }
@@ -83,7 +84,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void send_patch(VirtualFile virtualFile) {
-        FlooHandler flooHandler = FlooHandler.getInstance();
+        FlooHandler flooHandler = FloobitsPlugin.getHandler();
         if (flooHandler == null) {
             return;
         }

@@ -10,7 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 
 public class Settings {
     protected HashMap<String, String> settings;
-    String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
+    public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
 
     public Settings () {
         BufferedReader br;

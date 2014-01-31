@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
+import floobits.FloobitsPlugin;
 import floobits.Listener;
 import floobits.common.protocol.FlooPatch;
 import floobits.handlers.FlooHandler;
@@ -95,7 +96,7 @@ public class TextBuf extends Buf <String> {
     }
 
     public void send_patch(String current) {
-        FlooHandler flooHandler = FlooHandler.getInstance();
+        FlooHandler flooHandler = FloobitsPlugin.getHandler();
         if (flooHandler == null) {
             return;
         }
@@ -115,7 +116,7 @@ public class TextBuf extends Buf <String> {
             @Override
             public void run() {
                 final Document d;
-                final FlooHandler flooHandler = FlooHandler.getInstance();
+                final FlooHandler flooHandler = FloobitsPlugin.getHandler();
                 if (flooHandler == null) {
                     return;
                 }
@@ -178,7 +179,7 @@ public class TextBuf extends Buf <String> {
                         public void run(Void arg) {
                             b.timeout = null;
                             Flog.info("Sending get buf because md5s did not match.");
-                            FlooHandler.getInstance().send_get_buf(buf_id);
+                            FloobitsPlugin.getHandler().send_get_buf(buf_id);
                         }
                     };
                     timeouts.setTimeout(timeout);
@@ -194,7 +195,7 @@ public class TextBuf extends Buf <String> {
                             return;
                         }
 
-                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, FlooHandler.getInstance().project);
+                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, FloobitsPlugin.getHandler().project);
                         final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
                         for (Editor editor : editors) {
                             if (editor.isDisposed()) {
@@ -219,7 +220,7 @@ public class TextBuf extends Buf <String> {
 
                             if (e != null) {
                                 Flog.throwAHorribleBlinkingErrorAtTheUser(e);
-                                FlooHandler.getInstance().send_get_buf(id);
+                                FloobitsPlugin.getHandler().send_get_buf(id);
                                 return;
                             }
 

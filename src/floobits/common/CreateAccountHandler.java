@@ -32,7 +32,7 @@ public class CreateAccountHandler extends ConnectionInterface {
     }
 
     @Override
-    public void on_data(String name, JsonObject obj) throws Exception {
+    public void on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
         Settings settings = new Settings();
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {

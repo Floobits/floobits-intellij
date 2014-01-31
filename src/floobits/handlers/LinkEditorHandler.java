@@ -3,6 +3,7 @@ package floobits.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.common.*;
 import floobits.common.protocol.send.FlooRequestCredentials;
@@ -28,7 +29,7 @@ public class LinkEditorHandler extends ConnectionInterface {
     public static void linkEditor() {
         if (FlooHandler.isJoined) {
             Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
-            FlooHandler floohandler = FlooHandler.getInstance();
+            FlooHandler floohandler = FloobitsPlugin.getHandler();
             floohandler.shutDown();
         }
         LinkEditorHandler linkEditorHandler = new LinkEditorHandler();
@@ -44,7 +45,7 @@ public class LinkEditorHandler extends ConnectionInterface {
 
 
     @Override
-    public void on_data(String name, JsonObject obj) throws Exception {
+    public void on_data(String name, JsonObject obj) {
         if (!name.equals("credentials")) {
             return;
         }
