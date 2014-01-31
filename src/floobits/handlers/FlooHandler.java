@@ -82,7 +82,7 @@ public class FlooHandler extends ConnectionInterface {
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
-    private HashSet<String> perms;
+    private HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
@@ -145,7 +145,7 @@ public class FlooHandler extends ConnectionInterface {
         status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
-    public void on_data (String name, JsonObject obj) throws Exception {
+    public void on_data (String name, JsonObject obj) {
         String method_name = "_on_" + name;
         Method method;
         try {
@@ -157,7 +157,14 @@ public class FlooHandler extends ConnectionInterface {
         Object objects[] = new Object[1];
         objects[0] = obj;
         Flog.debug("Calling %s", method_name);
-        method.invoke(this, objects);
+        try {
+            method.invoke(this, objects);
+        } catch (Exception e) {
+            Flog.warn("on_data error %s", e);
+            if (name == "room_info") {
+                shutDown();
+            }
+        }
     }
 
     public static FlooHandler getInstance() {
@@ -324,6 +331,15 @@ public class FlooHandler extends ConnectionInterface {
             case 201:
                 Flog.log("Workspace created.");
                 joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
+                return;
+            case 401:
+                Flog.log("Auth failed");
+                error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
+                VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
+                if (floorc == null) {
+                    return;
+                }
+                FileEditorManager.getInstance(project).openFile(floorc, true);
                 return;
             default:
                 try {
@@ -795,7 +811,7 @@ public class FlooHandler extends ConnectionInterface {
             status_message("You have left the workspace");
         }
         FloobitsPlugin.flooHandler = null;
-        conn.shutDown();
+        shutDown();
     }
 
     void _on_delete_buf(JsonObject jsonObject) {
@@ -989,11 +1005,11 @@ public class FlooHandler extends ConnectionInterface {
         }
     }
 
-
     public void shutDown() {
         if (this.conn.shutDown()) {
             status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
+        FloobitsPlugin.flooHandler = null;
         isJoined = false;
     }
 }

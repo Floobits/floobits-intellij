@@ -44,7 +44,7 @@ public class LinkEditorHandler extends ConnectionInterface {
 
 
     @Override
-    public void on_data(String name, JsonObject obj) throws Exception {
+    public void on_data(String name, JsonObject obj) {
         if (!name.equals("credentials")) {
             return;
         }

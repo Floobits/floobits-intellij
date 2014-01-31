@@ -77,15 +77,8 @@ public class FlooConn extends Thread {
             Flog.warn("No name for receive, ignoring");
             return;
         }
-        String name1 = name.getAsString();
-        try {
-            this.handler.on_data(name1, obj);
-        } catch (Exception e) {
-            Flog.warn(e);
-            if (name1.equals("room_info")) {
-                shutDown();
-            }
-        }
+        String requestName = name.getAsString();
+        this.handler.on_data(requestName, obj);
     }
 
     protected void reconnect() {

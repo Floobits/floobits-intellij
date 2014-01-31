@@ -63,8 +63,6 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         });
     }
 
-
-
     public void initComponent() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         em.addDocumentListener(this);
@@ -74,7 +72,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     public void disposeComponent() {
         connection.disconnect();
-        em.removeSelectionListener(this);
+        em.removeSelectionListener(this)    ;
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
     }
@@ -111,6 +109,9 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
     @Override
     public void caretPositionChanged(final CaretEvent event) {
         if (!isListening.get()) {
+            return;
+        }
+        if (FlooHandler.getInstance() == null) {
             return;
         }
         Document document = event.getEditor().getDocument();
