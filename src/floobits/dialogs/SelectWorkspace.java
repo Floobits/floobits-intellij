@@ -1,8 +1,10 @@
 package floobits.dialogs;
 
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBList;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 
 public class SelectWorkspace extends JDialog {
@@ -11,7 +13,6 @@ public class SelectWorkspace extends JDialog {
 
     public SelectWorkspace() {
         setContentPane(contentPane);
-
     }
 
     public void setItems(final List<String> items) {
@@ -25,7 +26,6 @@ public class SelectWorkspace extends JDialog {
     public String getSelectedItem() {
         return (String) recentWorkspaces.getSelectedValue();
     }
-
 
     public static void main(String[] args) {
         SelectWorkspace dialog = new SelectWorkspace();

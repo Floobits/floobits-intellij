@@ -383,8 +383,6 @@ public class FlooHandler extends ConnectionInterface {
         return true;
     }
 
-
-
     void _on_room_info(JsonObject obj) {
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
         isJoined = true;
