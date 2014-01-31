@@ -121,7 +121,7 @@ public class Ignore {
             }
         }
         depth += 1;
-        if (depth > splitPath.length) {
+        if (depth >= splitPath.length - 1) {
             return false;
         }
         String nextName = splitPath[depth];
@@ -171,7 +171,7 @@ public class Ignore {
                     if (!file.isDirectory()) {
                         return false;
                     }
-                    if (optionalSparsePath != null && !Utils.isChild(file.getPath(), optionalSparsePath)) {
+                    if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
                         return false;
                     }
                     return true;
@@ -180,9 +180,9 @@ public class Ignore {
             if (files != null){
                 for (File file : files) {
     //                this is n2 on the split path since we have to use root :(
-                    if (root.isIgnored(file.getPath())) {
-                        continue;
-                    }
+//                    if (root.isIgnored(file.getPath())) {
+//                        continue;
+//                    }
                     Ignore child = current.adopt(file);
                     if (child == null) {
                         continue;
@@ -196,6 +196,6 @@ public class Ignore {
 
     public static Boolean isIgnored(VirtualFile f) {
         Ignore ignore = buildIgnoreTree(f.getPath());
-        return ignore != null && !ignore.isIgnored(f.getPath());
+        return ignore != null && ignore.isIgnored(f.getPath());
     }
 }
