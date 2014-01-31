@@ -76,6 +76,7 @@ abstract class DocumentFetcher {
 
 public class FlooHandler extends ConnectionInterface {
     public static boolean isJoined = false;
+    public boolean disconnected = false;
     private Boolean shouldUpload = false;
     public Project project;
     private Boolean stomp = false;
@@ -332,13 +333,13 @@ public class FlooHandler extends ConnectionInterface {
                 return;
             case 401:
                 Flog.log("Auth failed");
+                shutDown();
                 error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
                 VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
                 if (floorc == null) {
                     return;
                 }
                 FileEditorManager.getInstance(project).openFile(floorc, true);
-                shutDown();
                 return;
             default:
                 try {
@@ -1016,6 +1017,7 @@ public class FlooHandler extends ConnectionInterface {
             this.conn = null;
             status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
+        disconnected = true;
         isJoined = false;
         FloobitsPlugin.removeHandler();
     }
