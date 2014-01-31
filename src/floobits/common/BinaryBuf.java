@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.Listener;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.ThreadSafe;
@@ -46,10 +47,14 @@ public class BinaryBuf extends Buf <byte[]> {
                     }
                 }
                 try {
+                    Listener.flooDisable();
                     virtualFile.setBinaryContent(buf);
                 } catch (IOException e) {
                     Flog.warn("Writing binary content to disk failed. %s", path);
+                } finally {
+                    Listener.flooEnable();
                 }
+
             }
         });
     }
