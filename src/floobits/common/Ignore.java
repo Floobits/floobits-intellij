@@ -82,10 +82,9 @@ public class Ignore {
 
     private Boolean isIgnored(String path, String[] splitPath, int depth) {
         String p = "";
-        int i = 0;
-        while (i <= depth) {
-            p += splitPath[i];
-            if (i < this.depth) {
+        for (int i =0; i<splitPath.length; i++) {
+            p = FilenameUtils.concat(p, splitPath[i]);
+            if (i <= this.depth) {
                 continue;
             }
 //            String relPath = Utils.getRelativePath(path, this.file.getPath());
@@ -162,11 +161,11 @@ public class Ignore {
         } catch (IOException e) {
             return null;
         }
-        Ignore current = root;
         LinkedList<Ignore> children = new LinkedList<Ignore>();
-        File[] files;
-        while (current != null) {
-            files = current.file.listFiles(new FileFilter() {
+        children.add(root);
+        while (children.size() > 0) {
+            Ignore current = children.pop();
+            File[] files = current.file.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File file) {
                     if (!file.isDirectory()) {
@@ -178,23 +177,19 @@ public class Ignore {
                     return true;
                 }
             });
-
-            if (files == null) {
-                current = children.pop();
-                continue;
-            }
-            for (File file : files) {
-//                this is n2 on the split path since we have to use root :(
-                if (root.isIgnored(file.getPath())) {
-                    continue;
+            if (files != null){
+                for (File file : files) {
+    //                this is n2 on the split path since we have to use root :(
+                    if (root.isIgnored(file.getPath())) {
+                        continue;
+                    }
+                    Ignore child = current.adopt(file);
+                    if (child == null) {
+                        continue;
+                    }
+                    children.push(child);
                 }
-                Ignore child = current.adopt(file);
-                if (child == null) {
-                    continue;
-                }
-                children.push(child);
             }
-            current = children.pop();
         }
         return root;
     }
