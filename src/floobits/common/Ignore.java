@@ -50,14 +50,14 @@ public class Ignore {
         }
     }
 
-    public Ignore adopt(File f) {
+    public Ignore adopt(File childDirectory) {
         Ignore child;
         try {
-            child = new Ignore(f, this, depth+1);
+            child = new Ignore(childDirectory, this, depth+1);
         } catch (Exception ignored) {
             return null;
         }
-        children.put(f.getName(), child);
+        children.put(childDirectory.getName(), child);
         return child;
     }
 
@@ -80,17 +80,15 @@ public class Ignore {
         this.ignores.put(file.getName(), igs);
     }
 
-    private Boolean isIgnored(String path, String[] splitPath, int depth) {
-        String p = "";
-        for (int i =0; i<splitPath.length; i++) {
-            p = FilenameUtils.concat(p, splitPath[i]);
+    private Boolean isIgnored(String path, String[] pathParts, int depth) {
+        String currentPath = "";
+        for (int i = 0; i < pathParts.length; i++) {
+            currentPath = FilenameUtils.concat(currentPath, pathParts[i]);
             if (i <= this.depth) {
                 continue;
             }
-//            String relPath = Utils.getRelativePath(path, this.file.getPath());
-//            File relPathFile = new File(relPath);
-            String relPath = Utils.getRelativePath(p, this.file.getPath());
-            File relPathFile = new File(p);
+            String relPath = Utils.getRelativePath(currentPath, this.file.getPath());
+            File relPathFile = new File(currentPath);
             for (Entry<String, ArrayList<String>> entry : ignores.entrySet()) {
                 for (String pattern : entry.getValue()) {
                     String base_path = relPathFile.getParent();
@@ -120,16 +118,16 @@ public class Ignore {
                 }
             }
         }
-        depth += 1;
-        if (depth >= splitPath.length - 1) {
+        if (depth >= pathParts.length) {
             return false;
         }
-        String nextName = splitPath[depth];
+        depth += 1;
+        String nextName = pathParts[depth];
         Ignore ignore = this.children.get(nextName);
         if (ignore == null) {
             return false;
         }
-        return ignore.isIgnored(path, splitPath, depth);
+        return ignore.isIgnored(path, pathParts, depth);
     }
 
     public Boolean isIgnored(String path) {
@@ -161,11 +159,11 @@ public class Ignore {
         } catch (IOException e) {
             return null;
         }
-        LinkedList<Ignore> children = new LinkedList<Ignore>();
-        children.add(root);
-        while (children.size() > 0) {
-            Ignore current = children.pop();
-            File[] files = current.file.listFiles(new FileFilter() {
+        LinkedList<Ignore> queue = new LinkedList<Ignore>();
+        queue.add(root);
+        while (queue.size() > 0) {
+            Ignore current = queue.pop();
+            File[] childDirectories = current.file.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File file) {
                     if (!file.isDirectory()) {
@@ -177,17 +175,13 @@ public class Ignore {
                     return true;
                 }
             });
-            if (files != null){
-                for (File file : files) {
-    //                this is n2 on the split path since we have to use root :(
-//                    if (root.isIgnored(file.getPath())) {
-//                        continue;
-//                    }
-                    Ignore child = current.adopt(file);
+            if (childDirectories != null){
+                for (File childDirectory : childDirectories) {
+                    Ignore child = current.adopt(childDirectory);
                     if (child == null) {
                         continue;
                     }
-                    children.push(child);
+                    queue.push(child);
                 }
             }
         }

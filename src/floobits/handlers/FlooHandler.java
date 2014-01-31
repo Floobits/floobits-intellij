@@ -538,7 +538,7 @@ public class FlooHandler extends ConnectionInterface {
         if (buf == null) {
             Flog.info("Buf %d is not populated yet", id);
             return;
-        } 
+        }
         if (buf.buf == null) {
             Flog.info("Buf %s is not populated yet", buf.path);
             return;
