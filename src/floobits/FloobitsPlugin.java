@@ -30,7 +30,6 @@ public class FloobitsPlugin implements ApplicationComponent {
     }
 
     public static void shareProject(final Project project) {
-        FlooHandler f = flooHandler;
         if (!FlooHandler.isJoined) {
             flooHandler = new FlooHandler(project);
             if (flooHandler.disconnected) {
@@ -39,8 +38,8 @@ public class FloobitsPlugin implements ApplicationComponent {
             return;
         }
 
-        String title = String.format("Really leave %s?", f.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", f.url.toString(), f.url.toString());
+        String title = String.format("Really leave %s?", flooHandler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
             @Override
             public void run(Boolean join) {
