@@ -686,7 +686,7 @@ public class FlooHandler extends ConnectionInterface {
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = Utils.absPath(name);
-        final String newPath = Utils.absPath(jsonObject.get("file").getAsString());
+        final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
         final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
         Buf buf = get_buf_by_path(oldPath);
         if (buf == null) {
