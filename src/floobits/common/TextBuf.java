@@ -57,8 +57,13 @@ public class TextBuf extends Buf <String> {
                 }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d != null) {
-                    d.setReadOnly(false);
-                    d.setText(buf);
+                    try {
+                        Listener.flooDisable();
+                        d.setReadOnly(false);
+                        d.setText(buf);
+                    } finally {
+                        Listener.flooEnable();
+                    }
                     return;
                 }
                 Flog.warn("Tried to write to null document: %s", path);

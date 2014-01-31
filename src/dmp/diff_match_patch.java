@@ -378,8 +378,8 @@ public class diff_match_patch {
     v1[v_offset + 1] = 0;
     v2[v_offset + 1] = 0;
     int delta = text1_length - text2_length;
-    // If the total number of characters is odd, then the front path will
-    // collide with the reverse path.
+    // If the total number of characters is odd, then the front file will
+    // collide with the reverse file.
     boolean front = (delta % 2 != 0);
     // Offsets for start and end of k loop.
     // Prevents mapping of space beyond the grid.
@@ -393,7 +393,7 @@ public class diff_match_patch {
         break;
       }
 
-      // Walk the front path one step.
+      // Walk the front file one step.
       for (int k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
         int k1_offset = v_offset + k1;
         int x1;
@@ -428,7 +428,7 @@ public class diff_match_patch {
         }
       }
 
-      // Walk the reverse path one step.
+      // Walk the reverse file one step.
       for (int k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
         int k2_offset = v_offset + k2;
         int x2;

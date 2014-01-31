@@ -64,7 +64,7 @@ public class PersistentJson {
         try {
             s = FileUtils.readFileToString(getFile(), "UTF-8");
         } catch (Exception e) {
-            Flog.warn(e);
+            Flog.info("Couldn't find persistent.json");
             s = defaultJSON;
         }
         PersistentJson pj;

@@ -39,7 +39,7 @@ public abstract class Buf <T> {
             timeout = null;
         }
     }
-    public static boolean isUnPopulated(Buf b) {
+    public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
     }
 
@@ -51,7 +51,7 @@ public abstract class Buf <T> {
         return LocalFileSystem.getInstance().findFileByPath(Utils.absPath(this.path));
     }
     public String toString() {
-        return String.format("id: %s path: %s", id, path);
+        return String.format("id: %s file: %s", id, path);
     }
 
     public VirtualFile createFile() {

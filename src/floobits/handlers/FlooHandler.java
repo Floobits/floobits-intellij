@@ -346,11 +346,8 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void upload() {
-        final Ignore ignore;
-        try {
-            ignore = new Ignore(new File(Shared.colabDir), null, false);
-        } catch (Exception ex) {
-            Flog.warn(ex);
+        final Ignore ignore = Ignore.buildIgnoreTree();
+        if (ignore == null) {
             return;
         }
 
@@ -689,7 +686,7 @@ public class FlooHandler extends ConnectionInterface {
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = Utils.absPath(name);
-        final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
+        final String newPath = Utils.absPath(jsonObject.get("file").getAsString());
         final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
         Buf buf = get_buf_by_path(oldPath);
         if (buf == null) {
@@ -872,7 +869,7 @@ public class FlooHandler extends ConnectionInterface {
         }
         Buf buf = this.get_buf_by_path(filePath);
 
-        if (Buf.isUnPopulated(buf)) {
+        if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", file.getPath());
             return;
         }
@@ -882,7 +879,7 @@ public class FlooHandler extends ConnectionInterface {
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (Buf.isUnPopulated(buf)) {
+        if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
@@ -892,7 +889,7 @@ public class FlooHandler extends ConnectionInterface {
     public void untellij_saved(String path) {
         Buf buf = this.get_buf_by_path(path);
 
-        if (Buf.isUnPopulated(buf)) {
+        if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }

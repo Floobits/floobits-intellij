@@ -49,6 +49,6 @@ public class Shared {
     // VIEW_TO_HASH = {}
 
 
-    // FLOORC_PATH = os.path.expanduser(os.path.join('~', '.floorc'))
+    // FLOORC_PATH = os.file.expanduser(os.file.join('~', '.floorc'))
 
 }

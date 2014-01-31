@@ -89,16 +89,20 @@ public class Utils {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }
 
-    public static Boolean isShared (String path) {
-    	try {
+    public static boolean isChild (String path, String parent) {
+        try {
             String unFuckedPath = unFuckPath(path);
-            String relativePath = getRelativePath(unFuckedPath, Shared.colabDir);
-	        return !relativePath.contains("..");
-    	} catch (PathResolutionException e) {
-    		return false;
-    	} catch (StringIndexOutOfBoundsException e) {
+            String relativePath = getRelativePath(unFuckedPath, parent);
+            return !relativePath.contains("..");
+        } catch (PathResolutionException e) {
+            return false;
+        } catch (StringIndexOutOfBoundsException e) {
             return false;
         }
+    }
+
+    public static Boolean isShared (String path) {
+        return isChild(path, Shared.colabDir);
     }
 
     public static String toProjectRelPath (String path) {
@@ -106,8 +110,8 @@ public class Utils {
     }
 
     /** 
-     * see http://stackoverflow.com/questions/204784/how-to-construct-a-relative-path-in-java-from-two-absolute-paths-or-urls/3054692#3054692
-     * Get the relative path from one file to another, specifying the directory separator. 
+     * see http://stackoverflow.com/questions/204784/how-to-construct-a-relative-file-in-java-from-two-absolute-paths-or-urls/3054692#3054692
+     * Get the relative file from one file to another, specifying the directory separator.
      * If one of the provided resources does not exist, it is assumed to be a file unless it ends with '/' or
      * '\'.
      * 
@@ -149,15 +153,15 @@ public class Utils {
         }
 
         if (commonIndex == 0) {
-            // No single common path element. This most
+            // No single common file element. This most
             // likely indicates differing drive letters, like C: and D:.
             // These paths cannot be relativized.
-            throw new PathResolutionException("No common path element found for '" + normalizedTargetPath + "' and '" + normalizedBasePath
+            throw new PathResolutionException("No common file element found for '" + normalizedTargetPath + "' and '" + normalizedBasePath
                     + "'");
         }   
 
         // The number of directories we have to backtrack depends on whether the base is a file or a dir
-        // For example, the relative path from
+        // For example, the relative file from
         //
         // /foo/bar/baz/gg/ff to /foo/bar/baz
         // 
@@ -165,7 +169,7 @@ public class Utils {
         // "../.." if ff is a directory
         //
         // The following is a heuristic to figure out if the base refers to a file or dir. It's not perfect, because
-        // the resource referred to by this path may not actually exist, but it's the best I can do
+        // the resource referred to by this file may not actually exist, but it's the best I can do
         boolean baseIsFile = true;
 
         File baseResource = new File(normalizedBasePath);
@@ -216,7 +220,7 @@ public class Utils {
                 filePaths.addAll(getAllNestedFilePaths(file));
                 continue;
             }
-            if (ignore != null && ignore.isIgnored(file.getPath())){
+            if (ignore != null && ignore.isIgnored(file.getPath())) {
                 continue;
             }
             filePaths.add(file.getPath());
@@ -225,11 +229,8 @@ public class Utils {
     }
 
     public static ArrayList<String> getAllNestedFilePaths(VirtualFile vFile) {
-        Ignore ignore;
-        try {
-            ignore = new Ignore();
-        } catch(Exception e) {
-            Flog.warn(e);
+        Ignore ignore = Ignore.buildIgnoreTree();
+        if (ignore == null) {
             return new ArrayList<String>();
         }
         return getAllNestedFilePaths(vFile, ignore);
@@ -242,7 +243,7 @@ public class Utils {
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (Ignore.isIgnored(vFile.getPath(), null, ignore)) {
+            if (ignore != null && ignore.isIgnored(vFile.getPath())) {
                 return filePaths;
             }
             filePaths.add(vFile);
@@ -254,6 +255,30 @@ public class Utils {
             }
             if (file.isDirectory()) {
                 filePaths.addAll(getAllNestedFiles(file, ignore));
+                continue;
+            }
+            filePaths.add(file);
+        }
+        return filePaths;
+    }
+
+    /**
+     * Same as getAllNestedFiles but does not check to see if file or directories are ignored.
+     * @param vFile
+     * @return
+     */
+    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
+        ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
+        if (!vFile.isValid()) {
+            return filePaths;
+        }
+        if (!vFile.isDirectory()) {
+            filePaths.add(vFile);
+            return filePaths;
+        }
+        for (VirtualFile file : vFile.getChildren()) {
+            if (file.isDirectory()) {
+                filePaths.addAll(getAllNestedFiles(file));
                 continue;
             }
             filePaths.add(file);

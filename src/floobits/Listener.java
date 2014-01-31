@@ -175,10 +175,8 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
         Ignore ignore = null;
         if (makeIgnore) {
-            try {
-                ignore = new Ignore();
-            } catch (IOException e) {
-                Flog.warn(e);
+            ignore = Ignore.buildIgnoreTree();
+            if (ignore == null) {
                 return;
             }
         }
