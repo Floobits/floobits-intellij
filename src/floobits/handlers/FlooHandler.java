@@ -82,13 +82,14 @@ public class FlooHandler extends ConnectionInterface {
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
-    private String[] perms;
+    private HashSet<String> perms;
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
     private FlooConn conn;
     protected Timeouts timeouts = Timeouts.create();
+    private String user_id;
 
     void flash_message(final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -388,7 +389,8 @@ public class FlooHandler extends ConnectionInterface {
         isJoined = true;
         this.tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
-        this.perms = ri.perms;
+        this.perms = new HashSet<String>(Arrays.asList(ri.perms));
+        this.user_id = ri.user_id;
 
         DotFloo.write(this.url.toString());
 
@@ -483,6 +485,20 @@ public class FlooHandler extends ConnectionInterface {
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);
         buf.write();
+    }
+
+    void _on_perms(JsonObject obj) {
+        Perms res = new Gson().fromJson(obj, (Type) Perms.class);
+
+        if (!res.user_id.equals(this.user_id)) {
+            return;
+        }
+        HashSet perms = new HashSet<String>(Arrays.asList(res.perms));
+        if (res.action.equals("add")) {
+            this.perms.addAll(perms);
+        } else if (res.action.equals("remove")) {
+            this.perms.removeAll(perms);
+        }
     }
 
     void _on_patch(JsonObject obj) {
@@ -827,16 +843,28 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
+            return;
+        }
         Flog.log("Patching %s", buf.path);
         FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
         this.conn.write(req);
     }
 
     public void send_set_buf (Buf b) {
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
+            return;
+        }
         this.conn.write(new SetBuf(b));
     }
 
     public void send_summon (String current, Integer offset) {
+        if (!perms.contains("highlight")) {
+            Flog.info("we cant highlight because perms");
+            return;
+        }
         Buf buf = this.get_buf_by_path(current);
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
@@ -848,6 +876,10 @@ public class FlooHandler extends ConnectionInterface {
         Buf buf = this.get_buf_by_path(path);
         if (buf == null) {
             Flog.info("buf does not exist.");
+            return;
+        }
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
             return;
         }
         String newRelativePath = Utils.toProjectRelPath(newPath);
@@ -862,6 +894,10 @@ public class FlooHandler extends ConnectionInterface {
 
     public void untellij_changed(VirtualFile file) {
         String filePath = file.getPath();
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
+            return;
+        }
         if (!Utils.isShared(filePath)) {
             return;
         }
@@ -876,7 +912,10 @@ public class FlooHandler extends ConnectionInterface {
 
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = this.get_buf_by_path(path);
-
+        if (!perms.contains("highlight")) {
+            Flog.info("we cant highlight because perms");
+            return;
+        }
         if (Buf.isBad(buf)) {
             Flog.info("buf isn't populated yet %s", path);
             return;
@@ -901,11 +940,19 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("buf does not exist");
             return;
         }
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
+            return;
+        }
         buf.cancelTimeout();
         this.conn.write(new DeleteBuf(buf.id));
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
+        if (!perms.contains("patch")) {
+            Flog.info("we cant patch because perms");
+            return;
+        }
         for (String filePath : filePaths) {
             untellij_deleted(filePath);
         }
@@ -929,6 +976,7 @@ public class FlooHandler extends ConnectionInterface {
         _on_term_stdin(obj);
         _on_term_stdout(obj);
         _on_delete_buf(obj);
+        _on_perms(obj);
     }
 
     public void clear_highlights() {
