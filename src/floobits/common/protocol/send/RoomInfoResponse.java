@@ -15,5 +15,6 @@ public class RoomInfoResponse implements Base {
     public Boolean secret;
     public HashMap<Integer, FlooUser> users;
     public HashMap<Integer, RoomInfoBuf> bufs;
+    public String user_id;
 
 }

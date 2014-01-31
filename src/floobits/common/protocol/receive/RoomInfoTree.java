@@ -11,6 +11,7 @@ import java.util.Map;
 public class RoomInfoTree implements Base {
     public HashMap<String, Integer> bufs;
     public HashMap<String, RoomInfoTree> folders;
+    
     public RoomInfoTree(JsonObject obj) {
         this.bufs = new HashMap<String, Integer>();
         this.folders = new HashMap<String, RoomInfoTree>();
