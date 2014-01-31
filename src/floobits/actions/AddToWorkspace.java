@@ -47,7 +47,7 @@ public class AddToWorkspace extends IsJoinedAction {
             if (!Ignore.isIgnored(toAdd)) {
                 flooHandler.upload(toAdd);
             }
-            return; 
+            return;
         }
         Ignore ignore = Ignore.buildIgnoreTree();
         if (ignore == null) {

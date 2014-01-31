@@ -41,7 +41,7 @@ public class Ignore {
         unfuckedPath = this.file.getPath();
         this.parent = parent;
         this.ignores.put("/TOO_BIG/", new ArrayList<String>());
-    
+
         Flog.debug("Initializing ignores for %s", this.file);
         for (String name : IGNORE_FILES) {
             name = FilenameUtils.concat(this.file.getPath(), name);
