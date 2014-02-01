@@ -1,10 +1,8 @@
 package floobits.dialogs;
 
-import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBList;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 public class SelectWorkspace extends JDialog {
@@ -17,6 +15,9 @@ public class SelectWorkspace extends JDialog {
 
     public void setItems(final List<String> items) {
         recentWorkspaces.setListData(items.toArray());
+        if (items.size() > 0) {
+            recentWorkspaces.getSelectionModel().setSelectionInterval(0, 0);
+        }
     }
 
     public JPanel getPanel() {
