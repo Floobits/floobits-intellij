@@ -8,15 +8,14 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class Ignore {
     static String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
     // TODO: make this configurable
-    static String[] HIDDEN_WHITELIST = {".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"};
+    static public final HashSet<String> HIDDEN_WHITELIST = new HashSet<String>(
+            Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
 
     //TODO: grab global git ignores:
     static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
@@ -28,10 +27,8 @@ public class Ignore {
     protected Ignore parent;
     protected String stringPath;
     protected HashMap<String, Ignore> children = new HashMap<String, Ignore>();
-
     protected ArrayList<File> files = new ArrayList<File>();
-    protected Integer size = 0;
-
+    protected int size;
     protected HashMap<String, ArrayList<String>> ignores = new HashMap<String, ArrayList<String>>();
 
     public Ignore (File basePath, Ignore parent, int depth) throws IOException {
@@ -40,7 +37,7 @@ public class Ignore {
         this.stringPath = basePath.getPath();
         unfuckedPath = this.file.getPath();
         this.parent = parent;
-        this.ignores.put("/TOO_BIG/", new ArrayList<String>());
+//        this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
         Flog.debug("Initializing ignores for %s", this.file);
         for (String name : IGNORE_FILES) {
@@ -48,6 +45,11 @@ public class Ignore {
             File ignoreFile = new File(name);
             this.loadIgnore(ignoreFile);
         }
+    }
+
+    public void add_file(File f) {
+        files.add(f);
+        size += f.length();
     }
 
     public Ignore adopt(File childDirectory) {
@@ -58,6 +60,7 @@ public class Ignore {
             return null;
         }
         children.put(childDirectory.getName(), child);
+        size += child.size;
         return child;
     }
 
@@ -99,7 +102,7 @@ public class Ignore {
                     String file_name =  relPathFile.getName();
                     if (pattern.startsWith("/")) {
                         if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
-                            Flog.log("Ignoring %s because %s", path, pattern);
+                            Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                             return true;
                         }
                         continue;
@@ -108,11 +111,11 @@ public class Ignore {
                         pattern = pattern.substring(0, pattern.length() - 1);
                     }
                     if (FilenameUtils.wildcardMatch(file_name, pattern)) {
-                        Flog.log("Ignoring %s because %s", path, pattern);
+                        Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
                     if (FilenameUtils.wildcardMatch(relPath, pattern)) {
-                        Flog.log("Ignoring %s because %s", path, pattern);
+                        Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
                 }
@@ -159,30 +162,41 @@ public class Ignore {
         } catch (IOException e) {
             return null;
         }
-        LinkedList<Ignore> queue = new LinkedList<Ignore>();
-        queue.add(root);
-        while (queue.size() > 0) {
-            Ignore current = queue.pop();
-            File[] childDirectories = current.file.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    if (!file.isDirectory()) {
-                        return false;
-                    }
-                    if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
-                        return false;
-                    }
-                    return true;
+        LinkedList<Ignore> progeny = new LinkedList<Ignore>();
+        progeny.add(root);
+        while (progeny.size() > 0) {
+            Ignore current = progeny.pop();
+            File[] children = current.file.listFiles();
+            if (children == null) {
+                continue;
+            }
+            for (File file : children) {
+                if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
+                    continue;
                 }
-            });
-            if (childDirectories != null){
-                for (File childDirectory : childDirectories) {
-                    Ignore child = current.adopt(childDirectory);
-                    if (child == null) {
-                        continue;
-                    }
-                    queue.push(child);
+                if (file.isHidden() && !HIDDEN_WHITELIST.contains(file.getName())){
+                    Flog.log("Ignoring %s because it is hidden.", file.getPath());
+                    continue;
                 }
+//                TODO: stupidly inefficient
+                if (root.isIgnored(file.getPath())) {
+                    continue;
+                }
+                if (file.isFile()) {
+                    if (file.length() <= MAX_FILE_SIZE) {
+                        current.add_file(file);
+                    } else {
+                        Flog.log("Ignoring %s because it is too big (%s)", file.getPath(), file.length());
+                    }
+                    continue;
+                }
+                if (file.isDirectory()) {
+                    Ignore child = current.adopt(file);
+                    if (child != null) {
+                        progeny.push(child);
+                    }
+                }
+
             }
         }
         return root;
