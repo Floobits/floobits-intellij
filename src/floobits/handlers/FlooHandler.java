@@ -879,6 +879,9 @@ public class FlooHandler extends ConnectionInterface {
             return;
         }
         Buf buf = this.get_buf_by_path(current);
+        if (Buf.isBad(buf)) {
+            return;
+        }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
         this.conn.write(new FlooHighlight(buf, ranges, true));
