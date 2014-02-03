@@ -11,6 +11,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
@@ -20,7 +21,7 @@ public class BinaryBuf extends Buf <byte[]> {
         this.encoding = Encoding.BASE64;
     }
 
-    public void read () {
+    synchronized public void read () {
         VirtualFile virtualFile = this.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("Couldn't get virtual file in readFromDisk %s", this);
@@ -71,7 +72,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public String serialize() {
-        return Base64.encodeBase64String(buf);
+        return new String(Base64.encodeBase64(buf));
     }
 
     public void patch(FlooPatch res) {
