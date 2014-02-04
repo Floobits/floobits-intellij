@@ -43,7 +43,7 @@ public class AddToWorkspace extends IsJoinedAction {
         if (filesToAdd.size() == 1) {
             VirtualFile[] toAdds = new VirtualFile[]{};
             VirtualFile toAdd = filesToAdd.toArray(toAdds)[0];
-            if (!Ignore.isPathIgnored(toAdd.getPath())) {
+            if (!Ignore.isPathIgnored(toAdd)) {
                 flooHandler.upload(toAdd);
             }
             return;
@@ -55,7 +55,7 @@ public class AddToWorkspace extends IsJoinedAction {
         }
 
         for (VirtualFile virtualFile : filesToAdd) {
-            if (!ignore.isIgnored(virtualFile.getPath())) {
+            if (!ignore.isIgnored(virtualFile)) {
                flooHandler.upload(virtualFile);
             }
         }

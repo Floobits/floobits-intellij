@@ -368,7 +368,7 @@ public class FlooHandler extends ConnectionInterface {
         if (ignore == null) {
             return;
         }
-        for (File f: ignore.getFiles()) {
+        for (VirtualFile f: ignore.getFiles()) {
             Buf b = FloobitsPlugin.flooHandler.get_buf_by_path(f.getPath());
             if (b != null) {
                 Flog.info("Already in workspace: %s", f.getPath());
@@ -398,7 +398,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("Already in workspace: %s", path);
             return true;
         }
-        FloobitsPlugin.flooHandler.send_create_buf(new File(virtualFile.getPath()));
+        FloobitsPlugin.flooHandler.send_create_buf(virtualFile);
         return true;
     }
 
@@ -471,7 +471,7 @@ public class FlooHandler extends ConnectionInterface {
 
     }
 
-    void send_create_buf(File file) {
+    void send_create_buf(VirtualFile file) {
         Buf buf = Buf.createBuf(file);
         if (buf == null) {
             return;

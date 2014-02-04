@@ -223,7 +223,7 @@ public class Utils {
                 filePaths.addAll(getAllNestedFilePaths(file));
                 continue;
             }
-            if (ignore != null && ignore.isIgnored(file.getPath())) {
+            if (ignore != null && ignore.isIgnored(file)) {
                 continue;
             }
             filePaths.add(file.getPath());
@@ -247,14 +247,14 @@ public class Utils {
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (!ignore.isIgnored(vFile.getPath())) {
+            if (!ignore.isIgnored(vFile)) {
                 filePaths.add(vFile);
             }
             return filePaths;
         }
 //      TODO: this is inefficient (the ignores already know this info)!!!
         for (VirtualFile file : vFile.getChildren()) {
-            if (ignore.isIgnored(file.getPath())) {
+            if (ignore.isIgnored(file)) {
                 continue;
             }
             if (file.isDirectory()) {

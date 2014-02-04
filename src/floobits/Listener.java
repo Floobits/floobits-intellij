@@ -164,23 +164,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             return;
         }
 
-
-        boolean makeIgnore = false;
-        for (VFileEvent vFileEvent : events) {
-            if (vFileEvent instanceof VFileCopyEvent || vFileEvent instanceof VFileCreateEvent) {
-                makeIgnore = true;
-                break;
-            }
-        }
-
         Ignore ignore = null;
-        if (makeIgnore) {
-            ignore = Ignore.buildIgnoreTree();
-            if (ignore == null) {
-                return;
-            }
-        }
-
 
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
@@ -205,9 +189,16 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
+                if (ignore == null) {
+                    ignore = Ignore.buildIgnoreTree();
+                    if (ignore == null) {
+                        return;
+                    }
+                }
                 handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), ignore));
                 continue;
             }
+
             if (event instanceof VFileCopyEvent) {
                 // We get one copy event per file copied for copied directories, which makes this easy.
                 Flog.info("Copying a file %s", event);
@@ -225,7 +216,14 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (ignore.isIgnored(copiedFile.getPath())) {
+                if (ignore == null) {
+                    ignore = Ignore.buildIgnoreTree();
+                    if (ignore == null) {
+                        return;
+                    }
+                }
+
+                if (ignore.isIgnored(copiedFile)) {
                     return;
                 }
                 Utils.createFile(copiedFile);

@@ -1,14 +1,19 @@
 package floobits.common;
 
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 
 public class Ignore {
@@ -21,21 +26,21 @@ public class Ignore {
     static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
-    protected File file;
+    protected VirtualFile file;
     private int depth;
     protected String unfuckedPath;
     protected Ignore parent;
     protected String stringPath;
     protected HashMap<String, Ignore> children = new HashMap<String, Ignore>();
-    protected ArrayList<File> files = new ArrayList<File>();
+    protected ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
     protected int size;
     protected HashMap<String, ArrayList<String>> ignores = new HashMap<String, ArrayList<String>>();
 
-    public Ignore (File basePath, Ignore parent, int depth) throws IOException {
-        this.file = basePath;
+    public Ignore (VirtualFile virtualFile, Ignore parent, int depth) {
+        this.file = virtualFile;
         this.depth = depth;
-        this.stringPath = basePath.getPath();
-        unfuckedPath = this.file.getPath();
+        this.stringPath = virtualFile.getPath();
+        this.unfuckedPath = file.getPath();
         this.parent = parent;
 //        this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
@@ -47,8 +52,8 @@ public class Ignore {
         }
     }
 
-    public ArrayList<File> getFiles() {
-        ArrayList<File> arrayList= new ArrayList<File>();
+    public ArrayList<VirtualFile> getFiles() {
+        ArrayList<VirtualFile> arrayList= new ArrayList<VirtualFile>();
         arrayList.addAll(files);
         for (Entry<String, Ignore> entry: children.entrySet()) {
             arrayList.addAll(entry.getValue().getFiles());
@@ -56,22 +61,24 @@ public class Ignore {
         return arrayList;
     }
 
+    @SuppressWarnings("UnsafeVfsRecursion")
     public void recurse(String optionalSparsePath) {
-        File[] children = file.listFiles();
+        @SuppressWarnings("UnsafeVfsRecursion") VirtualFile[] children = file.getChildren();
         if (children == null) {
             return;
         }
-        for (File file : children) {
+        for (VirtualFile file : children) {
             if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
                 continue;
             }
 //                TODO: check parent ignores
-            if (isIgnored(file.getPath())) {
+            if (isIgnored(file)) {
                 continue;
             }
-            if (file.isFile()) {
-                files.add(file);
-                size += file.length();
+            if (!file.isValid()) {
+                continue;
+            }
+            if (file.is(VFileProperty.SYMLINK)) {
                 continue;
             }
             if (file.isDirectory()) {
@@ -85,6 +92,11 @@ public class Ignore {
                 child.recurse(optionalSparsePath);
                 size += child.size;
             }
+            if (file.is(VFileProperty.SPECIAL)) {
+                continue;
+            }
+            files.add(file);
+            size += file.getLength();
         }
     }
 
@@ -110,20 +122,16 @@ public class Ignore {
     private Boolean isIgnored(String path, String[] pathParts, int depth) {
         String currentPath = "";
         for (int i = 0; i < pathParts.length; i++) {
+            String base_path = currentPath;
+            base_path = Utils.absPath(base_path);
             currentPath = FilenameUtils.concat(currentPath, pathParts[i]);
             if (i <= this.depth) {
                 continue;
             }
             String relPath = Utils.getRelativePath(currentPath, this.file.getPath());
-            File relPathFile = new File(currentPath);
             for (Entry<String, ArrayList<String>> entry : ignores.entrySet()) {
                 for (String pattern : entry.getValue()) {
-                    String base_path = relPathFile.getParent();
-                    if (base_path == null) {
-                        base_path = "";
-                    }
-                    base_path = Utils.absPath(base_path);
-                    String file_name =  relPathFile.getName();
+                    String file_name =  pathParts[i];
                     if (pattern.startsWith("/")) {
                         if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
                             Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
@@ -157,29 +165,36 @@ public class Ignore {
         return ignore.isIgnored(path, pathParts, depth);
     }
 
-    public Boolean isIgnored(String path) {
+    public Boolean isIgnored(VirtualFile virtualFile) {
+        if (!virtualFile.isValid()){
+            Flog.log("Ignoring %s because it is invalid.", virtualFile);
+            return true;
+        }
+        String path = virtualFile.getPath();
         if (!Utils.isShared(path)) {
+            Flog.log("Ignoring %s because it isn't shared.", path);
             return true;
         }
         path = FilenameUtils.normalizeNoEndSeparator(path);
-        if (path.equals(this.stringPath)) {
+        if (path.equals(stringPath)) {
             return false;
         }
-
-        File f = new File(path);
-
-        if (file.isFile() && file.length() > MAX_FILE_SIZE) {
-            Flog.log("Ignoring %s because it is too big (%s)", file.getPath(), file.length());
+        if (virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)) {
+            Flog.log("Ignoring %s because it is special or a symlink.", path);
             return true;
         }
-        if (file.isHidden() && !HIDDEN_WHITELIST.contains(file.getName())){
-            Flog.log("Ignoring %s because it is hidden.", file.getPath());
+        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITELIST.contains(virtualFile.getName())){
+            Flog.log("Ignoring %s because it is hidden.", path);
+            return true;
+        }
+        if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
+            Flog.log("Ignoring %s because it is too big (%s)", path, virtualFile.getLength());
             return true;
         }
         ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(f.getPath(), Shared.colabDir)) {
-            paths.add(0, f.getName());
-            f = f.getParentFile();
+        while (!Utils.isSamePath(path, Shared.colabDir)) {
+            paths.add(0, virtualFile.getName());
+            virtualFile = virtualFile.getParent();
         }
         paths.add(0, Shared.colabDir);
         return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
@@ -189,23 +204,24 @@ public class Ignore {
         return buildIgnoreTree(null);
     }
 
-    public static Ignore buildIgnoreTree(final String optionalSparsePath) {
-        if (optionalSparsePath != null && !Utils.isShared(optionalSparsePath)) {
+    public static Ignore buildIgnoreTree(@Nullable VirtualFile optionalSparsePath) {
+        if (optionalSparsePath != null && !Utils.isShared(optionalSparsePath.getPath())) {
             return null;
         }
 
-        Ignore root;
-        try {
-            root = new Ignore(new File(Shared.colabDir), null, 0);
-        } catch (IOException e) {
-            return null;
+        if (optionalSparsePath == null) {
+            optionalSparsePath = LocalFileSystem.getInstance().findFileByIoFile(new File(Shared.colabDir));
+            if (optionalSparsePath == null) {
+                return  null;
+            }
         }
 
-        root.recurse(optionalSparsePath);
+        Ignore root = new Ignore(optionalSparsePath, null, 0);
+        root.recurse(optionalSparsePath.getPath());
         return root;
     }
 
-    public static Boolean isPathIgnored(String path) {
+    public static Boolean isPathIgnored(VirtualFile path) {
         Ignore ignore = buildIgnoreTree(path);
         return ignore != null && ignore.isIgnored(path);
     }

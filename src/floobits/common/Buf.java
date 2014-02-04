@@ -99,9 +99,9 @@ public abstract class Buf <T> {
         }
         return new TextBuf(path, id, null, md5);
     }
-    public static Buf createBuf (File file) {
+    public static Buf createBuf (VirtualFile file) {
         try {
-            byte[] originalBytes = FileUtils.readFileToByteArray(file);
+            byte[] originalBytes = file.contentsToByteArray();
             String encodedContents = new String(originalBytes, "UTF-8");
             byte[] decodedContents = encodedContents.getBytes();
             String filePath = Utils.toProjectRelPath(file.getPath());
