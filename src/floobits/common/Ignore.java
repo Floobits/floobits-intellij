@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class Ignore {
-    static String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
+    static final String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
     // TODO: make this configurable
     static final HashSet<String> HIDDEN_WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc"));
@@ -76,14 +76,13 @@ public class Ignore {
             if (!file.isValid()) { // &&file.exists()) {
                 continue;
             }
+            if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
+                continue;
+            }
             if (optionalSparsePath != null && !(Utils.isChild(optionalSparsePath, stringPath) || Utils.isChild(stringPath, optionalSparsePath))) {
                 continue;
             }
-//                TODO: check parent ignores
-            if (isIgnored(file)) {
-                continue;
-            }
-            if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
+            if (isIgnoredDown(file)) {
                 continue;
             }
             if (file.isDirectory()) {
@@ -100,17 +99,63 @@ public class Ignore {
         }
     }
 
-    public Boolean isIgnored(VirtualFile virtualFile) {
+    public boolean isIgnoredUp(VirtualFile virtualFile) {
         if (!virtualFile.isValid()){
             Flog.log("Ignoring %s because it is invalid.", virtualFile);
             return true;
         }
-        String path = virtualFile.getPath();
+        String path = FilenameUtils.normalizeNoEndSeparator(virtualFile.getPath());
+        if (isFlooIgnored(virtualFile, path)) {
+            return true;
+        }
+        ArrayList<String> paths = new ArrayList<String>();
+        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
+            paths.add(0, virtualFile.getName());
+            virtualFile = virtualFile.getParent();
+        }
+        paths.add(0, Shared.colabDir);
+        return isIgnoredUp(path, paths.toArray(new String[paths.size()]));
+    }
+
+    public boolean isIgnoredDown(VirtualFile virtualFile) {
+        if (!virtualFile.isValid()){
+            Flog.log("Ignoring %s because it is invalid.", virtualFile);
+            return true;
+        }
+        String path = FilenameUtils.normalizeNoEndSeparator(virtualFile.getPath());
+        if (isFlooIgnored(virtualFile, path)) {
+            return true;
+        }
+        ArrayList<String> paths = new ArrayList<String>();
+        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
+            paths.add(0, virtualFile.getName());
+            virtualFile = virtualFile.getParent();
+        }
+        paths.add(0, Shared.colabDir);
+//        Todo we can make this more efficient by not rechecking the parent paths more than once
+        return isIgnoredDown(path, paths.toArray(new String[paths.size()]));
+    }
+
+    private boolean isIgnoredUp(String path, String[] pathParts) {
+        if (isGitIgnored(path, pathParts)) {
+            return true;
+        }
+        if (depth + 1 >= pathParts.length) {
+            return false;
+        }
+        String nextName = pathParts[depth];
+        Ignore ignore = this.children.get(nextName);
+        return ignore != null && ignore.isIgnoredUp(path, pathParts);
+    }
+
+    private boolean isIgnoredDown(String path, String[] pathParts) {
+        return isGitIgnored(path, pathParts) || parent != null && parent.isIgnoredDown(path, pathParts);
+    }
+    private boolean isFlooIgnored(VirtualFile virtualFile, String path) {
         if (!Utils.isShared(path)) {
             Flog.log("Ignoring %s because it isn't shared.", path);
             return true;
         }
-        path = FilenameUtils.normalizeNoEndSeparator(path);
         if (path.equals(stringPath)) {
             return false;
         }
@@ -126,19 +171,14 @@ public class Ignore {
             Flog.log("Ignoring %s because it is too big (%s)", path, virtualFile.getLength());
             return true;
         }
-        ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
-            paths.add(0, virtualFile.getName());
-            virtualFile = virtualFile.getParent();
-        }
-        paths.add(0, Shared.colabDir);
-        return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
+        return false;
     }
 
-    private Boolean isIgnored(String path, String[] pathParts, int depth) {
+    protected Boolean isGitIgnored(String path, String[] pathParts) {
         String currentPath = "";
         for (int i = 0; i < pathParts.length; i++) {
             String base_path = currentPath;
+            //        Todo we can make this more efficient by not rebuilding these paths for each ignore
             currentPath = FilenameUtils.concat(currentPath, pathParts[i]);
             if (i <= this.depth) {
                 continue;
@@ -168,16 +208,7 @@ public class Ignore {
                 }
             }
         }
-        if (depth >= pathParts.length) {
-            return false;
-        }
-        depth += 1;
-        String nextName = pathParts[depth];
-        Ignore ignore = this.children.get(nextName);
-        if (ignore == null) {
-            return false;
-        }
-        return ignore.isIgnored(path, pathParts, depth);
+        return false;
     }
 
     public static Ignore buildIgnoreTree() {
@@ -200,7 +231,7 @@ public class Ignore {
 
     public static Boolean isPathIgnored(VirtualFile path) {
         Ignore ignore = buildIgnoreTree(path);
-        return ignore != null && ignore.isIgnored(path);
+        return ignore != null && ignore.isIgnoredUp(path);
     }
     public static  void writeDefaultIgnores(String path) {
         Flog.log("Creating default ignores.");

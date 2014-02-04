@@ -55,7 +55,7 @@ public class AddToWorkspace extends IsJoinedAction {
         }
 
         for (VirtualFile virtualFile : filesToAdd) {
-            if (!ignore.isIgnored(virtualFile)) {
+            if (!ignore.isIgnoredUp(virtualFile)) {
                flooHandler.upload(virtualFile);
             }
         }

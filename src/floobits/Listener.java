@@ -223,7 +223,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     }
                 }
 
-                if (ignore.isIgnored(copiedFile)) {
+                if (ignore.isIgnoredUp(copiedFile)) {
                     return;
                 }
                 Utils.createFile(copiedFile);
