@@ -23,7 +23,7 @@ public class Ignore {
             Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
 
     //TODO: grab global git ignores:
-    static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
+//    static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
     protected VirtualFile file;
@@ -42,7 +42,6 @@ public class Ignore {
         this.stringPath = virtualFile.getPath();
         this.unfuckedPath = file.getPath();
         this.parent = parent;
-//        this.ignores.put("/TOO_BIG/", new ArrayList<String>());
 
         Flog.debug("Initializing ignores for %s", this.file);
         for (String name : IGNORE_FILES) {
@@ -68,7 +67,7 @@ public class Ignore {
             return;
         }
         for (VirtualFile file : children) {
-            if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
+            if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath()) && !Utils.isChild(file.getPath(), optionalSparsePath)) {
                 continue;
             }
 //                TODO: check parent ignores
@@ -78,16 +77,11 @@ public class Ignore {
             if (!file.isValid()) {
                 continue;
             }
-            if (file.is(VFileProperty.SYMLINK)) {
+            if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
                 continue;
             }
             if (file.isDirectory()) {
-                Ignore child;
-                try {
-                    child = new Ignore(file, this, depth+1);
-                } catch (Exception ignored) {
-                    continue;
-                }
+                Ignore child = new Ignore(file, this, depth+1);
                 this.children.put(file.getName(), child);
                 child.recurse(optionalSparsePath);
                 size += child.size;
