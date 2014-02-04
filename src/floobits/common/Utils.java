@@ -239,21 +239,22 @@ public class Utils {
         return getAllNestedFilePaths(vFile, ignore);
     }
 
-    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile, @Nullable Ignore ignore) {
+    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile, Ignore ignore) {
         ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
+
         if (!vFile.isValid()) {
             // This happens when files are no longer available, don't remove any of these.
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (ignore != null && ignore.isIgnored(vFile.getPath())) {
-                return filePaths;
+            if (!ignore.isIgnored(vFile.getPath())) {
+                filePaths.add(vFile);
             }
-            filePaths.add(vFile);
             return filePaths;
         }
+//      TODO: this is inefficient (the ignores already know this info)!!!
         for (VirtualFile file : vFile.getChildren()) {
-            if (ignore != null && ignore.isIgnored(file.getPath())) {
+            if (ignore.isIgnored(file.getPath())) {
                 continue;
             }
             if (file.isDirectory()) {

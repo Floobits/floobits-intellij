@@ -9,6 +9,7 @@ import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,12 +99,12 @@ public abstract class Buf <T> {
         }
         return new TextBuf(path, id, null, md5);
     }
-    public static Buf createBuf (VirtualFile virtualFile) {
+    public static Buf createBuf (File file) {
         try {
-            byte[] originalBytes = virtualFile.contentsToByteArray();
+            byte[] originalBytes = FileUtils.readFileToByteArray(file);
             String encodedContents = new String(originalBytes, "UTF-8");
             byte[] decodedContents = encodedContents.getBytes();
-            String filePath = Utils.toProjectRelPath(virtualFile.getPath());
+            String filePath = Utils.toProjectRelPath(file.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
                 String md5 = DigestUtils.md5Hex(encodedContents);
                 return new TextBuf(filePath, null, encodedContents, md5);
@@ -112,7 +113,7 @@ public abstract class Buf <T> {
                 return new BinaryBuf(filePath, null, originalBytes, md5);
             }
         } catch (IOException e) {
-            Flog.warn("Error getting virtual file contents in createBuf %s", virtualFile);
+            Flog.warn("Error getting virtual file contents in createBuf %s", file);
         }
         return null;
     }

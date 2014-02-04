@@ -368,13 +368,14 @@ public class FlooHandler extends ConnectionInterface {
         if (ignore == null) {
             return;
         }
-
-        ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
-            public boolean processFile(final VirtualFile virtualFile) {
-                if (!ignore.isIgnored(virtualFile.getPath())) upload(virtualFile);
-                return true;
+        for (File f: ignore.getFiles()) {
+            Buf b = FloobitsPlugin.flooHandler.get_buf_by_path(f.getPath());
+            if (b != null) {
+                Flog.info("Already in workspace: %s", f.getPath());
+                continue;
             }
-        });
+            FloobitsPlugin.flooHandler.send_create_buf(f);
+        }
     }
 
     public boolean upload(VirtualFile virtualFile) {
@@ -397,7 +398,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("Already in workspace: %s", path);
             return true;
         }
-        FloobitsPlugin.flooHandler.send_create_buf(virtualFile);
+        FloobitsPlugin.flooHandler.send_create_buf(new File(virtualFile.getPath()));
         return true;
     }
 
@@ -470,8 +471,8 @@ public class FlooHandler extends ConnectionInterface {
 
     }
 
-    void send_create_buf(VirtualFile virtualFile) {
-        Buf buf = Buf.createBuf(virtualFile);
+    void send_create_buf(File file) {
+        Buf buf = Buf.createBuf(file);
         if (buf == null) {
             return;
         }

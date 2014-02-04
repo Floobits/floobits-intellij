@@ -47,21 +47,45 @@ public class Ignore {
         }
     }
 
-    public void add_file(File f) {
-        files.add(f);
-        size += f.length();
+    public ArrayList<File> getFiles() {
+        ArrayList<File> arrayList= new ArrayList<File>();
+        arrayList.addAll(files);
+        for (Entry<String, Ignore> entry: children.entrySet()) {
+            arrayList.addAll(entry.getValue().getFiles());
+        }
+        return arrayList;
     }
 
-    public Ignore adopt(File childDirectory) {
-        Ignore child;
-        try {
-            child = new Ignore(childDirectory, this, depth+1);
-        } catch (Exception ignored) {
-            return null;
+    public void recurse(String optionalSparsePath) {
+        File[] children = file.listFiles();
+        if (children == null) {
+            return;
         }
-        children.put(childDirectory.getName(), child);
-        size += child.size;
-        return child;
+        for (File file : children) {
+            if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
+                continue;
+            }
+//                TODO: check parent ignores
+            if (isIgnored(file.getPath())) {
+                continue;
+            }
+            if (file.isFile()) {
+                files.add(file);
+                size += file.length();
+                continue;
+            }
+            if (file.isDirectory()) {
+                Ignore child;
+                try {
+                    child = new Ignore(file, this, depth+1);
+                } catch (Exception ignored) {
+                    continue;
+                }
+                this.children.put(file.getName(), child);
+                child.recurse(optionalSparsePath);
+                size += child.size;
+            }
+        }
     }
 
     protected void loadIgnore (File file) {
@@ -141,8 +165,18 @@ public class Ignore {
         if (path.equals(this.stringPath)) {
             return false;
         }
-        ArrayList<String> paths = new ArrayList<String>();
+
         File f = new File(path);
+
+        if (file.isFile() && file.length() > MAX_FILE_SIZE) {
+            Flog.log("Ignoring %s because it is too big (%s)", file.getPath(), file.length());
+            return true;
+        }
+        if (file.isHidden() && !HIDDEN_WHITELIST.contains(file.getName())){
+            Flog.log("Ignoring %s because it is hidden.", file.getPath());
+            return true;
+        }
+        ArrayList<String> paths = new ArrayList<String>();
         while (!Utils.isSamePath(f.getPath(), Shared.colabDir)) {
             paths.add(0, f.getName());
             f = f.getParentFile();
@@ -156,54 +190,23 @@ public class Ignore {
     }
 
     public static Ignore buildIgnoreTree(final String optionalSparsePath) {
+        if (optionalSparsePath != null && !Utils.isShared(optionalSparsePath)) {
+            return null;
+        }
+
         Ignore root;
         try {
             root = new Ignore(new File(Shared.colabDir), null, 0);
         } catch (IOException e) {
             return null;
         }
-        LinkedList<Ignore> progeny = new LinkedList<Ignore>();
-        progeny.add(root);
-        while (progeny.size() > 0) {
-            Ignore current = progeny.pop();
-            File[] children = current.file.listFiles();
-            if (children == null) {
-                continue;
-            }
-            for (File file : children) {
-                if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
-                    continue;
-                }
-                if (file.isHidden() && !HIDDEN_WHITELIST.contains(file.getName())){
-                    Flog.log("Ignoring %s because it is hidden.", file.getPath());
-                    continue;
-                }
-//                TODO: stupidly inefficient
-                if (root.isIgnored(file.getPath())) {
-                    continue;
-                }
-                if (file.isFile()) {
-                    if (file.length() <= MAX_FILE_SIZE) {
-                        current.add_file(file);
-                    } else {
-                        Flog.log("Ignoring %s because it is too big (%s)", file.getPath(), file.length());
-                    }
-                    continue;
-                }
-                if (file.isDirectory()) {
-                    Ignore child = current.adopt(file);
-                    if (child != null) {
-                        progeny.push(child);
-                    }
-                }
 
-            }
-        }
+        root.recurse(optionalSparsePath);
         return root;
     }
 
-    public static Boolean isIgnored(VirtualFile f) {
-        Ignore ignore = buildIgnoreTree(f.getPath());
-        return ignore != null && ignore.isIgnored(f.getPath());
+    public static Boolean isPathIgnored(String path) {
+        Ignore ignore = buildIgnoreTree(path);
+        return ignore != null && ignore.isIgnored(path);
     }
 }
