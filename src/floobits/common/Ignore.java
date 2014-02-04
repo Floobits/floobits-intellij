@@ -38,7 +38,22 @@ public class Ignore {
         for (String name : IGNORE_FILES) {
             name = FilenameUtils.concat(this.file.getPath(), name);
             File ignoreFile = new File(name);
-            this.loadIgnore(ignoreFile);
+            String ignores[];
+            try {
+                ignores = FileUtils.readFileToString(ignoreFile, "UTF-8").split("\\r?\\n");
+            } catch (IOException e) {
+                continue;
+            }
+
+            ArrayList<String> igs = new ArrayList<String>();
+            for (String ignore: ignores) {
+                ignore = ignore.trim();
+                if (ignore.length() == 0 || ignore.startsWith("#")) {
+                    continue;
+                }
+                igs.add(ignore);
+            }
+            this.ignores.put(file.getName(), igs);
         }
     }
 
@@ -58,14 +73,14 @@ public class Ignore {
             return;
         }
         for (VirtualFile file : children) {
+            if (!file.isValid()) { // &&file.exists()) {
+                continue;
+            }
             if (optionalSparsePath != null && !(Utils.isChild(optionalSparsePath, stringPath) || Utils.isChild(stringPath, optionalSparsePath))) {
                 continue;
             }
 //                TODO: check parent ignores
             if (isIgnored(file)) {
-                continue;
-            }
-            if (!file.isValid()) {
                 continue;
             }
             if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
@@ -85,23 +100,39 @@ public class Ignore {
         }
     }
 
-    protected void loadIgnore (File file) {
-        String ignores[];
-        try {
-            ignores = FileUtils.readFileToString(file, "UTF-8").split("\\r?\\n");
-        } catch (IOException e) {
-            return;
+    public Boolean isIgnored(VirtualFile virtualFile) {
+        if (!virtualFile.isValid()){
+            Flog.log("Ignoring %s because it is invalid.", virtualFile);
+            return true;
         }
-
-        ArrayList<String> igs = new ArrayList<String>();
-        for (String ignore: ignores) {
-            ignore = ignore.trim();
-            if (ignore.length() == 0 || ignore.startsWith("#")) {
-                continue;
-            }
-            igs.add(ignore);
+        String path = virtualFile.getPath();
+        if (!Utils.isShared(path)) {
+            Flog.log("Ignoring %s because it isn't shared.", path);
+            return true;
         }
-        this.ignores.put(file.getName(), igs);
+        path = FilenameUtils.normalizeNoEndSeparator(path);
+        if (path.equals(stringPath)) {
+            return false;
+        }
+        if (virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)) {
+            Flog.log("Ignoring %s because it is special or a symlink.", path);
+            return true;
+        }
+        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITE_LIST.contains(virtualFile.getName())){
+            Flog.log("Ignoring %s because it is hidden.", path);
+            return true;
+        }
+        if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
+            Flog.log("Ignoring %s because it is too big (%s)", path, virtualFile.getLength());
+            return true;
+        }
+        ArrayList<String> paths = new ArrayList<String>();
+        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
+            paths.add(0, virtualFile.getName());
+            virtualFile = virtualFile.getParent();
+        }
+        paths.add(0, Shared.colabDir);
+        return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
     }
 
     private Boolean isIgnored(String path, String[] pathParts, int depth) {
@@ -147,41 +178,6 @@ public class Ignore {
             return false;
         }
         return ignore.isIgnored(path, pathParts, depth);
-    }
-
-    public Boolean isIgnored(VirtualFile virtualFile) {
-        if (!virtualFile.isValid()){
-            Flog.log("Ignoring %s because it is invalid.", virtualFile);
-            return true;
-        }
-        String path = virtualFile.getPath();
-        if (!Utils.isShared(path)) {
-            Flog.log("Ignoring %s because it isn't shared.", path);
-            return true;
-        }
-        path = FilenameUtils.normalizeNoEndSeparator(path);
-        if (path.equals(stringPath)) {
-            return false;
-        }
-        if (virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)) {
-            Flog.log("Ignoring %s because it is special or a symlink.", path);
-            return true;
-        }
-        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITE_LIST.contains(virtualFile.getName())){
-            Flog.log("Ignoring %s because it is hidden.", path);
-            return true;
-        }
-        if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
-            Flog.log("Ignoring %s because it is too big (%s)", path, virtualFile.getLength());
-            return true;
-        }
-        ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
-            paths.add(0, virtualFile.getName());
-            virtualFile = virtualFile.getParent();
-        }
-        paths.add(0, Shared.colabDir);
-        return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
     }
 
     public static Ignore buildIgnoreTree() {
