@@ -115,12 +115,11 @@ public class Ignore {
         String currentPath = "";
         for (int i = 0; i < pathParts.length; i++) {
             String base_path = currentPath;
-            base_path = Utils.absPath(base_path);
             currentPath = FilenameUtils.concat(currentPath, pathParts[i]);
             if (i <= this.depth) {
                 continue;
             }
-            String relPath = Utils.getRelativePath(currentPath, this.file.getPath());
+            String relPath = Utils.getRelativePath(currentPath, stringPath);
             for (Entry<String, ArrayList<String>> entry : ignores.entrySet()) {
                 for (String pattern : entry.getValue()) {
                     String file_name =  pathParts[i];
@@ -138,7 +137,7 @@ public class Ignore {
                         Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
-                    if (FilenameUtils.wildcardMatch(relPath, pattern)) {
+                    if (!file_name.equals(relPath) && FilenameUtils.wildcardMatch(relPath, pattern)) {
                         Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
