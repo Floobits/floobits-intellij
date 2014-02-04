@@ -28,7 +28,6 @@ public class Ignore {
 
     protected VirtualFile file;
     private int depth;
-    protected String unfuckedPath;
     protected Ignore parent;
     protected String stringPath;
     protected HashMap<String, Ignore> children = new HashMap<String, Ignore>();
@@ -40,7 +39,6 @@ public class Ignore {
         this.file = virtualFile;
         this.depth = depth;
         this.stringPath = virtualFile.getPath();
-        this.unfuckedPath = file.getPath();
         this.parent = parent;
 
         Flog.debug("Initializing ignores for %s", this.file);
@@ -67,7 +65,7 @@ public class Ignore {
             return;
         }
         for (VirtualFile file : children) {
-            if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath()) && !Utils.isChild(file.getPath(), optionalSparsePath)) {
+            if (optionalSparsePath != null && !(Utils.isChild(optionalSparsePath, stringPath) || Utils.isChild(stringPath, optionalSparsePath))) {
                 continue;
             }
 //                TODO: check parent ignores
@@ -127,7 +125,7 @@ public class Ignore {
                 for (String pattern : entry.getValue()) {
                     String file_name =  pathParts[i];
                     if (pattern.startsWith("/")) {
-                        if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
+                        if (Utils.isSamePath(base_path, stringPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
                             Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                             return true;
                         }
@@ -186,7 +184,7 @@ public class Ignore {
             return true;
         }
         ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(path, Shared.colabDir)) {
+        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
             paths.add(0, virtualFile.getName());
             virtualFile = virtualFile.getParent();
         }
@@ -202,16 +200,13 @@ public class Ignore {
         if (optionalSparsePath != null && !Utils.isShared(optionalSparsePath.getPath())) {
             return null;
         }
-
-        if (optionalSparsePath == null) {
-            optionalSparsePath = LocalFileSystem.getInstance().findFileByIoFile(new File(Shared.colabDir));
-            if (optionalSparsePath == null) {
-                return  null;
-            }
+        VirtualFile fileByIoFile = LocalFileSystem.getInstance().findFileByIoFile(new File(Shared.colabDir));
+        if (fileByIoFile == null || !fileByIoFile.isValid()) {
+            return null;
         }
 
-        Ignore root = new Ignore(optionalSparsePath, null, 0);
-        root.recurse(optionalSparsePath.getPath());
+        Ignore root = new Ignore(fileByIoFile, null, 0);
+        root.recurse(optionalSparsePath != null ? optionalSparsePath.getPath() : null);
         return root;
     }
 

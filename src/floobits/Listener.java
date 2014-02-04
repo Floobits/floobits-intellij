@@ -195,7 +195,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                         return;
                     }
                 }
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), ignore));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), null));
                 continue;
             }
 
@@ -232,6 +232,12 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles;
+                if (ignore == null) {
+                    ignore = Ignore.buildIgnoreTree();
+                    if (ignore == null) {
+                        return;
+                    }
+                }
                 createdFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(createdFile);
@@ -240,6 +246,12 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
+                if (ignore == null) {
+                    ignore = Ignore.buildIgnoreTree();
+                    if (ignore == null) {
+                        return;
+                    }
+                }
                 changedFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
