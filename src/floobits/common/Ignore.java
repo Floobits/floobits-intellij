@@ -10,30 +10,23 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class Ignore {
     static String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
     // TODO: make this configurable
-    static public final HashSet<String> HIDDEN_WHITELIST = new HashSet<String>(
-            Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
-
-    //TODO: grab global git ignores:
-//    static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
-    static int MAX_FILE_SIZE = 1024 * 1024 * 5;
-
-    protected VirtualFile file;
-    private int depth;
-    protected Ignore parent;
-    protected String stringPath;
-    protected HashMap<String, Ignore> children = new HashMap<String, Ignore>();
-    protected ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
-    protected int size;
-    protected HashMap<String, ArrayList<String>> ignores = new HashMap<String, ArrayList<String>>();
+    static final HashSet<String> HIDDEN_WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
+    static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc"));
+    static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
+    protected final VirtualFile file;
+    private final int depth;
+    protected final Ignore parent;
+    protected final String stringPath;
+    protected final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
+    protected final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
+    protected int size = 0;
+    protected final HashMap<String, ArrayList<String>> ignores = new HashMap<String, ArrayList<String>>();
 
     public Ignore (VirtualFile virtualFile, Ignore parent, int depth) {
         this.file = virtualFile;
@@ -174,7 +167,7 @@ public class Ignore {
             Flog.log("Ignoring %s because it is special or a symlink.", path);
             return true;
         }
-        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITELIST.contains(virtualFile.getName())){
+        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITE_LIST.contains(virtualFile.getName())){
             Flog.log("Ignoring %s because it is hidden.", path);
             return true;
         }
@@ -212,5 +205,20 @@ public class Ignore {
     public static Boolean isPathIgnored(VirtualFile path) {
         Ignore ignore = buildIgnoreTree(path);
         return ignore != null && ignore.isIgnored(path);
+    }
+    public static  void writeDefaultIgnores(String path) {
+        Flog.log("Creating default ignores.");
+        path = FilenameUtils.concat(path, ".flooignore");
+
+        try {
+            File f = new File(path);
+            if (f.exists()) {
+                return;
+            }
+            FileUtils.writeLines(f, DEFAULT_IGNORES);
+        } catch (IOException e) {
+            Flog.warn(e);
+        }
+
     }
 }

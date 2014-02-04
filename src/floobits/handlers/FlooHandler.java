@@ -307,6 +307,13 @@ public class FlooHandler extends ConnectionInterface {
         }
         int code = method.getStatusCode();
         switch (code) {
+            case 201:
+                Flog.log("Workspace created.");
+                Ignore.writeDefaultIgnores(project_path);
+            case 409:
+                Flog.warn("Joining the workspace.");
+                joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
+                return;
             case 400:
                 // Todo: pick a new name or something
                 error_message("Invalid workspace name.");
@@ -324,12 +331,6 @@ public class FlooHandler extends ConnectionInterface {
                 }
                 error_message(details);
                 shutDown();
-                return;
-            case 409:
-                Flog.warn("The workspace already exists so I am joining it.");
-            case 201:
-                Flog.log("Workspace created.");
-                joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
                 return;
             case 401:
                 Flog.log("Auth failed");
