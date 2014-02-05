@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class Ignore {
-    static final String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
+    static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> HIDDEN_WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
@@ -34,12 +34,18 @@ public class Ignore {
         this.parent = parent;
 
         Flog.debug("Initializing ignores for %s", this.file);
-        for (String name : IGNORE_FILES) {
-            name = FilenameUtils.concat(this.file.getPath(), name);
-            File ignoreFile = new File(name);
+
+        for (VirtualFile vf : file.getChildren()) {
+            if (!IGNORE_FILES.contains(vf.getName())) {
+                continue;
+            }
+            if (!vf.isValid()) {
+                continue;
+            }
             String ignores[];
+
             try {
-                ignores = FileUtils.readFileToString(ignoreFile, "UTF-8").split("\\r?\\n");
+                ignores = new String(vf.contentsToByteArray()).split("\\r?\\n");
             } catch (IOException e) {
                 continue;
             }
@@ -53,6 +59,7 @@ public class Ignore {
                 igs.add(ignore);
             }
             this.ignores.put(file.getName(), igs);
+
         }
     }
 
