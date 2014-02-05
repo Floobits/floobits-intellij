@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 
 public class Ignore {
     static final String[] IGNORE_FILES = {".gitignore", ".hgignore", ".flignore", ".flooignore"};
-    // TODO: make this configurable
     static final HashSet<String> HIDDEN_WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
@@ -109,11 +108,11 @@ public class Ignore {
             return true;
         }
         ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
-            paths.add(0, virtualFile.getName());
+        do {
+            path = virtualFile.getPath();
+            paths.add(0, path);
             virtualFile = virtualFile.getParent();
-        }
-        paths.add(0, Shared.colabDir);
+        } while (!Utils.isSamePath(path, Shared.colabDir));
         return isIgnoredUp(path, paths.toArray(new String[paths.size()]));
     }
 
@@ -127,10 +126,11 @@ public class Ignore {
             return true;
         }
         ArrayList<String> paths = new ArrayList<String>();
-        while (!Utils.isSamePath(virtualFile.getPath(), Shared.colabDir)) {
-            paths.add(0, virtualFile.getName());
+        do {
+            path = virtualFile.getPath();
+            paths.add(0, path);
             virtualFile = virtualFile.getParent();
-        }
+        } while (!Utils.isSamePath(path, Shared.colabDir));
         paths.add(0, Shared.colabDir);
 //        Todo we can make this more efficient by not rechecking the parent paths more than once
         return isIgnoredDown(path, paths.toArray(new String[paths.size()]));
@@ -176,19 +176,16 @@ public class Ignore {
 
     protected Boolean isGitIgnored(String path, String[] pathParts) {
         String currentPath = "";
-        for (int i = 0; i < pathParts.length; i++) {
-            String base_path = currentPath;
-            //        Todo we can make this more efficient by not rebuilding these paths for each ignore
-            currentPath = FilenameUtils.concat(currentPath, pathParts[i]);
-            if (i <= this.depth) {
-                continue;
-            }
+        String parentPath;
+        for (int i = depth; i < pathParts.length; i++) {
+            parentPath = currentPath;
+            currentPath = pathParts[i];
             String relPath = Utils.getRelativePath(currentPath, stringPath);
             for (Entry<String, ArrayList<String>> entry : ignores.entrySet()) {
                 for (String pattern : entry.getValue()) {
                     String file_name =  pathParts[i];
                     if (pattern.startsWith("/")) {
-                        if (Utils.isSamePath(base_path, stringPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
+                        if (Utils.isSamePath(parentPath, stringPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
                             Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                             return true;
                         }
