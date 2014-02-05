@@ -2,6 +2,8 @@ package floobits.common;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.project.Project;
+import floobits.FloobitsPlugin;
 import floobits.common.protocol.send.NewAccount;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -13,19 +15,25 @@ import java.util.Map;
  */
 public class CreateAccountHandler extends ConnectionInterface {
     protected FlooConn conn;
+    protected Project project;
 
 
-    public static void createAccount() {
+    public static void createAccount(Project project) {
         if (FlooHandler.isJoined) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
+            FlooHandler flooHandler = FloobitsPlugin.getHandler();
+            if (flooHandler == null) {
+                return;
+            }
+            flooHandler.status_message("You already have an account and are connected with it.");
             return;
         }
         CreateAccountHandler createAccountHandler = new CreateAccountHandler();
-        createAccountHandler.create();
+        createAccountHandler.create(project);
     }
 
 
-    public void create() {
+    public void create(Project project) {
+        this.project = project;
         url = new FlooUrl(Shared.defaultHost, null, null, Shared.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
@@ -34,12 +42,12 @@ public class CreateAccountHandler extends ConnectionInterface {
     @Override
     public void on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
-        Settings settings = new Settings();
+        Settings settings = new Settings(project);
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }
         if (!settings.isComplete()) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't create an account at this time.");
+            Utils.error_message("Can't create an account at this time.", project);
             shutDown();
             return;
         }

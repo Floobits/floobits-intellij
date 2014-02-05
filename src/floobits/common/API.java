@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.project.Project;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -32,25 +33,25 @@ class Request implements Serializable {
 }
 
 public class API {
-    static public HttpMethod getWorkspace (String owner, String workspace) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)));
+    static public HttpMethod getWorkspace(String owner, String workspace, Project project) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), project);
     }
 
-    static public HttpMethod createWorkspace (String owner, String workspace) throws IOException {
+    static public HttpMethod createWorkspace(String owner, String workspace, Project project) throws IOException {
         final PostMethod method = new PostMethod("/api/workspace/");
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
         method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-        return apiRequest(method);
+        return apiRequest(method, project);
     }
 
-    static public HttpMethod apiRequest (HttpMethod method) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, Project project) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setSoTimeout(3000);
         connectionParams.setConnectionTimeout(3000);
-        Settings settings = new Settings();
+        Settings settings = new Settings(project);
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
@@ -80,12 +81,12 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin () {
+    static public List<String> getOrgsCanAdmin(Project project) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin/");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method);
+            apiRequest(method, project);
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;
@@ -105,7 +106,8 @@ public class API {
                 orgs.add(orgName);
             }
         } catch (Exception e) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser(e);
+            Flog.warn(e);
+            Utils.error_message("Error getting Floobits organizations. Try again later or please contact support.", project);
         }
 
         return orgs;

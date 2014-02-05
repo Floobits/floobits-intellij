@@ -18,6 +18,10 @@ public class AddToWorkspace extends IsJoinedAction {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
+        if (flooHandler == null) {
+            return;
+        }
+
         if (virtualFiles == null) {
             return;
         }
@@ -50,7 +54,7 @@ public class AddToWorkspace extends IsJoinedAction {
         }
         Ignore ignore = Ignore.buildIgnoreTree();
         if (ignore == null) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Your file system is broken.");
+            flooHandler.error_message("Your file system may be read-only or you may not have access to it.");
             return;
         }
 

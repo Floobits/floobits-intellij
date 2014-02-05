@@ -2,7 +2,11 @@ package floobits.utilities;
 
 import com.intellij.openapi.diagnostic.Logger;
 
-
+/**
+ * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
+ * Utitls.error_message to notify the user of a problem and Flog.warn to log an exception in a way that doesn't
+ * disturb the user.
+ */
 public class Flog {
     public static Logger Log = Logger.getInstance(Flog.class);
     public static void log (String s, Object... args) {
@@ -10,12 +14,6 @@ public class Flog {
     }
     public static void debug (String s, Object... args) {
         Log.debug(String.format(s, args));
-    }
-    public static void throwAHorribleBlinkingErrorAtTheUser (String s, Object... args) {
-        Log.error(String.format(s, args));
-    }
-    public static void throwAHorribleBlinkingErrorAtTheUser (Throwable e) {
-        Log.error(e);
     }
     public static void warn (Throwable e) {
         Log.warn(e);

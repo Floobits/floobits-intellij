@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.editor.*;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
@@ -22,8 +23,8 @@ import java.util.Map;
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
     protected Timeouts timeouts = Timeouts.create();
-    public TextBuf (String path, Integer id, String buf, String md5) {
-        super(path, id, buf, md5);
+    public TextBuf(String path, Integer id, String buf, String md5, Project project) {
+        super(path, id, buf, md5, project);
         if (buf != null) {
             this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
         }
@@ -52,7 +53,7 @@ public class TextBuf extends Buf <String> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
+                        Utils.error_message("The Floobits plugin was unable to write to a file.", project);
                         return;
                     }
                 }
@@ -71,7 +72,8 @@ public class TextBuf extends Buf <String> {
                 try {
                     virtualFile.setBinaryContent(buf.getBytes());
                 } catch (IOException e) {
-                    Flog.throwAHorribleBlinkingErrorAtTheUser(e);
+                    Flog.warn(e);
+                    Utils.error_message("The Floobits plugin was unable to write to a file.", project);
                 }
             }
         });
@@ -219,7 +221,7 @@ public class TextBuf extends Buf <String> {
                             }
 
                             if (e != null) {
-                                Flog.throwAHorribleBlinkingErrorAtTheUser(e);
+                                Flog.warn(e);
                                 FloobitsPlugin.getHandler().send_get_buf(id);
                                 return;
                             }
