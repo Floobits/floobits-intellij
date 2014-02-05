@@ -26,7 +26,6 @@ import floobits.common.*;
 import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
-import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
 import floobits.dialogs.SelectOwner;
 import floobits.utilities.Colors;
@@ -438,10 +437,10 @@ public class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        final RunLater stompLocal = new RunLater() {
+        final RunLater<Void> stompLocal = new RunLater<Void>() {
             @Override
             @SuppressWarnings("unchecked")
-            public void run(Object arg) {
+            public void run(Void _) {
                 for (Buf buf : conflicts) {
                     send_get_buf(buf.id);
                     buf.buf = null;
@@ -452,10 +451,10 @@ public class FlooHandler extends ConnectionInterface {
                 }
             }
         };
-        final RunLater stompRemote = new RunLater() {
+        final RunLater<Void> stompRemote = new RunLater<Void>() {
             @Override
             @SuppressWarnings("unchecked")
-            public void run(Object arg) {
+            public void run(Void _) {
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
                 }
@@ -464,9 +463,9 @@ public class FlooHandler extends ConnectionInterface {
                 }
             }
         };
-        final RunLater flee = new RunLater() {
+        final RunLater<Void> flee = new RunLater<Void>() {
             @Override
-            public void run(Object arg) {
+            public void run(Void _) {
                 shutDown();
             }
         };

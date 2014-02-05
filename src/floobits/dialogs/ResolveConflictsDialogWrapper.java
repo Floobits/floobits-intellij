@@ -8,11 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-/**
- * User: bjorn
- * Date: 2/4/14
- * Time: 3:02 PM
- */
+
 public class ResolveConflictsDialogWrapper extends DialogWrapper {
     protected RunLater stompLocal;
     protected RunLater stompRemote;
