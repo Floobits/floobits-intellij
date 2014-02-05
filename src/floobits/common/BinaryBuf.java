@@ -1,5 +1,6 @@
 package floobits.common;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
 import floobits.Listener;
@@ -11,13 +12,12 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
 
-    public BinaryBuf (String path, Integer id, byte[] buf, String md5) {
-        super(path, id, buf, md5);
+    public BinaryBuf(String path, Integer id, byte[] buf, String md5, Project project) {
+        super(path, id, buf, md5, project);
         this.encoding = Encoding.BASE64;
     }
 
@@ -44,7 +44,7 @@ public class BinaryBuf extends Buf <byte[]> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Flog.throwAHorribleBlinkingErrorAtTheUser("Unable to write file.");
+                        Utils.error_message("Unable to write file.", project);
                         return;
                     }
                 }

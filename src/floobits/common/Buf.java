@@ -2,6 +2,7 @@ package floobits.common;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,12 +26,14 @@ public abstract class Buf <T> {
     public Encoding encoding;
     public Timeout timeout;
     public boolean forced_patch = false;
+    protected Project project;
 
-    public Buf (String path, Integer id, T buf, String md5) {
+    public Buf(String path, Integer id, T buf, String md5, Project project) {
         this.id = id;
         this.path = path;
         this.buf = buf;
         this.md5 = md5;
+        this.project = project;
     }
 
     public void cancelTimeout () {
@@ -61,7 +64,8 @@ public abstract class Buf <T> {
         try {
             VfsUtil.createDirectories(parentPath);
         } catch (IOException e) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("createFile error %s", e);
+            Flog.warn("createFile error %s", e);
+            Utils.error_message("The Floobits plugin was unable to create a file.", project);
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
@@ -73,7 +77,8 @@ public abstract class Buf <T> {
         try {
             newFile = parent.findOrCreateChildData(FloobitsPlugin.getHandler(), name);
         } catch (IOException e) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Create file error %s", e);
+            Flog.warn("Create file error %s", e);
+            Utils.error_message("The Floobits plugin was unable to create a file.", project);
             return null;
         }
         return newFile;
@@ -92,13 +97,13 @@ public abstract class Buf <T> {
         }
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-    public static Buf createBuf (String path, Integer id, Encoding enc, String md5) {
+    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, Project project) {
         if (enc == Encoding.BASE64) {
-            return new BinaryBuf(path, id, null, md5);
+            return new BinaryBuf(path, id, null, md5, project);
         }
-        return new TextBuf(path, id, null, md5);
+        return new TextBuf(path, id, null, md5, project);
     }
-    public static Buf createBuf (VirtualFile virtualFile) {
+    public static Buf createBuf(VirtualFile virtualFile, Project project) {
         try {
             byte[] originalBytes = virtualFile.contentsToByteArray();
             String encodedContents = new String(originalBytes, "UTF-8");
@@ -106,10 +111,10 @@ public abstract class Buf <T> {
             String filePath = Utils.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
                 String md5 = DigestUtils.md5Hex(encodedContents);
-                return new TextBuf(filePath, null, encodedContents, md5);
+                return new TextBuf(filePath, null, encodedContents, md5, project);
             } else {
                 String md5 = DigestUtils.md5Hex(originalBytes);
-                return new BinaryBuf(filePath, null, originalBytes, md5);
+                return new BinaryBuf(filePath, null, originalBytes, md5, project);
             }
         } catch (IOException e) {
             Flog.warn("Error getting virtual file contents in createBuf %s", virtualFile);

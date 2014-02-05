@@ -3,6 +3,7 @@ package floobits.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.common.*;
@@ -21,18 +22,19 @@ public class LinkEditorHandler extends ConnectionInterface {
     protected FlooConn conn;
     protected String token;
 
-    public LinkEditorHandler() {
+    public LinkEditorHandler(Project project) {
+        this.project = project;
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
     }
 
-    public static void linkEditor() {
+    public static void linkEditor(Project project) {
         if (FlooHandler.isJoined) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("You already have an account and are connected with it.");
+            Utils.status_message("You already have an account and are connected with it.", project);
             FlooHandler floohandler = FloobitsPlugin.getHandler();
             floohandler.shutDown();
         }
-        LinkEditorHandler linkEditorHandler = new LinkEditorHandler();
+        LinkEditorHandler linkEditorHandler = new LinkEditorHandler(project);
         linkEditorHandler.link();
     }
 
@@ -49,7 +51,7 @@ public class LinkEditorHandler extends ConnectionInterface {
         if (!name.equals("credentials")) {
             return;
         }
-        Settings settings = new Settings();
+        Settings settings = new Settings(project);
         JsonObject credentials = (JsonObject) obj.get("credentials");
         for (Map.Entry<String, JsonElement> thing : credentials.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
@@ -57,14 +59,14 @@ public class LinkEditorHandler extends ConnectionInterface {
         if (settings.isComplete()) {
             settings.write();
         } else {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Something went wrong, please contact support.");
+            Utils.error_message("Something went wrong while receiving data, please contact Floobits support.", project);
         }
         shutDown();
     }
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't use a browser on this system.");
+            Utils.error_message("Floobits can't use a browser on this system.", project);
             shutDown();
             return;
         }

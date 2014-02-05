@@ -2,9 +2,10 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.common.CreateAccountHandler;
+import com.intellij.openapi.project.Project;
 import floobits.common.Settings;
 import floobits.common.Shared;
+import floobits.common.Utils;
 import floobits.utilities.Flog;
 
 import java.awt.*;
@@ -15,13 +16,17 @@ import java.net.URISyntaxException;
 
 public class CompleteSignup extends AnAction {
     public void actionPerformed(AnActionEvent e) {
-        Settings settings = new Settings();
+        Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
+        Settings settings = new Settings(project);
         if (!settings.isComplete()) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Error, no account details detected. You will have to sign up manually.");
+            Utils.error_message("Error, no account details detected. You will have to sign up manually.", project);
             return;
         }
         if(!Desktop.isDesktopSupported()) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("Can't use a browser on this system.");
+            Utils.error_message("Can't use a browser on this system.", project);
             return;
         }
         String username = settings.get("username");

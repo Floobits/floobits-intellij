@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 
 public class CreateAccount extends DialogWrapper {
     private JPanel jPanel;
+    protected Project project;
 
 
     private class CreateAccountAction extends DialogWrapper.DialogWrapperAction {
@@ -44,6 +45,7 @@ public class CreateAccount extends DialogWrapper {
 
     public CreateAccount(@Nullable Project project) {
         super(project, true);
+        this.project = project;
         jPanel = new JPanel();
         init();
         this.setTitle("No Floobits account detected");
@@ -68,13 +70,13 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        LinkEditorHandler.linkEditor();
+        LinkEditorHandler.linkEditor(project);
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        CreateAccountHandler.createAccount();
+        CreateAccountHandler.createAccount(project);
     }
 }
 

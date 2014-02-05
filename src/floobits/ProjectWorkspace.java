@@ -31,7 +31,7 @@ public class ProjectWorkspace implements ProjectComponent {
     public void projectOpened() {
         // called when project is opened
         Settings settings;
-        settings = new Settings();
+        settings = new Settings(project);
         if (!settings.isComplete()) {
             setupAccount();
         }

@@ -107,7 +107,7 @@ public class FlooConn extends Thread {
         FlooUrl flooUrl = handler.getUrl();
         SSLContext sslContext = Utils.createSSLContext();
         if (sslContext == null) {
-            Flog.throwAHorribleBlinkingErrorAtTheUser("I can't do SSL.");
+            Utils.error_message("I can't do SSL.", this.handler.getProject());
             return;
         }
         try{

@@ -3,9 +3,7 @@ package floobits.handlers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
@@ -18,15 +16,12 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import floobits.*;
 import floobits.common.*;
 import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
-import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
 import floobits.dialogs.SelectOwner;
 import floobits.utilities.Colors;
@@ -37,7 +32,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -94,34 +88,11 @@ public class FlooHandler extends ConnectionInterface {
     private String user_id;
 
     void flash_message(final String message) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-                        if (statusBar == null) {
-                            return;
-                        }
-                        JLabel jLabel = new JLabel(message);
-                        statusBar.fireNotificationPopup(jLabel, JBColor.WHITE);
-                    }
-                });
-            }
-        });
+        Utils.flash_message(message, project);
     }
 
-    void status_message(final String message, final NotificationType notificationType) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
-                    }
-                });
-            }
-        });
+    void status_message(String message, NotificationType notificationType) {
+        Utils.status_message(message, notificationType, project);
     }
 
     public void status_message(String message) {
@@ -129,7 +100,7 @@ public class FlooHandler extends ConnectionInterface {
         status_message(message, NotificationType.INFORMATION);
     }
 
-    void error_message(String message) {
+    public void error_message(String message) {
         Flog.log(message);
         status_message(message, NotificationType.ERROR);
     }
@@ -143,7 +114,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void on_connect () {
-        this.conn.write(new FlooAuth(new Settings(), this.url.owner, this.url.workspace));
+        this.conn.write(new FlooAuth(new Settings(project), this.url.owner, this.url.workspace));
         status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
@@ -201,10 +172,10 @@ public class FlooHandler extends ConnectionInterface {
             }
         }
 
-        Settings settings = new Settings();
+        Settings settings = new Settings(project);
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
-        List<String> orgs = API.getOrgsCanAdmin();
+        List<String> orgs = API.getOrgsCanAdmin(project);
 
         if (orgs.size() == 0) {
             createWorkspace(owner, name, project_path);
@@ -278,7 +249,7 @@ public class FlooHandler extends ConnectionInterface {
         }
         HttpMethod method;
         try {
-            method = API.getWorkspace(f.owner, f.workspace);
+            method = API.getWorkspace(f.owner, f.workspace, project);
         } catch (IOException e) {
             Flog.warn(e);
             return false;
@@ -301,7 +272,7 @@ public class FlooHandler extends ConnectionInterface {
     void createWorkspace(String owner, String name, String project_path) {
         HttpMethod method;
         try {
-            method = API.createWorkspace(owner, name);
+            method = API.createWorkspace(owner, name, project);
         } catch (IOException e) {
             error_message(String.format("Could not create workspace: %s", e.toString()));
             return;
@@ -417,7 +388,7 @@ public class FlooHandler extends ConnectionInterface {
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5);
+            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, project);
             this.bufs.put(buf_id, buf);
             this.paths_to_ids.put(b.path, b.id);
             buf.read();
@@ -438,10 +409,10 @@ public class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        final RunLater stompLocal = new RunLater() {
+        final RunLater<Void> stompLocal = new RunLater<Void>() {
             @Override
             @SuppressWarnings("unchecked")
-            public void run(Object arg) {
+            public void run(Void _) {
                 for (Buf buf : conflicts) {
                     send_get_buf(buf.id);
                     buf.buf = null;
@@ -452,10 +423,10 @@ public class FlooHandler extends ConnectionInterface {
                 }
             }
         };
-        final RunLater stompRemote = new RunLater() {
+        final RunLater<Void> stompRemote = new RunLater<Void>() {
             @Override
             @SuppressWarnings("unchecked")
-            public void run(Object arg) {
+            public void run(Void _) {
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
                 }
@@ -464,9 +435,9 @@ public class FlooHandler extends ConnectionInterface {
                 }
             }
         };
-        final RunLater flee = new RunLater() {
+        final RunLater<Void> flee = new RunLater<Void>() {
             @Override
-            public void run(Object arg) {
+            public void run(Void _) {
                 shutDown();
             }
         };
@@ -485,7 +456,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void send_create_buf(VirtualFile virtualFile) {
-        Buf buf = Buf.createBuf(virtualFile);
+        Buf buf = Buf.createBuf(virtualFile, project);
         if (buf == null) {
             return;
         }
@@ -509,9 +480,9 @@ public class FlooHandler extends ConnectionInterface {
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
         Buf buf;
         if (res.encoding.equals(Encoding.BASE64.toString())) {
-            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5);
+            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5, project);
         } else {
-            buf = new TextBuf(res.path, res.id, res.buf, res.md5);
+            buf = new TextBuf(res.path, res.id, res.buf, res.md5, project);
         }
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);

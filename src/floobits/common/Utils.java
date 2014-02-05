@@ -1,7 +1,15 @@
 package floobits.common;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.ui.JBColor;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
@@ -10,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -302,6 +311,7 @@ public class Utils {
         };
         timeouts.setTimeout(timeout);
     }
+
     static public SSLContext createSSLContext() {
         X509TrustManager x509TrustManager = new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {return null;}
@@ -341,5 +351,44 @@ public class Utils {
             Flog.warn(e);
         }
         return sc;
+    }
+
+    public static void status_message(final String message, final NotificationType notificationType, final Project project) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
+                    }
+                });
+            }
+        });
+    }
+
+    public static void status_message(String message, Project project) {
+        status_message(message, NotificationType.INFORMATION, project);
+    }
+
+    public static void error_message(String message, Project project) {
+        status_message(message, NotificationType.ERROR, project);
+    }
+
+    public static void flash_message(final String message, final Project project) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    public void run() {
+                        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+                        if (statusBar == null) {
+                            return;
+                        }
+                        JLabel jLabel = new JLabel(message);
+                        statusBar.fireNotificationPopup(jLabel, JBColor.WHITE);
+                    }
+                });
+            }
+        });
     }
 }
