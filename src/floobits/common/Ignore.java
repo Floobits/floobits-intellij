@@ -113,7 +113,7 @@ public class Ignore {
             paths.add(0, path);
             virtualFile = virtualFile.getParent();
         } while (!Utils.isSamePath(path, Shared.colabDir));
-        return isIgnoredUp(path, paths.toArray(new String[paths.size()]));
+        return isIgnoredUp(path, paths);
     }
 
     public boolean isIgnoredDown(VirtualFile virtualFile) {
@@ -121,34 +121,34 @@ public class Ignore {
             Flog.log("Ignoring %s because it is invalid.", virtualFile);
             return true;
         }
-        String path = FilenameUtils.normalizeNoEndSeparator(virtualFile.getPath());
-        if (isFlooIgnored(virtualFile, path)) {
+        String full_path = FilenameUtils.normalizeNoEndSeparator(virtualFile.getPath());
+        if (isFlooIgnored(virtualFile, full_path)) {
             return true;
         }
         ArrayList<String> paths = new ArrayList<String>();
+        String path;
         do {
             path = virtualFile.getPath();
             paths.add(0, path);
             virtualFile = virtualFile.getParent();
         } while (!Utils.isSamePath(path, Shared.colabDir));
-        paths.add(0, Shared.colabDir);
 //        Todo we can make this more efficient by not rechecking the parent paths more than once
-        return isIgnoredDown(path, paths.toArray(new String[paths.size()]));
+        return isIgnoredDown(full_path, paths);
     }
 
-    private boolean isIgnoredUp(String path, String[] pathParts) {
+    private boolean isIgnoredUp(String path, ArrayList<String> pathParts) {
         if (isGitIgnored(path, pathParts)) {
             return true;
         }
-        if (depth + 1 >= pathParts.length) {
+        if (depth + 1 >= pathParts.size()) {
             return false;
         }
-        String nextName = pathParts[depth];
+        String nextName = FilenameUtils.getName(pathParts.get(depth));
         Ignore ignore = this.children.get(nextName);
         return ignore != null && ignore.isIgnoredUp(path, pathParts);
     }
 
-    private boolean isIgnoredDown(String path, String[] pathParts) {
+    private boolean isIgnoredDown(String path, ArrayList<String> pathParts) {
         return isGitIgnored(path, pathParts) || parent != null && parent.isIgnoredDown(path, pathParts);
     }
     private boolean isFlooIgnored(VirtualFile virtualFile, String path) {
@@ -174,16 +174,16 @@ public class Ignore {
         return false;
     }
 
-    protected Boolean isGitIgnored(String path, String[] pathParts) {
+    protected Boolean isGitIgnored(String path, ArrayList<String> pathParts) {
         String currentPath = "";
         String parentPath;
-        for (int i = depth; i < pathParts.length; i++) {
+        for (int i = depth + 1; i < pathParts.size(); i++) {
             parentPath = currentPath;
-            currentPath = pathParts[i];
+            currentPath = pathParts.get(i);
+            String file_name =  FilenameUtils.getName(currentPath);
             String relPath = Utils.getRelativePath(currentPath, stringPath);
             for (Entry<String, ArrayList<String>> entry : ignores.entrySet()) {
                 for (String pattern : entry.getValue()) {
-                    String file_name =  pathParts[i];
                     if (pattern.startsWith("/")) {
                         if (Utils.isSamePath(parentPath, stringPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
                             Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
@@ -198,7 +198,10 @@ public class Ignore {
                         Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
-                    if (!file_name.equals(relPath) && FilenameUtils.wildcardMatch(relPath, pattern)) {
+                    if (file_name.equals(relPath)) {
+                        continue;
+                    }
+                    if (FilenameUtils.wildcardMatch(relPath, pattern)) {
                         Flog.log("Ignoring %s because %s in %s", path, pattern, entry.getKey());
                         return true;
                     }
