@@ -27,6 +27,7 @@ import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
 import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.ResolveConflictsDialogWrapper;
 import floobits.dialogs.SelectOwner;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
@@ -412,6 +413,7 @@ public class FlooHandler extends ConnectionInterface {
         DotFloo.write(this.url.toString());
 
         final LinkedList<Buf> conflicts = new LinkedList<Buf>();
+        final LinkedList<String> conflictedPaths = new LinkedList<String>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
@@ -425,6 +427,7 @@ public class FlooHandler extends ConnectionInterface {
             }
             if (!b.md5.equals(buf.md5)) {
                 conflicts.add(buf);
+                conflictedPaths.add(buf.path);
             }
         }
 
@@ -434,38 +437,49 @@ public class FlooHandler extends ConnectionInterface {
             }
             return;
         }
-        String dialog;
-        if (conflicts.size() > 15) {
-            dialog = String.format("<p>%d files are different.  Do you want to overwrite them (OK)?</p> ", conflicts.size());
-         } else {
-            if (conflicts.size() == 1) {
-                dialog = "<p>The following remote file is different from your version. Do you want to overwrite your local file with the changes from the remote workspace (OK)?</p><ul>";
-            } else {
-                dialog = "<p>The following remote files are different from yours. Do you want to overwrite your local files with the changes from the remote workspace (OK)?</p><ul>";
-            }
-            for (Buf buf : conflicts) {
-                dialog += String.format("<li>%s</li>", buf.path);
-            }
-            dialog += "</ul>";
-        }
 
-        DialogBuilder.build("Resolve Conflicts", dialog, new RunLater<Boolean>() {
+        final RunLater stompLocal = new RunLater() {
             @Override
             @SuppressWarnings("unchecked")
-            public void run(Boolean stomp) {
+            public void run(Object arg) {
                 for (Buf buf : conflicts) {
-                    if (stomp) {
-                        send_get_buf(buf.id);
-                        buf.buf = null;
-                        buf.md5 = null;
-                    } else {
-                        send_set_buf(buf);
-                    }
+                    send_get_buf(buf.id);
+                    buf.buf = null;
+                    buf.md5 = null;
                 }
                 if (shouldUpload) {
                     upload();
                 }
             }
+        };
+        final RunLater stompRemote = new RunLater() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public void run(Object arg) {
+                for (Buf buf : conflicts) {
+                    send_set_buf(buf);
+                }
+                if (shouldUpload) {
+                    upload();
+                }
+            }
+        };
+        final RunLater flee = new RunLater() {
+            @Override
+            public void run(Object arg) {
+                shutDown();
+            }
+        };
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
+                ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(stompLocal, stompRemote, flee, conflictedPathsArray);
+                dialog.createCenterPanel();
+                dialog.show();
+            }
+
         });
 
     }

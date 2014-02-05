@@ -10,19 +10,17 @@ import java.util.List;
 public class SelectRecentWorkspace extends DialogWrapper {
     private SelectWorkspace selectWorkspace = new SelectWorkspace();
 
+    public SelectRecentWorkspace(final List<String> items) {
+        super(true);
+        this.setTitle("Select a Workspace");
+        selectWorkspace.setItems(items);
+        init();
+    }
+
     @Nullable
     @Override
     public JComponent createCenterPanel() {
         return selectWorkspace.getPanel();
-    }
-
-    public SelectRecentWorkspace(final List<String> items) {
-        super(true);
-        this.setTitle("Select a Workspace");
-
-        selectWorkspace.setItems(items);
-        init();
-
     }
 
     @Override

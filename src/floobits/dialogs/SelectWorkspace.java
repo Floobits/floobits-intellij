@@ -28,10 +28,4 @@ public class SelectWorkspace extends JDialog {
         return (String) recentWorkspaces.getSelectedValue();
     }
 
-    public static void main(String[] args) {
-        SelectWorkspace dialog = new SelectWorkspace();
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
-    }
 }
