@@ -1,40 +1,22 @@
-package floobits.common;
+package floobits.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
+import floobits.common.*;
 import floobits.common.protocol.send.NewAccount;
-import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
 import java.util.Map;
 
-/**
- * Created by kans on 1/28/14.
- */
-public class CreateAccountHandler extends ConnectionInterface {
-    protected FlooConn conn;
-    protected Project project;
+public class CreateAccountHandler extends BaseHandler {
 
-
-    public static void createAccount(Project project) {
-        if (FlooHandler.isJoined) {
-            FlooHandler flooHandler = FloobitsPlugin.getHandler();
-            if (flooHandler == null) {
-                return;
-            }
-            flooHandler.status_message("You already have an account and are connected with it.");
-            return;
-        }
-        CreateAccountHandler createAccountHandler = new CreateAccountHandler();
-        createAccountHandler.create(project);
+    public CreateAccountHandler(FloobitsPlugin context) {
+        super(context);
     }
 
-
-    public void create(Project project) {
-        this.project = project;
-        url = new FlooUrl(Shared.defaultHost, null, null, Shared.defaultPort, true);
+    public void create() {
+        url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
     }
@@ -42,12 +24,12 @@ public class CreateAccountHandler extends ConnectionInterface {
     @Override
     public void on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
-        Settings settings = new Settings(project);
+        Settings settings = new Settings(context.project);
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }
         if (!settings.isComplete()) {
-            Utils.error_message("Can't create an account at this time.", project);
+            Utils.error_message("Can't create an account at this time.", context.project);
             shutDown();
             return;
         }

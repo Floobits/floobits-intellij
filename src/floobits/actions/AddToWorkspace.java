@@ -10,7 +10,6 @@ import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 import floobits.common.Ignore;
 import floobits.common.Utils;
-import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
 
 public class AddToWorkspace extends IsJoinedAction {
@@ -76,15 +75,5 @@ public class AddToWorkspace extends IsJoinedAction {
             return;
         }
         set.add(virtualFile);
-    }
-
-    @Override
-    public void update(AnActionEvent e) {
-        super.update(e);    //To change body of overridden methods use File | Settings | File Templates.
-        if (FloobitsPlugin.getHandler() == null) {
-            e.getPresentation().setEnabled(false);
-        } else {
-            e.getPresentation().setEnabled(true);
-        }
     }
 }

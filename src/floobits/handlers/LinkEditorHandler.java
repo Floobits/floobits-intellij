@@ -1,13 +1,11 @@
 package floobits.handlers;
 
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
-import floobits.utilities.Flog;
 import floobits.common.*;
 import floobits.common.protocol.send.FlooRequestCredentials;
+import floobits.utilities.Flog;
 
 import java.awt.*;
 import java.io.IOException;
@@ -18,30 +16,20 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public class LinkEditorHandler extends ConnectionInterface {
-    protected FlooConn conn;
+public class LinkEditorHandler extends BaseHandler {
     protected String token;
 
-    public LinkEditorHandler(Project project) {
-        this.project = project;
+    public LinkEditorHandler(FloobitsPlugin context) {
+        super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
     }
 
-    public static void linkEditor(Project project) {
-        if (FlooHandler.isJoined) {
-            Utils.status_message("You already have an account and are connected with it.", project);
-            FlooHandler floohandler = FloobitsPlugin.getHandler();
-            floohandler.shutDown();
-        }
-        LinkEditorHandler linkEditorHandler = new LinkEditorHandler(project);
-        linkEditorHandler.link();
-    }
-
     public void link() {
-        url = new FlooUrl(Shared.defaultHost, null, null, Shared.defaultPort, true);
+        url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
+        this.isJoined = true;
         openBrowser();
     }
 
@@ -51,7 +39,7 @@ public class LinkEditorHandler extends ConnectionInterface {
         if (!name.equals("credentials")) {
             return;
         }
-        Settings settings = new Settings(project);
+        Settings settings = new Settings(context.project);
         JsonObject credentials = (JsonObject) obj.get("credentials");
         for (Map.Entry<String, JsonElement> thing : credentials.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
@@ -59,19 +47,19 @@ public class LinkEditorHandler extends ConnectionInterface {
         if (settings.isComplete()) {
             settings.write();
         } else {
-            Utils.error_message("Something went wrong while receiving data, please contact Floobits support.", project);
+            Utils.error_message("Something went wrong while receiving data, please contact Floobits support.", context.project);
         }
         shutDown();
     }
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
-            Utils.error_message("Floobits can't use a browser on this system.", project);
+            Utils.error_message("Floobits can't use a browser on this system.", context.project);
             shutDown();
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/%s/", Shared.defaultHost, token)));
+            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/%s/", Constants.defaultHost, token)));
         } catch (IOException error) {
             shutDown();
             Flog.warn(error);
@@ -79,10 +67,6 @@ public class LinkEditorHandler extends ConnectionInterface {
             shutDown();
             Flog.warn(error);
         }
-    }
-
-    public void shutDown() {
-        this.conn.shutDown();
     }
 
     @Override

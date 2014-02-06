@@ -31,6 +31,37 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Utils {
+    private final FloobitsPlugin context;
+
+    public Utils(FloobitsPlugin context) {
+        this.context = context;
+    }
+    public static String absPath (String p1, String path) {
+        return FilenameUtils.concat(p1, path);
+    }
+
+    public static Boolean isShared (String path, String p1) {
+        return isChild(path, p1);
+    }
+
+    public static String toProjectRelPath (String path, String p1) {
+        return getRelativePath(path, p1);
+    }
+
+    public static void createFile(final FloobitsPlugin context, final VirtualFile virtualFile) {
+        Timeout timeout = new Timeout(100) {
+            @Override
+            public void run(Void arg) {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.upload(virtualFile);
+            }
+        };
+        timeouts.setTimeout(timeout);
+    }
+
     private static final String cert =
         "-----BEGIN CERTIFICATE-----\n" +
         "MIIHyTCCBbGgAwIBAgIBATANBgkqhkiG9w0BAQUFADB9MQswCQYDVQQGEwJJTDEW\n" +
@@ -91,10 +122,6 @@ public class Utils {
         return FilenameUtils.equalsNormalizedOnSystem(p1, p2);
     }
 
-    public static String absPath (String path) {
-        return FilenameUtils.concat(Shared.colabDir, path);
-    }
-
     public static String unFuckPath (String path) {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }
@@ -109,14 +136,6 @@ public class Utils {
         } catch (StringIndexOutOfBoundsException e) {
             return false;
         }
-    }
-
-    public static Boolean isShared (String path) {
-        return isChild(path, Shared.colabDir);
-    }
-
-    public static String toProjectRelPath (String path) {
-        return getRelativePath(path, Shared.colabDir);
     }
 
     /** 
@@ -296,20 +315,6 @@ public class Utils {
             filePaths.add(file);
         }
         return filePaths;
-    }
-
-    public static void createFile(final VirtualFile virtualFile) {
-        Timeout timeout = new Timeout(100) {
-            @Override
-            public void run(Void arg) {
-                FlooHandler flooHandler = FloobitsPlugin.getHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                flooHandler.upload(virtualFile);
-            }
-        };
-        timeouts.setTimeout(timeout);
     }
 
     static public SSLContext createSSLContext() {

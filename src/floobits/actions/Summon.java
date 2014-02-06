@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.GetPath;
 
@@ -23,6 +24,7 @@ public class Summon extends IsJoinedAction {
                 flooHandler.send_summon(path, offset);
             }
         };
-        GetPath.getPath(getPath);
+        FloobitsPlugin context = FloobitsPlugin.getInstance(e.getProject());
+        GetPath.getPath(context, getPath);
     }
 }

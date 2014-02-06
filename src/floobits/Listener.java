@@ -1,7 +1,6 @@
 package floobits;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -28,19 +27,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
+public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
-    public static synchronized void flooEnable() {
+    private final FloobitsPlugin context;
+
+    public synchronized void flooEnable() {
         isListening.set(true);
     }
-    public static synchronized void flooDisable() {
+    public synchronized void flooDisable() {
         isListening.set(false);
     }
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener() {
+    public Listener(FloobitsPlugin context) {
+        this.context = context;
+    }
+
+    public void start() {
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
+        em.addDocumentListener(this);
+        em.addSelectionListener(this);
+        em.addCaretListener(this);
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
@@ -54,22 +63,15 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                FlooHandler instance = FloobitsPlugin.getHandler();
-                if (instance != null) {
-                    instance.untellij_renamed(oldValue, newValue);
+                FlooHandler handler = context.getFlooHandler();
+                if (handler != null)
+                    handler.untellij_renamed(oldValue, newValue);
                 }
             }
-        });
+        );
     }
 
-    public void initComponent() {
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
-        em.addDocumentListener(this);
-        em.addSelectionListener(this);
-        em.addCaretListener(this);
-    }
-
-    public void disposeComponent() {
+    public void stope() {
         connection.disconnect();
         em.removeSelectionListener(this)    ;
         em.removeDocumentListener(this);
@@ -78,7 +80,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 flooHandler.untellij_saved(path);
@@ -86,10 +88,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         });
     }
 
+
     @Override
     public void documentChanged(DocumentEvent event) {
         Flog.info("Document changed.");
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
+        FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
@@ -107,15 +110,13 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
-        if (!isListening.get()) {
+        if (!isListening.get() || context.handler == null) {
             return;
         }
-        if (FloobitsPlugin.getHandler() == null) {
-            return;
-        }
+
         Document document = event.getEditor().getDocument();
         final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 if (editors.length <= 0) {
@@ -136,7 +137,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             return;
         }
         Document document = event.getEditor().getDocument();
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 TextRange[] textRanges = event.getNewRanges();
@@ -156,14 +157,13 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        FlooHandler handler = FloobitsPlugin.getHandler();
+        FlooHandler handler = context.getFlooHandler();
         if (handler == null) {
             return;
         }
         if (!isListening.get()) {
             return;
         }
-
 
         boolean makeIgnore = false;
         for (VFileEvent vFileEvent : events) {
@@ -199,7 +199,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    FloobitsPlugin.getHandler().untellij_renamed(oldFilePath, newFilePath);
+                    handler.untellij_renamed(oldFilePath, newFilePath);
                 }
                 continue;
             }
@@ -228,7 +228,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 if (ignore.isIgnored(copiedFile.getPath())) {
                     return;
                 }
-                Utils.createFile(copiedFile);
+                Utils.createFile(context, copiedFile);
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
@@ -236,7 +236,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 ArrayList<VirtualFile> createdFiles;
                 createdFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
                 for (final VirtualFile createdFile : createdFiles) {
-                    Utils.createFile(createdFile);
+                    Utils.createFile(context, createdFile);
                 }
                 continue;
             }
@@ -249,13 +249,6 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             }
         }
     }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return "Floobits";  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public void unsavedDocumentsDropped() {
         //To change body of implemented methods use File | Settings | File Templates.

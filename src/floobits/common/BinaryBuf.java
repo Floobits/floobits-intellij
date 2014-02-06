@@ -1,6 +1,5 @@
 package floobits.common;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
 import floobits.Listener;
@@ -16,8 +15,8 @@ import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
 
-    public BinaryBuf(String path, Integer id, byte[] buf, String md5, Project project) {
-        super(path, id, buf, md5, project);
+    public BinaryBuf(String path, Integer id, byte[] buf, String md5, FloobitsPlugin context) {
+        super(path, id, buf, md5, context);
         this.encoding = Encoding.BASE64;
     }
 
@@ -37,24 +36,24 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void write() {
-        ThreadSafe.write(new Runnable() {
+        ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
                 VirtualFile virtualFile = getVirtualFile();
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Utils.error_message("Unable to write file.", project);
+                        Utils.error_message("Unable to write file.", context.project);
                         return;
                     }
                 }
                 try {
-                    Listener.flooDisable();
+                    context.getFlooHandler().listener.flooDisable();
                     virtualFile.setBinaryContent(buf);
                 } catch (IOException e) {
                     Flog.warn("Writing binary content to disk failed. %s", path);
                 } finally {
-                    Listener.flooEnable();
+                    context.getFlooHandler().listener.flooEnable();
                 }
 
             }
@@ -76,7 +75,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void patch(FlooPatch res) {
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
+        FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
@@ -85,7 +84,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void send_patch(VirtualFile virtualFile) {
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
+        FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }

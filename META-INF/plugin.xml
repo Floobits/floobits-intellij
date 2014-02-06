@@ -21,16 +21,13 @@
   <depends>com.intellij.modules.lang</depends>
 
   <application-components>
-      <component>
-          <implementation-class>floobits.Listener</implementation-class>
-      </component>
-      <component>
-          <implementation-class>floobits.FloobitsPlugin</implementation-class>
-      </component>
   </application-components>
 
   <project-components>
     <!-- Add your project components here -->
+      <component>
+          <implementation-class>floobits.FloobitsPlugin</implementation-class>
+      </component>
       <component>
           <implementation-class>floobits.ProjectWorkspace</implementation-class>
       </component>

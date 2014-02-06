@@ -35,10 +35,10 @@ public class DotFloo {
         return null;
     }
 
-    public static void write(String url) {
+    public static void write(String colabDir, String url) {
         try {
             String flooFile = String.format("{\n    \"url\": \"%s\"\n}", url);
-            FileUtils.write(path(Shared.colabDir), flooFile, "UTF-8");
+            FileUtils.write(path(colabDir), flooFile, "UTF-8");
         } catch (Exception e) {
             Flog.warn(e);
         }

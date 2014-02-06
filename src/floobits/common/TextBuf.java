@@ -1,7 +1,6 @@
 package floobits.common;
 
 import com.intellij.openapi.editor.*;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
@@ -23,8 +22,8 @@ import java.util.Map;
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
     protected Timeouts timeouts = Timeouts.create();
-    public TextBuf(String path, Integer id, String buf, String md5, Project project) {
-        super(path, id, buf, md5, project);
+    public TextBuf(String path, Integer id, String buf, String md5, FloobitsPlugin context) {
+        super(path, id, buf, md5, context);
         if (buf != null) {
             this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
         }
@@ -47,24 +46,24 @@ public class TextBuf extends Buf <String> {
     }
 
     public void write() {
-        ThreadSafe.write(new Runnable() {
+        ThreadSafe.write(context, new Runnable() {
             public void run() {
                 VirtualFile virtualFile = getVirtualFile();
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Utils.error_message("The Floobits plugin was unable to write to a file.", project);
+                        Utils.error_message("The Floobits plugin was unable to write to a file.", context.project);
                         return;
                     }
                 }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d != null) {
                     try {
-                        Listener.flooDisable();
+                        context.getFlooHandler().listener.flooDisable();
                         d.setReadOnly(false);
                         d.setText(buf);
                     } finally {
-                        Listener.flooEnable();
+                        context.getFlooHandler().listener.flooEnable();
                     }
                     return;
                 }
@@ -73,7 +72,7 @@ public class TextBuf extends Buf <String> {
                     virtualFile.setBinaryContent(buf.getBytes());
                 } catch (IOException e) {
                     Flog.warn(e);
-                    Utils.error_message("The Floobits plugin was unable to write to a file.", project);
+                    Utils.error_message("The Floobits plugin was unable to write to a file.", context.project);
                 }
             }
         });
@@ -98,7 +97,7 @@ public class TextBuf extends Buf <String> {
     }
 
     public void send_patch(String current) {
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
+        FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
@@ -118,7 +117,7 @@ public class TextBuf extends Buf <String> {
             @Override
             public void run() {
                 final Document d;
-                final FlooHandler flooHandler = FloobitsPlugin.getHandler();
+                final FlooHandler flooHandler = context.getFlooHandler();
                 if (flooHandler == null) {
                     return;
                 }
@@ -181,7 +180,11 @@ public class TextBuf extends Buf <String> {
                         public void run(Void arg) {
                             b.timeout = null;
                             Flog.info("Sending get buf because md5s did not match.");
-                            FloobitsPlugin.getHandler().send_get_buf(buf_id);
+                            FlooHandler flooHandler = context.getFlooHandler();
+                            if (flooHandler == null) {
+                                return;
+                            }
+                            flooHandler.send_get_buf(buf_id);
                         }
                     };
                     timeouts.setTimeout(timeout);
@@ -189,7 +192,7 @@ public class TextBuf extends Buf <String> {
                     return;
                 }
                 Flog.log("Patched %s", res.path);
-                ThreadSafe.write(new Runnable() {
+                ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
                         if (!ReadonlyStatusHandler.ensureDocumentWritable(flooHandler.project, d)){
@@ -197,7 +200,7 @@ public class TextBuf extends Buf <String> {
                             return;
                         }
 
-                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, FloobitsPlugin.getHandler().project);
+                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, context.project);
                         final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
                         for (Editor editor : editors) {
                             if (editor.isDisposed()) {
@@ -212,17 +215,21 @@ public class TextBuf extends Buf <String> {
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                             Exception e = null;
                             try {
-                                Listener.flooDisable();
+                                flooHandler.listener.flooDisable();
                                 d.replaceString(start, end, contents);
                             } catch (Exception exception) {
                                 e = exception;
                             } finally {
-                                Listener.flooEnable();
+                                flooHandler.listener.flooEnable();
                             }
 
                             if (e != null) {
                                 Flog.warn(e);
-                                FloobitsPlugin.getHandler().send_get_buf(id);
+                                FlooHandler flooHandler = context.getFlooHandler();
+                                if (flooHandler == null) {
+                                    return;
+                                }
+                                flooHandler.send_get_buf(id);
                                 return;
                             }
 

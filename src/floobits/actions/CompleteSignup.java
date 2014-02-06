@@ -3,8 +3,8 @@ package floobits.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import floobits.common.Constants;
 import floobits.common.Settings;
-import floobits.common.Shared;
 import floobits.common.Utils;
 import floobits.utilities.Flog;
 
@@ -35,7 +35,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
         String secret = settings.get("secret");
-        String url = String.format("https://%s/%s/pinocchio/%s/", Shared.defaultHost, username, secret);
+        String url = String.format("https://%s/%s/pinocchio/%s/", Constants.defaultHost, username, secret);
         try {
             URI uri = new URI(url);
             Desktop.getDesktop().browse(uri);

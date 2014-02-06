@@ -140,11 +140,11 @@ public class Ignore {
         }
         ArrayList<String> paths = new ArrayList<String>();
         File f = new File(path);
-        while (!Utils.isSamePath(f.getPath(), Shared.colabDir)) {
+        while (!Utils.isSamePath(f.getPath(), Constants.colabDir)) {
             paths.add(0, f.getName());
             f = f.getParentFile();
         }
-        paths.add(0, Shared.colabDir);
+        paths.add(0, Constants.colabDir);
         return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
     }
 
@@ -155,7 +155,7 @@ public class Ignore {
     public static Ignore buildIgnoreTree(final String optionalSparsePath) {
         Ignore root;
         try {
-            root = new Ignore(new File(Shared.colabDir), null, 0);
+            root = new Ignore(new File(Constants.colabDir), null, 0);
         } catch (IOException e) {
             return null;
         }
