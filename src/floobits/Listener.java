@@ -1,11 +1,13 @@
 package floobits;
 
+import com.intellij.AppTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -46,9 +48,12 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     public void start() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
+        connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
         em.addDocumentListener(this);
         em.addSelectionListener(this);
         em.addCaretListener(this);
+
+
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
@@ -65,16 +70,21 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 FlooHandler handler = context.getFlooHandler();
                 if (handler != null)
                     handler.untellij_renamed(oldValue, newValue);
-                }
             }
+        }
         );
     }
 
-    public void stope() {
+    public void stop() {
         connection.disconnect();
-        em.removeSelectionListener(this)    ;
+        em.removeSelectionListener(this);
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
+    }
+
+    @Override
+    public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
+       Flog.log("%s changed but has no document.", file.getPath());
     }
 
     @Override
@@ -238,11 +248,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void beforeFileContentReload(VirtualFile file, @NotNull Document document) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
