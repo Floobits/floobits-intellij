@@ -4,13 +4,16 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.GetPath;
 
 
 public class Summon extends IsJoinedAction {
-    public void actionPerformed(final AnActionEvent e) {
+
+    @Override
+    public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
         final Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null) {
             return;
@@ -24,7 +27,7 @@ public class Summon extends IsJoinedAction {
                 flooHandler.send_summon(path, offset);
             }
         };
-        FloobitsPlugin context = FloobitsPlugin.getInstance(e.getProject());
-        GetPath.getPath(context, getPath);
+        FloobitsPlugin plugin = FloobitsPlugin.getInstance(e.getProject());
+        GetPath.getPath(plugin.context, getPath);
     }
 }

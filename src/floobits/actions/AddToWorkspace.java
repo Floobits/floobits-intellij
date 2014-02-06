@@ -43,22 +43,8 @@ public class AddToWorkspace extends IsJoinedAction {
             });
         }
 
-        if (filesToAdd.size() == 1) {
-            VirtualFile[] toAdds = new VirtualFile[]{};
-            VirtualFile toAdd = filesToAdd.toArray(toAdds)[0];
-            if (!Ignore.isIgnored(toAdd)) {
-                flooHandler.upload(toAdd);
-            }
-            return;
-        }
-        Ignore ignore = Ignore.buildIgnoreTree();
-        if (ignore == null) {
-            flooHandler.error_message("Your file system may be read-only or you may not have access to it.");
-            return;
-        }
-
         for (VirtualFile virtualFile : filesToAdd) {
-            if (!ignore.isIgnored(virtualFile.getPath())) {
+            if (!flooHandler.context.isIgnored(virtualFile)) {
                flooHandler.upload(virtualFile);
             }
         }

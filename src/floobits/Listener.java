@@ -15,7 +15,6 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
-import floobits.common.Ignore;
 import floobits.common.Utils;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -29,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
-    private final FloobitsPlugin context;
+    private final FlooContext context;
 
     public synchronized void flooEnable() {
         isListening.set(true);
@@ -41,7 +40,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(FloobitsPlugin context) {
+    public Listener(FlooContext context) {
         this.context = context;
     }
 
@@ -165,23 +164,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
 
-        boolean makeIgnore = false;
-        for (VFileEvent vFileEvent : events) {
-            if (vFileEvent instanceof VFileCopyEvent || vFileEvent instanceof VFileCreateEvent) {
-                makeIgnore = true;
-                break;
-            }
-        }
-
-        Ignore ignore = null;
-        if (makeIgnore) {
-            ignore = Ignore.buildIgnoreTree();
-            if (ignore == null) {
-                return;
-            }
-        }
-
-
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {
@@ -195,7 +177,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
                 ArrayList<VirtualFile> files;
-                files = Utils.getAllNestedFiles(virtualFile, ignore);
+                files = Utils.getAllNestedFiles(context, virtualFile);
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
@@ -205,7 +187,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), ignore));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -225,7 +207,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (ignore.isIgnored(copiedFile.getPath())) {
+                if (context.isIgnored(copiedFile.getPath())) {
                     return;
                 }
                 Utils.createFile(context, copiedFile);
@@ -234,7 +216,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
+                createdFiles = Utils.getAllNestedFiles(context, event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(context, createdFile);
                 }
@@ -242,7 +224,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
+                changedFiles = Utils.getAllNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }

@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.Listener;
 import floobits.common.protocol.FlooPatch;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
     protected Timeouts timeouts = Timeouts.create();
-    public TextBuf(String path, Integer id, String buf, String md5, FloobitsPlugin context) {
+    public TextBuf(String path, Integer id, String buf, String md5, FlooContext context) {
         super(path, id, buf, md5, context);
         if (buf != null) {
             this.buf = NEW_LINE.matcher(buf).replaceAll("\n");

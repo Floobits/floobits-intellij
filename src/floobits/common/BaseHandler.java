@@ -3,6 +3,7 @@ package floobits.common;
 import com.google.gson.JsonObject;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 
@@ -13,9 +14,9 @@ abstract public class BaseHandler {
     public boolean disconnected = false;
     public boolean isJoined = false;
     protected FlooConn conn;
-    protected FloobitsPlugin context;
+    public FlooContext context;
 
-    public BaseHandler(FloobitsPlugin context) {
+    public BaseHandler(FlooContext context) {
         this.context = context;
     }
 
@@ -33,28 +34,10 @@ abstract public class BaseHandler {
     public void shutDown() {
         if (this.conn != null && this.conn.shutDown()) {
             this.conn = null;
-            status_message(String.format("Leaving workspace: %s.", url.toString()));
+            context.status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
         disconnected = true;
         isJoined = false;
         context.removeHandler();
-    }
-
-    public void flash_message(final String message) {
-        Utils.flash_message(message, context.project);
-    }
-
-    public void status_message(String message, NotificationType notificationType) {
-        Utils.status_message(message, notificationType, context.project);
-    }
-
-    public void status_message(String message) {
-        Flog.log(message);
-        status_message(message, NotificationType.INFORMATION);
-    }
-
-    public void error_message(String message) {
-        Flog.log(message);
-        status_message(message, NotificationType.ERROR);
     }
 }

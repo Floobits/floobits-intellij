@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.Listener;
 import floobits.utilities.Flog;
@@ -15,7 +16,7 @@ import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
 
-    public BinaryBuf(String path, Integer id, byte[] buf, String md5, FloobitsPlugin context) {
+    public BinaryBuf(String path, Integer id, byte[] buf, String md5, FlooContext context) {
         super(path, id, buf, md5, context);
         this.encoding = Encoding.BASE64;
     }

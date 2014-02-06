@@ -48,7 +48,7 @@ abstract class DocumentFetcher {
 
     abstract public void on_document(Document document);
 
-    public void fetch(final FloobitsPlugin context, final String path) {
+    public void fetch(final FlooContext context, final String path) {
         ThreadSafe.write(context, new Runnable() {
             public void run() {
                 String absPath = context.absPath(path);
@@ -95,7 +95,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(project), this.url.owner, this.url.workspace));
-        status_message(String.format("You successfully joined %s ", url.toString()));
+        context.status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -120,7 +120,7 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (FloobitsPlugin context, Project p) {
+    public FlooHandler (FlooContext context, Project p) {
         super(context);
         this.project = p;
         this.stomp = true;
@@ -171,10 +171,10 @@ public class FlooHandler extends BaseHandler {
             }
         });
     }
-    public FlooHandler (FloobitsPlugin context, final FlooUrl flooUrl) {
+    public FlooHandler (FlooContext context, final FlooUrl flooUrl) {
         super(context);
         if (!workspaceExists(flooUrl)) {
-            error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
         }
 
         PersistentJson p = PersistentJson.getInstance();
@@ -243,7 +243,7 @@ public class FlooHandler extends BaseHandler {
     void joinWorkspace(final FlooUrl f, final String path) {
         Flog.warn("join workspace");
         url = f;
-        context.colabDir = path;
+        context.setColabDir(path);
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(f, path);
         persistentJson.save();
@@ -257,14 +257,14 @@ public class FlooHandler extends BaseHandler {
         try {
             method = API.createWorkspace(owner, name, project);
         } catch (IOException e) {
-            error_message(String.format("Could not create workspace: %s", e.toString()));
+            context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return;
         }
         int code = method.getStatusCode();
         switch (code) {
             case 400:
                 // Todo: pick a new name or something
-                error_message("Invalid workspace name.");
+                context.error_message("Invalid workspace name.");
                 shutDown();
                 return;
             case 402:
@@ -277,7 +277,7 @@ public class FlooHandler extends BaseHandler {
                     Flog.warn(e);
                     return;
                 }
-                error_message(details);
+                context.error_message(details);
                 shutDown();
                 return;
             case 409:
@@ -289,7 +289,7 @@ public class FlooHandler extends BaseHandler {
             case 401:
                 Flog.log("Auth failed");
                 shutDown();
-                error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
+                context.error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
                 VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
                 if (floorc == null) {
                     return;
@@ -319,14 +319,9 @@ public class FlooHandler extends BaseHandler {
     }
 
     void upload() {
-        final Ignore ignore = Ignore.buildIgnoreTree();
-        if (ignore == null) {
-            return;
-        }
-
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                if (!ignore.isIgnored(virtualFile.getPath())) upload(virtualFile);
+                if (!context.isIgnored(virtualFile.getPath())) upload(virtualFile);
                 return true;
             }
         });
@@ -592,7 +587,7 @@ public class FlooHandler extends BaseHandler {
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
                     if ((res.ping || res.summon) && username != null) {
-                        status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+                        context.status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
                     if (force && virtualFile.isValid()) {
                         manager.openFile(virtualFile, true, true);
@@ -752,7 +747,7 @@ public class FlooHandler extends BaseHandler {
     void _on_join(JsonObject obj) {
         FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
-        status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
+        context.status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
     }
 
     void _on_part(JsonObject obj) {
@@ -766,7 +761,7 @@ public class FlooHandler extends BaseHandler {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        status_message(String.format("%s left the workspace.", u.username));
+        context.status_message(String.format("%s left the workspace.", u.username));
 
     }
 
@@ -774,10 +769,10 @@ public class FlooHandler extends BaseHandler {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
-            error_message(reason);
-            flash_message(reason);
+            context.error_message(reason);
+            context.flash_message(reason);
         } else {
-            status_message("You have left the workspace");
+            context.status_message("You have left the workspace");
         }
         shutDown();
     }
@@ -816,7 +811,7 @@ public class FlooHandler extends BaseHandler {
     void _on_msg(JsonObject jsonObject){
         String msg = jsonObject.get("data").getAsString();
         String username = jsonObject.get("username").getAsString();
-        status_message(String.format("%s: %s", username, msg));
+        context.status_message(String.format("%s: %s", username, msg));
     }
 
     void _on_term_stdout(JsonObject jsonObject) {}

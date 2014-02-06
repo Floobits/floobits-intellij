@@ -2,7 +2,7 @@ package floobits.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.FloobitsPlugin;
+import floobits.FlooContext;
 import floobits.common.*;
 import floobits.common.protocol.send.FlooRequestCredentials;
 import floobits.utilities.Flog;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class LinkEditorHandler extends BaseHandler {
     protected String token;
 
-    public LinkEditorHandler(FloobitsPlugin context) {
+    public LinkEditorHandler(FlooContext context) {
         super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));

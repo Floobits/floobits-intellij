@@ -3,6 +3,7 @@ package floobits.utilities;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
@@ -12,7 +13,7 @@ public abstract class GetPath {
     public GetPath (Document document) {
         this.document = document;
     }
-	public static void getPath(FloobitsPlugin context, GetPath getPath) {
+	public static void getPath(FlooContext context, GetPath getPath) {
         if (getPath.document == null) {
             return;
         }

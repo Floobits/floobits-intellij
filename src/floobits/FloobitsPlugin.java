@@ -14,61 +14,43 @@ import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 public class FloobitsPlugin implements ProjectComponent {
-    public String colabDir;
-    public Project project;
-    public BaseHandler handler;
     public final static String name = "Floobits-Plugin";
+    public final FlooContext context = new FlooContext();
 
     public static FloobitsPlugin getInstance(Project project) {
         return project.getComponent(FloobitsPlugin.class);
     }
-
-    public boolean isJoined() {
-        return handler != null && handler.isJoined;
-    }
-
-    public @Nullable FlooHandler getFlooHandler(){
-        if (handler != null && handler instanceof FlooHandler)
-            return (FlooHandler)handler;
-        return null;
-    }
-
-    public void removeHandler() {
-        handler = null;
-    }
-
     public FloobitsPlugin() {
         Flog.info("Floobits plugin");
     }
 
     public void shareProject(final Project project) {
-        if (!isJoined()) {
-            this.project = project;
-            handler = new FlooHandler(this, project);
-            if (handler.disconnected) {
-                removeHandler();
+        if (!context.isJoined()) {
+            context.project = project;
+            context.handler = new FlooHandler(context, project);
+            if (context.handler.disconnected) {
+                context.removeHandler();
             }
             return;
         }
 
-        String title = String.format("Really leave %s?", handler.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+        String title = String.format("Really leave %s?", context.handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", context.handler.url.toString(), context.handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
-            @Override
+
             public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
-                handler.shutDown();
+                context.handler.shutDown();
                 shareProject(project);
             }
         });
     }
 
     public void joinWorkspace(final Project project, final String url) {
-        if (!isJoined()) {
+        if (!context.isJoined()) {
             FlooUrl f;
             try {
                 f = new FlooUrl(url);
@@ -76,60 +58,48 @@ public class FloobitsPlugin implements ProjectComponent {
                 Flog.warn(e);
                 return;
             }
-            this.project = project;
-            handler = new FlooHandler(this, f);
-            if (handler.disconnected) {
-                removeHandler();
+            context.project = project;
+            context.handler = new FlooHandler(context, f);
+            if (context.handler.disconnected) {
+                context.removeHandler();
             }
             return;
         }
-        String title = String.format("Really leave %s?", handler.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+        String title = String.format("Really leave %s?", context.handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", context.handler.url.toString(), context.handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
-            @Override
+
             public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
-                handler.shutDown();
+                context.handler.shutDown();
                 joinWorkspace(project, url);
             }
         });
     }
 
     public void createAccount(Project project) {
-        if (isJoined()) {
-            FlooHandler flooHandler = getFlooHandler();
-            if (flooHandler == null) {
-                return;
-            }
-            flooHandler.status_message("You already have an account and are connected with it.");
+        if (!context.isJoined()) {
+            CreateAccountHandler createAccountHandler = new CreateAccountHandler(context);
+            createAccountHandler.create();
             return;
         }
-        CreateAccountHandler createAccountHandler = new CreateAccountHandler(this);
-        createAccountHandler.create();
+        context.status_message("You already have an account and are connected with it.");
+        context.handler.shutDown();
     }
+
 
     public void linkEditor(Project project) {
-        if (isJoined()) {
-            Utils.status_message("You already have an account and are connected with it.", project);
-            handler.shutDown();
+        if (!context.isJoined()) {
+            context.handler = new LinkEditorHandler(context);
+            ((LinkEditorHandler)context.handler).link();
+            return;
         }
-        handler = new LinkEditorHandler(this);
-        ((LinkEditorHandler)handler).link();
+        Utils.status_message("You already have an account and are connected with it.", project);
+        context.handler.shutDown();
     }
 
-    public String absPath(String path) {
-        return Utils.absPath(colabDir, path);
-    }
-
-    public Boolean isShared (String path) {
-        return Utils.isShared(path, colabDir);
-    }
-
-    public String toProjectRelPath (String path) {
-        return Utils.toProjectRelPath(path, colabDir);
-    }
     @Override
     public void projectOpened() {
     }
@@ -151,5 +121,4 @@ public class FloobitsPlugin implements ProjectComponent {
     public String getComponentName() {
         return name;
     }
-    // TODO: we can store state using intellij if we want with getState and loadState
 }

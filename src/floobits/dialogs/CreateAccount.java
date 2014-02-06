@@ -76,8 +76,7 @@ public class CreateAccount extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(project);
-        floobitsPlugin.createAccount(project);
+        project.getComponent(FloobitsPlugin.class).createAccount(project);
     }
 }
 

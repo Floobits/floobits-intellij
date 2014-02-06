@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -22,7 +23,7 @@ public class Ignore {
     static String[] DEFAULT_IGNORES = {"extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml"};
     static int MAX_FILE_SIZE = 1024 * 1024 * 5;
 
-    protected File file;
+    public File file;
     private int depth;
     protected String unfuckedPath;
     protected Ignore parent;
@@ -95,7 +96,7 @@ public class Ignore {
                     if (base_path == null) {
                         base_path = "";
                     }
-                    base_path = Utils.absPath(base_path);
+//                    base_path = Utils.absPath(base_path);
                     String file_name =  relPathFile.getName();
                     if (pattern.startsWith("/")) {
                         if (Utils.isSamePath(base_path, unfuckedPath) && FilenameUtils.wildcardMatch(file_name, pattern.substring(1))) {
@@ -130,8 +131,8 @@ public class Ignore {
         return ignore.isIgnored(path, pathParts, depth);
     }
 
-    public Boolean isIgnored(String path) {
-        if (!Utils.isShared(path)) {
+    public Boolean isIgnored(FlooContext context, String path) {
+        if (!context.isShared(path)) {
             return true;
         }
         path = FilenameUtils.normalizeNoEndSeparator(path);
@@ -140,56 +141,11 @@ public class Ignore {
         }
         ArrayList<String> paths = new ArrayList<String>();
         File f = new File(path);
-        while (!Utils.isSamePath(f.getPath(), Constants.colabDir)) {
+        while (!Utils.isSamePath(f.getPath(), context.colabDir)) {
             paths.add(0, f.getName());
             f = f.getParentFile();
         }
-        paths.add(0, Constants.colabDir);
+        paths.add(0, context.colabDir);
         return isIgnored(path, paths.toArray(new String[paths.size()]), 0);
-    }
-
-    public static Ignore buildIgnoreTree() {
-        return buildIgnoreTree(null);
-    }
-
-    public static Ignore buildIgnoreTree(final String optionalSparsePath) {
-        Ignore root;
-        try {
-            root = new Ignore(new File(Constants.colabDir), null, 0);
-        } catch (IOException e) {
-            return null;
-        }
-        LinkedList<Ignore> queue = new LinkedList<Ignore>();
-        queue.add(root);
-        while (queue.size() > 0) {
-            Ignore current = queue.pop();
-            File[] childDirectories = current.file.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    if (!file.isDirectory()) {
-                        return false;
-                    }
-                    if (optionalSparsePath != null && !Utils.isChild(optionalSparsePath, file.getPath())) {
-                        return false;
-                    }
-                    return true;
-                }
-            });
-            if (childDirectories != null){
-                for (File childDirectory : childDirectories) {
-                    Ignore child = current.adopt(childDirectory);
-                    if (child == null) {
-                        continue;
-                    }
-                    queue.push(child);
-                }
-            }
-        }
-        return root;
-    }
-
-    public static Boolean isIgnored(VirtualFile f) {
-        Ignore ignore = buildIgnoreTree(f.getPath());
-        return ignore != null && ignore.isIgnored(f.getPath());
     }
 }
