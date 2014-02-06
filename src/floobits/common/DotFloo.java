@@ -1,7 +1,9 @@
 package floobits.common;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
+import com.thoughtworks.xstream.io.json.JsonWriter;
 import dmp.FlooDmp;
 import floobits.common.protocol.send.RoomInfoResponse;
 import floobits.utilities.Flog;
@@ -61,7 +63,7 @@ public class DotFloo {
         flooDot.url = url;
 
         try {
-            FileUtils.write(path(base_dir), new Gson().toJson(flooDot), "UTF-8");
+            FileUtils.write(path(base_dir), new GsonBuilder().setPrettyPrinting().create().toJson(flooDot), "UTF-8");
         } catch (Exception e) {
             Flog.warn(e);
         }
