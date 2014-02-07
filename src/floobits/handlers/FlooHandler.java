@@ -389,7 +389,11 @@ public class FlooHandler extends BaseHandler {
                 MarkupModel markupModel = editor.getMarkupModel();
 
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
-                    markupModel.removeHighlighter(rangeHighlighter);
+                    try {
+                        markupModel.removeHighlighter(rangeHighlighter);
+                    } catch (Exception e) {
+                        Flog.warn(e);
+                    }
                 }
                 rangeHighlighters.clear();
             }
