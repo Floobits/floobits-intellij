@@ -34,6 +34,6 @@ public class SelectRecentWorkspace extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        project.getComponent(FloobitsPlugin.class).joinWorkspace(project, selectWorkspace.getSelectedItem());
+        project.getComponent(FloobitsPlugin.class).joinWorkspace(selectWorkspace.getSelectedItem());
     }
 }

@@ -5,17 +5,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.intellij.openapi.project.Project;
+import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 
 
 public class Settings {
-    protected Project project;
     protected HashMap<String, String> settings;
     public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
+    private Project project;
 
-    public Settings(Project project) {
-        this.project = project;
+    public Settings(FlooContext context) {
+        project = context != null ? context .project : null;
         BufferedReader br;
         this.settings = new HashMap<String, String>();
         try {

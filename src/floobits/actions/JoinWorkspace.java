@@ -17,6 +17,6 @@ public class JoinWorkspace extends AnAction {
         }
         Flog.info(inputValue);
         FloobitsPlugin context = FloobitsPlugin.getInstance(e.getProject());
-        context.joinWorkspace(e.getProject(), inputValue);
+        context.joinWorkspace(inputValue);
     }
 }

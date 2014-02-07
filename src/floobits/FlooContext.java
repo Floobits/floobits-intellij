@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.SelectOwner;
 import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
 import floobits.handlers.LinkEditorHandler;
@@ -15,15 +16,108 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by kans on 2/6/14.
  */
 public class FlooContext {
     public String colabDir;
-    public Project project;
+    public final Project project;
     public BaseHandler handler;
     protected Ignore ignoreTree;
+
+    public FlooContext(Project project) {
+        this.project = project;
+    }
+
+    public void shareProject() {
+        if (!isJoined()) {
+            handler = new FlooHandler(this);
+            if (handler.disconnected) {
+                removeHandler();
+            }
+            return;
+        }
+
+        String title = String.format("Really leave %s?", handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+        DialogBuilder.build(title, body, new RunLater<Boolean>() {
+
+            public void run(Boolean join) {
+                if (!join) {
+                    return;
+                }
+                handler.shutDown();
+                shareProject();
+            }
+        });
+    }
+
+    public void createWorkspace(final String project_path) {
+        Settings settings = new Settings(this);
+        String owner = settings.get("username");
+        final String name = new File(project_path).getName();
+        List<String> orgs = API.getOrgsCanAdmin(project);
+
+        if (orgs.size() == 0) {
+            API.createWorkspace(this, owner, name);
+            return;
+        }
+
+        orgs.add(0, owner);
+        final FlooContext flooContext = this;
+        SelectOwner.build(orgs, new RunLater<String>() {
+            @Override
+            public void run(String owner) {
+                API.createWorkspace(flooContext, owner, name);
+            }
+        });
+    }
+
+    public void joinWorkspace(final FlooUrl flooUrl) {
+        if (isJoined()) {
+            String title = String.format("Really leave %s?", handler.url.workspace);
+            String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+            DialogBuilder.build(title, body, new RunLater<Boolean>() {
+
+                public void run(Boolean join) {
+                    if (!join) {
+                        return;
+                    }
+                    handler.shutDown();
+                    joinWorkspace(flooUrl);
+                }
+            });
+        }
+
+
+        handler = new FlooHandler(this, flooUrl);
+        if (handler.disconnected) {
+            removeHandler();
+        }
+    }
+
+    public void createAccount() {
+        if (!isJoined()) {
+            CreateAccountHandler createAccountHandler = new CreateAccountHandler(this);
+            createAccountHandler.create();
+            return;
+        }
+        status_message("You already have an account and are connected with it.");
+        handler.shutDown();
+    }
+
+
+    public void linkEditor() {
+        if (!isJoined()) {
+            handler = new LinkEditorHandler(this);
+            ((LinkEditorHandler)handler).link();
+            return;
+        }
+        Utils.status_message("You already have an account and are connected with it.", project);
+        handler.shutDown();
+    }
 
     public boolean isJoined() {
         return handler != null && handler.isJoined;
