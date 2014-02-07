@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
+import floobits.common.Ignore;
 import floobits.common.Utils;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -168,10 +169,19 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (handler == null) {
             return;
         }
+
+        for (VFileEvent event : events) {
+            VirtualFile virtualFile = event.getFile();
+            if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
+//                TODO: this is for sideffects :(
+                context.setColabDir(context.colabDir);
+                break;
+            }
+        }
+
         if (!isListening.get()) {
             return;
         }
-
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {

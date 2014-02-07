@@ -164,7 +164,6 @@ public class FlooContext {
     public void setColabDir(String colabDir) {
         this.colabDir = colabDir;
         Ignore.writeDefaultIgnores(this);
-
         VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
         ignoreTree = new Ignore(fileByIoFile);
         ignoreTree.recurse();

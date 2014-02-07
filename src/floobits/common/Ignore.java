@@ -172,4 +172,8 @@ public class Ignore {
             Flog.warn(e);
         }
     }
+
+    public static boolean isIgnoreFile(VirtualFile virtualFile) {
+        return IGNORE_FILES.contains(virtualFile.getName()) && virtualFile.isValid();
+    }
 }
