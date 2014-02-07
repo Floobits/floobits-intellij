@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectOwner;
+import floobits.handlers.BaseHandler;
 import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
 import floobits.handlers.LinkEditorHandler;
@@ -58,7 +59,7 @@ public class FlooContext {
         Settings settings = new Settings(this);
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
-        List<String> orgs = API.getOrgsCanAdmin(project);
+        List<String> orgs = API.getOrgsCanAdmin(this);
 
         if (orgs.size() == 0) {
             API.createWorkspace(this, owner, name);
@@ -101,7 +102,8 @@ public class FlooContext {
     public void createAccount() {
         if (!isJoined()) {
             CreateAccountHandler createAccountHandler = new CreateAccountHandler(this);
-            createAccountHandler.create();
+            handler = createAccountHandler;
+            createAccountHandler.go();
             return;
         }
         status_message("You already have an account and are connected with it.");
@@ -111,8 +113,9 @@ public class FlooContext {
 
     public void linkEditor() {
         if (!isJoined()) {
-            handler = new LinkEditorHandler(this);
-            ((LinkEditorHandler)handler).link();
+            LinkEditorHandler linkEditorHandler = new LinkEditorHandler(this);
+            handler = linkEditorHandler;
+            linkEditorHandler.go();
             return;
         }
         Utils.status_message("You already have an account and are connected with it.", project);

@@ -25,7 +25,7 @@ public class LinkEditorHandler extends BaseHandler {
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
     }
 
-    public void link() {
+    public void go() {
         url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
@@ -39,7 +39,7 @@ public class LinkEditorHandler extends BaseHandler {
         if (!name.equals("credentials")) {
             return;
         }
-        Settings settings = new Settings(context.project);
+        Settings settings = new Settings(context);
         JsonObject credentials = (JsonObject) obj.get("credentials");
         for (Map.Entry<String, JsonElement> thing : credentials.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());

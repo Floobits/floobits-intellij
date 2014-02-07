@@ -2,6 +2,8 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import floobits.FlooContext;
+import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 
@@ -16,7 +18,7 @@ public class JoinWorkspace extends AnAction {
             return;
         }
         Flog.info(inputValue);
-        FloobitsPlugin context = FloobitsPlugin.getInstance(e.getProject());
-        context.joinWorkspace(inputValue);
+        FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        FloobitsApplication.self.joinWorkspace(context, inputValue);
     }
 }

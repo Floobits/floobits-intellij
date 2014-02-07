@@ -41,7 +41,7 @@ public class API {
     public static boolean createWorkspace(FlooContext context, String owner, String name) {
         HttpMethod method;
         try {
-            method = API.createWorkspace(owner, name, context.project);
+            method = API.createWorkspace(owner, name, context);
         } catch (IOException e) {
             context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return false;
@@ -93,7 +93,7 @@ public class API {
         }
         HttpMethod method;
         try {
-            method = API.getWorkspace(f.owner, f.workspace, context.project);
+            method = API.getWorkspace(f.owner, f.workspace, context);
         } catch (IOException e) {
             Flog.warn(e);
             return false;
@@ -101,25 +101,25 @@ public class API {
 
         return method.getStatusCode() < 400;
     }
-    static public HttpMethod getWorkspace(String owner, String workspace, Project project) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), project);
+    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), context);
     }
 
-    static public HttpMethod createWorkspace(String owner, String workspace, Project project) throws IOException {
+    static public HttpMethod createWorkspace(String owner, String workspace, FlooContext context) throws IOException {
         final PostMethod method = new PostMethod("/api/workspace/");
         Gson gson = new Gson();
         String json = gson.toJson(new Request(owner, workspace));
         method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-        return apiRequest(method, project);
+        return apiRequest(method, context);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, Project project) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, FlooContext context) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setSoTimeout(3000);
         connectionParams.setConnectionTimeout(3000);
-        Settings settings = new Settings();
+        Settings settings = new Settings(context);
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
@@ -149,12 +149,12 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(Project project) {
+    static public List<String> getOrgsCanAdmin(FlooContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin/");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, project);
+            apiRequest(method, context);
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;
@@ -175,7 +175,7 @@ public class API {
             }
         } catch (Exception e) {
             Flog.warn(e);
-            Utils.error_message("Error getting Floobits organizations. Try again later or please contact support.", project);
+            context.error_message("Error getting Floobits organizations. Try again later or please contact support.");
         }
 
         return orgs;

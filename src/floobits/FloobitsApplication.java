@@ -17,7 +17,10 @@ import java.util.Map;
  */
 public class FloobitsApplication implements ApplicationComponent {
     public boolean canMakeAccount = true;
+    public static FloobitsApplication self;
+
     public FloobitsApplication() {
+        self = this;
     }
 
     public void initComponent() {

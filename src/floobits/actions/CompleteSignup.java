@@ -3,6 +3,7 @@ package floobits.actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import floobits.FloobitsPlugin;
 import floobits.common.Constants;
 import floobits.common.Settings;
 import floobits.common.Utils;
@@ -20,7 +21,7 @@ public class CompleteSignup extends AnAction {
         if (project == null) {
             return;
         }
-        Settings settings = new Settings(project);
+        Settings settings = new Settings(FloobitsPlugin.getInstance(project).context);
         if (!settings.isComplete()) {
             Utils.error_message("Error, no account details detected. You will have to sign up manually.", project);
             return;

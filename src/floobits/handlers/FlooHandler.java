@@ -2,14 +2,11 @@ package floobits.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -22,20 +19,16 @@ import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
-import floobits.dialogs.SelectOwner;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
-import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -121,9 +114,10 @@ public class FlooHandler extends BaseHandler {
 
     public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload, boolean shouldStomp) {
         super(context);
-        this.stomp = true;
+        url = flooUrl;
+        this.stomp = shouldStomp;
         // TODO: Should upload should be an explicit argument to the constructor.
-        this.shouldUpload = true;
+        this.shouldUpload = shouldUpload;
     }
 
     void joinWorkspace(final FlooUrl f, final String path) {
