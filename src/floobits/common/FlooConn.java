@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import floobits.utilities.Flog;
 import floobits.FloobitsPlugin;
+import floobits.utilities.Flog;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -16,7 +16,7 @@ public class FlooConn extends Thread {
     protected Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
-    protected ConnectionInterface handler;
+    protected BaseHandler handler;
     Boolean connected = false;
 
     private Integer MAX_RETRIES = 20;
@@ -25,7 +25,7 @@ public class FlooConn extends Thread {
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
-    public FlooConn(ConnectionInterface handler) {
+    public FlooConn(BaseHandler handler) {
         this.handler = handler;
     }
 
@@ -78,7 +78,7 @@ public class FlooConn extends Thread {
             return;
         }
         String requestName = name.getAsString();
-        this.handler.on_data(requestName, obj);
+        handler.on_data(requestName, obj);
     }
 
     protected void reconnect() {
@@ -91,7 +91,7 @@ public class FlooConn extends Thread {
         retries -= 1;
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
-            FloobitsPlugin.flooHandler.shutDown();
+            handler.shutDown();
             return;
         }
         delay = Math.min(10000, Math.round((float)1.5 * delay));

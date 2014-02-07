@@ -2,19 +2,16 @@ package floobits.utilities;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
 public class ThreadSafe {
-    public static void write(final Runnable runnable) {
+    public static void write(final FlooContext context, final Runnable runnable) {
 			ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                FlooHandler instance = FloobitsPlugin.getHandler();
-                if (instance == null) {
-                    return;
-                }
-                CommandProcessor.getInstance().executeCommand(instance.project, new Runnable() {
+                CommandProcessor.getInstance().executeCommand(context.project, new Runnable() {
                     @Override
                     public void run() {
                         ApplicationManager.getApplication().runWriteAction(runnable);

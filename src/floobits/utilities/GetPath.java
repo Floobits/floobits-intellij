@@ -3,6 +3,7 @@ package floobits.utilities;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
@@ -12,8 +13,12 @@ public abstract class GetPath {
     public GetPath (Document document) {
         this.document = document;
     }
-	public static void getPath(GetPath getPath) {
+	public static void getPath(FlooContext context, GetPath getPath) {
         if (getPath.document == null) {
+            return;
+        }
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
             return;
         }
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(getPath.document);
@@ -27,10 +32,7 @@ public abstract class GetPath {
         } catch (NullPointerException e) {
             return;
         }
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
-        if (flooHandler == null) {
-            return;
-        }
+
         getPath.if_path(path, flooHandler);
     }
 }

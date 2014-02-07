@@ -3,7 +3,6 @@ package floobits.handlers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
@@ -49,10 +48,10 @@ abstract class DocumentFetcher {
 
     abstract public void on_document(Document document);
 
-    public void fetch(final String path) {
-        ThreadSafe.write(new Runnable() {
+    public void fetch(final FlooContext context, final String path) {
+        ThreadSafe.write(context, new Runnable() {
             public void run() {
-                String absPath = Utils.absPath(path);
+                String absPath = context.absPath(path);
 
                 VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
                 if (virtualFile == null || !virtualFile.exists()) {
@@ -69,9 +68,7 @@ abstract class DocumentFetcher {
     }
 }
 
-public class FlooHandler extends ConnectionInterface {
-    public static boolean isJoined = false;
-    public boolean disconnected = false;
+public class FlooHandler extends BaseHandler {
     private Boolean shouldUpload = false;
     public Project project;
     private Boolean stomp = false;
@@ -84,26 +81,9 @@ public class FlooHandler extends ConnectionInterface {
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
     private FlooConn conn;
-    protected Timeouts timeouts = Timeouts.create();
     private String user_id;
+    public Listener listener = new Listener(context);
 
-    void flash_message(final String message) {
-        Utils.flash_message(message, project);
-    }
-
-    void status_message(String message, NotificationType notificationType) {
-        Utils.status_message(message, notificationType, project);
-    }
-
-    public void status_message(String message) {
-        Flog.log(message);
-        status_message(message, NotificationType.INFORMATION);
-    }
-
-    public void error_message(String message) {
-        Flog.log(message);
-        status_message(message, NotificationType.ERROR);
-    }
 
     String get_username(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -115,7 +95,7 @@ public class FlooHandler extends ConnectionInterface {
 
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(project), this.url.owner, this.url.workspace));
-        status_message(String.format("You successfully joined %s ", url.toString()));
+        context.status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -140,7 +120,8 @@ public class FlooHandler extends ConnectionInterface {
         }
     }
 
-    public FlooHandler (Project p) {
+    public FlooHandler (FlooContext context, Project p) {
+        super(context);
         this.project = p;
         this.stomp = true;
         // TODO: Should upload should be an explicit argument to the constructor.
@@ -190,9 +171,10 @@ public class FlooHandler extends ConnectionInterface {
             }
         });
     }
-    public FlooHandler (final FlooUrl flooUrl) {
+    public FlooHandler (FlooContext context, final FlooUrl flooUrl) {
+        super(context);
         if (!workspaceExists(flooUrl)) {
-            error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
         }
 
         PersistentJson p = PersistentJson.getInstance();
@@ -261,12 +243,13 @@ public class FlooHandler extends ConnectionInterface {
     void joinWorkspace(final FlooUrl f, final String path) {
         Flog.warn("join workspace");
         url = f;
-        Shared.colabDir = path;
+        context.setColabDir(path);
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(f, path);
         persistentJson.save();
         conn = new FlooConn(this);
         conn.start();
+        listener.start();
     }
 
     void createWorkspace(String owner, String name, String project_path) {
@@ -274,14 +257,14 @@ public class FlooHandler extends ConnectionInterface {
         try {
             method = API.createWorkspace(owner, name, project);
         } catch (IOException e) {
-            error_message(String.format("Could not create workspace: %s", e.toString()));
+            context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return;
         }
         int code = method.getStatusCode();
         switch (code) {
             case 400:
                 // Todo: pick a new name or something
-                error_message("Invalid workspace name.");
+                context.error_message("Invalid workspace name.");
                 shutDown();
                 return;
             case 402:
@@ -294,19 +277,19 @@ public class FlooHandler extends ConnectionInterface {
                     Flog.warn(e);
                     return;
                 }
-                error_message(details);
+                context.error_message(details);
                 shutDown();
                 return;
             case 409:
                 Flog.warn("The workspace already exists so I am joining it.");
             case 201:
                 Flog.log("Workspace created.");
-                joinWorkspace(new FlooUrl(Shared.defaultHost, owner, name, -1, true), project_path);
+                joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, -1, true), project_path);
                 return;
             case 401:
                 Flog.log("Auth failed");
                 shutDown();
-                error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
+                context.error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
                 VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
                 if (floorc == null) {
                     return;
@@ -324,7 +307,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     Buf get_buf_by_path(String absPath) {
-        String relPath = Utils.toProjectRelPath(absPath);
+        String relPath = context.toProjectRelPath(absPath);
         if (relPath == null) {
             return null;
         }
@@ -336,14 +319,9 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void upload() {
-        final Ignore ignore = Ignore.buildIgnoreTree();
-        if (ignore == null) {
-            return;
-        }
-
         ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                if (!ignore.isIgnored(virtualFile.getPath())) upload(virtualFile);
+                if (!context.isIgnored(virtualFile.getPath())) upload(virtualFile);
                 return true;
             }
         });
@@ -354,22 +332,22 @@ public class FlooHandler extends ConnectionInterface {
             return true;
         }
         String path = virtualFile.getPath();
-        if (!Utils.isShared(path)) {
+        if (!context.isShared(path)) {
             Flog.info("Thing isn't shared: %s", path);
             return true;
         }
-        String rel_path = Utils.toProjectRelPath(path);
+        String rel_path = context.toProjectRelPath(path);
         if (rel_path.equals(".idea/workspace.xml")) {
             Flog.info("Not sharing the workspace.xml file");
             return true;
         }
 
-        Buf b = FloobitsPlugin.flooHandler.get_buf_by_path(path);
+        Buf b = get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
             return true;
         }
-        FloobitsPlugin.flooHandler.send_create_buf(virtualFile);
+        send_create_buf(virtualFile);
         return true;
     }
 
@@ -381,14 +359,14 @@ public class FlooHandler extends ConnectionInterface {
         this.perms = new HashSet<String>(Arrays.asList(ri.perms));
         this.user_id = ri.user_id;
 
-        DotFloo.write(this.url.toString());
+        DotFloo.write(context.colabDir, url.toString());
 
         final LinkedList<Buf> conflicts = new LinkedList<Buf>();
         final LinkedList<String> conflictedPaths = new LinkedList<String>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, project);
+            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
             this.bufs.put(buf_id, buf);
             this.paths_to_ids.put(b.path, b.id);
             buf.read();
@@ -456,7 +434,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void send_create_buf(VirtualFile virtualFile) {
-        Buf buf = Buf.createBuf(virtualFile, project);
+        Buf buf = Buf.createBuf(virtualFile, context);
         if (buf == null) {
             return;
         }
@@ -480,9 +458,9 @@ public class FlooHandler extends ConnectionInterface {
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
         Buf buf;
         if (res.encoding.equals(Encoding.BASE64.toString())) {
-            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5, project);
+            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5, context);
         } else {
-            buf = new TextBuf(res.path, res.id, res.buf, res.md5, project);
+            buf = new TextBuf(res.path, res.id, res.buf, res.md5, context);
         }
         this.bufs.put(buf.id, buf);
         this.paths_to_ids.put(buf.path, buf.id);
@@ -534,7 +512,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void get_document(String path, DocumentFetcher documentFetcher) {
-        documentFetcher.fetch(path);
+        documentFetcher.fetch(context, path);
     }
 
     Editor get_editor_for_document(Document document) {
@@ -553,7 +531,7 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     void remove_highlight(Integer userId, Integer bufId, Document document) {
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
@@ -582,7 +560,7 @@ public class FlooHandler extends ConnectionInterface {
             return;
         }
 
-        FloobitsPlugin.flooHandler.get_document(bufId, new DocumentFetcher(false) {
+        get_document(bufId, new DocumentFetcher(false) {
             @Override
             public void on_document(Document document) {
                 Editor editor = get_editor_for_document(document);
@@ -600,8 +578,8 @@ public class FlooHandler extends ConnectionInterface {
     void _on_highlight(JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
-        final Boolean force = FloobitsPlugin.flooHandler.stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
-        FloobitsPlugin.flooHandler.get_document(res.id, new DocumentFetcher(force) {
+        final Boolean force = stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
+        get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(project);
@@ -609,13 +587,13 @@ public class FlooHandler extends ConnectionInterface {
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
                     if ((res.ping || res.summon) && username != null) {
-                        status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+                        context.status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
                     if (force && virtualFile.isValid()) {
                         manager.openFile(virtualFile, true, true);
                     }
                 }
-                FloobitsPlugin.flooHandler.remove_highlight(res.user_id, res.id, document);
+                remove_highlight(res.user_id, res.id, document);
 
                 int textLength = document.getTextLength();
                 if (textLength == 0) {
@@ -650,13 +628,13 @@ public class FlooHandler extends ConnectionInterface {
                         }
                         RangeHighlighter rangeHighlighter = null;
                         try {
-                            Listener.flooDisable();
+                            listener.flooDisable();
                             rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
                                     attributes, HighlighterTargetArea.EXACT_RANGE);
                         } catch (Exception e) {
                             Flog.warn(e);
                         } finally {
-                            Listener.flooEnable();
+                            listener.flooEnable();
                         }
                         if (rangeHighlighter == null) {
                             continue;
@@ -671,11 +649,11 @@ public class FlooHandler extends ConnectionInterface {
                             first = false;
                         }
                     }
-                    HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(res.user_id);
+                    HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(res.user_id);
 
                     if (integerRangeHighlighterHashMap == null) {
                         integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
-                        FloobitsPlugin.flooHandler.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                        highlights.put(res.user_id, integerRangeHighlighterHashMap);
                     }
                     integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
                 }
@@ -701,8 +679,8 @@ public class FlooHandler extends ConnectionInterface {
 
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
-        final String oldPath = Utils.absPath(name);
-        final String newPath = Utils.absPath(jsonObject.get("path").getAsString());
+        final String oldPath = context.absPath(name);
+        final String newPath = context.absPath(jsonObject.get("path").getAsString());
         final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
         Buf buf = get_buf_by_path(oldPath);
         if (buf == null) {
@@ -717,7 +695,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
             return;
         }
-        String newRelativePath = Utils.toProjectRelPath(newPath);
+        String newRelativePath = context.toProjectRelPath(newPath);
         set_buf_path(buf, newRelativePath);
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -769,21 +747,21 @@ public class FlooHandler extends ConnectionInterface {
     void _on_join(JsonObject obj) {
         FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
-        status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
+        context.status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
     }
 
     void _on_part(JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
         FlooUser u = users.get(userId);
         this.users.remove(userId);
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = FloobitsPlugin.flooHandler.highlights.get(userId);
+        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        status_message(String.format("%s left the workspace.", u.username));
+        context.status_message(String.format("%s left the workspace.", u.username));
 
     }
 
@@ -791,10 +769,10 @@ public class FlooHandler extends ConnectionInterface {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
-            error_message(reason);
-            flash_message(reason);
+            context.error_message(reason);
+            context.flash_message(reason);
         } else {
-            status_message("You have left the workspace");
+            context.status_message("You have left the workspace");
         }
         shutDown();
     }
@@ -806,7 +784,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", id));
             return;
         }
-        String absPath = Utils.absPath(buf.path);
+        String absPath = context.absPath(buf.path);
         buf.cancelTimeout();
         bufs.remove(id);
         paths_to_ids.remove(buf.path);
@@ -820,7 +798,7 @@ public class FlooHandler extends ConnectionInterface {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
                         try {
-                            fileByPath.delete(FloobitsPlugin.getHandler());
+                            fileByPath.delete(this);
                         } catch (IOException e) {
                             Flog.warn(e);
                         }
@@ -833,7 +811,7 @@ public class FlooHandler extends ConnectionInterface {
     void _on_msg(JsonObject jsonObject){
         String msg = jsonObject.get("data").getAsString();
         String username = jsonObject.get("username").getAsString();
-        status_message(String.format("%s: %s", username, msg));
+        context.status_message(String.format("%s: %s", username, msg));
     }
 
     void _on_term_stdout(JsonObject jsonObject) {}
@@ -883,7 +861,7 @@ public class FlooHandler extends ConnectionInterface {
             Flog.info("we cant patch because perms");
             return;
         }
-        String newRelativePath = Utils.toProjectRelPath(newPath);
+        String newRelativePath = context.toProjectRelPath(newPath);
         if (buf.path.equals(newRelativePath)) {
             Flog.info("untellij_renamed handling workspace rename, aborting.");
             return;
@@ -898,7 +876,7 @@ public class FlooHandler extends ConnectionInterface {
         if (!can("patch")) {
             return;
         }
-        if (!Utils.isShared(filePath)) {
+        if (!context.isShared(filePath)) {
             return;
         }
         Buf buf = this.get_buf_by_path(filePath);
@@ -969,6 +947,13 @@ public class FlooHandler extends ConnectionInterface {
         return true;
     }
 
+    @Override
+    public void shutDown() {
+        super.shutDown();
+        listener.stop();
+        context.status_message(String.format("Leaving workspace: %s.", url.toString()));
+    }
+
     @SuppressWarnings("unused")
     public void testHandlers () throws IOException {
         JsonObject obj = new JsonObject();
@@ -991,22 +976,12 @@ public class FlooHandler extends ConnectionInterface {
     }
 
     public void clear_highlights() {
-        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : FloobitsPlugin.flooHandler.highlights.entrySet()) {
+        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
             Integer user_id = entry.getKey();
             HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
             for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
                 remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
             }
         }
-    }
-
-    public void shutDown() {
-        if (this.conn != null && this.conn.shutDown()) {
-            this.conn = null;
-            status_message(String.format("Leaving workspace: %s.", url.toString()));
-        }
-        disconnected = true;
-        isJoined = false;
-        FloobitsPlugin.removeHandler();
     }
 }

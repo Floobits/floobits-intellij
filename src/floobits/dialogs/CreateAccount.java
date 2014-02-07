@@ -2,9 +2,8 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.handlers.LinkEditorHandler;
+import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
-import floobits.common.CreateAccountHandler;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -43,12 +42,12 @@ public class CreateAccount extends DialogWrapper {
     }
 
 
-    public CreateAccount(@Nullable Project project) {
+    public CreateAccount(Project project) {
         super(project, true);
         this.project = project;
         jPanel = new JPanel();
         init();
-        this.setTitle("No Floobits account detected");
+        this.setTitle("No Floobits Account Detected");
         JLabel label = new JLabel("You need a Floobits account! If you don't have one we will create one for you.");
         jPanel.add(label);
 
@@ -70,13 +69,14 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        LinkEditorHandler.linkEditor(project);
+        FloobitsPlugin plugin = project.getComponent(FloobitsPlugin.class);
+        plugin.linkEditor(project);
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        CreateAccountHandler.createAccount(project);
+        project.getComponent(FloobitsPlugin.class).createAccount(project);
     }
 }
 

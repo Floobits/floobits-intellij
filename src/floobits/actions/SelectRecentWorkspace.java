@@ -15,7 +15,7 @@ public class SelectRecentWorkspace extends AnAction {
         for (Workspace workspace : persistentJson.recent_workspaces) {
             recent.add(workspace.url);
         }
-        floobits.dialogs.SelectRecentWorkspace selectRecentWorkspace = new floobits.dialogs.SelectRecentWorkspace(recent);
+        floobits.dialogs.SelectRecentWorkspace selectRecentWorkspace = new floobits.dialogs.SelectRecentWorkspace(e.getProject(), recent);
         selectRecentWorkspace.createCenterPanel();
         selectRecentWorkspace.show();
     }

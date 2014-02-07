@@ -7,7 +7,6 @@ import floobits.FloobitsPlugin;
 public class ShareProject extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
-
-        FloobitsPlugin.shareProject(e.getProject());
+        FloobitsPlugin.getInstance(e.getProject()).shareProject(e.getProject());
     }
 }

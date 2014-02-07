@@ -55,7 +55,7 @@ public class API {
         client.getParams().setAuthenticationPreemptive(true);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        client.getHostConfiguration().setHost(Shared.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {
+        client.getHostConfiguration().setHost(Constants.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {
             @Override
             public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(socket, s, i, b);

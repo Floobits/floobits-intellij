@@ -1,12 +1,13 @@
 package floobits;
 
+import com.intellij.AppTopics;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -16,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
-import floobits.common.Ignore;
 import floobits.common.Utils;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -28,19 +28,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Listener implements ApplicationComponent, BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
+public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
-    public static synchronized void flooEnable() {
+    private final FlooContext context;
+
+    public synchronized void flooEnable() {
         isListening.set(true);
     }
-    public static synchronized void flooDisable() {
+    public synchronized void flooDisable() {
         isListening.set(false);
     }
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener() {
+    public Listener(FlooContext context) {
+        this.context = context;
+    }
+
+    public void start() {
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
+        connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
+        em.addDocumentListener(this);
+        em.addSelectionListener(this);
+        em.addCaretListener(this);
+
+
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
@@ -54,31 +67,29 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                FlooHandler instance = FloobitsPlugin.getHandler();
-                if (instance != null) {
-                    instance.untellij_renamed(oldValue, newValue);
-                }
+                FlooHandler handler = context.getFlooHandler();
+                if (handler != null)
+                    handler.untellij_renamed(oldValue, newValue);
             }
-        });
+        }
+        );
     }
 
-    public void initComponent() {
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
-        em.addDocumentListener(this);
-        em.addSelectionListener(this);
-        em.addCaretListener(this);
-    }
-
-    public void disposeComponent() {
+    public void stop() {
         connection.disconnect();
-        em.removeSelectionListener(this)    ;
+        em.removeSelectionListener(this);
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
     }
 
     @Override
+    public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
+       Flog.log("%s changed but has no document.", file.getPath());
+    }
+
+    @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 flooHandler.untellij_saved(path);
@@ -86,10 +97,11 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
         });
     }
 
+
     @Override
     public void documentChanged(DocumentEvent event) {
         Flog.info("Document changed.");
-        FlooHandler flooHandler = FloobitsPlugin.getHandler();
+        FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
@@ -107,15 +119,13 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
-        if (!isListening.get()) {
+        if (!isListening.get() || context.handler == null) {
             return;
         }
-        if (FloobitsPlugin.getHandler() == null) {
-            return;
-        }
+
         Document document = event.getEditor().getDocument();
         final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 if (editors.length <= 0) {
@@ -136,7 +146,7 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
             return;
         }
         Document document = event.getEditor().getDocument();
-        GetPath.getPath(new GetPath(document) {
+        GetPath.getPath(context, new GetPath(document) {
             @Override
             public void if_path(String path, FlooHandler flooHandler) {
                 TextRange[] textRanges = event.getNewRanges();
@@ -156,31 +166,13 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        FlooHandler handler = FloobitsPlugin.getHandler();
+        FlooHandler handler = context.getFlooHandler();
         if (handler == null) {
             return;
         }
         if (!isListening.get()) {
             return;
         }
-
-
-        boolean makeIgnore = false;
-        for (VFileEvent vFileEvent : events) {
-            if (vFileEvent instanceof VFileCopyEvent || vFileEvent instanceof VFileCreateEvent) {
-                makeIgnore = true;
-                break;
-            }
-        }
-
-        Ignore ignore = null;
-        if (makeIgnore) {
-            ignore = Ignore.buildIgnoreTree();
-            if (ignore == null) {
-                return;
-            }
-        }
-
 
         for (VFileEvent event : events) {
             Flog.info(" after event type %s", event.getClass().getSimpleName());
@@ -195,17 +187,17 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
                 ArrayList<VirtualFile> files;
-                files = Utils.getAllNestedFiles(virtualFile, ignore);
+                files = Utils.getAllNestedFiles(context, virtualFile);
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    FloobitsPlugin.getHandler().untellij_renamed(oldFilePath, newFilePath);
+                    handler.untellij_renamed(oldFilePath, newFilePath);
                 }
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(event.getFile(), ignore));
+                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -225,37 +217,30 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (ignore.isIgnored(copiedFile.getPath())) {
+                if (context.isIgnored(copiedFile.getPath())) {
                     return;
                 }
-                Utils.createFile(copiedFile);
+                Utils.createFile(context, copiedFile);
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
+                createdFiles = Utils.getAllNestedFiles(context, event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
-                    Utils.createFile(createdFile);
+                    Utils.createFile(context, createdFile);
                 }
                 continue;
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllNestedFiles(event.getFile(), ignore);
+                changedFiles = Utils.getAllNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
                     handler.untellij_changed(file);
                 }
             }
         }
     }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return "Floobits";  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public void unsavedDocumentsDropped() {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -263,11 +248,6 @@ public class Listener implements ApplicationComponent, BulkFileListener, Documen
 
     @Override
     public void beforeFileContentReload(VirtualFile file, @NotNull Document document) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -1,59 +1,56 @@
 package floobits;
 
-import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import floobits.common.BaseHandler;
 import floobits.common.FlooUrl;
 import floobits.common.RunLater;
+import floobits.common.Utils;
 import floobits.dialogs.DialogBuilder;
+import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
+import floobits.handlers.LinkEditorHandler;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+public class FloobitsPlugin implements ProjectComponent {
+    public final static String name = "Floobits-Plugin";
+    public final FlooContext context = new FlooContext();
 
-public class FloobitsPlugin implements ApplicationComponent {
-    public static FlooHandler flooHandler;
-
+    public static FloobitsPlugin getInstance(Project project) {
+        return project.getComponent(FloobitsPlugin.class);
+    }
     public FloobitsPlugin() {
         Flog.info("Floobits plugin");
     }
 
-    public static FlooHandler getHandler() {
-        return flooHandler;
-    }
-
-    public static void removeHandler() {
-        flooHandler = null;
-    }
-
-    @Override
-    public void initComponent() {
-    }
-
-    public static void shareProject(final Project project) {
-        if (!FlooHandler.isJoined) {
-            flooHandler = new FlooHandler(project);
-            if (flooHandler.disconnected) {
-                removeHandler();
+    public void shareProject(final Project project) {
+        if (!context.isJoined()) {
+            context.project = project;
+            context.handler = new FlooHandler(context, project);
+            if (context.handler.disconnected) {
+                context.removeHandler();
             }
             return;
         }
 
-        String title = String.format("Really leave %s?", flooHandler.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
+        String title = String.format("Really leave %s?", context.handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", context.handler.url.toString(), context.handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
-            @Override
+
             public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
-                flooHandler.shutDown();
+                context.handler.shutDown();
                 shareProject(project);
             }
         });
     }
 
-    public static void joinWorkspace(final String url) {
-        if (!FlooHandler.isJoined) {
+    public void joinWorkspace(final Project project, final String url) {
+        if (!context.isJoined()) {
             FlooUrl f;
             try {
                 f = new FlooUrl(url);
@@ -61,61 +58,67 @@ public class FloobitsPlugin implements ApplicationComponent {
                 Flog.warn(e);
                 return;
             }
-            flooHandler = new FlooHandler(f);
-            if (flooHandler.disconnected) {
-                removeHandler();
+            context.project = project;
+            context.handler = new FlooHandler(context, f);
+            if (context.handler.disconnected) {
+                context.removeHandler();
             }
             return;
         }
-        String title = String.format("Really leave %s?", flooHandler.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", flooHandler.url.toString(), flooHandler.url.toString());
+        String title = String.format("Really leave %s?", context.handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", context.handler.url.toString(), context.handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
-            @Override
+
             public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
-                flooHandler.shutDown();
-                joinWorkspace(url);
+                context.handler.shutDown();
+                joinWorkspace(project, url);
             }
         });
+    }
 
+    public void createAccount(Project project) {
+        if (!context.isJoined()) {
+            CreateAccountHandler createAccountHandler = new CreateAccountHandler(context);
+            createAccountHandler.create();
+            return;
+        }
+        context.status_message("You already have an account and are connected with it.");
+        context.handler.shutDown();
+    }
+
+
+    public void linkEditor(Project project) {
+        if (!context.isJoined()) {
+            context.handler = new LinkEditorHandler(context);
+            ((LinkEditorHandler)context.handler).link();
+            return;
+        }
+        Utils.status_message("You already have an account and are connected with it.", project);
+        context.handler.shutDown();
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();    //To change body of overridden methods use File | Settings | File Templates.
+    public void projectOpened() {
     }
 
     @Override
-    public String toString() {
-        return super.toString();    //To change body of overridden methods use File | Settings | File Templates.
+    public void projectClosed() {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();    //To change body of overridden methods use File | Settings | File Templates.
+    public void initComponent() {
     }
 
     @Override
     public void disposeComponent() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @NotNull
     @Override
     public String getComponentName() {
-        return "floobits";
+        return name;
     }
-    // TODO: we can store state using intellij if we want with getState and loadState
 }

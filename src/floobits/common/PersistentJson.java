@@ -55,7 +55,7 @@ public class PersistentJson {
     }
 
     public static File getFile() {
-        return new File(FilenameUtils.concat(Shared.baseDir, "persistent.json"));
+        return new File(FilenameUtils.concat(Constants.baseDir, "persistent.json"));
     }
 
     public static PersistentJson getInstance() {
