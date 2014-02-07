@@ -43,38 +43,6 @@ public class FloobitsApplication implements ApplicationComponent {
         return "FloobitsApplication";
     }
 
-    public void joinWorkspace(FlooContext context) {
-        final String project_path = context.project.getBasePath();
-
-        FlooUrl flooUrl = DotFloo.read(project_path);
-        if (API.workspaceExists(flooUrl, context)) {
-            joinWorkspace(context, flooUrl, project_path);
-            return;
-        }
-
-        PersistentJson persistentJson = PersistentJson.getInstance();
-        for (Map.Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
-            Map<String, Workspace> workspaces = i.getValue();
-            for (Map.Entry<String, Workspace> j : workspaces.entrySet()) {
-                Workspace w = j.getValue();
-                if (Utils.isSamePath(w.path, project_path)) {
-                    try {
-                        flooUrl = new FlooUrl(w.url);
-                    } catch (MalformedURLException e) {
-                        Flog.warn(e);
-                        continue;
-                    }
-                    if (API.workspaceExists(flooUrl, context)) {
-                        joinWorkspace(context, flooUrl, w.path);
-                        return;
-                    }
-                }
-            }
-        }
-
-        context.error_message("Could not find a workspace for the current project.");
-    }
-
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, String location) {
 //        if (!API.workspaceExists(f, context)) {
 //            context.error_message(String.format("The workspace %s does not exist!", f.toString()));
@@ -86,22 +54,15 @@ public class FloobitsApplication implements ApplicationComponent {
 //                Todo ask user aboot this or something
                 projectForPath = createProject(location, flooUrl.workspace);
                 context = FloobitsPlugin.getInstance(projectForPath).context;
-                context.joinWorkspace(flooUrl);
-                return;
             } else {
-                context.joinWorkspace(flooUrl);
+                context.joinWorkspace(flooUrl, location, false);
             }
-        }
-
-        if (projectForPath != context.project) {
+        } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
 //            TODO maybe this or ask or something?
-//            joinWorkspace(context, flooUrl, location)
-            context.joinWorkspace(flooUrl);
-            return;
         }
 
-        context.joinWorkspace(flooUrl);
+        context.joinWorkspace(flooUrl, location, false);
     }
 
     public void joinWorkspace(final FlooContext context, final String url) {

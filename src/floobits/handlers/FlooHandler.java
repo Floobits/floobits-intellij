@@ -63,7 +63,6 @@ abstract class DocumentFetcher {
 
 public class FlooHandler extends BaseHandler {
     private Boolean shouldUpload = false;
-    private Boolean stomp = false;
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
@@ -112,20 +111,17 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload, boolean shouldStomp) {
+    public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
         url = flooUrl;
-        this.stomp = shouldStomp;
         // TODO: Should upload should be an explicit argument to the constructor.
         this.shouldUpload = shouldUpload;
     }
 
-    void joinWorkspace(final FlooUrl f, final String path) {
+    public void go() {
         Flog.warn("join workspace");
-        url = f;
-        context.setColabDir(path);
         PersistentJson persistentJson = PersistentJson.getInstance();
-        persistentJson.addWorkspace(f, path);
+        persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();
         conn = new FlooConn(this);
         conn.start();
@@ -342,7 +338,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     Editor get_editor_for_document(Document document) {
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
         for (Editor editor : editors) {
             Flog.warn("is disposed? %s", editor.isDisposed());
         }
@@ -353,7 +349,7 @@ public class FlooHandler extends BaseHandler {
         if (virtualFile == null) {
             return null;
         }
-        return EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
+        return EditorFactory.getInstance().createEditor(document, context.project, virtualFile, true);
     }
 
     void remove_highlight(Integer userId, Integer bufId, Document document) {
@@ -366,7 +362,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         if (document != null) {
-            Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+            Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
             for (Editor editor : editors) {
                 if (editor.isDisposed()) {
                     continue;
@@ -408,7 +404,7 @@ public class FlooHandler extends BaseHandler {
         get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
-                final FileEditorManager manager = FileEditorManager.getInstance(project);
+                final FileEditorManager manager = FileEditorManager.getInstance(context.project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
@@ -432,7 +428,7 @@ public class FlooHandler extends BaseHandler {
                 attributes.setBackgroundColor(color);
 
                 boolean first = true;
-                Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+                Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
 
                 for (Editor editor : editors) {
                     if (editor.isDisposed()) {
