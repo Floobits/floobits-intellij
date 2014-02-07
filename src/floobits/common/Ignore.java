@@ -79,25 +79,23 @@ public class Ignore {
             if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
                 continue;
             }
-            if (isIgnoredDown(file, file.getPath())) {
+            if (isIgnoredDown(Utils.toProjectRelPath(file.getPath(), rootPath), file.isDirectory())) {
                 continue;
             }
             if (file.isDirectory()) {
-                Ignore child = new Ignore(file, this, depth+1, rootPath);
+                Ignore child = new Ignore(file, this, depth + 1, rootPath);
                 children.put(file.getName(), child);
                 child.recurse();
                 size += child.size;
             }
-            if (file.is(VFileProperty.SPECIAL)) {
-                continue;
-            }
+
             files.add(file);
             size += file.getLength();
         }
     }
 
-    private boolean isIgnoredUp(VirtualFile virtualFile, String path, String[] split) {
-        IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, virtualFile.isDirectory());
+    private boolean isIgnoredUp(String path, boolean isDir, String[] split) {
+        IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, isDir);
         switch (ignored) {
             case IGNORED:
                 return true;
@@ -106,16 +104,16 @@ public class Ignore {
             case CHECK_PARENT:
                 break;
         }
-        if (split.length < depth + 1) {
+        if (split.length <= depth + 1) {
             return false;
         }
-        String nextName = split[depth+1];
+        String nextName = split[depth + 1];
         Ignore ignore = children.get(nextName);
-        return ignore != null && ignore.isIgnoredUp(virtualFile, path, split);
+        return ignore != null && ignore.isIgnoredUp(path, isDir, split);
     }
 
-    private boolean isIgnoredDown(VirtualFile virtualFile, String path) {
-        IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, virtualFile.isDirectory());
+    private boolean isIgnoredDown(String path, boolean isDir) {
+        IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, isDir);
         switch (ignored) {
             case IGNORED:
                 return true;
@@ -124,7 +122,7 @@ public class Ignore {
             case CHECK_PARENT:
                 break;
         }
-        return parent != null && parent.isIgnoredDown(virtualFile, path);
+        return parent != null && parent.isIgnoredDown(path, isDir);
     }
 
     private boolean isFlooIgnored(VirtualFile virtualFile, String absPath) {
@@ -156,7 +154,11 @@ public class Ignore {
             return true;
         }
         String path = FilenameUtils.separatorsToUnix(virtualFile.getPath());
-        return isFlooIgnored(virtualFile, path) || isIgnoredUp(virtualFile, path, context.toProjectRelPath(path).split("/"));
+        if (isFlooIgnored(virtualFile, path))
+            return true;
+
+        path =  context.toProjectRelPath(path);
+        return isIgnoredUp(path, virtualFile.isDirectory(), path.split("/"));
     }
     public static void writeDefaultIgnores(FlooContext context) {
         Flog.log("Creating default ignores.");
