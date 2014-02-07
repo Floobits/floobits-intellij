@@ -54,8 +54,6 @@ public class FloobitsApplication implements ApplicationComponent {
 //                Todo ask user aboot this or something
                 projectForPath = createProject(location, flooUrl.workspace);
                 context = FloobitsPlugin.getInstance(projectForPath).context;
-            } else {
-                context.joinWorkspace(flooUrl, location, false);
             }
         } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
