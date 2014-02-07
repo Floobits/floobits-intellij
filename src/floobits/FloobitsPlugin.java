@@ -19,7 +19,7 @@ public class FloobitsPlugin implements ProjectComponent {
 
     @Override
     public void projectOpened() {
-        context.project.getComponent(FloobitsApplication.class).projectOpened(context);
+        FloobitsApplication.self.projectOpened(context);
     }
 
 

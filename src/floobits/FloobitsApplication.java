@@ -9,13 +9,8 @@ import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Map;
 
-/**
- * Created by kans on 2/6/14.
- */
 public class FloobitsApplication implements ApplicationComponent {
     public boolean canMakeAccount = true;
     public static FloobitsApplication self;
