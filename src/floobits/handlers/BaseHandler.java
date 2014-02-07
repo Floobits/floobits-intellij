@@ -1,10 +1,12 @@
-package floobits.common;
+package floobits.handlers;
 
 import com.google.gson.JsonObject;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
+import floobits.common.FlooConn;
+import floobits.common.FlooUrl;
 import floobits.utilities.Flog;
 
 import java.util.ArrayList;
@@ -30,6 +32,8 @@ abstract public class BaseHandler {
     public FlooUrl getUrl() {
         return url;
     }
+
+    public abstract void go();
 
     public void shutDown() {
         if (this.conn != null && this.conn.shutDown()) {

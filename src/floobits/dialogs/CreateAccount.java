@@ -2,6 +2,7 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
@@ -42,9 +43,9 @@ public class CreateAccount extends DialogWrapper {
     }
 
 
-    public CreateAccount(Project project) {
-        super(project, true);
-        this.project = project;
+    public CreateAccount(FlooContext context) {
+        super(context.project, true);
+        project = context.project;
         jPanel = new JPanel();
         init();
         this.setTitle("No Floobits Account Detected");
@@ -69,14 +70,13 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        FloobitsPlugin plugin = project.getComponent(FloobitsPlugin.class);
-        plugin.linkEditor(project);
+        FloobitsPlugin.getInstance(project).context.linkEditor();
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        project.getComponent(FloobitsPlugin.class).createAccount(project);
+        FloobitsPlugin.getInstance(project).context.createAccount();
     }
 }
 

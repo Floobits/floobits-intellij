@@ -15,7 +15,7 @@ public class CreateAccountHandler extends BaseHandler {
         super(context);
     }
 
-    public void create() {
+    public void go() {
         url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
@@ -24,7 +24,7 @@ public class CreateAccountHandler extends BaseHandler {
     @Override
     public void on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
-        Settings settings = new Settings(context.project);
+        Settings settings = new Settings(context);
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }

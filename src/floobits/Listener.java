@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -59,7 +58,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
                     return;
                 }
-
                 VirtualFile parent = event.getParent();
                 if (parent == null) {
                     return;

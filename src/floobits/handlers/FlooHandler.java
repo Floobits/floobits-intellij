@@ -2,14 +2,11 @@ package floobits.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -22,20 +19,16 @@ import floobits.common.protocol.*;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
-import floobits.dialogs.SelectOwner;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
-import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -70,8 +63,6 @@ abstract class DocumentFetcher {
 
 public class FlooHandler extends BaseHandler {
     private Boolean shouldUpload = false;
-    public Project project;
-    private Boolean stomp = false;
     private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
@@ -94,7 +85,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
-        this.conn.write(new FlooAuth(new Settings(project), this.url.owner, this.url.workspace));
+        this.conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
         context.status_message(String.format("You successfully joined %s ", url.toString()));
     }
 
@@ -120,190 +111,21 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (FlooContext context, Project p) {
+    public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
-        this.project = p;
-        this.stomp = true;
+        url = flooUrl;
         // TODO: Should upload should be an explicit argument to the constructor.
-        this.shouldUpload = true;
-        final String project_path = p.getBasePath();
-        FlooUrl flooUrl = DotFloo.read(project_path);
-        if (workspaceExists(flooUrl)) {
-            joinWorkspace(flooUrl, project_path);
-            return;
-        }
-
-        PersistentJson persistentJson = PersistentJson.getInstance();
-        for (Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
-            Map<String, Workspace> workspaces = i.getValue();
-            for (Entry<String, Workspace> j : workspaces.entrySet()) {
-                Workspace w = j.getValue();
-                if (Utils.isSamePath(w.path, project_path)) {
-                    try {
-                        flooUrl = new FlooUrl(w.url);
-                    } catch (MalformedURLException e) {
-                        Flog.warn(e);
-                        continue;
-                    }
-                    if (workspaceExists(flooUrl)) {
-                        joinWorkspace(flooUrl, project_path);
-                        return;
-                    }
-                }
-            }
-        }
-
-        Settings settings = new Settings(project);
-        String owner = settings.get("username");
-        final String name = new File(project_path).getName();
-        List<String> orgs = API.getOrgsCanAdmin(project);
-
-        if (orgs.size() == 0) {
-            createWorkspace(owner, name, project_path);
-            return;
-        }
-
-        orgs.add(0, owner);
-        SelectOwner.build(orgs, new RunLater<String>() {
-            @Override
-            public void run(String owner) {
-                createWorkspace(owner, name, project_path);
-            }
-        });
-    }
-    public FlooHandler (FlooContext context, final FlooUrl flooUrl) {
-        super(context);
-        if (!workspaceExists(flooUrl)) {
-            context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
-        }
-
-        PersistentJson p = PersistentJson.getInstance();
-        String path;
-        try {
-            path = p.workspaces.get(flooUrl.owner).get(flooUrl.workspace).path;
-        } catch (Exception e) {
-            SelectFolder.build(new RunLater<String>() {
-                @Override
-                public void run(String path) {
-                    finishJoiningWorkspace(path, flooUrl);
-                }
-            });
-            return;
-        }
-        finishJoiningWorkspace(path, flooUrl);
-    }
-    void finishJoiningWorkspace(String path, FlooUrl flooUrl) {
-        ProjectManager pm = ProjectManager.getInstance();
-        // Check open projects
-        Project[] openProjects = pm.getOpenProjects();
-        for (Project project : openProjects) {
-            if (path.equals(project.getBasePath())) {
-                this.project = project;
-                break;
-            }
-        }
-
-        // Try to open existing project
-        if (this.project == null) {
-            try {
-                this.project = pm.loadAndOpenProject(path);
-            } catch (Exception e) {
-                Flog.warn(e);
-            }
-        }
-
-        // Create project
-        if (this.project == null) {
-            this.project = pm.createProject(this.url.workspace, path);
-            try {
-                ProjectManager.getInstance().loadAndOpenProject(this.project.getBasePath());
-            } catch (Exception e) {
-                Flog.warn(e);
-                return;
-            }
-        }
-        joinWorkspace(flooUrl, this.project.getBasePath());
+        this.shouldUpload = shouldUpload;
     }
 
-    Boolean workspaceExists(final FlooUrl f) {
-        if (f == null) {
-            return false;
-        }
-        HttpMethod method;
-        try {
-            method = API.getWorkspace(f.owner, f.workspace, project);
-        } catch (IOException e) {
-            Flog.warn(e);
-            return false;
-        }
-
-        return method.getStatusCode() < 400;
-    }
-
-    void joinWorkspace(final FlooUrl f, final String path) {
+    public void go() {
         Flog.warn("join workspace");
-        url = f;
-        context.setColabDir(path);
         PersistentJson persistentJson = PersistentJson.getInstance();
-        persistentJson.addWorkspace(f, path);
+        persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();
         conn = new FlooConn(this);
         conn.start();
         listener.start();
-    }
-
-    void createWorkspace(String owner, String name, String project_path) {
-        HttpMethod method;
-        try {
-            method = API.createWorkspace(owner, name, project);
-        } catch (IOException e) {
-            context.error_message(String.format("Could not create workspace: %s", e.toString()));
-            return;
-        }
-        int code = method.getStatusCode();
-        switch (code) {
-            case 400:
-                // Todo: pick a new name or something
-                context.error_message("Invalid workspace name.");
-                shutDown();
-                return;
-            case 402:
-                String details;
-                try {
-                    String res = method.getResponseBodyAsString();
-                    JsonObject obj = (JsonObject)new JsonParser().parse(res);
-                    details = obj.get("detail").getAsString();
-                } catch (IOException e) {
-                    Flog.warn(e);
-                    return;
-                }
-                context.error_message(details);
-                shutDown();
-                return;
-            case 409:
-                Flog.warn("The workspace already exists so I am joining it.");
-            case 201:
-                Flog.log("Workspace created.");
-                joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, -1, true), project_path);
-                return;
-            case 401:
-                Flog.log("Auth failed");
-                shutDown();
-                context.error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
-                if (floorc == null) {
-                    return;
-                }
-                FileEditorManager.getInstance(project).openFile(floorc, true);
-                return;
-            default:
-                try {
-                    Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
-                } catch (IOException e) {
-                    Flog.warn(e);
-                }
-                shutDown();
-        }
     }
 
     Buf get_buf_by_path(String absPath) {
@@ -319,7 +141,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     void upload() {
-        ProjectRootManager.getInstance(project).getFileIndex().iterateContent(new ContentIterator() {
+        ProjectRootManager.getInstance(context.project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
                 if (!context.isIgnored(virtualFile.getPath())) upload(virtualFile);
                 return true;
@@ -516,7 +338,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     Editor get_editor_for_document(Document document) {
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
         for (Editor editor : editors) {
             Flog.warn("is disposed? %s", editor.isDisposed());
         }
@@ -527,7 +349,7 @@ public class FlooHandler extends BaseHandler {
         if (virtualFile == null) {
             return null;
         }
-        return EditorFactory.getInstance().createEditor(document, project, virtualFile, true);
+        return EditorFactory.getInstance().createEditor(document, context.project, virtualFile, true);
     }
 
     void remove_highlight(Integer userId, Integer bufId, Document document) {
@@ -540,7 +362,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         if (document != null) {
-            Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+            Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
             for (Editor editor : editors) {
                 if (editor.isDisposed()) {
                     continue;
@@ -582,7 +404,7 @@ public class FlooHandler extends BaseHandler {
         get_document(res.id, new DocumentFetcher(force) {
             @Override
             public void on_document(Document document) {
-                final FileEditorManager manager = FileEditorManager.getInstance(project);
+                final FileEditorManager manager = FileEditorManager.getInstance(context.project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
@@ -606,7 +428,7 @@ public class FlooHandler extends BaseHandler {
                 attributes.setBackgroundColor(color);
 
                 boolean first = true;
-                Editor[] editors = EditorFactory.getInstance().getEditors(document, project);
+                Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
 
                 for (Editor editor : editors) {
                     if (editor.isDisposed()) {

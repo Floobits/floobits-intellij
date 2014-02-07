@@ -196,7 +196,7 @@ public class TextBuf extends Buf <String> {
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
-                        if (!ReadonlyStatusHandler.ensureDocumentWritable(flooHandler.project, d)){
+                        if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)){
                             Flog.info("Document: %s is not writable.", d);
                             return;
                         }
