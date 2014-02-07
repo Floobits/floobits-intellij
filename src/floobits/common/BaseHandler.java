@@ -34,7 +34,6 @@ abstract public class BaseHandler {
     public void shutDown() {
         if (this.conn != null && this.conn.shutDown()) {
             this.conn = null;
-            context.status_message(String.format("Leaving workspace: %s.", url.toString()));
         }
         disconnected = true;
         isJoined = false;

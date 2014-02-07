@@ -46,8 +46,9 @@ public class LinkEditorHandler extends BaseHandler {
         }
         if (settings.isComplete()) {
             settings.write();
+            context.status_message(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", settings.get("username")));
         } else {
-            Utils.error_message("Something went wrong while receiving data, please contact Floobits support.", context.project);
+            context.error_message("Something went wrong while receiving data, please contact Floobits support.");
         }
         shutDown();
     }

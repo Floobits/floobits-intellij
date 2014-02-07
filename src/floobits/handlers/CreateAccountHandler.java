@@ -29,7 +29,7 @@ public class CreateAccountHandler extends BaseHandler {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }
         if (!settings.isComplete()) {
-            Utils.error_message("Can't create an account at this time.", context.project);
+            context.error_message("Can't create an account at this time.");
             shutDown();
             return;
         }
@@ -40,6 +40,7 @@ public class CreateAccountHandler extends BaseHandler {
         p.save();
         shutDown();
         // TODO: Show welcome message.
+        context.status_message(String.format("Successfully created new Floobits account with username %s. You can now share a project or join a workspace.", settings.get("username")));
         Flog.info("All setup");
     }
 

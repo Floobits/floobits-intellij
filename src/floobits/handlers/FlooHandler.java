@@ -951,6 +951,7 @@ public class FlooHandler extends BaseHandler {
     public void shutDown() {
         super.shutDown();
         listener.stop();
+        context.status_message(String.format("Leaving workspace: %s.", url.toString()));
     }
 
     @SuppressWarnings("unused")
