@@ -1,8 +1,11 @@
 package floobits;
 
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectOwner;
@@ -14,10 +17,7 @@ import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -163,32 +163,11 @@ public class FlooContext {
 
     public void setColabDir(String colabDir) {
         this.colabDir = colabDir;
-        try {
-            ignoreTree = new Ignore(new File(colabDir), null, 0);
-        } catch (IOException e) {
-            error_message("Your file system may be read-only or you may not have access to it.");
-            return;
-        }
-        LinkedList<Ignore> queue = new LinkedList<Ignore>();
-        queue.add(ignoreTree);
-        while (queue.size() > 0) {
-            Ignore current = queue.pop();
-            File[] childDirectories = current.file.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isDirectory();
-                }
-            });
-            if (childDirectories != null){
-                for (File childDirectory : childDirectories) {
-                    Ignore child = current.adopt(childDirectory);
-                    if (child == null) {
-                        continue;
-                    }
-                    queue.push(child);
-                }
-            }
-        }
+        Ignore.writeDefaultIgnores(this);
+
+        VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
+        ignoreTree = new Ignore(fileByIoFile);
+        ignoreTree.recurse();
     }
 
     public String absPath(String path) {
@@ -203,11 +182,8 @@ public class FlooContext {
         return Utils.toProjectRelPath(path, colabDir);
     }
 
-    public boolean isIgnored(final String path) {
-        return ignoreTree != null && ignoreTree.isIgnored(this, path);
-    }
     public Boolean isIgnored(VirtualFile f) {
-        return f.isValid() && isIgnored(f.getPath());
+        return ignoreTree.isIgnored(this, f);
     }
 
     public void flash_message(final String message) {

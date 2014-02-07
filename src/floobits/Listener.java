@@ -215,7 +215,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                if (context.isIgnored(copiedFile.getPath())) {
+                if (context.isIgnored(copiedFile)) {
                     return;
                 }
                 Utils.createFile(context, copiedFile);

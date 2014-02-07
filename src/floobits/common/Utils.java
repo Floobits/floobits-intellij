@@ -248,7 +248,7 @@ public class Utils {
                 filePaths.addAll(getAllNestedFilePaths(context, file));
                 continue;
             }
-            if (context.isIgnored(file.getPath())) {
+            if (context.isIgnored(file)) {
                 continue;
             }
             filePaths.add(file.getPath());
@@ -262,7 +262,7 @@ public class Utils {
             return filePaths;
         }
         if (!vFile.isDirectory()) {
-            if (context.isIgnored(vFile.getPath())) {
+            if (context.isIgnored(vFile)) {
                 return filePaths;
             }
             filePaths.add(vFile);
@@ -280,29 +280,6 @@ public class Utils {
         }
         return filePaths;
     }
-//    /**
-//     * Same as getAllNestedFiles but does not check to see if file or directories are ignored.
-//     * @param vFile
-//     * @return
-//     */
-//    public static ArrayList<VirtualFile> getAllNestedFiles(VirtualFile vFile) {
-//        ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
-//        if (!vFile.isValid()) {
-//            return filePaths;
-//        }
-//        if (!vFile.isDirectory()) {
-//            filePaths.add(vFile);
-//            return filePaths;
-//        }
-//        for (VirtualFile file : vFile.getChildren()) {
-//            if (file.isDirectory()) {
-//                filePaths.addAll(getAllNestedFiles(file));
-//                continue;
-//            }
-//            filePaths.add(file);
-//        }
-//        return filePaths;
-//    }
 
     static public SSLContext createSSLContext() {
         X509TrustManager x509TrustManager = new X509TrustManager() {

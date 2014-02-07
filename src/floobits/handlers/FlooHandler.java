@@ -143,7 +143,7 @@ public class FlooHandler extends BaseHandler {
     void upload() {
         ProjectRootManager.getInstance(context.project).getFileIndex().iterateContent(new ContentIterator() {
             public boolean processFile(final VirtualFile virtualFile) {
-                if (!context.isIgnored(virtualFile.getPath())) upload(virtualFile);
+                if (!context.isIgnored(virtualFile)) upload(virtualFile);
                 return true;
             }
         });
