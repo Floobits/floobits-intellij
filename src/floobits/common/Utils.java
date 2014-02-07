@@ -46,6 +46,9 @@ public class Utils {
     }
 
     public static void createFile(final FlooContext context, final VirtualFile virtualFile) {
+        if (context.isIgnored(virtualFile)) {
+            return;
+        }
         Timeout timeout = new Timeout(100) {
             @Override
             public void run(Void arg) {

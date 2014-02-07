@@ -114,7 +114,6 @@ public class FlooHandler extends BaseHandler {
     public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
         url = flooUrl;
-        // TODO: Should upload should be an explicit argument to the constructor.
         this.shouldUpload = shouldUpload;
     }
 
@@ -149,28 +148,15 @@ public class FlooHandler extends BaseHandler {
         });
     }
 
-    public boolean upload(VirtualFile virtualFile) {
-        if (!Utils.isSharableFile(virtualFile)) {
-            return true;
-        }
-        String path = virtualFile.getPath();
-        if (!context.isShared(path)) {
-            Flog.info("Thing isn't shared: %s", path);
-            return true;
-        }
-        String rel_path = context.toProjectRelPath(path);
-        if (rel_path.equals(".idea/workspace.xml")) {
-            Flog.info("Not sharing the workspace.xml file");
-            return true;
-        }
+    public void upload(VirtualFile virtualFile) {
+        String path = context.toProjectRelPath(virtualFile.getPath());
 
         Buf b = get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
-            return true;
+            return;
         }
         send_create_buf(virtualFile);
-        return true;
     }
 
     void _on_room_info(JsonObject obj) {
@@ -202,57 +188,46 @@ public class FlooHandler extends BaseHandler {
             }
         }
 
-        if (conflicts.size() == 0) {
-            if (this.shouldUpload) {
-                this.upload();
+        if (shouldUpload) {
+            context.status_message("Stomping on remote files and uploading new ones.");
+            upload();
+            for (Buf buf : conflicts) {
+                send_set_buf(buf);
             }
             return;
         }
 
-        final RunLater<Void> stompLocal = new RunLater<Void>() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public void run(Void _) {
-                for (Buf buf : conflicts) {
-                    send_get_buf(buf.id);
-                    buf.buf = null;
-                    buf.md5 = null;
-                }
-                if (shouldUpload) {
-                    upload();
-                }
-            }
-        };
-        final RunLater<Void> stompRemote = new RunLater<Void>() {
-            @Override
-            @SuppressWarnings("unchecked")
-            public void run(Void _) {
-                for (Buf buf : conflicts) {
-                    send_set_buf(buf);
-                }
-                if (shouldUpload) {
-                    upload();
-                }
-            }
-        };
-        final RunLater<Void> flee = new RunLater<Void>() {
-            @Override
-            public void run(Void _) {
-                shutDown();
-            }
-        };
         ApplicationManager.getApplication().invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
-                ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(stompLocal, stompRemote, flee, conflictedPathsArray);
+                ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
+                    new RunLater<Void>() {
+                        @Override
+                        @SuppressWarnings("unchecked")
+                        public void run(Void _) {
+                            for (Buf buf : conflicts) {
+                                send_get_buf(buf.id);
+                            }
+                        }
+                    }, new RunLater<Void>() {
+                        @Override
+                        @SuppressWarnings("unchecked")
+                        public void run(Void _) {
+                            for (Buf buf : conflicts) {
+                                send_set_buf(buf);
+                            }
+                        }
+                    }, new RunLater<Void>() {
+                        @Override
+                        public void run(Void _) {
+                            shutDown();
+                        }
+                    }, conflictedPathsArray);
                 dialog.createCenterPanel();
                 dialog.show();
             }
-
         });
-
     }
 
     void send_create_buf(VirtualFile virtualFile) {
@@ -640,6 +615,10 @@ public class FlooHandler extends BaseHandler {
     void _on_term_stdin(JsonObject jsonObject) {}
 
     public void send_get_buf (Integer buf_id) {
+        Buf buf = bufs.get(buf_id);
+        if (buf != null) {
+            buf.set(null, null);
+        }
         this.conn.write(new GetBuf(buf_id));
     }
 
