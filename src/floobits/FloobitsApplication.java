@@ -10,6 +10,7 @@ import floobits.utilities.SelectFolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -94,6 +95,8 @@ public class FloobitsApplication implements ApplicationComponent {
 
         if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
+//            TODO maybe this or ask or something?
+//            joinWorkspace(context, flooUrl, location)
             context.joinWorkspace(flooUrl);
             return;
         }
@@ -103,6 +106,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public void joinWorkspace(final FlooContext context, final String url) {
         final FlooUrl f;
+
         try {
             f = new FlooUrl(url);
         } catch (Exception e) {
@@ -121,6 +125,16 @@ public class FloobitsApplication implements ApplicationComponent {
             joinWorkspace(context, f, workspace.path);
             return;
         }
+        FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
+
+        URI uri = URI.create(flooUrl.toString());
+        URI uri1 = URI.create(url);
+
+        if (uri.getPath().equals(uri1.getPath())) {
+            joinWorkspace(context, flooUrl, context.project.getBasePath());
+            return;
+        }
+
         SelectFolder.build(new RunLater<String>() {
             @Override
             public void run(String path) {
