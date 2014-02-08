@@ -104,24 +104,24 @@ public class FlooContext {
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
-        if (isJoined()) {
-            String title = String.format("Really leave %s?", handler.url.workspace);
-            String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
-            DialogBuilder.build(title, body, new RunLater<Boolean>() {
-
-                public void run(Boolean join) {
-                    if (!join) {
-                        return;
-                    }
-                    handler.shutDown();
-                    joinWorkspace(flooUrl, path, upload);
-                }
-            });
+        if (!isJoined()) {
+            setColabDir(Utils.unFuckPath(path));
+            handler = new FlooHandler(this, flooUrl, upload);
+            handler.go();
+            return;
         }
 
-        setColabDir(Utils.unFuckPath(path));
-        handler = new FlooHandler(this, flooUrl, upload);
-        handler.go();
+        String title = String.format("Really leave %s?", handler.url.workspace);
+        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+        DialogBuilder.build(title, body, new RunLater<Boolean>() {
+            public void run(Boolean join) {
+                if (!join) {
+                    return;
+                }
+                handler.shutDown();
+                joinWorkspace(flooUrl, path, upload);
+            }
+        });
     }
 
     public void createAccount() {
