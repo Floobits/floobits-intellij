@@ -7,8 +7,6 @@ import dmp.FlooDmp;
 import dmp.FlooPatchPosition;
 import dmp.diff_match_patch;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
-import floobits.Listener;
 import floobits.common.protocol.FlooPatch;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -112,6 +110,24 @@ public class TextBuf extends Buf <String> {
         flooHandler.send_patch(textPatch, before_md5, this);
     }
 
+    private void setGetBufTimeout(){
+        final Buf b = this;
+        Timeout timeout = new Timeout(2000) {
+            @Override
+            public void run(Void arg) {
+                b.cancelTimeout();
+                Flog.info("Sending get buf after timeout.");
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.send_get_buf(b.id);
+            }
+        };
+        cancelTimeout();
+        this.timeout = timeout;
+    }
+
     public void patch(final FlooPatch res) {
         final TextBuf b = this;
         Flog.info("Got _on_patch");
@@ -175,25 +191,9 @@ public class TextBuf extends Buf <String> {
                 // XXX: If patchedContents have carriage returns this will be a problem:
                 String md5After = DigestUtils.md5Hex(patchedContents);
                 if (!md5After.equals(res.md5_after)) {
-                    Flog.info("MD5 after mismatch (ours %s remote %s). Sending get_buf soon.", md5After, res.md5_after);
-                    final Integer buf_id = b.id;
-                    Timeout timeout = new Timeout(2000) {
-                        @Override
-                        public void run(Void arg) {
-                            b.timeout = null;
-                            Flog.info("Sending get buf because md5s did not match.");
-                            FlooHandler flooHandler = context.getFlooHandler();
-                            if (flooHandler == null) {
-                                return;
-                            }
-                            flooHandler.send_get_buf(buf_id);
-                        }
-                    };
-                    timeouts.setTimeout(timeout);
-                    b.timeout = timeout;
-                    return;
+                    Flog.info("MD5 after mismatch (ours %s remote %s)", md5After, res.md5_after);
                 }
-                Flog.log("Patched %s", res.path);
+
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
@@ -257,6 +257,11 @@ public class TextBuf extends Buf <String> {
                                 }
                             }
                         }
+                        String text = d.getText();
+                        if (!DigestUtils.md5Hex(text).equals(md5)) {
+                           b.setGetBufTimeout();
+                        }
+
                         for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
                             ScrollingModel model = entry.getKey();
                             Integer[] offsets = entry.getValue();
@@ -265,6 +270,7 @@ public class TextBuf extends Buf <String> {
                         }
 
                         b.set(d.getText(), res.md5_after);
+                        Flog.log("Patched %s", res.path);
                     }
                 });
             }
