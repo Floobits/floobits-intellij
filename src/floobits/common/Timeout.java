@@ -5,13 +5,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract public class Timeout extends RunLater<Void> implements Comparable {
+public class Timeout implements Comparable{
     long timeout = Calendar.getInstance().getTimeInMillis();
+    public Runnable runnable;
     private final AtomicBoolean canceled = new AtomicBoolean(false);
 
-    protected Timeout(long timeFromNow) {
-        super();
+    public Timeout(long timeFromNow, Runnable runnable) {
         timeout += timeFromNow;
+        this.runnable = runnable;
     }
 
     public void cancel() {

@@ -49,16 +49,16 @@ public class Utils {
         if (context.isIgnored(virtualFile)) {
             return;
         }
-        Timeout timeout = new Timeout(100) {
+        Timeout timeout = context.setTimeout(100, new Runnable() {
             @Override
-            public void run(Void arg) {
+            public void run() {
                 FlooHandler flooHandler = context.getFlooHandler();
                 if (flooHandler == null) {
                     return;
                 }
                 flooHandler.upload(virtualFile);
             }
-        };
+        });
         timeouts.setTimeout(timeout);
     }
 

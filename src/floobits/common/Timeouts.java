@@ -21,6 +21,13 @@ public class Timeouts extends Thread {
         timeouts.add(timeout);
     }
 
+    public void clear() {
+        for (Timeout timeout : timeouts) {
+          timeout.cancel();
+        }
+        timeouts.clear();
+    }
+
     @Override
     public void run() {
         super.run();
@@ -35,7 +42,7 @@ public class Timeouts extends Thread {
                    }
                    if (!t.isCanceled()) {
                        Flog.info("timeout ran %s", t);
-                       t.run(null);
+                       t.runnable.run();
                    }
                    timeouts.remove(t);
                }

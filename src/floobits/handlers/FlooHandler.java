@@ -63,12 +63,12 @@ abstract class DocumentFetcher {
 
 public class FlooHandler extends BaseHandler {
     private Boolean shouldUpload = false;
-    private final HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
+    private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
     private HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
-    private final HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
     private FlooConn conn;
@@ -87,7 +87,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         this.conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
-        context.status_message(String.format("You successfully joined %s ", url.toString()));
+        context.status_message(String.format("Opened connection to %s.", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -161,6 +161,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_room_info(JsonObject obj) {
+        context.status_message(String.format("You successfully joined %s ", url.toString()));
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
         isJoined = true;
         this.tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
@@ -576,6 +577,17 @@ public class FlooHandler extends BaseHandler {
 
     }
 
+    void _on_error(JsonObject jsonObject) {
+        isJoined = false;
+        String reason = jsonObject.get("msg").getAsString();
+        reason = String.format("Floobits Error: %s", reason);
+        Flog.warn(reason);
+        if (jsonObject.has("flash")) {
+            context.error_message(reason);
+            context.flash_message(reason);
+        }
+    }
+
     void _on_disconnect(JsonObject jsonObject) {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
@@ -769,6 +781,9 @@ public class FlooHandler extends BaseHandler {
     public void shutDown() {
         super.shutDown();
         listener.stop();
+        clear_highlights();
+        highlights = null;
+        bufs = null;
         context.status_message(String.format("Leaving workspace: %s.", url.toString()));
     }
 
@@ -791,6 +806,7 @@ public class FlooHandler extends BaseHandler {
         _on_term_stdout(obj);
         _on_delete_buf(obj);
         _on_perms(obj);
+        _on_error(obj);
     }
 
     public void clear_highlights() {

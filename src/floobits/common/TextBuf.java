@@ -20,7 +20,6 @@ import java.util.Map;
 
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
-    protected Timeouts timeouts = Timeouts.create();
     public TextBuf(String path, Integer id, String buf, String md5, FlooContext context) {
         super(path, id, buf, md5, context);
         if (buf != null) {
@@ -57,12 +56,16 @@ public class TextBuf extends Buf <String> {
                 }
                 Document d = Buf.getDocumentForVirtualFile(virtualFile);
                 if (d != null) {
+                    FlooHandler flooHandler = context.getFlooHandler();
+                    if (flooHandler == null) {
+                        return;
+                    }
                     try {
-                        context.getFlooHandler().listener.flooDisable();
+                        flooHandler.listener.flooDisable();
                         d.setReadOnly(false);
                         d.setText(buf);
                     } finally {
-                        context.getFlooHandler().listener.flooEnable();
+                        flooHandler.listener.flooEnable();
                     }
                     return;
                 }
@@ -112,9 +115,9 @@ public class TextBuf extends Buf <String> {
 
     private void setGetBufTimeout(){
         final Buf b = this;
-        Timeout timeout = new Timeout(2000) {
+        Timeout timeout = context.setTimeout(2000, new Runnable() {
             @Override
-            public void run(Void arg) {
+            public void run() {
                 b.cancelTimeout();
                 Flog.info("Sending get buf after timeout.");
                 FlooHandler flooHandler = context.getFlooHandler();
@@ -123,7 +126,7 @@ public class TextBuf extends Buf <String> {
                 }
                 flooHandler.send_get_buf(b.id);
             }
-        };
+        });
         cancelTimeout();
         this.timeout = timeout;
     }
@@ -143,7 +146,6 @@ public class TextBuf extends Buf <String> {
                 VirtualFile virtualFile = b.getVirtualFile();
                 if (virtualFile == null) {
                     Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
-                    buf = null;
                     flooHandler.send_get_buf(id);
                     return;
                 }
@@ -258,7 +260,8 @@ public class TextBuf extends Buf <String> {
                             }
                         }
                         String text = d.getText();
-                        if (!DigestUtils.md5Hex(text).equals(md5)) {
+                        String md5FromDoc = DigestUtils.md5Hex(text);
+                        if (!md5FromDoc.equals(res.md5_after)) {
                            b.setGetBufTimeout();
                         }
 
@@ -269,7 +272,7 @@ public class TextBuf extends Buf <String> {
                             model.scrollVertically(offsets[1]);
                         }
 
-                        b.set(d.getText(), res.md5_after);
+                        b.set(text, md5FromDoc);
                         Flog.log("Patched %s", res.path);
                     }
                 });

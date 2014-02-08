@@ -1,11 +1,9 @@
 package floobits;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectOwner;
@@ -26,12 +24,19 @@ import java.util.Map;
  */
 public class FlooContext {
     public String colabDir;
-    public final Project project;
+    public Project project;
     public BaseHandler handler;
     protected Ignore ignoreTree;
+    private Timeouts timeouts = Timeouts.create();
 
     public FlooContext(Project project) {
         this.project = project;
+    }
+
+    public Timeout setTimeout(int time, final Runnable runnable) {
+        Timeout timeout = new Timeout(time, runnable);
+        timeouts.setTimeout(timeout);
+        return timeout;
     }
 
     public void shareProject() {
@@ -159,6 +164,7 @@ public class FlooContext {
 
     public void removeHandler() {
         handler = null;
+        timeouts.clear();
     }
 
     public void setColabDir(String colabDir) {
@@ -201,5 +207,13 @@ public class FlooContext {
     public void error_message(String message) {
         Flog.log(message);
         status_message(message, NotificationType.ERROR);
+    }
+
+    public void shutdown() {
+        if (handler != null) {
+            handler.shutDown();
+        }
+        removeHandler();
+        project = null;
     }
 }

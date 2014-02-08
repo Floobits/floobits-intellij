@@ -109,7 +109,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         Document document = event.getDocument();
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         if (virtualFile == null) {
-            Flog.warn("No virtual file for document %s", event);
+            Flog.info("No virtual file for document %s", document);
             return;
         }
         flooHandler.untellij_changed(virtualFile);

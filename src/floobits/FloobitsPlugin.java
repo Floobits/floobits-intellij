@@ -25,6 +25,7 @@ public class FloobitsPlugin implements ProjectComponent {
 
     @Override
     public void projectClosed() {
+        context.shutdown();
     }
 
     @Override
