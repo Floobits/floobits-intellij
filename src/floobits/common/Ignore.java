@@ -19,7 +19,7 @@ import java.util.Map.Entry;
 public class Ignore {
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> HIDDEN_WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo"));
-    static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc"));
+    static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
     protected final VirtualFile file;
     private final int depth;
@@ -137,9 +137,15 @@ public class Ignore {
             Flog.log("Ignoring %s because it is special or a symlink.", absPath);
             return true;
         }
-        if (virtualFile.is(VFileProperty.HIDDEN) && !HIDDEN_WHITE_LIST.contains(virtualFile.getName())){
-            Flog.log("Ignoring %s because it is hidden.", absPath);
-            return true;
+        if (virtualFile.is(VFileProperty.HIDDEN)) {
+            String name = virtualFile.getName();
+            if ((name.equals("misc.xml") || name.equals("workspace.xml")) && Utils.isChild(absPath, FilenameUtils.concat(rootPath, ".idea"))) {
+              return true;
+            }
+            if (!HIDDEN_WHITE_LIST.contains(name)) {
+                Flog.log("Ignoring %s because it is hidden.", absPath);
+                return true;
+            }
         }
         if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
             Flog.log("Ignoring %s because it is too big (%s)", absPath, virtualFile.getLength());
