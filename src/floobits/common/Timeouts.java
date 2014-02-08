@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Timeouts extends Thread {
         protected ConcurrentSkipListSet<Timeout> timeouts = new ConcurrentSkipListSet<Timeout>();
+    private Timer autoUpdate;
 
     public static Timeouts create() {
         final Timeouts timeouts1 = new Timeouts();
@@ -21,17 +22,21 @@ public class Timeouts extends Thread {
         timeouts.add(timeout);
     }
 
-    public void clear() {
+    public void shutdown() {
         for (Timeout timeout : timeouts) {
           timeout.cancel();
         }
         timeouts.clear();
+        if (autoUpdate != null){
+            autoUpdate.cancel();
+            autoUpdate = null;
+        }
     }
 
     @Override
     public void run() {
         super.run();
-        Timer autoUpdate = new Timer();
+        autoUpdate = new Timer();
         autoUpdate.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {

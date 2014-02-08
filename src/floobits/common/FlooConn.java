@@ -17,10 +17,8 @@ public class FlooConn extends Thread {
     protected BufferedReader in;
     protected SSLSocket socket;
     protected BaseHandler handler;
-    Boolean connected = false;
 
     private Integer MAX_RETRIES = 20;
-    private Integer SOCKET_TIMEOUT = 0; // Inifinity right now, which is default.
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
@@ -43,31 +41,33 @@ public class FlooConn extends Thread {
         connect();
     }
 
-    public Boolean shutDown() {
-        if (!connected) {
-            // Not connectedd.
-            return false;
-        }
+    public void shutdown() {
         retries = -1;
+        handler = null;
         cleanUp();
-        return true;
     }
 
     protected void cleanUp() {
-        try {
-            if (out != null) {
+
+        if (out != null) {
+            try {
                 out.close();
-            }
-            if (in != null) {
+            } catch (Exception ignored) {}
+         }
+        if (in != null) {
+            try {
                 in.close();
-            }
-            if (socket != null)  {
-                socket.shutdownOutput();
-                socket.shutdownOutput();
+            } catch (Exception ignored) {}
+        }
+
+        if (socket != null)  {
+            try {
                 socket.close();
-            }
-        } catch (Exception ignored) {}
-        connected = false;
+            } catch (Exception ignored) {}
+        }
+        in = null;
+        socket = null;
+        out = null;
     }
 
     protected void handle (String line) {
@@ -83,15 +83,11 @@ public class FlooConn extends Thread {
 
     protected void reconnect() {
         Flog.info("reconnecting");
-        if (!connected) {
-            Flog.info("Aborting reconnect, we do not want to be connected.");
-            return;
-        }
         cleanUp();
         retries -= 1;
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
-            handler.shutDown();
+            handler.context.shutdown();
             return;
         }
         delay = Math.min(10000, Math.round((float)1.5 * delay));
@@ -112,6 +108,7 @@ public class FlooConn extends Thread {
         }
         try{
             socket = (SSLSocket) sslContext.getSocketFactory().createSocket(flooUrl.host, flooUrl.port);
+            Integer SOCKET_TIMEOUT = 0;
             socket.setSoTimeout(SOCKET_TIMEOUT);
             socket.setKeepAlive(true);
             socket.setTcpNoDelay(true);
@@ -126,7 +123,6 @@ public class FlooConn extends Thread {
 
             String line;
             this.handler.on_connect();
-            connected = true;
             retries = MAX_RETRIES;
             delay = INITIAL_RECONNECT_DELAY;
 

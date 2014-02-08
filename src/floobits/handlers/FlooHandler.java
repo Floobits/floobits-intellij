@@ -71,7 +71,6 @@ public class FlooHandler extends BaseHandler {
     private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
-    private FlooConn conn;
     private String user_id;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
@@ -86,7 +85,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
-        this.conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
+        conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
         context.status_message(String.format("Opened connection to %s.", url.toString()));
     }
 
@@ -107,7 +106,7 @@ public class FlooHandler extends BaseHandler {
         } catch (Exception e) {
             Flog.warn("on_data error %s", e);
             if (name.equals("room_info")) {
-                shutDown();
+                context.shutdown();
             }
         }
     }
@@ -235,7 +234,7 @@ public class FlooHandler extends BaseHandler {
                      new RunLater<Void>() {
                         @Override
                         public void run(Void _) {
-                            shutDown();
+                            context.shutdown();
                         }
                     }, conflictedPathsArray);
                 dialog.createCenterPanel();
@@ -597,7 +596,7 @@ public class FlooHandler extends BaseHandler {
         } else {
             context.status_message("You have left the workspace");
         }
-        shutDown();
+        context.shutdown();
     }
 
     void _on_delete_buf(JsonObject jsonObject) {
@@ -778,8 +777,8 @@ public class FlooHandler extends BaseHandler {
     }
 
     @Override
-    public void shutDown() {
-        super.shutDown();
+    public void shutdown() {
+        super.shutdown();
         listener.stop();
         clear_highlights();
         highlights = null;
@@ -810,12 +809,17 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void clear_highlights() {
-        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
-            Integer user_id = entry.getKey();
-            HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
-            for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
-                remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
+        try {
+            for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
+                Integer user_id = entry.getKey();
+                HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
+                for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
+                    remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
+                }
             }
+        } catch (Exception e) {
+            Flog.warn(e);
         }
+
     }
 }

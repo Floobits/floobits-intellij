@@ -22,10 +22,10 @@ public class FloobitsPlugin implements ProjectComponent {
         FloobitsApplication.self.projectOpened(context);
     }
 
-
     @Override
     public void projectClosed() {
         context.shutdown();
+        context.project = null;
     }
 
     @Override

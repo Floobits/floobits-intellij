@@ -6,6 +6,6 @@ import floobits.handlers.FlooHandler;
 public class LeaveWorkspace extends IsJoinedAction {
     @Override
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
-        flooHandler.shutDown();
+        flooHandler.context.shutdown();
     }
 }

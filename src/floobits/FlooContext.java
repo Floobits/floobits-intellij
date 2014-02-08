@@ -27,35 +27,22 @@ public class FlooContext {
     public Project project;
     public BaseHandler handler;
     protected Ignore ignoreTree;
-    private Timeouts timeouts = Timeouts.create();
+    private Timeouts timeouts;
 
     public FlooContext(Project project) {
         this.project = project;
     }
 
     public Timeout setTimeout(int time, final Runnable runnable) {
+        if (timeouts == null) {
+            return null;
+        }
         Timeout timeout = new Timeout(time, runnable);
         timeouts.setTimeout(timeout);
         return timeout;
     }
 
     public void shareProject() {
-        if (isJoined()) {
-            String title = String.format("Really leave %s?", handler.url.workspace);
-            String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
-            DialogBuilder.build(title, body, new RunLater<Boolean>() {
-
-                public void run(Boolean join) {
-                    if (!join) {
-                        return;
-                    }
-                    handler.shutDown();
-                    shareProject();
-                }
-            });
-            return;
-        }
-
         final String project_path = project.getBasePath();
 
         FlooUrl flooUrl = DotFloo.read(project_path);
@@ -111,19 +98,20 @@ public class FlooContext {
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
             setColabDir(Utils.unFuckPath(path));
+            timeouts = Timeouts.create();
             handler = new FlooHandler(this, flooUrl, upload);
             handler.go();
             return;
         }
 
         String title = String.format("Really leave %s?", handler.url.workspace);
-        String body = String.format("You are currently in the workspace: %s.  Do you want to join %s?", handler.url.toString(), handler.url.toString());
+        String body = String.format("Leave %s and join %s ?", handler.url.toString(), handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
             public void run(Boolean join) {
                 if (!join) {
                     return;
                 }
-                handler.shutDown();
+                shutdown();
                 joinWorkspace(flooUrl, path, upload);
             }
         });
@@ -137,7 +125,7 @@ public class FlooContext {
             return;
         }
         status_message("You already have an account and are connected with it.");
-        handler.shutDown();
+        shutdown();
     }
 
 
@@ -149,22 +137,17 @@ public class FlooContext {
             return;
         }
         Utils.status_message("You already have an account and are connected with it.", project);
-        handler.shutDown();
+        shutdown();
     }
 
     public boolean isJoined() {
-        return handler != null && handler.isJoined;
+        return handler != null;
     }
 
     public @Nullable FlooHandler getFlooHandler(){
         if (handler != null && handler instanceof FlooHandler)
             return (FlooHandler)handler;
         return null;
-    }
-
-    public void removeHandler() {
-        handler = null;
-        timeouts.clear();
     }
 
     public void setColabDir(String colabDir) {
@@ -210,10 +193,15 @@ public class FlooContext {
     }
 
     public void shutdown() {
-        if (handler != null) {
-            handler.shutDown();
+        if (timeouts != null) {
+            timeouts.shutdown();
+            timeouts = null;
         }
-        removeHandler();
-        project = null;
+
+        if (handler != null) {
+            handler.shutdown();
+            handler = null;
+        }
+        ignoreTree = null;
     }
 }

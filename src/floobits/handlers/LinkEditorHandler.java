@@ -50,22 +50,22 @@ public class LinkEditorHandler extends BaseHandler {
         } else {
             context.error_message("Something went wrong while receiving data, please contact Floobits support.");
         }
-        shutDown();
+        shutdown();
     }
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
             Utils.error_message("Floobits can't use a browser on this system.", context.project);
-            shutDown();
+            shutdown();
             return;
         }
         try {
             Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/%s/", Constants.defaultHost, token)));
         } catch (IOException error) {
-            shutDown();
+            shutdown();
             Flog.warn(error);
         } catch (URISyntaxException error) {
-            shutDown();
+            shutdown();
             Flog.warn(error);
         }
     }
