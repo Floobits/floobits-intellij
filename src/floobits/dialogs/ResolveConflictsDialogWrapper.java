@@ -2,7 +2,7 @@ package floobits.dialogs;
 
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.common.RunLater;
-import floobits.utilities.Flog;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -10,15 +10,15 @@ import java.awt.event.ActionEvent;
 
 
 public class ResolveConflictsDialogWrapper extends DialogWrapper {
-    protected RunLater stompLocal;
-    protected RunLater stompRemote;
-    protected RunLater flee;
+    protected RunLater<Void> stompLocal;
+    protected RunLater<Void> stompRemote;
+    protected RunLater<Void> flee;
     protected ResolveConflictsForm form = new ResolveConflictsForm();
 
     protected class StompAction extends DialogWrapperAction {
-        protected RunLater action;
+        protected RunLater<Void> action;
 
-        protected StompAction(String name, RunLater action) {
+        protected StompAction(String name, RunLater<Void> action) {
             super(name);
             this.action = action;
         }
@@ -32,26 +32,26 @@ public class ResolveConflictsDialogWrapper extends DialogWrapper {
 
     protected class StompLocalAction extends StompAction {
 
-        protected StompLocalAction(RunLater action) {
+        protected StompLocalAction(RunLater<Void> action) {
             super("Stomp Local Files", action);
         }
     }
     protected class StompRemoteAction extends StompAction {
 
-        protected StompRemoteAction(RunLater action) {
+        protected StompRemoteAction(RunLater<Void> action) {
             super("Stomp Remote Files", action);
         }
     }
     protected class FleeWorkspaceAction extends StompAction {
 
-        protected FleeWorkspaceAction(RunLater action) {
+        protected FleeWorkspaceAction(RunLater<Void> action) {
             super("Disconnect", action);
         }
     }
 
 
 
-    public ResolveConflictsDialogWrapper(RunLater stompLocal, RunLater stompRemote, RunLater flee, final String[] conflicts) {
+    public ResolveConflictsDialogWrapper(RunLater<Void> stompLocal, RunLater<Void> stompRemote, RunLater<Void> flee, final String[] conflicts) {
         super(true);
         this.stompLocal = stompLocal;
         this.stompRemote = stompRemote;
@@ -60,17 +60,7 @@ public class ResolveConflictsDialogWrapper extends DialogWrapper {
         init();
     }
 
-    protected RunLater createAction(final RunLater runLater) {
-        return new RunLater() {
-
-            @Override
-            public void run(Object arg) {
-                runLater.run(arg);
-                close(CANCEL_EXIT_CODE);
-            }
-        };
-    }
-
+    @NotNull
     @Override
     protected Action[] createActions() {
         return new Action[]{
