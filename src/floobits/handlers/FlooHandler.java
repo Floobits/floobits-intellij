@@ -149,8 +149,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void upload(VirtualFile virtualFile) {
-        String path = context.toProjectRelPath(virtualFile.getPath());
-
+        String path = virtualFile.getPath();
         Buf b = get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
@@ -507,6 +506,10 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         String newRelativePath = context.toProjectRelPath(newPath);
+        if (newRelativePath == null) {
+            context.error_message("A file is now outside the workspace.");
+            return;
+        }
         set_buf_path(buf, newRelativePath);
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -691,6 +694,12 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         String newRelativePath = context.toProjectRelPath(newPath);
+        if (newRelativePath == null) {
+            Flog.warn(String.format("%s was moved to %s, deleting from workspace.", buf.path, newPath));
+            buf.cancelTimeout();
+            this.conn.write(new DeleteBuf(buf.id));
+            return;
+        }
         if (buf.path.equals(newRelativePath)) {
             Flog.info("untellij_renamed handling workspace rename, aborting.");
             return;
@@ -752,6 +761,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         buf.cancelTimeout();
+
         this.conn.write(new DeleteBuf(buf.id));
     }
 

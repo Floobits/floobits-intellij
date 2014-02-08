@@ -42,14 +42,18 @@ public class Utils {
     }
 
     public static String toProjectRelPath (String path, String p1) {
-        return getRelativePath(path, p1);
+        try {
+            return getRelativePath(path, p1);
+        } catch (PathResolutionException e) {
+            return null;
+        }
     }
 
     public static void createFile(final FlooContext context, final VirtualFile virtualFile) {
         if (context.isIgnored(virtualFile)) {
             return;
         }
-        Timeout timeout = context.setTimeout(100, new Runnable() {
+        context.setTimeout(100, new Runnable() {
             @Override
             public void run() {
                 FlooHandler flooHandler = context.getFlooHandler();
@@ -59,7 +63,6 @@ public class Utils {
                 flooHandler.upload(virtualFile);
             }
         });
-        timeouts.setTimeout(timeout);
     }
 
     private static final String cert =
@@ -108,7 +111,6 @@ public class Utils {
         "NOsF/5oirpt9P/FlUQqmMGqz9IgcgA38corog14=\n" +
         "-----END CERTIFICATE-----";
 
-    private static final Timeouts timeouts = Timeouts.create();
     public static Boolean isSharableFile(VirtualFile virtualFile) {
         return (isFile(virtualFile) && virtualFile.exists() && virtualFile.isInLocalFileSystem());
     }
@@ -148,7 +150,7 @@ public class Utils {
      * @param basePath basePath is calculated from this file
      * @return String
      */
-    public static String getRelativePath (String targetPath, String basePath) {
+    public static String getRelativePath (String targetPath, String basePath) throws  PathResolutionException{
         if (targetPath == null || basePath == null) {
             return null;
         }
