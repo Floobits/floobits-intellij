@@ -88,7 +88,9 @@ public class IgnoreNode {
 	public IgnoreNode(List<IgnoreRule> rules) {
 		this.rules = rules;
 	}
-
+    public void addRule(IgnoreRule rule) {
+        rules.add(rule);
+    }
 	/**
 	 * Parse files according to gitignore standards.
 	 *
