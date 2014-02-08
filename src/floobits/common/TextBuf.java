@@ -197,79 +197,73 @@ public class TextBuf extends Buf <String> {
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
-                        boolean isReadOnly = !d.isWritable();
-                        try {
-                            if (isReadOnly) {
-                                d.setReadOnly(false);
+                        if (!d.isWritable()) {
+                            d.setReadOnly(false);
+                        }
+                        if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)){
+                            Flog.info("Document: %s is not writable.", d);
+                            return;
+                        }
+
+                        final Editor[] editors = EditorFactory.getInstance().getEditors(d, context.project);
+                        final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
+                        for (Editor editor : editors) {
+                            if (editor.isDisposed()) {
+                                continue;
                             }
-                            if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)){
-                                Flog.info("Document: %s is not writable.", d);
+                            ScrollingModel scrollingModel = editor.getScrollingModel();
+                            original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
+                        }
+                        for (FlooPatchPosition flooPatchPosition : positions) {
+                            int start = Math.max(0, flooPatchPosition.start);
+                            int end = Math.min(start + flooPatchPosition.end, d.getTextLength());
+                            String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
+                            Exception e = null;
+                            try {
+                                flooHandler.listener.flooDisable();
+                                d.replaceString(start, end, contents);
+                            } catch (Exception exception) {
+                                e = exception;
+                            } finally {
+                                flooHandler.listener.flooEnable();
+                            }
+
+                            if (e != null) {
+                                Flog.warn(e);
+                                FlooHandler flooHandler = context.getFlooHandler();
+                                if (flooHandler == null) {
+                                    return;
+                                }
+                                flooHandler.send_get_buf(id);
                                 return;
                             }
 
-                            final Editor[] editors = EditorFactory.getInstance().getEditors(d, context.project);
-                            final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
                             for (Editor editor : editors) {
                                 if (editor.isDisposed()) {
                                     continue;
                                 }
-                                ScrollingModel scrollingModel = editor.getScrollingModel();
-                                original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
-                            }
-                            for (FlooPatchPosition flooPatchPosition : positions) {
-                                int start = Math.max(0, flooPatchPosition.start);
-                                int end = Math.min(start + flooPatchPosition.end, d.getTextLength());
-                                String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-                                Exception e = null;
+                                CaretModel caretModel = editor.getCaretModel();
+                                int offset = caretModel.getOffset();
+                                if (offset < start) {
+                                    continue;
+                                }
+                                int newOffset = offset + contents.length() - flooPatchPosition.end;
+                                Flog.log("Moving cursor from %s to %s", offset, newOffset);
+
                                 try {
-                                    flooHandler.listener.flooDisable();
-                                    d.replaceString(start, end, contents);
-                                } catch (Exception exception) {
-                                    e = exception;
-                                } finally {
-                                    flooHandler.listener.flooEnable();
+                                    caretModel.moveToOffset(newOffset);
+                                } catch (Exception e1) {
+                                    Flog.info("Can't move caret: %s", e1);
                                 }
-
-                                if (e != null) {
-                                    Flog.warn(e);
-                                    FlooHandler flooHandler = context.getFlooHandler();
-                                    if (flooHandler == null) {
-                                        return;
-                                    }
-                                    flooHandler.send_get_buf(id);
-                                    return;
-                                }
-
-                                for (Editor editor : editors) {
-                                    if (editor.isDisposed()) {
-                                        continue;
-                                    }
-                                    CaretModel caretModel = editor.getCaretModel();
-                                    int offset = caretModel.getOffset();
-                                    if (offset < start) {
-                                        continue;
-                                    }
-                                    int newOffset = offset + contents.length() - flooPatchPosition.end;
-                                    Flog.log("Moving cursor from %s to %s", offset, newOffset);
-
-                                    try {
-                                        caretModel.moveToOffset(newOffset);
-                                    } catch (Exception e1) {
-                                        Flog.info("Can't move caret: %s", e1);
-                                    }
-                                }
-                            }
-                            for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
-                                ScrollingModel model = entry.getKey();
-                                Integer[] offsets = entry.getValue();
-                                model.scrollHorizontally(offsets[0]);
-                                model.scrollVertically(offsets[1]);
-                            }
-                        } finally {
-                            if (isReadOnly || flooHandler.readOnly) {
-                                d.setReadOnly(false);
                             }
                         }
+                        for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
+                            ScrollingModel model = entry.getKey();
+                            Integer[] offsets = entry.getValue();
+                            model.scrollHorizontally(offsets[0]);
+                            model.scrollVertically(offsets[1]);
+                        }
+
                         b.set(d.getText(), res.md5_after);
                     }
                 });
