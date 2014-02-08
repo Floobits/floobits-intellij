@@ -10,10 +10,8 @@ import java.awt.event.ActionEvent;
 
 
 public class ResolveConflictsDialogWrapper extends DialogWrapper {
-    protected RunLater<Void> stompLocal;
-    protected RunLater<Void> stompRemote;
-    protected RunLater<Void> flee;
     protected ResolveConflictsForm form = new ResolveConflictsForm();
+    protected Action[] actions;
 
     protected class StompAction extends DialogWrapperAction {
         protected RunLater<Void> action;
@@ -30,49 +28,32 @@ public class ResolveConflictsDialogWrapper extends DialogWrapper {
         }
     }
 
-    protected class StompLocalAction extends StompAction {
-
-        protected StompLocalAction(RunLater<Void> action) {
-            super("Stomp Local Files", action);
-        }
-    }
-    protected class StompRemoteAction extends StompAction {
-
-        protected StompRemoteAction(RunLater<Void> action) {
-            super("Stomp Remote Files", action);
-        }
-    }
-    protected class FleeWorkspaceAction extends StompAction {
-
-        protected FleeWorkspaceAction(RunLater<Void> action) {
-            super("Disconnect", action);
-        }
-    }
-
-
-
-    public ResolveConflictsDialogWrapper(RunLater<Void> stompLocal, RunLater<Void> stompRemote, RunLater<Void> flee, final String[] conflicts) {
+    public ResolveConflictsDialogWrapper(RunLater<Void> stompLocal, RunLater<Void> stompRemote, boolean readOnly, RunLater<Void> flee, final String[] conflicts) {
         super(true);
-        this.stompLocal = stompLocal;
-        this.stompRemote = stompRemote;
-        this.flee = flee;
         form.setItems(conflicts);
+        StompAction stompRemoteAction = new StompAction("Stomp Remote Files", stompRemote);
+        if (readOnly) {
+            stompRemoteAction.setEnabled(false);
+        }
+
+        actions = new Action[]{
+                new StompAction("Stomp Local Files", stompLocal),
+                stompRemoteAction,
+                new StompAction("Disconnect", flee),
+        };
         init();
     }
 
     @NotNull
     @Override
     protected Action[] createActions() {
-        return new Action[]{
-                new StompLocalAction(stompLocal),
-                new StompRemoteAction(stompRemote),
-                new FleeWorkspaceAction(flee),
-        };
+        return actions;
     }
 
     @Nullable
     @Override
     public JComponent createCenterPanel() {
         return form.getContentPanel();
+
     }
 }

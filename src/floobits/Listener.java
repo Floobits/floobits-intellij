@@ -23,6 +23,7 @@ import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
     private final FlooContext context;
+    private final FlooHandler flooHandler;
 
     public synchronized void flooEnable() {
         isListening.set(true);
@@ -42,8 +44,9 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(FlooContext context) {
-        this.context = context;
+    public Listener(FlooHandler flooHandler) {
+        this.context = flooHandler.context;
+        this.flooHandler = flooHandler;
     }
 
     public void start() {
@@ -100,10 +103,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     @Override
     public void documentChanged(DocumentEvent event) {
         Flog.info("Document changed.");
-        FlooHandler flooHandler = context.getFlooHandler();
-        if (flooHandler == null) {
-            return;
-        }
         if (!isListening.get()) {
             return;
         }
@@ -165,11 +164,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
-        FlooHandler handler = context.getFlooHandler();
-        if (handler == null) {
-            return;
-        }
-
         for (VFileEvent event : events) {
             VirtualFile virtualFile = event.getFile();
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
@@ -199,13 +193,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    handler.untellij_renamed(oldFilePath, newFilePath);
+                    flooHandler.untellij_renamed(oldFilePath, newFilePath);
                 }
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                handler.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
+                flooHandler.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -241,29 +235,25 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<VirtualFile> changedFiles;
                 changedFiles = Utils.getAllNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
-                    handler.untellij_changed(file);
+                    flooHandler.untellij_changed(file);
                 }
             }
         }
     }
     @Override
     public void unsavedDocumentsDropped() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void beforeFileContentReload(VirtualFile file, @NotNull Document document) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void fileContentReloaded(VirtualFile file, @NotNull Document document) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void fileContentLoaded(@NotNull VirtualFile file, @NotNull Document document) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -272,6 +262,5 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
     @Override
     public void beforeDocumentChange(DocumentEvent event) {
-//        Flog.info(String.format("beforeDocumentChange, %s", event));
     }
 }

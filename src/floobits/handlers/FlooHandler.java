@@ -73,7 +73,8 @@ public class FlooHandler extends BaseHandler {
     private RoomInfoTree tree;
     private FlooConn conn;
     private String user_id;
-    public Listener listener = new Listener(context);
+    public Listener listener = new Listener(this);
+    public boolean readOnly = false;
 
 
     String get_username(Integer user_id) {
@@ -165,6 +166,10 @@ public class FlooHandler extends BaseHandler {
         this.tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
         this.users = ri.users;
         this.perms = new HashSet<String>(Arrays.asList(ri.perms));
+        if (!can("patch")){
+            readOnly = true;
+            context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
+        }
         this.user_id = ri.user_id;
 
         DotFloo.write(context.colabDir, url.toString());
@@ -189,12 +194,21 @@ public class FlooHandler extends BaseHandler {
         }
 
         if (shouldUpload) {
-            context.status_message("Stomping on remote files and uploading new ones.");
-            upload();
-            for (Buf buf : conflicts) {
-                send_set_buf(buf);
+            if (readOnly) {
+                context.status_message("You don't have permission to update remote files.");
+            } else {
+                context.status_message("Stomping on remote files and uploading new ones.");
+                context.flash_message("Stomping on remote files and uploading new ones.");
+                upload();
+                for (Buf buf : conflicts) {
+                    send_set_buf(buf);
+                }
+                return;
             }
-            return;
+        }
+
+        if (conflicts.size() <= 0) {
+           return;
         }
 
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -204,7 +218,6 @@ public class FlooHandler extends BaseHandler {
                 ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
                     new RunLater<Void>() {
                         @Override
-                        @SuppressWarnings("unchecked")
                         public void run(Void _) {
                             for (Buf buf : conflicts) {
                                 send_get_buf(buf.id);
@@ -212,13 +225,13 @@ public class FlooHandler extends BaseHandler {
                         }
                     }, new RunLater<Void>() {
                         @Override
-                        @SuppressWarnings("unchecked")
                         public void run(Void _) {
                             for (Buf buf : conflicts) {
                                 send_set_buf(buf);
                             }
                         }
-                    }, new RunLater<Void>() {
+                    }, readOnly,
+                     new RunLater<Void>() {
                         @Override
                         public void run(Void _) {
                             shutDown();
@@ -276,6 +289,7 @@ public class FlooHandler extends BaseHandler {
         } else if (res.action.equals("remove")) {
             this.perms.removeAll(perms);
         }
+        readOnly = !can("patch");
     }
 
     void _on_patch(JsonObject obj) {
@@ -652,6 +666,9 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void untellij_renamed(String path, String newPath) {
+        if (!can("patch")) {
+            return;
+        }
         Flog.log("Renamed buf: %s - %s", path, newPath);
         Buf buf = this.get_buf_by_path(path);
         if (buf == null) {
@@ -737,7 +754,7 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    private boolean can(String perm) {
+    public boolean can(String perm) {
         if (!isJoined)
             return false;
 
