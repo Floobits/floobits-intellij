@@ -2,12 +2,10 @@ package floobits.common;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.digest.DigestUtils;

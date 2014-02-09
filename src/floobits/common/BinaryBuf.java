@@ -62,7 +62,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     synchronized public void set (String s, String md5) {
-        buf = Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
+        buf = s == null ? new byte[]{} : Base64.decodeBase64(s.getBytes(Charset.forName("UTF-8")));
         this.md5 = md5;
     }
 

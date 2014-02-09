@@ -20,9 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -32,6 +30,12 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Utils {
+    public static String stackToString(Exception e){
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString(); // stack trace as a string
+    }
 
     public static String absPath (String p1, String path) {
         return FilenameUtils.concat(p1, path);

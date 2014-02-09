@@ -16,14 +16,15 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
+import floobits.common.Buf;
 import floobits.common.Ignore;
 import floobits.common.Utils;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
+import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -117,7 +118,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
-        if (!isListening.get() || context.handler == null) {
+        if (!isListening.get()) {
             return;
         }
 
@@ -261,6 +262,44 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         //To change body of implemented methods use File | Settings | File Templates.
     }
     @Override
-    public void beforeDocumentChange(DocumentEvent event) {
+    public void beforeDocumentChange(final DocumentEvent event) {
+        if (!isListening.get()) {
+            return;
+        }
+        if (!event.getDocument().isWritable()) {
+            Flog.log("Document is not writable? %s", event.getDocument());
+        }
+        VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
+        if (file == null)
+            return;
+
+        Buf buf_by_path = flooHandler.get_buf_by_path(file.getPath());
+        if (buf_by_path == null)
+            return;
+
+        if (flooHandler.readOnly) {
+            context.status_message("This document is readonly because you don't have edit permission in the workspace.");
+        }else if (!buf_by_path.isPopulated()) {
+            context.status_message("This document is temporarily readonly while we fetch a fresh copy.");
+        }
+        final Document document = event.getDocument();
+        final String text = document.getText();
+
+        context.setTimeout(0, new Runnable() {
+            @Override
+            public void run() {
+                ThreadSafe.write(context, new Runnable() {
+                    @Override
+                    public void run() {
+                        isListening.set(false);
+                        document.setReadOnly(false);
+                        document.setText(text);
+                        document.setReadOnly(true);
+                        isListening.set(true);
+                    }
+                });
+            }
+        });
+        document.setReadOnly(true);
     }
 }

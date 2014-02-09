@@ -87,7 +87,9 @@ public class FlooConn extends Thread {
         retries -= 1;
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
-            handler.context.shutdown();
+            try {
+                handler.context.shutdown();
+            } catch (Exception ignore) {}
             return;
         }
         delay = Math.min(10000, Math.round((float)1.5 * delay));

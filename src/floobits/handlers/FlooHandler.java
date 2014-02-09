@@ -104,7 +104,7 @@ public class FlooHandler extends BaseHandler {
         try {
             method.invoke(this, objects);
         } catch (Exception e) {
-            Flog.warn("on_data error %s", e);
+            Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
             if (name.equals("room_info")) {
                 context.shutdown();
             }
@@ -127,7 +127,7 @@ public class FlooHandler extends BaseHandler {
         listener.start();
     }
 
-    Buf get_buf_by_path(String absPath) {
+    public Buf get_buf_by_path(String absPath) {
         String relPath = context.toProjectRelPath(absPath);
         if (relPath == null) {
             return null;
@@ -153,6 +153,9 @@ public class FlooHandler extends BaseHandler {
         Buf b = get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
+            return;
+        }
+        if (readOnly) {
             return;
         }
         send_create_buf(virtualFile);
