@@ -74,24 +74,23 @@ public class FlooContext {
         Settings settings = new Settings(this);
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
-        List<String> orgs = API.getOrgsCanAdmin(this);
 
-        if (orgs.size() == 0) {
-            API.createWorkspace(this, owner, name);
-            joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, Constants.defaultPort, true), project_path, true);
-            return;
-        }
-
-        orgs.add(0, owner);
-        final FlooContext flooContext = this;
-        SelectOwner.build(orgs, new RunLater<String>() {
+        final FlooContext context = this;
+        RunLater<String> runLater = new RunLater<String>() {
             @Override
             public void run(String owner) {
-                if (API.createWorkspace(flooContext, owner, name)) {
+                if (API.createWorkspace(context, owner, name)) {
                     joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, Constants.defaultPort, true), project_path, true);
                 }
             }
-        });
+        };
+
+        List<String> orgs = API.getOrgsCanAdmin(this);
+        if (orgs.size() == 0) {
+            runLater.run(owner);
+            return;
+        }
+        SelectOwner.build(orgs, runLater);
 
     }
 

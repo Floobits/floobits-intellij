@@ -46,6 +46,7 @@ public class API {
             context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return false;
         }
+
         int code = method.getStatusCode();
         switch (code) {
             case 400:
