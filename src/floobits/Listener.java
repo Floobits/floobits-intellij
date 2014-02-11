@@ -269,7 +269,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (!event.getDocument().isWritable()) {
             Flog.log("Document is not writable? %s", event.getDocument());
         }
-        VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
+        final VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
         if (file == null)
             return;
 
@@ -277,11 +277,17 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (buf_by_path == null)
             return;
 
+        String msg;
         if (flooHandler.readOnly) {
-            context.status_message("This document is readonly because you don't have edit permission in the workspace.");
-        }else if (!buf_by_path.isPopulated()) {
-            context.status_message("This document is temporarily readonly while we fetch a fresh copy.");
+            msg = "This document is readonly because you don't have edit permission in the workspace.";
+        } else if (!buf_by_path.isPopulated()) {
+            msg = "This document is temporarily readonly while we fetch a fresh copy.";
+        } else {
+            return;
         }
+
+        context.status_message(msg);
+
         final Document document = event.getDocument();
         final String text = document.getText();
 
@@ -291,11 +297,18 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
-                        isListening.set(false);
-                        document.setReadOnly(false);
-                        document.setText(text);
-                        document.setReadOnly(true);
-                        isListening.set(true);
+                        Document d = FileDocumentManager.getInstance().getDocument(file);
+                        if (d == null) {
+                            return;
+                        }
+                        try{
+                            isListening.set(false);
+                            d.setReadOnly(false);
+                            d.setText(text);
+                            d.setReadOnly(true);
+                        } finally {
+                            isListening.set(true);
+                        }
                     }
                 });
             }
