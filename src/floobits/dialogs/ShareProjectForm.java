@@ -3,11 +3,6 @@ package floobits.dialogs;
 import javax.swing.*;
 import java.util.List;
 
-/**
- * User: bjorn
- * Date: 2/11/14
- * Time: 12:23 PM
- */
 public class ShareProjectForm {
     private JComboBox orgsComboBox;
     private JTextField workspaceNameTextField;

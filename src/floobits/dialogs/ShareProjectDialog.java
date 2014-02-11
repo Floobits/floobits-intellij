@@ -3,15 +3,32 @@ package floobits.dialogs;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.common.Utils;
+import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.util.List;
 
 public class ShareProjectDialog extends DialogWrapper {
     protected ShareProjectForm form = new ShareProjectForm();
 
-    protected ShareProjectDialog(String workspaceName, List<String> orgs, Project project) {
+
+
+    private class CreateWorkspaceAction extends DialogWrapper.DialogWrapperAction {
+
+        protected CreateWorkspaceAction() {
+            super("Create Workspace");
+        }
+
+        @Override
+        protected void doAction(ActionEvent e) {
+            Flog.info("Creating a workspace from project.");
+            doOKAction();
+        }
+    }
+
+    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project) {
         super(project, true);
 
         if (orgs.size() < 1 && project != null) {
@@ -20,11 +37,18 @@ public class ShareProjectDialog extends DialogWrapper {
         }
         form.setWorkSpaceName(workspaceName);
         form.setOrgs(orgs);
+        init();
+        this.setTitle("Create a New Workspace");
     }
 
-    @Nullable
     @Override
-    protected JComponent createCenterPanel() {
+    public JComponent createCenterPanel() {
         return form.getContentPanel();
+    }
+
+    @Override
+    public void createDefaultActions () {
+        super.createDefaultActions();
+        myOKAction = new CreateWorkspaceAction();
     }
 }
