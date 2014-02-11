@@ -378,9 +378,12 @@ public class FlooHandler extends BaseHandler {
             public void on_document(Document document) {
                 Editor editor = get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
-
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
-                    markupModel.removeHighlighter(rangeHighlighter);
+                    try {
+                        markupModel.removeHighlighter(rangeHighlighter);
+                    } catch (Exception e) {
+                        Flog.info(Utils.stackToString(e));
+                    }
                 }
                 rangeHighlighters.clear();
             }
@@ -822,17 +825,18 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void clear_highlights() {
-        try {
-            for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
-                Integer user_id = entry.getKey();
-                HashMap<Integer, LinkedList<RangeHighlighter>> value = entry.getValue();
-                for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: value.entrySet()) {
-                    remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
-                }
-            }
-        } catch (Exception e) {
-            Flog.warn(e);
+        if (highlights == null || highlights.size() <= 0) {
+            return;
         }
-
+        for (Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
+            HashMap<Integer, LinkedList<RangeHighlighter>> highlightsForUser = entry.getValue();
+            if (highlightsForUser == null || highlightsForUser.size() <= 0) {
+                continue;
+            }
+            Integer user_id = entry.getKey();
+            for (Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: highlightsForUser.entrySet()) {
+                remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
+            }
+        }
     }
 }
