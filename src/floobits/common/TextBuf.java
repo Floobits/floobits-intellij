@@ -186,7 +186,6 @@ public class TextBuf extends Buf <String> {
                     if (!clean) {
                         Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
                         flooHandler.send_get_buf(res.id);
-//                        d.setReadOnly(true);
                         return;
                     }
                 }

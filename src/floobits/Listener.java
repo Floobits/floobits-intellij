@@ -168,7 +168,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         for (VFileEvent event : events) {
             VirtualFile virtualFile = event.getFile();
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
-//                TODO: this is for sideffects :(
+                // TODO: this is for sideffects :(
                 context.setColabDir(context.colabDir);
                 break;
             }
@@ -273,46 +273,20 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (file == null)
             return;
 
-        Buf buf_by_path = flooHandler.get_buf_by_path(file.getPath());
-        if (buf_by_path == null)
+        Buf bufByPath = flooHandler.get_buf_by_path(file.getPath());
+        if (bufByPath == null) {
             return;
-
+        }
         String msg;
         if (flooHandler.readOnly) {
             msg = "This document is readonly because you don't have edit permission in the workspace.";
-        } else if (!buf_by_path.isPopulated()) {
+        } else if (!bufByPath.isPopulated()) {
             msg = "This document is temporarily readonly while we fetch a fresh copy.";
         } else {
             return;
         }
-
         context.status_message(msg);
-
         final Document document = event.getDocument();
-        final String text = document.getText();
-
-        context.setTimeout(0, new Runnable() {
-            @Override
-            public void run() {
-                ThreadSafe.write(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        Document d = FileDocumentManager.getInstance().getDocument(file);
-                        if (d == null) {
-                            return;
-                        }
-                        try{
-                            isListening.set(false);
-                            d.setReadOnly(false);
-                            d.setText(text);
-                            d.setReadOnly(true);
-                        } finally {
-                            isListening.set(true);
-                        }
-                    }
-                });
-            }
-        });
         document.setReadOnly(true);
     }
 }
