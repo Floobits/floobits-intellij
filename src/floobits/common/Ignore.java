@@ -145,9 +145,12 @@ public class Ignore {
             Flog.log("Ignoring %s because it is special or a symlink.", absPath);
             return true;
         }
-        if (file.getName().startsWith(".") && !WHITE_LIST.contains(file.getName())) {
-            Flog.log("Ignoring %s because it is hidden.", absPath);
-            return true;
+        String[] parts = Utils.toProjectRelPath(absPath, rootPath).split("/");
+        for (String name : parts) {
+            if (name.startsWith(".") && !WHITE_LIST.contains(file.getName())) {
+                Flog.log("Ignoring %s because it is hidden.", absPath);
+                return true;
+            }
         }
         if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
             Flog.log("Ignoring %s because it is too big (%s)", absPath, virtualFile.getLength());
