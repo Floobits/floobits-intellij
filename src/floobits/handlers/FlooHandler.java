@@ -179,8 +179,8 @@ public class FlooHandler extends BaseHandler {
         DotFloo.write(context.colabDir, url.toString());
 
         final LinkedList<Buf> conflicts = new LinkedList<Buf>();
-        final LinkedList<String> conflictedPaths = new LinkedList<String>();
         final LinkedList<Buf> missing = new LinkedList<Buf>();
+        final LinkedList<String> conflictedPaths = new LinkedList<String>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
@@ -190,6 +190,7 @@ public class FlooHandler extends BaseHandler {
             buf.read();
             if (buf.buf == null) {
                 missing.add(buf);
+                conflictedPaths.add(buf.path);
                 continue;
             }
             if (!b.md5.equals(buf.md5)) {
@@ -197,14 +198,9 @@ public class FlooHandler extends BaseHandler {
                 conflictedPaths.add(buf.path);
             }
         }
-
-        if (shouldUpload) {
-            if (readOnly) {
-                context.status_message("You don't have permission to update remote files.");
-            } else {
-                context.status_message("Stomping on remote files and uploading new ones.");
-                context.flash_message("Stomping on remote files and uploading new ones.");
-                upload();
+        final RunLater<Void> stompLater = new RunLater<Void>() {
+            @Override
+            public void run(Void _) {
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
                 }
@@ -212,11 +208,21 @@ public class FlooHandler extends BaseHandler {
                     buf.cancelTimeout();
                     conn.write(new DeleteBuf(buf.id));
                 }
+            }
+        };
+        if (shouldUpload) {
+            if (readOnly) {
+                context.status_message("You don't have permission to update remote files.");
+            } else {
+                context.status_message("Stomping on remote files and uploading new ones.");
+                context.flash_message("Stomping on remote files and uploading new ones.");
+                upload();
+                stompLater.run(null);
                 return;
             }
         }
 
-        if (conflicts.size() <= 0) {
+        if (conflictedPaths.size() <=0 ) {
            return;
         }
 
@@ -235,24 +241,13 @@ public class FlooHandler extends BaseHandler {
                                 send_get_buf(buf.id);
                             }
                         }
-                    }, new RunLater<Void>() {
-                        @Override
-                        public void run(Void _) {
-                            for (Buf buf : conflicts) {
-                                send_set_buf(buf);
-                            }
-                            for (Buf buf : missing) {
-                                buf.cancelTimeout();
-                                conn.write(new DeleteBuf(buf.id));
-                            }
-                        }
-                    }, readOnly,
+                    }, stompLater, readOnly,
                      new RunLater<Void>() {
                         @Override
-                        public void run(Void _) {
+                        public void run(Void arg) {
                             context.shutdown();
                         }
-                    }, conflictedPathsArray);
+                     }, conflictedPathsArray);
                 dialog.createCenterPanel();
                 dialog.show();
             }
