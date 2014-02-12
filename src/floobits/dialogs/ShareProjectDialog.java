@@ -2,15 +2,16 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.common.RunLater;
 import floobits.common.Utils;
 import floobits.utilities.Flog;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 public class ShareProjectDialog extends DialogWrapper {
+    private RunLater<Void> runLater;
     protected ShareProjectForm form = new ShareProjectForm();
 
 
@@ -35,6 +36,7 @@ public class ShareProjectDialog extends DialogWrapper {
             Utils.error_message("Unable to share project, do you have a Floobits account?", project);
             return;
         }
+        this.runLater = runLater;
         form.setWorkSpaceName(workspaceName);
         form.setOrgs(orgs);
         init();
@@ -47,8 +49,29 @@ public class ShareProjectDialog extends DialogWrapper {
     }
 
     @Override
-    public void createDefaultActions () {
+    public void createDefaultActions() {
         super.createDefaultActions();
         myOKAction = new CreateWorkspaceAction();
+    }
+
+    public String getWorkspaceName() {
+        return form.getWorkspaceName();
+    }
+
+    public String getOrgName() {
+        return form.getSelectedOrg();
+    }
+
+    public void setRunLater(RunLater<Void> runLater) {
+        this.runLater = runLater;
+    }
+
+    @Override
+    protected void doOKAction() {
+        super.doOKAction();
+        if (this.runLater == null) {
+            return;
+        }
+        this.runLater.run(null);
     }
 }

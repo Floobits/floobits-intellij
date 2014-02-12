@@ -21,4 +21,12 @@ public class ShareProjectForm {
     public JComponent getContentPanel() {
         return contentPanel;
     }
+
+    public String getSelectedOrg () {
+        return (String) orgsComboBox.getSelectedItem();
+    }
+
+    public String getWorkspaceName () {
+        return workspaceNameTextField.getText();
+    }
 }

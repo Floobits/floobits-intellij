@@ -85,19 +85,21 @@ public class FlooContext {
 
         orgs.add(0, owner);
         final FlooContext flooContext = this;
-        ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project);
-        shareProjectDialog.createCenterPanel();
-        shareProjectDialog.show();
-        /*
-        SelectOwner.build(orgs, new RunLater<String>() {
+        final ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project);
+        RunLater<Void> runLater = new RunLater<Void>() {
+
             @Override
-            public void run(String owner) {
-                if (API.createWorkspace(flooContext, owner, name)) {
-                    joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, Constants.defaultPort, true), project_path, true);
+            public void run(Void arg) {
+                String owner = shareProjectDialog.getOrgName();
+                String workspaceName = shareProjectDialog.getWorkspaceName();
+                if (API.createWorkspace(flooContext, owner, workspaceName)) {
+                    joinWorkspace(new FlooUrl(Constants.defaultHost, owner, workspaceName, Constants.defaultPort, true), project_path, true);
                 }
             }
-        });
-        */
+        };
+        shareProjectDialog.setRunLater(runLater);
+        shareProjectDialog.createCenterPanel();
+        shareProjectDialog.show();
 
     }
 
