@@ -244,10 +244,6 @@ public class Utils {
 
     public static ArrayList<String> getAllNestedFilePaths(FlooContext context, VirtualFile vFile) {
         ArrayList<String> filePaths = new ArrayList<String>();
-        if (!vFile.isValid()) {
-            // This happens when files are no longer available.
-            return filePaths;
-        }
         if (!vFile.isDirectory()) {
             filePaths.add(vFile.getPath());
             return filePaths;
