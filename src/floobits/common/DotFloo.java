@@ -2,10 +2,6 @@ package floobits.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
-import com.thoughtworks.xstream.io.json.JsonWriter;
-import dmp.FlooDmp;
-import floobits.common.protocol.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
