@@ -168,8 +168,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         for (VFileEvent event : events) {
             VirtualFile virtualFile = event.getFile();
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
-//                TODO: this is for sideffects :(
-                context.setColabDir(context.colabDir);
+                context.refreshIgnores();
                 break;
             }
         }
@@ -269,37 +268,24 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (!event.getDocument().isWritable()) {
             Flog.log("Document is not writable? %s", event.getDocument());
         }
-        VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
+        final VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
         if (file == null)
             return;
 
-        Buf buf_by_path = flooHandler.get_buf_by_path(file.getPath());
-        if (buf_by_path == null)
+        Buf bufByPath = flooHandler.get_buf_by_path(file.getPath());
+        if (bufByPath == null) {
             return;
-
-        if (flooHandler.readOnly) {
-            context.status_message("This document is readonly because you don't have edit permission in the workspace.");
-        }else if (!buf_by_path.isPopulated()) {
-            context.status_message("This document is temporarily readonly while we fetch a fresh copy.");
         }
+        String msg;
+        if (flooHandler.readOnly) {
+            msg = "This document is readonly because you don't have edit permission in the workspace.";
+        } else if (!bufByPath.isPopulated()) {
+            msg = "This document is temporarily readonly while we fetch a fresh copy.";
+        } else {
+            return;
+        }
+        context.status_message(msg);
         final Document document = event.getDocument();
-        final String text = document.getText();
-
-        context.setTimeout(0, new Runnable() {
-            @Override
-            public void run() {
-                ThreadSafe.write(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        isListening.set(false);
-                        document.setReadOnly(false);
-                        document.setText(text);
-                        document.setReadOnly(true);
-                        isListening.set(true);
-                    }
-                });
-            }
-        });
         document.setReadOnly(true);
     }
 }

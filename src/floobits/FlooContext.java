@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectOwner;
+import floobits.dialogs.ShareProjectDialog;
 import floobits.handlers.BaseHandler;
 import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
@@ -76,26 +77,33 @@ public class FlooContext {
         final String name = new File(project_path).getName();
 
         final FlooContext context = this;
-        RunLater<String> runLater = new RunLater<String>() {
+
+        List<String> orgs = API.getOrgsCanAdmin(this);
+        orgs.add(0, owner);
+        final ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project);
+        RunLater<Void> runLater = new RunLater<Void>() {
+
             @Override
-            public void run(String owner) {
-                if (API.createWorkspace(context, owner, name)) {
-                    joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, Constants.defaultPort, true), project_path, true);
+            public void run(Void arg) {
+                String owner = shareProjectDialog.getOrgName();
+                String workspaceName = shareProjectDialog.getWorkspaceName();
+                if (API.createWorkspace(context, owner, workspaceName)) {
+                    joinWorkspace(new FlooUrl(Constants.defaultHost, owner, workspaceName, Constants.defaultPort, true), project_path, true);
                 }
             }
         };
-
-        List<String> orgs = API.getOrgsCanAdmin(this);
-        if (orgs.size() == 0) {
-            runLater.run(owner);
-            return;
-        }
-        SelectOwner.build(orgs, runLater);
+        shareProjectDialog.setRunLater(runLater);
+        shareProjectDialog.createCenterPanel();
+        shareProjectDialog.show();
 
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
+            if (!API.workspaceExists(flooUrl, this)) {
+                error_message(String.format("The workspace %s does not exist.", flooUrl));
+                return;
+            }
             setColabDir(Utils.unFuckPath(path));
             timeouts = Timeouts.create();
             handler = new FlooHandler(this, flooUrl, upload);
@@ -152,6 +160,10 @@ public class FlooContext {
     public void setColabDir(String colabDir) {
         this.colabDir = colabDir;
         Ignore.writeDefaultIgnores(this);
+        refreshIgnores();
+    }
+
+    public void refreshIgnores() {
         VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
         ignoreTree = new Ignore(fileByIoFile);
         ignoreTree.recurse();

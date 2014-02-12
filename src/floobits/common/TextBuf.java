@@ -186,7 +186,6 @@ public class TextBuf extends Buf <String> {
                     if (!clean) {
                         Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
                         flooHandler.send_get_buf(res.id);
-//                        d.setReadOnly(true);
                         return;
                     }
                 }
@@ -218,7 +217,8 @@ public class TextBuf extends Buf <String> {
                         }
                         for (FlooPatchPosition flooPatchPosition : positions) {
                             int start = Math.max(0, flooPatchPosition.start);
-                            int end = Math.min(start + flooPatchPosition.end, d.getTextLength());
+                            int end = Math.max(start + flooPatchPosition.end, start);
+                            end = Math.min(end, d.getTextLength());
                             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                             Exception e = null;
                             try {

@@ -1,12 +1,15 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
       Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
-      You need a floobits account.
+      You need a floobits account. Create one at https://floobits.com
+
+      Features include being able to see other people's cursor and highlights, being able to summon, and also follow edits
+      automatically.
       ]]></description>
 
   <change-notes><![CDATA[

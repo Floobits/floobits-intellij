@@ -4,7 +4,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
 public abstract class GetPath {

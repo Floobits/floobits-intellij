@@ -10,6 +10,9 @@ public class FloobitsPlugin implements ProjectComponent {
     public final FlooContext context;
 
     public static FloobitsPlugin getInstance(Project project) {
+        if (project == null) {
+            return null;
+        }
         return project.getComponent(FloobitsPlugin.class);
     }
     public FloobitsPlugin(Project project) {
