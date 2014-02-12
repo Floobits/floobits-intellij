@@ -180,15 +180,16 @@ public class FlooHandler extends BaseHandler {
 
         final LinkedList<Buf> conflicts = new LinkedList<Buf>();
         final LinkedList<String> conflictedPaths = new LinkedList<String>();
+        final LinkedList<Buf> missing = new LinkedList<Buf>();
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
-            this.bufs.put(buf_id, buf);
-            this.paths_to_ids.put(b.path, b.id);
+            bufs.put(buf_id, buf);
+            paths_to_ids.put(b.path, b.id);
             buf.read();
             if (buf.buf == null) {
-                this.send_get_buf(buf.id);
+                missing.add(buf);
                 continue;
             }
             if (!b.md5.equals(buf.md5)) {
@@ -206,6 +207,10 @@ public class FlooHandler extends BaseHandler {
                 upload();
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
+                }
+                for (Buf buf : missing) {
+                    buf.cancelTimeout();
+                    conn.write(new DeleteBuf(buf.id));
                 }
                 return;
             }
@@ -226,12 +231,19 @@ public class FlooHandler extends BaseHandler {
                             for (Buf buf : conflicts) {
                                 send_get_buf(buf.id);
                             }
+                            for (Buf buf : missing) {
+                                send_get_buf(buf.id);
+                            }
                         }
                     }, new RunLater<Void>() {
                         @Override
                         public void run(Void _) {
                             for (Buf buf : conflicts) {
                                 send_set_buf(buf);
+                            }
+                            for (Buf buf : missing) {
+                                buf.cancelTimeout();
+                                conn.write(new DeleteBuf(buf.id));
                             }
                         }
                     }, readOnly,

@@ -109,8 +109,10 @@ public abstract class Buf <T> {
             byte[] decodedContents = encodedContents.getBytes();
             String filePath = context.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
-                String md5 = DigestUtils.md5Hex(encodedContents);
-                return new TextBuf(filePath, null, encodedContents, md5, context);
+                Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+                String contents = document == null ? encodedContents : document.getText();
+                String md5 = DigestUtils.md5Hex(contents);
+                return new TextBuf(filePath, null, contents, md5, context);
             } else {
                 String md5 = DigestUtils.md5Hex(originalBytes);
                 return new BinaryBuf(filePath, null, originalBytes, md5, context);
