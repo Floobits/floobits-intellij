@@ -168,8 +168,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         for (VFileEvent event : events) {
             VirtualFile virtualFile = event.getFile();
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
-                // TODO: this is for sideffects :(
-                context.setColabDir(context.colabDir);
+                context.refreshIgnores();
                 break;
             }
         }
