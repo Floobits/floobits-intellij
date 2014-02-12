@@ -6,6 +6,7 @@ import java.util.List;
 public class ShareProjectForm {
     private JComboBox orgsComboBox;
     private JTextField workspaceNameTextField;
+    private JLabel JLabel;
     private JPanel contentPanel;
 
 
@@ -16,6 +17,9 @@ public class ShareProjectForm {
     public void setOrgs(List<String> orgs) {
         orgsComboBox.setModel(new DefaultComboBoxModel(orgs.toArray()));
         orgsComboBox.setSelectedIndex(0);
+        if (orgs.size() == 1) {
+            orgsComboBox.setEnabled(false);
+        }
     }
 
     public JComponent getContentPanel() {
