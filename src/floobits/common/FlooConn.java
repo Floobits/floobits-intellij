@@ -30,8 +30,8 @@ public class FlooConn extends Thread {
     public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
         try {
-            this.out.write(data + "\n");
-            this.out.flush();
+            out.write(data + "\n");
+            out.flush();
         } catch (Exception e) {
             if (retries > -1) Flog.warn(e);
         }
@@ -125,8 +125,6 @@ public class FlooConn extends Thread {
 
             String line;
             this.handler.on_connect();
-            retries = MAX_RETRIES;
-            delay = INITIAL_RECONNECT_DELAY;
 
             while (true) {
                 try {
@@ -135,6 +133,8 @@ public class FlooConn extends Thread {
                         if (retries != -1) Flog.warn("socket died");
                         break;
                     }
+                    retries = MAX_RETRIES;
+                    delay = INITIAL_RECONNECT_DELAY;
                     this.handle(line);
                 } catch (SocketTimeoutException e) {
                     Flog.info("Caught timeout on socket. %s", socket.isClosed());
