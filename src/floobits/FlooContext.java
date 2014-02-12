@@ -97,6 +97,10 @@ public class FlooContext {
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
+            if (!API.workspaceExists(flooUrl, this)) {
+                error_message(String.format("The workspace %s does not exist.", flooUrl));
+                return;
+            }
             setColabDir(Utils.unFuckPath(path));
             timeouts = Timeouts.create();
             handler = new FlooHandler(this, flooUrl, upload);
