@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.dialogs.DialogBuilder;
-import floobits.dialogs.SelectOwner;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.handlers.BaseHandler;
 import floobits.handlers.CreateAccountHandler;
@@ -75,29 +74,18 @@ public class FlooContext {
         Settings settings = new Settings(this);
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
+        final FlooContext context = this;
+
         List<String> orgs = API.getOrgsCanAdmin(this);
-
-        if (orgs.size() == 0) {
-            API.createWorkspace(this, owner, name);
-            joinWorkspace(new FlooUrl(Constants.defaultHost, owner, name, Constants.defaultPort, true), project_path, true);
-            return;
-        }
-
         orgs.add(0, owner);
-        final FlooContext flooContext = this;
-        final ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project);
-        RunLater<Void> runLater = new RunLater<Void>() {
-
+        ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
-            public void run(Void arg) {
-                String owner = shareProjectDialog.getOrgName();
-                String workspaceName = shareProjectDialog.getWorkspaceName();
-                if (API.createWorkspace(flooContext, owner, workspaceName)) {
-                    joinWorkspace(new FlooUrl(Constants.defaultHost, owner, workspaceName, Constants.defaultPort, true), project_path, true);
+            public void run(ShareProjectDialog dialog) {
+                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context)) {
+                    joinWorkspace(new FlooUrl(Constants.defaultHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
-        };
-        shareProjectDialog.setRunLater(runLater);
+        });
         shareProjectDialog.createCenterPanel();
         shareProjectDialog.show();
 

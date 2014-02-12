@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
-    public TextBuf(String path, Integer id, String buf, String md5, FlooContext context) {
+    public  TextBuf(String path, Integer id, String buf, String md5, FlooContext context) {
         super(path, id, buf, md5, context);
         if (buf != null) {
             this.buf = NEW_LINE.matcher(buf).replaceAll("\n");

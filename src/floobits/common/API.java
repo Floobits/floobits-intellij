@@ -38,19 +38,26 @@ class Request implements Serializable {
 }
 
 public class API {
-    public static boolean createWorkspace(FlooContext context, String owner, String name) {
-        HttpMethod method;
+
+    public static boolean createWorkspace(String owner, String workspace, FlooContext context) {
+        PostMethod method;
+
+        method = new PostMethod("/api/workspace/");
+        Gson gson = new Gson();
+        String json = gson.toJson(new Request(owner, workspace));
         try {
-            method = API.createWorkspace(owner, name, context);
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+            apiRequest(method, context);
         } catch (IOException e) {
             context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return false;
         }
+
         int code = method.getStatusCode();
         switch (code) {
             case 400:
                 // Todo: pick a new name or something
-                context.error_message("Invalid workspace name.");
+                context.error_message("Invalid workspace name (a-zA-Z0-9).");
                 return false;
             case 402:
                 String details;
@@ -65,9 +72,9 @@ public class API {
                 context.error_message(details);
                 return false;
             case 409:
-                Flog.warn("The workspace already exists so I am joining it.");
+                context.status_message("The workspace already exists so I am joining it.");
             case 201:
-                Flog.log("Workspace created.");
+                context.status_message("Workspace created.");
                 return true;
             case 401:
                 Flog.log("Auth failed");
@@ -103,14 +110,6 @@ public class API {
     }
     static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context) throws IOException {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), context);
-    }
-
-    static public HttpMethod createWorkspace(String owner, String workspace, FlooContext context) throws IOException {
-        final PostMethod method = new PostMethod("/api/workspace/");
-        Gson gson = new Gson();
-        String json = gson.toJson(new Request(owner, workspace));
-        method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-        return apiRequest(method, context);
     }
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context) throws IOException, IllegalArgumentException{

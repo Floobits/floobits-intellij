@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 public class ShareProjectDialog extends DialogWrapper {
-    private RunLater<Void> runLater;
+    private RunLater<ShareProjectDialog> runLater;
     protected ShareProjectForm form = new ShareProjectForm();
 
 
@@ -29,7 +29,7 @@ public class ShareProjectDialog extends DialogWrapper {
         }
     }
 
-    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project) {
+    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project, RunLater<ShareProjectDialog> runLater) {
         super(project, true);
 
         if (orgs.size() < 1 && project != null) {
@@ -62,16 +62,12 @@ public class ShareProjectDialog extends DialogWrapper {
         return form.getSelectedOrg();
     }
 
-    public void setRunLater(RunLater<Void> runLater) {
-        this.runLater = runLater;
-    }
-
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        if (this.runLater == null) {
+        if (runLater == null) {
             return;
         }
-        this.runLater.run(null);
+        runLater.run(this);
     }
 }
