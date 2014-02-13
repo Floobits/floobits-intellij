@@ -43,7 +43,6 @@ public class DotFloo {
         FlooDot flooDot = parse(base_dir);
         if (flooDot == null)
             return null;
-
         try {
             return new FlooUrl(flooDot.url);
         } catch (MalformedURLException e) {

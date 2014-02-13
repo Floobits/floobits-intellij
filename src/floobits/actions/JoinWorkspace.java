@@ -16,7 +16,6 @@ public class JoinWorkspace extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
         String url = "https://floobits.com/";
-//        Flog.info(inputValue);
         FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
         FlooUrl floourl = DotFloo.read(context.project.getBasePath());
         if (floourl != null) {
