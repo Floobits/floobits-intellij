@@ -39,20 +39,18 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, String location) {
-//        if (!API.workspaceExists(f, context)) {
-//            context.error_message(String.format("The workspace %s does not exist!", f.toString()));
-//            return;
-//        }
+        if (!API.workspaceExists(flooUrl, context)) {
+            context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            return;
+        }
         Project projectForPath = getProject(location);
         if (projectForPath == null) {
             if (context.isJoined()) {
-//                Todo ask user aboot this or something
                 projectForPath = createProject(location, flooUrl.workspace);
                 context = FloobitsPlugin.getInstance(projectForPath).context;
             }
         } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
-//            TODO maybe this or ask or something?
         }
 
         context.joinWorkspace(flooUrl, location, false);
@@ -80,13 +78,14 @@ public class FloobitsApplication implements ApplicationComponent {
             return;
         }
         FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
-
-        URI uri = URI.create(flooUrl.toString());
-        URI uri1 = URI.create(url);
-
-        if (uri.getPath().equals(uri1.getPath())) {
-            joinWorkspace(context, flooUrl, context.project.getBasePath());
-            return;
+        if (flooUrl != null) {
+            URI uri = URI.create(flooUrl.toString());
+            URI normalizedURL = URI.create(url);
+    
+            if (uri.getPath().equals(normalizedURL.getPath())) {
+                joinWorkspace(context, flooUrl, context.project.getBasePath());
+                return;
+            }
         }
 
         SelectFolder.build(new RunLater<String>() {
