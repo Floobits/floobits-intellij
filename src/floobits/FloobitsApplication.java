@@ -3,12 +3,14 @@ package floobits;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.wm.WindowManager;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
 import java.net.URI;
 
 public class FloobitsApplication implements ApplicationComponent {
@@ -52,7 +54,10 @@ public class FloobitsApplication implements ApplicationComponent {
         } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
-
+        Window window = WindowManager.getInstance().suggestParentWindow(context.project);
+        if (window != null) {
+            window.toFront();
+        }
         context.joinWorkspace(flooUrl, location, false);
     }
 
