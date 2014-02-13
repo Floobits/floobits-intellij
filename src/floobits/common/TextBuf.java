@@ -131,6 +131,15 @@ public class TextBuf extends Buf <String> {
         this.timeout = timeout;
     }
 
+    @Override
+    public void cleanUp() {
+        super.cleanUp();
+        Document document = getDocumentForVirtualFile(getVirtualFile());
+        if (document != null) {
+            document.setReadOnly(false);
+        }
+    }
+
     public void patch(final FlooPatch res) {
         final TextBuf b = this;
         Flog.info("Got _on_patch");
@@ -198,7 +207,7 @@ public class TextBuf extends Buf <String> {
                 if (!d.isWritable()) {
                     d.setReadOnly(false);
                 }
-                if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)){
+                if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)) {
                     Flog.info("Document: %s is not writable.", d);
                     return;
                 }
@@ -216,11 +225,6 @@ public class TextBuf extends Buf <String> {
                     int start = Math.max(0, flooPatchPosition.start);
                     int end_ld = Math.max(start + flooPatchPosition.end, start);
                     end_ld = Math.min(end_ld, d.getTextLength());
-
-                    int end = Math.min(start + flooPatchPosition.end, d.getTextLength());
-                    if (end != end_ld) {
-                        Flog.log("shit");
-                    }
                     String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
                     Exception e = null;
                     try {

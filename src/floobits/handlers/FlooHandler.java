@@ -75,7 +75,8 @@ public class FlooHandler extends BaseHandler {
     private String user_id;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
-
+    // buffer ids are not removed from readOnlyBufferIds
+    public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
 
     String get_username(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -801,10 +802,22 @@ public class FlooHandler extends BaseHandler {
         return true;
     }
 
+    protected void cleanBufs() {
+        for (Integer bufferId : readOnlyBufferIds) {
+            Buf buf = bufs.get(bufferId);
+            if (buf == null) {
+                continue;
+            }
+            buf.cleanUp();
+        }
+        readOnlyBufferIds.clear();
+    }
+
     @Override
     public void shutdown() {
         super.shutdown();
         listener.stop();
+        cleanBufs();
         clear_highlights();
         highlights = null;
         bufs = null;

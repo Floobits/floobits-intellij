@@ -272,7 +272,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (file == null)
             return;
 
-        Buf bufByPath = flooHandler.get_buf_by_path(file.getPath());
+        final Buf bufByPath = flooHandler.get_buf_by_path(file.getPath());
         if (bufByPath == null) {
             return;
         }
@@ -287,5 +287,32 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         context.status_message(msg);
         final Document document = event.getDocument();
         document.setReadOnly(true);
+        flooHandler.readOnlyBufferIds.add(bufByPath.id);
+        final String text = document.getText();
+        context.setTimeout(0, new Runnable() {
+            @Override
+            public void run() {
+                ThreadSafe.write(context, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!flooHandler.readOnly && bufByPath.isPopulated()) {
+                            return;
+                        }
+                        Document d = FileDocumentManager.getInstance().getDocument(file);
+                        if (d == null) {
+                            return;
+                        }
+                        try{
+                            isListening.set(false);
+                            d.setReadOnly(false);
+                            d.setText(text);
+                            d.setReadOnly(true);
+                        } finally {
+                            isListening.set(true);
+                        }
+                    }
+                });
+            }
+        });
     }
 }

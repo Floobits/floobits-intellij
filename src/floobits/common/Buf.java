@@ -44,6 +44,9 @@ public abstract class Buf <T> {
     public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
     }
+    public void cleanUp() {
+        //Do nothing.
+    }
 
     public Boolean isPopulated() {
         return this.id != null && this.buf != null;
