@@ -13,6 +13,12 @@
       ]]></description>
 
   <change-notes><![CDATA[
+          Fixed bugs when multiple people edited a file at the same time.
+          Fixed general connection and UI issues.
+          Improved shutdown logic.
+          Added a read only mode for no write permissions.
+          Fixed null pointer issues.
+          Other bug fixes.
       ]]>
   </change-notes>
 
