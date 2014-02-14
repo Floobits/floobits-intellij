@@ -274,6 +274,9 @@ public class Utils {
             return filePaths;
         }
         for (VirtualFile file : vFile.getChildren()) {
+            if (!file.isValid()) {
+                continue;
+            }
             if (context.isIgnored(file)) {
                 continue;
             }
