@@ -110,6 +110,10 @@ public class TextBuf extends Buf <String> {
         LinkedList<diff_match_patch.Patch> patches = dmp.patch_make(previous, current);
         String textPatch = dmp.patch_toText(patches);
         set(current, after_md5);
+        if (before_md5.equals(after_md5)) {
+            Flog.log("Not patching %s because no change.", path);
+            return;
+        }
         flooHandler.send_patch(textPatch, before_md5, this);
     }
 
