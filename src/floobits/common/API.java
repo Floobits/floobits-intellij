@@ -20,28 +20,11 @@ import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-class Request implements Serializable {
-    public String owner;
-    public String name;
-    public HashMap<String, String[]> perms =  new HashMap<String, String[]>();
-
-    public Request (String owner, String name, boolean notPublic) {
-        this.owner = owner;
-        this.name = name;
-        if (notPublic) {
-            perms.put("AnonymousUser", new String[]{});
-        } else {
-            perms.put("AnonymousUser", new String[]{"view_room"});
-        }
-    }
-}
 
 public class API {
 
@@ -50,7 +33,7 @@ public class API {
 
         method = new PostMethod("/api/workspace/");
         Gson gson = new Gson();
-        String json = gson.toJson(new Request(owner, workspace, notPublic));
+        String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             apiRequest(method, context);
@@ -100,6 +83,23 @@ public class API {
                 return false;
         }
     }
+    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
+
+        HttpMethod method;
+        try {
+            method = API.getWorkspace(f.owner, f.workspace, context);
+        } catch (IOException e) {
+            return null;
+        }
+        String responseBodyAsString = null;
+        try {
+            responseBodyAsString = method.getResponseBodyAsString();
+        } catch (IOException e) {
+            return null;
+        }
+        return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
+    }
+
     public static boolean workspaceExists(final FlooUrl f, FlooContext context) {
         if (f == null) {
             return false;
