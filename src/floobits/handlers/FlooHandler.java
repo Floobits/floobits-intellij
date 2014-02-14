@@ -600,7 +600,7 @@ public class FlooHandler extends BaseHandler {
         String reason = jsonObject.get("msg").getAsString();
         reason = String.format("Floobits Error: %s", reason);
         Flog.warn(reason);
-        if (jsonObject.has("flash")) {
+        if (jsonObject.has("flash") && jsonObject.get("flash").getAsBoolean()) {
             context.error_message(reason);
             context.flash_message(reason);
         }

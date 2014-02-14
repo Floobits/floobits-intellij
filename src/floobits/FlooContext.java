@@ -42,7 +42,7 @@ public class FlooContext {
         return timeout;
     }
 
-    public void shareProject() {
+    public void shareProject(final boolean notPublic) {
         final String project_path = project.getBasePath();
 
         FlooUrl flooUrl = DotFloo.read(project_path);
@@ -81,7 +81,7 @@ public class FlooContext {
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
             public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context)) {
+                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, notPublic)) {
                     joinWorkspace(new FlooUrl(Constants.defaultHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
@@ -192,7 +192,7 @@ public class FlooContext {
     }
 
     public void error_message(String message) {
-        Flog.log(message);
+        Flog.warn(message);
         status_message(message, NotificationType.ERROR);
     }
 

@@ -147,7 +147,7 @@ public class Ignore {
         }
         String[] parts = Utils.toProjectRelPath(absPath, rootPath).split("/");
         for (String name : parts) {
-            if (name.startsWith(".") && !WHITE_LIST.contains(file.getName())) {
+            if (name.startsWith(".") && !WHITE_LIST.contains(name)) {
                 Flog.log("Ignoring %s because it is hidden.", absPath);
                 return true;
             }

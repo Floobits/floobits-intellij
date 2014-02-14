@@ -5,7 +5,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
@@ -25,26 +24,33 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 class Request implements Serializable {
     public String owner;
     public String name;
+    public HashMap<String, String[]> perms =  new HashMap<String, String[]>();
 
-    public Request (String owner, String name) {
+    public Request (String owner, String name, boolean notPublic) {
         this.owner = owner;
         this.name = name;
+        if (notPublic) {
+            perms.put("AnonymousUser", new String[]{});
+        } else {
+            perms.put("AnonymousUser", new String[]{"view_room"});
+        }
     }
 }
 
 public class API {
 
-    public static boolean createWorkspace(String owner, String workspace, FlooContext context) {
+    public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace/");
         Gson gson = new Gson();
-        String json = gson.toJson(new Request(owner, workspace));
+        String json = gson.toJson(new Request(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             apiRequest(method, context);

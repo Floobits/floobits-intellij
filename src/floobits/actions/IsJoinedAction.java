@@ -22,7 +22,11 @@ public abstract class IsJoinedAction extends AnAction {
 
     @Override
     public void update(AnActionEvent e) {
-        super.update(e);    //To change body of overridden methods use File | Settings | File Templates.
-        e.getPresentation().setEnabled(FloobitsPlugin.getInstance(e.getProject()).context.isJoined());
+        super.update(e);
+        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        if (floobitsPlugin == null) {
+            return;
+        }
+        e.getPresentation().setEnabled(floobitsPlugin.context.isJoined());
     }
 }

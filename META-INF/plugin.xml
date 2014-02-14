@@ -43,34 +43,30 @@
   </project-components>
 
   <actions>
-      <!-- Add your actions here -->
-      <action id="floobits.actions.JoinWorkspace" class="floobits.actions.JoinWorkspace" text="Floobits: Join Workspace"
+      <action id="floobits.actions.JoinWorkspace" class="floobits.actions.JoinWorkspace" text="Join Workspace"
               description="Join Floobits workspace">
-          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
-          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
       </action>
-      <action id="floobits.JoinRecentWorkspace" class="floobits.actions.SelectRecentWorkspace" text="Floobits: Join Recent Workspace"
+      <action id="floobits.JoinRecentWorkspace" class="floobits.actions.SelectRecentWorkspace" text="Join Recent Workspace"
               description="Join RecentFloobits workspace">
-          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
-          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt J"/>
       </action>
-      <action id="floobits.actions.ShareProject" class="floobits.actions.ShareProject" text="Floobits: Share Project"
+      <action id="floobits.actions.ShareProjectPrivately" class="floobits.actions.ShareProjectPrivately"
+              text="Share Project Privately" description="This will share the project privately.">
+      </action>
+      <action id="floobits.actions.ShareProject" class="floobits.actions.ShareProject" text="Share Project Publicly"
               description="Share your current project">
-          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
-          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt K"/>
       </action>
-      <action id="floobits.actions.FollowMode" class="floobits.actions.FollowMode" text="Toggle Follow Mode" description="Follow mode will cause your editor to follow the cursor of others in the workspace.">
-          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
-          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt H"/>
+      <action id="floobits.actions.FollowMode" class="floobits.actions.FollowMode" text="Toggle Follow Mode"
+              description="Follow mode will cause your editor to follow the cursor of others in the workspace.">
       </action>
       <action id="floobits.actions.Summon" class="floobits.actions.Summon" text="Summon" description="Summon everyone in the room to your location">
-          <!--<add-to-group group-id="Floobits" anchor="before" relative-to-action="Exit"/>-->
-          <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt L"/>
+      </action>
+      <action id="floobits.actions.CompleteSignUp" class="floobits.actions.CompleteSignup" text="Complete Sign Up"
+              description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
       </action>
       <action id="floobits.actions.ClearHighlights" class="floobits.actions.ClearHighlights" text="Clear Highlights"/>
       <action id="floobits.actions.LeaveWorkspace" class="floobits.actions.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
       <action id="floobits.actions.OpenWorkspaceInBrowser" class="floobits.actions.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
-      <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Floobits: Add To Workspace" description="Add file or folders to the Workspace">
+      <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
       <group id="Floobits" text="Floobits" description="Floobits" popup="true">
@@ -78,19 +74,16 @@
           <reference ref="floobits.actions.JoinWorkspace"/>
           <reference ref="floobits.JoinRecentWorkspace"/>
           <reference ref="floobits.actions.ShareProject"/>
+          <reference ref="floobits.actions.ShareProjectPrivately"/>
+          <reference ref="floobits.actions.CompleteSignUp"/>
           <separator/>
           <reference ref="floobits.actions.FollowMode"/>
           <reference ref="floobits.actions.Summon"/>
           <reference ref="floobits.actions.ClearHighlights"/>
           <reference ref="floobits.actions.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
-          <add-to-group group-id="ToolsMenu" />
+          <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
-
-      <action id="floobits.actions.CompleteSignUp" class="floobits.actions.CompleteSignup" text="Complete Sign Up"
-              description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
-          <add-to-group group-id="Floobits" anchor="last"/>
-      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
