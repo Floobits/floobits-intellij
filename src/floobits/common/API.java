@@ -13,8 +13,11 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
@@ -83,6 +86,29 @@ public class API {
                 return false;
         }
     }
+    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
+
+        PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s/", f.owner, f.workspace));
+        Gson gson = new Gson();
+        String json = gson.toJson(workspaceRequest);
+        try {
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+            apiRequest(method, context);
+        } catch (IOException e) {
+            context.error_message(String.format("Could not create workspace: %s", e.toString()));
+            return false;
+        }
+        String responseBodyAsString;
+        try {
+            responseBodyAsString = method.getResponseBodyAsString();
+        } catch (IOException e) {
+            Flog.warn(e);
+            return false;
+        }
+        Flog.log(responseBodyAsString);
+        return method.getStatusCode() < 300;
+    }
+
     public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
 
         HttpMethod method;
@@ -91,7 +117,7 @@ public class API {
         } catch (IOException e) {
             return null;
         }
-        String responseBodyAsString = null;
+        String responseBodyAsString;
         try {
             responseBodyAsString = method.getResponseBodyAsString();
         } catch (IOException e) {
@@ -120,12 +146,17 @@ public class API {
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
+//        method.setFollowRedirects(true);
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
+        connectionParams.setParameter("http.protocol.handle-redirects", true);
         connectionParams.setSoTimeout(3000);
         connectionParams.setConnectionTimeout(3000);
         Settings settings = new Settings(context);
-        client.getParams().setAuthenticationPreemptive(true);
+        HttpClientParams params = client.getParams();
+        params.setAuthenticationPreemptive(true);
+//        params.setParameter("http.protocol.handle-redirects", true);
+        client.setParams(params);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
         client.getHostConfiguration().setHost(Constants.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {

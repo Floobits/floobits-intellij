@@ -1,6 +1,5 @@
 package floobits.common;
 
-import com.intellij.openapi.project.Project;
 import org.apache.commons.io.FilenameUtils;
 
 public class Constants {
