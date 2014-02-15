@@ -13,10 +13,12 @@ import java.io.*;
 import java.net.SocketTimeoutException;
 
 public class FlooConn extends Thread {
+    private class Ping implements Serializable { public String name = "ping"; }
     protected Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
     protected BaseHandler handler;
+    private Timeout timeout;
 
     private Integer MAX_RETRIES = 20;
     private Integer INITIAL_RECONNECT_DELAY = 500;
@@ -53,21 +55,40 @@ public class FlooConn extends Thread {
             try {
                 out.close();
             } catch (Exception ignored) {}
-         }
+            out = null;
+        }
+
         if (in != null) {
             try {
                 in.close();
             } catch (Exception ignored) {}
+            in = null;
         }
 
         if (socket != null)  {
             try {
                 socket.close();
             } catch (Exception ignored) {}
+            socket = null;
         }
-        in = null;
-        socket = null;
-        out = null;
+
+        if (timeout != null) {
+            try {
+                timeout.cancel();
+            } catch (Exception ignored) {}
+            timeout = null;
+        }
+    }
+
+    private void setTimeout() {
+        write(new Ping());
+        timeout = handler.context.setTimeout(5000, new Runnable() {
+             @Override
+             public void run() {
+                reconnect();
+                timeout = null;
+             }
+        });
     }
 
     protected void handle (String line) {
@@ -78,6 +99,16 @@ public class FlooConn extends Thread {
             return;
         }
         String requestName = name.getAsString();
+        if (requestName.equals("pong")) {
+            if (timeout != null) timeout.cancel();
+
+            timeout = handler.context.setTimeout(10000, new Runnable() {
+                @Override
+                public void run() {
+                    setTimeout();
+                }
+            });
+        }
         handler.on_data(requestName, obj);
     }
 
@@ -122,10 +153,9 @@ public class FlooConn extends Thread {
         try {
             out = new OutputStreamWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
+            handler.on_connect();
+            setTimeout();
             String line;
-            this.handler.on_connect();
-
             while (true) {
                 try {
                     line = in.readLine();
