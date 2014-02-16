@@ -108,6 +108,7 @@ public class FlooConn extends Thread {
                     setTimeout();
                 }
             });
+            return;
         }
         handler.on_data(requestName, obj);
     }
