@@ -18,6 +18,7 @@ The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works
 You'll need to setup your plugin environment.
 
 [JetBrains instructions](http://www.jetbrains.org/display/IJOS/Writing+Plug-ins)
+
 [A helpful guide](http://bjorn.tipling.com/how-to-make-an-intellij-idea-plugin-in-30-minutes)
 
 Questions? Join us on IRC on Freenode in #floobits.
