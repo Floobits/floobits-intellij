@@ -164,6 +164,7 @@ public class FlooHandler extends BaseHandler {
         send_create_buf(virtualFile);
     }
 
+
     void _on_room_info(JsonObject obj) {
         context.status_message(String.format("You successfully joined %s ", url.toString()));
         RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
@@ -264,7 +265,6 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_get_buf(JsonObject obj) {
-        // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
 
@@ -275,7 +275,6 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_create_buf(JsonObject obj) {
-        // TODO: be nice about this and update the existing view
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
         Buf buf;

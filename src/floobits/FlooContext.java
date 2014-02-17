@@ -1,9 +1,5 @@
 package floobits;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -16,13 +12,11 @@ import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
 import floobits.handlers.LinkEditorHandler;
 import floobits.utilities.Flog;
-import org.apache.commons.httpclient.HttpMethod;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +43,31 @@ public class FlooContext {
         return timeout;
     }
 
+    private boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
+        HTTPWorkspaceRequest workspace = API.getWorkspace(flooUrl, this);
+        if (workspace != null) {
+            String[] anonPerms = workspace.perms.get("AnonymousUser");
+            if (anonPerms == null) {
+                anonPerms = new String[]{};
+            }
+            Arrays.sort(anonPerms);
+            Arrays.sort(newPerms);
+            if (!Arrays.equals(anonPerms, newPerms)) {
+                workspace.perms.put("AnonymousUser", newPerms);
+                return API.updateWorkspace(flooUrl, workspace, this);
+            }
+        }
+        return false;
+    }
+
     public void shareProject(final boolean notPublic) {
         final String project_path = project.getBasePath();
 
         FlooUrl flooUrl = DotFloo.read(project_path);
 
+        String[] newPerms = notPublic ? new String[]{} : new String[]{"view_room"};
 
-        if (API.workspaceExists(flooUrl, this)) {
+        if (changePerms(flooUrl, newPerms)) {
             joinWorkspace(flooUrl, project_path, true);
             return;
         }
@@ -72,7 +84,7 @@ public class FlooContext {
                         Flog.warn(e);
                         continue;
                     }
-                    if (API.workspaceExists(flooUrl, this)) {
+                    if (changePerms(flooUrl, newPerms)) {
                         joinWorkspace(flooUrl, w.path, true);
                         return;
                     }
