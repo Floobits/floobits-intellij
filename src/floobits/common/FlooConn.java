@@ -82,6 +82,9 @@ public class FlooConn extends Thread {
 
     private void setTimeout() {
         write(new Ping());
+        if (timeout != null) {
+            timeout.cancel();
+        }
         timeout = handler.context.setTimeout(5000, new Runnable() {
              @Override
              public void run() {
