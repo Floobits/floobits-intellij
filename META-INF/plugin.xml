@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -10,6 +10,9 @@
 
       Features include being able to see other people's cursor and highlights, being able to summon, and also follow edits
       automatically.
+
+      Important note about PyCharm: This plugin only works in the EAP version of PyCharm. Our plugin has compatibility issues with stable version of PyCharm.
+      The early access version of PyCharm should be just fine.
       ]]></description>
 
   <change-notes><![CDATA[
