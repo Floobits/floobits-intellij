@@ -11,7 +11,7 @@
 This plugin should be completely functional. If you encounter any errors please email [support@floobits.com](mailto:support@floobits.com).
 
 The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works with all IntelliJ IDEA forks, except the stable version of PyCharm.
-[EAP version of PyCharm](http://blog.jetbrains.com/pycharm/category/eap/) works fine.
+[EAP version of PyCharm](http://confluence.jetbrains.com/display/PYH/JetBrains+PyCharm+Preview+(EAP)) works fine.
 
 ### Contributing
 
