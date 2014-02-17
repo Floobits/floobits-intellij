@@ -146,7 +146,7 @@ public class API {
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
-//        method.setFollowRedirects(true);
+//        NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setParameter("http.protocol.handle-redirects", true);
@@ -155,7 +155,6 @@ public class API {
         Settings settings = new Settings(context);
         HttpClientParams params = client.getParams();
         params.setAuthenticationPreemptive(true);
-//        params.setParameter("http.protocol.handle-redirects", true);
         client.setParams(params);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
