@@ -3,6 +3,7 @@
 ### (and RubyMine, PHPStorm, PyCharm (EAP Only), WebStorm)
 
 [Documentation](https://floobits.com/help/plugins/intellij)
+
 [Download from JetBrains](http://plugins.jetbrains.com/plugin/7389?pr=)
 
 ### Development status: Functional
