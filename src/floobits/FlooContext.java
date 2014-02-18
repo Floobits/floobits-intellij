@@ -43,11 +43,12 @@ public class FlooContext {
         return timeout;
     }
 
-    private boolean changePerms(FlooUrl flooUrl, String[] newPerms, PersistentJson persistentJson) {
+    private boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
         HTTPWorkspaceRequest workspace = API.getWorkspace(flooUrl, this);
         if (workspace == null) {
-//            persistentJson.removeWorkspace(flooUrl);
-//            persistentJson.save();
+            PersistentJson persistentJson = PersistentJson.getInstance();
+            persistentJson.removeWorkspace(flooUrl);
+            persistentJson.save();
             return false;
         }
 
@@ -70,12 +71,13 @@ public class FlooContext {
         FlooUrl flooUrl = DotFloo.read(project_path);
 
         String[] newPerms = notPublic ? new String[]{} : new String[]{"view_room"};
-        PersistentJson persistentJson = PersistentJson.getInstance();
-        if (changePerms(flooUrl, newPerms, persistentJson)) {
+
+        if (flooUrl != null && changePerms(flooUrl, newPerms)) {
             joinWorkspace(flooUrl, project_path, true);
             return;
         }
 
+        PersistentJson persistentJson = PersistentJson.getInstance();
         for (Map.Entry<String, Map<String, Workspace>> i : persistentJson.workspaces.entrySet()) {
             Map<String, Workspace> workspaces = i.getValue();
             for (Map.Entry<String, Workspace> j : workspaces.entrySet()) {
@@ -87,7 +89,7 @@ public class FlooContext {
                         Flog.warn(e);
                         continue;
                     }
-                    if (changePerms(flooUrl, newPerms, persistentJson)) {
+                    if (changePerms(flooUrl, newPerms)) {
                         joinWorkspace(flooUrl, w.path, true);
                         return;
                     }
@@ -118,9 +120,9 @@ public class FlooContext {
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
             if (!API.workspaceExists(flooUrl, this)) {
-//                PersistentJson persistentJson = PersistentJson.getInstance();
-//                persistentJson.removeWorkspace(flooUrl);
-//                persistentJson.save();
+                PersistentJson persistentJson = PersistentJson.getInstance();
+                persistentJson.removeWorkspace(flooUrl);
+                persistentJson.save();
                 error_message(String.format("The workspace %s does not exist.", flooUrl));
                 return;
             }

@@ -3,8 +3,6 @@ package floobits.utilities;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
-import floobits.handlers.FlooHandler;
 
 public class ThreadSafe {
     public static void write(final FlooContext context, final Runnable runnable) {
