@@ -6,9 +6,6 @@ import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -166,13 +163,10 @@ public class FlooHandler extends BaseHandler {
     }
 
     void upload() {
-        ProjectFileIndex fileIndex = ProjectRootManager.getInstance(context.project).getFileIndex();
-        fileIndex.iterateContent(new ContentIterator() {
-            public boolean processFile(final VirtualFile virtualFile) {
-                if (!context.isIgnored(virtualFile)) upload(virtualFile);
-                return true;
-            }
-        });
+        ArrayList<VirtualFile> allNestedFiles = Utils.getAllValidNestedFiles(context, context.project.getBaseDir());
+        for (VirtualFile virtualFile : allNestedFiles) {
+            upload(virtualFile);
+        }
     }
 
     public void upload(VirtualFile virtualFile) {

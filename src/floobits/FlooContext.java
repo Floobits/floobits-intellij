@@ -62,7 +62,7 @@ public class FlooContext {
             workspace.perms.put("AnonymousUser", newPerms);
             return API.updateWorkspace(flooUrl, workspace, this);
         }
-        return false;
+        return true;
     }
 
     public void shareProject(final boolean notPublic) {

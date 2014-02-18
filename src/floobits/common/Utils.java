@@ -5,7 +5,11 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VFileProperty;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
@@ -242,51 +246,40 @@ public class Utils {
         }
     }
 
-    public static ArrayList<String> getAllNestedFilePaths(FlooContext context, VirtualFile vFile) {
-        ArrayList<String> filePaths = new ArrayList<String>();
+    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, VirtualFile vFile) {
+        final ArrayList<String> filePaths = new ArrayList<String>();
         if (!vFile.isDirectory()) {
             filePaths.add(vFile.getPath());
             return filePaths;
         }
-        for (VirtualFile file : vFile.getChildren()) {
-            if (file.isDirectory()) {
-                filePaths.addAll(getAllNestedFilePaths(context, file));
-                continue;
+        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
+            @Override
+            public boolean processFile(VirtualFile file) {
+                if (!context.isIgnored(file) && !file.isDirectory()) {
+                    filePaths.add(file.getPath());
+                }
+                return true;
             }
-            if (context.isIgnored(file)) {
-                continue;
-            }
-            filePaths.add(file.getPath());
-        }
+        });
         return filePaths;
     }
-    public static ArrayList<VirtualFile> getAllNestedFiles(FlooContext context, VirtualFile vFile) {
-        ArrayList<VirtualFile> filePaths = new ArrayList<VirtualFile>();
-        if (!vFile.isValid()) {
-            // This happens when files are no longer available, don't remove any of these.
-            return filePaths;
-        }
+
+    public static ArrayList<VirtualFile> getAllValidNestedFiles(final FlooContext context, VirtualFile vFile) {
+        final ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
         if (!vFile.isDirectory()) {
-            if (context.isIgnored(vFile)) {
-                return filePaths;
-            }
-            filePaths.add(vFile);
-            return filePaths;
+            virtualFiles.add(vFile);
+            return virtualFiles;
         }
-        for (VirtualFile file : vFile.getChildren()) {
-            if (!file.isValid()) {
-                continue;
+        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
+            @Override
+            public boolean processFile(VirtualFile file) {
+                if (!context.isIgnored(file) && !file.isDirectory() && file.isValid()) {
+                    virtualFiles.add(file);
+                }
+                return true;
             }
-            if (context.isIgnored(file)) {
-                continue;
-            }
-            if (file.isDirectory()) {
-                filePaths.addAll(getAllNestedFiles(context, file));
-                continue;
-            }
-            filePaths.add(file);
-        }
-        return filePaths;
+        });
+        return virtualFiles;
     }
 
     static public SSLContext createSSLContext() {

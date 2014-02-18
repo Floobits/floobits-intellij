@@ -189,7 +189,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
                 ArrayList<VirtualFile> files;
-                files = Utils.getAllNestedFiles(context, virtualFile);
+                files = Utils.getAllValidNestedFiles(context, virtualFile);
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
@@ -225,7 +225,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
                 ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllNestedFiles(context, event.getFile());
+                createdFiles = Utils.getAllValidNestedFiles(context, event.getFile());
                 for (final VirtualFile createdFile : createdFiles) {
                     Utils.createFile(context, createdFile);
                 }
@@ -233,7 +233,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
             if (event instanceof VFileContentChangeEvent) {
                 ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllNestedFiles(context, event.getFile());
+                changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
                     flooHandler.untellij_changed(file);
                 }
