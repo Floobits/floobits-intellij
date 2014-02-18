@@ -8,7 +8,7 @@ import floobits.handlers.FlooHandler;
 
 public class ThreadSafe {
     public static void write(final FlooContext context, final Runnable runnable) {
-			ApplicationManager.getApplication().invokeLater(new Runnable() {
+		ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 CommandProcessor.getInstance().executeCommand(context.project, new Runnable() {

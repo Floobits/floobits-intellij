@@ -122,6 +122,9 @@ public class API {
         } catch (IOException e) {
             return null;
         }
+        if (method.getStatusCode() >= 300) {
+            return null;
+        }
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 

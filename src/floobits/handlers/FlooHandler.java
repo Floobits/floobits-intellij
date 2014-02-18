@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 abstract class DocumentFetcher {
     Boolean make_document = false;
@@ -63,6 +64,22 @@ abstract class DocumentFetcher {
 }
 
 public class FlooHandler extends BaseHandler {
+    class QueuedAction {
+        public final Buf buf;
+        public RunLater<Buf> runnable;
+
+        QueuedAction(Buf buf, RunLater<Buf> runnable) {
+            this.runnable = runnable;
+            this.buf = buf;
+        }
+        public void run() {
+            if (buf == null) return;
+            synchronized (buf) {
+                runnable.run(buf);
+            }
+        }
+    }
+
     private Boolean shouldUpload = false;
     private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
@@ -77,6 +94,7 @@ public class FlooHandler extends BaseHandler {
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
+    public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
 
     String get_username(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -165,72 +183,71 @@ public class FlooHandler extends BaseHandler {
     }
 
 
-    void _on_room_info(JsonObject obj) {
-        context.status_message(String.format("You successfully joined %s ", url.toString()));
-        RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
-        isJoined = true;
-        this.tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
-        this.users = ri.users;
-        this.perms = new HashSet<String>(Arrays.asList(ri.perms));
-        if (!can("patch")){
-            readOnly = true;
-            context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
-        }
-        this.user_id = ri.user_id;
-
-        DotFloo.write(context.colabDir, url.toString());
-
-        final LinkedList<Buf> conflicts = new LinkedList<Buf>();
-        final LinkedList<Buf> missing = new LinkedList<Buf>();
-        final LinkedList<String> conflictedPaths = new LinkedList<String>();
-        for (Map.Entry entry : ri.bufs.entrySet()) {
-            Integer buf_id = (Integer) entry.getKey();
-            RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
-            bufs.put(buf_id, buf);
-            paths_to_ids.put(b.path, b.id);
-            buf.read();
-            if (buf.buf == null) {
-                missing.add(buf);
-                conflictedPaths.add(buf.path);
-                continue;
-            }
-            if (!b.md5.equals(buf.md5)) {
-                conflicts.add(buf);
-                conflictedPaths.add(buf.path);
-            }
-        }
-        final RunLater<Void> stompLater = new RunLater<Void>() {
-            @Override
-            public void run(Void _) {
-                for (Buf buf : conflicts) {
-                    send_set_buf(buf);
-                }
-                for (Buf buf : missing) {
-                    buf.cancelTimeout();
-                    conn.write(new DeleteBuf(buf.id));
-                }
-            }
-        };
-        if (shouldUpload) {
-            if (readOnly) {
-                context.status_message("You don't have permission to update remote files.");
-            } else {
-                context.status_message("Stomping on remote files and uploading new ones.");
-                context.flash_message("Stomping on remote files and uploading new ones.");
-                upload();
-                stompLater.run(null);
-                return;
-            }
-        }
-
-        if (conflictedPaths.size() <=0 ) {
-           return;
-        }
-
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+    void _on_room_info(final JsonObject obj) {
+        ThreadSafe.read(new Runnable() {
             @Override
             public void run() {
+                context.status_message(String.format("You successfully joined %s ", url.toString()));
+                RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
+                isJoined = true;
+                tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
+                users = ri.users;
+                perms = new HashSet<String>(Arrays.asList(ri.perms));
+                if (!can("patch")){
+                    readOnly = true;
+                    context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
+                }
+                user_id = ri.user_id;
+
+                DotFloo.write(context.colabDir, url.toString());
+
+                final LinkedList<Buf> conflicts = new LinkedList<Buf>();
+                final LinkedList<Buf> missing = new LinkedList<Buf>();
+                final LinkedList<String> conflictedPaths = new LinkedList<String>();
+                for (Map.Entry entry : ri.bufs.entrySet()) {
+                    Integer buf_id = (Integer) entry.getKey();
+                    RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
+                    Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
+                    bufs.put(buf_id, buf);
+                    paths_to_ids.put(b.path, b.id);
+                    buf.read();
+                    if (buf.buf == null) {
+                        missing.add(buf);
+                        conflictedPaths.add(buf.path);
+                        continue;
+                    }
+                    if (!b.md5.equals(buf.md5)) {
+                        conflicts.add(buf);
+                        conflictedPaths.add(buf.path);
+                    }
+                }
+                final RunLater<Void> stompLater = new RunLater<Void>() {
+                    @Override
+                    public void run(Void _) {
+                        for (Buf buf : conflicts) {
+                            send_set_buf(buf);
+                        }
+                        for (Buf buf : missing) {
+                            buf.cancelTimeout();
+                            conn.write(new DeleteBuf(buf.id));
+                        }
+                    }
+                };
+                if (shouldUpload) {
+                    if (readOnly) {
+                        context.status_message("You don't have permission to update remote files.");
+                    } else {
+                        context.status_message("Stomping on remote files and uploading new ones.");
+                        context.flash_message("Stomping on remote files and uploading new ones.");
+                        upload();
+                        stompLater.run(null);
+                        return;
+                    }
+                }
+
+                if (conflictedPaths.size() <=0 ) {
+                    return;
+                }
                 String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
                 ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
                     new RunLater<Void>() {
@@ -244,12 +261,12 @@ public class FlooHandler extends BaseHandler {
                             }
                         }
                     }, stompLater, readOnly,
-                     new RunLater<Void>() {
+                    new RunLater<Void>() {
                         @Override
                         public void run(Void arg) {
                             context.shutdown();
                         }
-                     }, conflictedPathsArray);
+                    }, conflictedPathsArray);
                 dialog.createCenterPanel();
                 dialog.show();
             }
@@ -261,17 +278,34 @@ public class FlooHandler extends BaseHandler {
         if (buf == null) {
             return;
         }
-        this.conn.write(new CreateBuf(buf));
+        conn.write(new CreateBuf(buf));
     }
 
     void _on_get_buf(JsonObject obj) {
         Gson gson = new Gson();
-        GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
+        final GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
+        Buf b = bufs.get(res.id);
+        queue(new QueuedAction(b, new RunLater<Buf>() {
+            @Override
+            public void run(Buf b) {
+                b.set(res.buf, res.md5);
+                b.write();
+                Flog.info("on get buffed. %s", b.path);
+            }
+        }));
+    }
 
-        Buf b = this.bufs.get(res.id);
-        b.set(res.buf, res.md5);
-        b.write();
-        Flog.info("on get buffed. %s", b.path);
+    void queue(QueuedAction queuedAction) {
+        queue.add(queuedAction);
+        ThreadSafe.write(context, new Runnable() {
+            @Override
+            public void run() {
+                QueuedAction action = queue.poll();
+                if (action != null) {
+                    action.run();
+                }
+            }
+        });
     }
 
     void _on_create_buf(JsonObject obj) {
@@ -283,9 +317,14 @@ public class FlooHandler extends BaseHandler {
         } else {
             buf = new TextBuf(res.path, res.id, res.buf, res.md5, context);
         }
-        this.bufs.put(buf.id, buf);
-        this.paths_to_ids.put(buf.path, buf.id);
-        buf.write();
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
+            @Override
+            public void run(Buf buf) {
+                bufs.put(buf.id, buf);
+                paths_to_ids.put(buf.path, buf.id);
+                buf.write();
+            }
+        }));
     }
 
     void _on_perms(JsonObject obj) {
@@ -305,18 +344,23 @@ public class FlooHandler extends BaseHandler {
 
     void _on_patch(JsonObject obj) {
         final FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
-        final Buf b = this.bufs.get(res.id);
-        if (b.buf == null) {
-            Flog.warn("no buffer");
-            this.send_get_buf(res.id);
-            return;
-        }
+        final Buf buf = this.bufs.get(res.id);
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
+            @Override
+            public void run(Buf b) {
+                if (b.buf == null) {
+                    Flog.warn("no buffer");
+                    send_get_buf(res.id);
+                    return;
+                }
 
-        if (res.patch.length() == 0) {
-            Flog.warn("wtf? no patches to apply. server is being stupid");
-            return;
-        }
-        b.patch(res);
+                if (res.patch.length() == 0) {
+                    Flog.warn("wtf? no patches to apply. server is being stupid");
+                    return;
+                }
+                b.patch(res);
+            }
+        }));
     }
 
     void get_document(Integer id, DocumentFetcher documentFetcher) {
@@ -499,14 +543,14 @@ public class FlooHandler extends BaseHandler {
     private void set_buf_path(Buf buf, String newPath) {
         paths_to_ids.remove(buf.path);
         buf.path = newPath;
-        this.paths_to_ids.put(buf.path, buf.id);
+        paths_to_ids.put(buf.path, buf.id);
     }
 
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = context.absPath(name);
         final String newPath = context.absPath(jsonObject.get("path").getAsString());
-        final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+
         Buf buf = get_buf_by_path(oldPath);
         if (buf == null) {
             if (get_buf_by_path(newPath) == null) {
@@ -516,57 +560,56 @@ public class FlooHandler extends BaseHandler {
             }
             return;
         }
-        if (foundFile == null) {
-            Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
-            return;
-        }
-        String newRelativePath = context.toProjectRelPath(newPath);
-        if (newRelativePath == null) {
-            context.error_message("A file is now outside the workspace.");
-            return;
-        }
-        set_buf_path(buf, newRelativePath);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        File oldFile = new File(oldPath);
-                        File newFile = new File(newPath);
-                        String newFileName = newFile.getName();
-                        // Rename file
-                        try {
-                            foundFile.rename(null, newFileName);
-                        } catch (IOException e) {
-                            Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
-                        }
-                        // Move file
-                        String newParentDirectoryPath = newFile.getParent();
-                        String oldParentDirectoryPath = oldFile.getParent();
-                        if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
-                            Flog.warn("Only renamed file, don't need to move %s %s", oldPath, newPath);
-                            return;
-                        }
-                        VirtualFile directory = null;
-                        try {
-                            directory = VfsUtil.createDirectories(newParentDirectoryPath);
-                        } catch (IOException e) {
-                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
 
-                        }
-                        if (directory == null) {
-                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
-                            return;
-                        }
-                        try {
-                            foundFile.move(null, directory);
-                        } catch (IOException e) {
-                            Flog.warn("Error moving file %s %s %s", e,oldPath, newPath);
-                        }
-                    }
-                });
-            }
-        });
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
+            @Override
+            public void run(Buf buf) {
+                final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+                if (foundFile == null) {
+                    Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
+                    return;
+                }
+                String newRelativePath = context.toProjectRelPath(newPath);
+                if (newRelativePath == null) {
+                    context.error_message("A file is now outside the workspace.");
+                    return;
+                }
+                set_buf_path(buf, newRelativePath);
+
+                File oldFile = new File(oldPath);
+                File newFile = new File(newPath);
+                String newFileName = newFile.getName();
+                // Rename file
+                try {
+                    foundFile.rename(null, newFileName);
+                } catch (IOException e) {
+                    Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
+                }
+                // Move file
+                String newParentDirectoryPath = newFile.getParent();
+                String oldParentDirectoryPath = oldFile.getParent();
+                if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
+                    Flog.warn("Only renamed file, don't need to move %s %s", oldPath, newPath);
+                    return;
+                }
+                VirtualFile directory = null;
+                try {
+                    directory = VfsUtil.createDirectories(newParentDirectoryPath);
+                } catch (IOException e) {
+                    Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+
+                }
+                if (directory == null) {
+                    Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                    return;
+                }
+                try {
+                    foundFile.move(null, directory);
+                } catch (IOException e) {
+                    Flog.warn("Error moving file %s %s %s", e,oldPath, newPath);
+                }
+            }}
+        ));
     }
 
     void _on_request_perms(JsonObject obj) {
@@ -618,34 +661,30 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_delete_buf(JsonObject jsonObject) {
-        Integer id = jsonObject.get("id").getAsInt();
+        final Integer id = jsonObject.get("id").getAsInt();
         Buf buf = bufs.get(id);
         if (buf == null) {
             Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", id));
             return;
         }
-        String absPath = context.absPath(buf.path);
-        buf.cancelTimeout();
-        bufs.remove(id);
-        paths_to_ids.remove(buf.path);
-        final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
-        if (fileByPath == null) {
-            return;
-        }
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
             @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        try {
-                            fileByPath.delete(this);
-                        } catch (IOException e) {
-                            Flog.warn(e);
-                        }
-                    }
-                });
-            }
-        });
+            public void run(Buf buf) {
+                String absPath = context.absPath(buf.path);
+                buf.cancelTimeout();
+                bufs.remove(id);
+                paths_to_ids.remove(buf.path);
+                final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
+                if (fileByPath == null) {
+                    return;
+                }
+                try {
+                    fileByPath.delete(this);
+                } catch (IOException e) {
+                    Flog.warn(e);
+                }
+            }}
+        ));
     }
 
     void _on_msg(JsonObject jsonObject){
@@ -732,13 +771,17 @@ public class FlooHandler extends BaseHandler {
         if (!context.isShared(filePath)) {
             return;
         }
-        Buf buf = this.get_buf_by_path(filePath);
-
-        if (Buf.isBad(buf)) {
-            Flog.info("buf isn't populated yet %s", file.getPath());
+        final Buf buf = this.get_buf_by_path(filePath);
+        if (buf == null) {
             return;
         }
-        buf.send_patch(file);
+        synchronized (buf) {
+            if (Buf.isBad(buf)) {
+                Flog.info("buf isn't populated yet %s", file.getPath());
+                return;
+            }
+            buf.send_patch(file);
+        }
     }
 
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
@@ -820,6 +863,7 @@ public class FlooHandler extends BaseHandler {
         clear_highlights();
         highlights = null;
         bufs = null;
+        queue.clear();
         context.status_message(String.format("Leaving workspace: %s.", url.toString()));
     }
 
