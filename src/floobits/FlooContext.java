@@ -46,8 +46,8 @@ public class FlooContext {
     private boolean changePerms(FlooUrl flooUrl, String[] newPerms, PersistentJson persistentJson) {
         HTTPWorkspaceRequest workspace = API.getWorkspace(flooUrl, this);
         if (workspace == null) {
-            persistentJson.removeWorkspace(flooUrl);
-            persistentJson.save();
+//            persistentJson.removeWorkspace(flooUrl);
+//            persistentJson.save();
             return false;
         }
 
@@ -118,9 +118,9 @@ public class FlooContext {
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
             if (!API.workspaceExists(flooUrl, this)) {
-                PersistentJson persistentJson = PersistentJson.getInstance();
-                persistentJson.removeWorkspace(flooUrl);
-                persistentJson.save();
+//                PersistentJson persistentJson = PersistentJson.getInstance();
+//                persistentJson.removeWorkspace(flooUrl);
+//                persistentJson.save();
                 error_message(String.format("The workspace %s does not exist.", flooUrl));
                 return;
             }

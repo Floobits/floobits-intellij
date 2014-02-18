@@ -42,9 +42,9 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, String location) {
         if (!API.workspaceExists(flooUrl, context)) {
-            PersistentJson persistentJson = PersistentJson.getInstance();
-            persistentJson.removeWorkspace(flooUrl);
-            persistentJson.save();
+//            PersistentJson persistentJson = PersistentJson.getInstance();
+//            persistentJson.removeWorkspace(flooUrl);
+//            persistentJson.save();
             context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
             return;
         }

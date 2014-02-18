@@ -13,13 +13,15 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 
 public abstract class Buf <T> {
-    static Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
+    static final Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
     public String path;
-    public Integer id;
+    public final Integer id;
     public volatile String md5;
     public volatile T buf;
     public Encoding encoding;
