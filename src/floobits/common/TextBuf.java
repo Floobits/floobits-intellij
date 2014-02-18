@@ -245,25 +245,6 @@ public class TextBuf extends Buf <String> {
                 flooHandler.send_get_buf(id);
                 return;
             }
-
-            for (Editor editor : editors) {
-                if (editor.isDisposed()) {
-                    continue;
-                }
-                CaretModel caretModel = editor.getCaretModel();
-                int offset = caretModel.getOffset();
-                if (offset < start) {
-                    continue;
-                }
-                int newOffset = offset + contents.length() - flooPatchPosition.end;
-                Flog.log("Moving cursor from %s to %s", offset, newOffset);
-
-                try {
-                    caretModel.moveToOffset(newOffset);
-                } catch (Exception e1) {
-                    Flog.info("Can't move caret: %s", e1);
-                }
-            }
         }
         text = d.getText();
         md5FromDoc = DigestUtils.md5Hex(text);

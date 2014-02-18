@@ -23,7 +23,6 @@ public class Timeouts {
                         return;
                     }
                     if (!t.isCanceled()) {
-                        Flog.info("timeout ran %s", t);
                         t.runnable.run();
                     }
                     timeouts.remove(t);
