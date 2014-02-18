@@ -20,7 +20,13 @@ public class ThreadSafe {
             }
         });
     }
-    public static void read(Runnable runnable) {
-        ApplicationManager.getApplication().runReadAction(runnable);
+    public static void read(final Runnable runnable) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runReadAction(runnable);
+            }
+        }
+        );
     }
 }
