@@ -127,7 +127,7 @@ public class FlooContext {
                 return;
             }
             setColabDir(Utils.unFuckPath(path));
-            timeouts = Timeouts.create();
+            timeouts = new Timeouts();
             handler = new FlooHandler(this, flooUrl, upload);
             handler.go();
             return;

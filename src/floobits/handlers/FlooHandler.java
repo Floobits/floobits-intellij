@@ -10,6 +10,7 @@ import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
@@ -543,6 +544,10 @@ public class FlooHandler extends BaseHandler {
         this.get_document(id, new DocumentFetcher(false) {
             @Override
             public void on_document(Document document) {
+                if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, document)) {
+                    Flog.info("Document: %s is not writable, can not save.", document);
+                    return;
+                }
                 FileDocumentManager.getInstance().saveDocument(document);
             }
         });
