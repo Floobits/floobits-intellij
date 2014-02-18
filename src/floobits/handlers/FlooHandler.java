@@ -216,6 +216,10 @@ public class FlooHandler extends BaseHandler {
                     paths_to_ids.put(b.path, b.id);
                     buf.read();
                     if (buf.buf == null) {
+                        if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
+                            send_get_buf(buf.id);
+                            continue;
+                        }
                         missing.add(buf);
                         conflictedPaths.add(buf.path);
                         continue;
