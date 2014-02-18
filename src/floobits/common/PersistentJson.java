@@ -2,6 +2,7 @@ package floobits.common;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -16,6 +17,22 @@ public class PersistentJson {
     public Boolean auto_generated_account = false;
     public Boolean disable_account_creation = true;
     public LinkedList<Workspace> recent_workspaces = new LinkedList<Workspace>();
+
+    public void removeWorkspace(FlooUrl flooUrl) {
+        Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);
+        if (workspaces != null) {
+            workspaces.remove(flooUrl.workspace);
+        }
+        URI uri = URI.create(flooUrl.toString());
+
+        for (int i=recent_workspaces.size()-1; i >=0 ; i++) {
+            Workspace workspace = recent_workspaces.get(i);
+            URI normalizedURL = URI.create(workspace.url);
+            if (uri.getPath().equals(normalizedURL.getPath()) && uri.getHost().equals(normalizedURL.getHost())) {
+                recent_workspaces.remove(i);
+            }
+        }
+    }
 
     public void addWorkspace(FlooUrl flooUrl, String path) {
         Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);

@@ -29,7 +29,7 @@ public class FlooConn extends Thread {
         this.handler = handler;
     }
 
-    public void write (Serializable obj) {
+    public synchronized void write (Serializable obj) {
         String data = new Gson().toJson(obj);
         try {
             out.write(data + "\n");
@@ -85,11 +85,11 @@ public class FlooConn extends Thread {
         if (timeout != null) {
             timeout.cancel();
         }
-        timeout = handler.context.setTimeout(5000, new Runnable() {
+        timeout = handler.context.setTimeout(3000, new Runnable() {
              @Override
              public void run() {
-                reconnect();
                 timeout = null;
+                reconnect();
              }
         });
     }
@@ -105,7 +105,7 @@ public class FlooConn extends Thread {
         if (requestName.equals("pong")) {
             if (timeout != null) timeout.cancel();
 
-            timeout = handler.context.setTimeout(10000, new Runnable() {
+            timeout = handler.context.setTimeout(1000, new Runnable() {
                 @Override
                 public void run() {
                     setTimeout();
@@ -140,7 +140,7 @@ public class FlooConn extends Thread {
         FlooUrl flooUrl = handler.getUrl();
         SSLContext sslContext = Utils.createSSLContext();
         if (sslContext == null) {
-            Utils.error_message("I can't do SSL.", this.handler.getProject());
+            Utils.error_message("I can't do SSL.", handler.getProject());
             return;
         }
         try{
@@ -158,7 +158,13 @@ public class FlooConn extends Thread {
             out = new OutputStreamWriter(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             handler.on_connect();
-            setTimeout();
+            timeout = handler.context.setTimeout(10000, new Runnable() {
+                @Override
+                public void run() {
+                    timeout = null;
+                    setTimeout();
+                }
+            });
             String line;
             while (true) {
                 try {
