@@ -33,6 +33,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.AssertionError;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -443,6 +444,8 @@ public class FlooHandler extends BaseHandler {
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
                     try {
                         markupModel.removeHighlighter(rangeHighlighter);
+                    } catch (AssertionError e) {
+                        Flog.info("Assertion error on removeHighlighter");
                     } catch (Exception e) {
                         Flog.info(Utils.stackToString(e));
                     }
