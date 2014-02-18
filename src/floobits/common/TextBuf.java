@@ -44,6 +44,12 @@ public class TextBuf extends Buf <String> {
     }
 
     public void write() {
+        final String writeBuf = buf;
+        if (writeBuf == null) {
+            Flog.warn("Buf is null.");
+            return;
+        }
+        // TODO: lock or queue this up. potential out of order-ness
         ThreadSafe.write(context, new Runnable() {
             public void run() {
                 VirtualFile virtualFile = getVirtualFile();
@@ -63,7 +69,7 @@ public class TextBuf extends Buf <String> {
                     try {
                         flooHandler.listener.flooDisable();
                         d.setReadOnly(false);
-                        d.setText(buf);
+                        d.setText(writeBuf);
                     } finally {
                         flooHandler.listener.flooEnable();
                     }
@@ -71,7 +77,7 @@ public class TextBuf extends Buf <String> {
                 }
                 Flog.warn("Tried to write to null document: %s", path);
                 try {
-                    virtualFile.setBinaryContent(buf.getBytes());
+                    virtualFile.setBinaryContent(writeBuf.getBytes());
                 } catch (IOException e) {
                     Flog.warn(e);
                     Utils.error_message("The Floobits plugin was unable to write to a file.", context.project);
@@ -118,21 +124,19 @@ public class TextBuf extends Buf <String> {
     }
 
     private void setGetBufTimeout(){
-        final Buf b = this;
-        Timeout timeout = context.setTimeout(2000, new Runnable() {
+        final int buf_id = id;
+        cancelTimeout();
+        this.timeout = context.setTimeout(2000, new Runnable() {
             @Override
             public void run() {
-                b.cancelTimeout();
                 Flog.info("Sending get buf after timeout.");
                 FlooHandler flooHandler = context.getFlooHandler();
                 if (flooHandler == null) {
                     return;
                 }
-                flooHandler.send_get_buf(b.id);
+                flooHandler.send_get_buf(buf_id);
             }
         });
-        cancelTimeout();
-        this.timeout = timeout;
     }
 
     @Override
@@ -268,7 +272,8 @@ public class TextBuf extends Buf <String> {
                 String text = d.getText();
                 String md5FromDoc = DigestUtils.md5Hex(text);
                 if (!md5FromDoc.equals(res.md5_after)) {
-                   b.setGetBufTimeout();
+                    Flog.info("md5FromDoc mismatch (ours %s remote %s)", md5FromDoc, res.md5_after);
+                    b.setGetBufTimeout();
                 }
 
                 for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
