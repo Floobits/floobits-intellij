@@ -25,7 +25,7 @@ public class PersistentJson {
         }
         URI uri = URI.create(flooUrl.toString());
 
-        for (int i=recent_workspaces.size()-1; i >=0 ; i++) {
+        for (int i=recent_workspaces.size()-1; i >=0; i--) {
             Workspace workspace = recent_workspaces.get(i);
             URI normalizedURL = URI.create(workspace.url);
             if (uri.getPath().equals(normalizedURL.getPath()) && uri.getHost().equals(normalizedURL.getHost())) {
