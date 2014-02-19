@@ -28,6 +28,10 @@ public class Colors {
         new JBColor(new Color(255,255,0,alpha),new Color(255,255,0,alpha)),
     };
 
+    public static JBColor getFGColor() {
+        return new JBColor(new Color(255,255,255,255),new Color(255,255,255,255));
+    }
+
     public static JBColor getColorForUser(String username) {
         int i = 0;
         for(char c : DigestUtils.md5Hex(username).toCharArray()) {

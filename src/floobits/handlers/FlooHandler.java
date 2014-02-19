@@ -483,6 +483,7 @@ public class FlooHandler extends BaseHandler {
                 attributes.setEffectColor(color);
                 attributes.setEffectType(EffectType.SEARCH_MATCH);
                 attributes.setBackgroundColor(color);
+                attributes.setForegroundColor(Colors.getFGColor());
 
                 boolean first = true;
                 Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
