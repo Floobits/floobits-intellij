@@ -96,12 +96,17 @@
           <reference ref="floobits.actions.ClearHighlights"/>
           <reference ref="floobits.actions.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
+          <action id="floobits.actions.DeleteFromWorkspace2" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
           <separator/>
           <reference ref="floobits.actions.CompleteSignUp"/>
           <separator/>
           <reference ref="floobits.actions.OpenFloorc"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
+      <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace"
+              text="Remove From Workspace" description="Remove file(s) from workspace">
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

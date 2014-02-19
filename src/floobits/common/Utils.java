@@ -255,7 +255,7 @@ public class Utils {
         VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
             @Override
             public boolean processFile(VirtualFile file) {
-                if (!context.isIgnored(file) && !file.isDirectory()) {
+                if (!file.isDirectory()) {
                     filePaths.add(file.getPath());
                 }
                 return true;
@@ -267,9 +267,10 @@ public class Utils {
     public static ArrayList<VirtualFile> getAllValidNestedFiles(final FlooContext context, VirtualFile vFile) {
         final ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
         if (!vFile.isDirectory()) {
-            virtualFiles.add(vFile);
+            if (vFile.isValid() && !context.isIgnored(vFile)) virtualFiles.add(vFile);
             return virtualFiles;
         }
+
         VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
             @Override
             public boolean processFile(VirtualFile file) {
