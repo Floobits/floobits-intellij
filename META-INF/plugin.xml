@@ -73,6 +73,8 @@
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
+      <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open Floorc (settings)"  description="Open your ~/.floorc ">
+      </action>
       <group id="Floobits" text="Floobits" description="Floobits" popup="true">
 
           <reference ref="floobits.actions.ShareProject"/>
@@ -91,6 +93,8 @@
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
           <separator/>
           <reference ref="floobits.actions.CompleteSignUp"/>
+          <separator/>
+          <reference ref="floobits.actions.OpenFloorc"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
   </actions>
