@@ -16,13 +16,18 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Fixed bugs when multiple people edited a file at the same time.
-          Fixed general connection and UI issues.
-          Improved shutdown logic.
-          Added a read only mode for no write permissions.
-          Fixed null pointer issues.
-          Other bug fixes.
-      ]]>
+    Fixed eventual consistency algorithm.
+    Fixed threading race conditions affecting consistency, correct behavior, and stability.
+    Fixed cursor jumping on remote edits.
+    Fixed account creation.
+    Cleaned up menu.
+    Fixed bugs when multiple people edited a file at the same time.
+    Fixed general connection and UI issues.
+    Improved shutdown logic.
+    Added a read only mode for no write permissions.
+    Fixed null pointer issues.
+    Other bug fixes.
+    ]]>
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
