@@ -2,22 +2,19 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileVisitor;
-import com.intellij.util.containers.hash.HashSet;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
-import floobits.handlers.FlooHandler;
-import floobits.common.Ignore;
 import floobits.common.Utils;
-import org.jetbrains.annotations.NotNull;
+import floobits.handlers.FlooHandler;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
-public class AddToWorkspace extends IsJoinedAction {
+public class DeleteFromWorkspace extends IsJoinedAction {
+    @Override
     public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
-        final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
+        final HashSet<String> fileHashSet = new HashSet<String>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
         if (flooHandler == null || virtualFiles == null) {
@@ -25,21 +22,16 @@ public class AddToWorkspace extends IsJoinedAction {
         }
         FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
         for (final VirtualFile virtualFile : virtualFiles) {
-            if (filesToAdd.contains(virtualFile)) {
-                continue;
-            }
-            if (!Utils.isSharableFile(virtualFile)) {
+            if (fileHashSet.contains(virtualFile.getPath())) {
                 continue;
             }
             if (!context.isShared(virtualFile.getPath())) {
                 continue;
             }
-            ArrayList<VirtualFile> allValidNestedFiles = Utils.getAllValidNestedFiles(context, virtualFile);
-            filesToAdd.addAll(allValidNestedFiles);
+            ArrayList<String> allNestedFilePaths = Utils.getAllNestedFilePaths(context, virtualFile);
+            fileHashSet.addAll(allNestedFilePaths);
         }
 
-        for (VirtualFile virtualFile : filesToAdd) {
-            flooHandler.upload(virtualFile);
-        }
+        flooHandler.untellij_soft_delete(fileHashSet);
     }
 }

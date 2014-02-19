@@ -34,6 +34,8 @@ import java.lang.AssertionError;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -233,7 +235,7 @@ public class FlooHandler extends BaseHandler {
                         }
                         for (Buf buf : missing) {
                             buf.cancelTimeout();
-                            conn.write(new DeleteBuf(buf.id));
+                            conn.write(new DeleteBuf(buf.id, false));
                         }
                     }
                 };
@@ -670,20 +672,23 @@ public class FlooHandler extends BaseHandler {
         context.shutdown();
     }
 
-    void _on_delete_buf(JsonObject jsonObject) {
-        final Integer id = jsonObject.get("id").getAsInt();
-        Buf buf = bufs.get(id);
+    void _on_delete_buf(JsonObject obj) {
+        final DeleteBuf deleteBuf = new Gson().fromJson(obj, (Type)DeleteBuf.class);
+        Buf buf = bufs.get(deleteBuf.id);
         if (buf == null) {
-            Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", id));
+            Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", deleteBuf.id));
             return;
         }
         queue(new QueuedAction(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf buf) {
-                String absPath = context.absPath(buf.path);
                 buf.cancelTimeout();
-                bufs.remove(id);
+                bufs.remove(deleteBuf.id);
                 paths_to_ids.remove(buf.path);
+                if (!deleteBuf.unlink) {
+                    return;
+                }
+                String absPath = context.absPath(buf.path);
                 final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
                 if (fileByPath == null) {
                     return;
@@ -761,7 +766,7 @@ public class FlooHandler extends BaseHandler {
         if (newRelativePath == null) {
             Flog.warn(String.format("%s was moved to %s, deleting from workspace.", buf.path, newPath));
             buf.cancelTimeout();
-            this.conn.write(new DeleteBuf(buf.id));
+            this.conn.write(new DeleteBuf(buf.id, true));
             return;
         }
         if (buf.path.equals(newRelativePath)) {
@@ -819,6 +824,22 @@ public class FlooHandler extends BaseHandler {
         this.conn.write(new SaveBuf(buf.id));
     }
 
+    public void untellij_soft_delete(HashSet<String> files) {
+        if (!can("patch")) {
+            return;
+        }
+
+        for (String path : files) {
+            Buf buf = get_buf_by_path(path);
+            if (buf == null) {
+                Flog.info("buf does not exist");
+                continue;
+            }
+            buf.cancelTimeout();
+            conn.write(new DeleteBuf(buf.id, false));
+        }
+    }
+
     void untellij_deleted(String path) {
         Buf buf = this.get_buf_by_path(path);
         if (buf == null) {
@@ -830,7 +851,7 @@ public class FlooHandler extends BaseHandler {
         }
         buf.cancelTimeout();
 
-        this.conn.write(new DeleteBuf(buf.id));
+        this.conn.write(new DeleteBuf(buf.id, true));
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
