@@ -2,6 +2,7 @@ package floobits.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -329,6 +330,7 @@ public class FlooHandler extends BaseHandler {
                 bufs.put(buf.id, buf);
                 paths_to_ids.put(buf.path, buf.id);
                 buf.write();
+                context.status_message(String.format("Added the file, %s, to the workspace.", buf.path));
             }
         }));
     }
@@ -686,6 +688,7 @@ public class FlooHandler extends BaseHandler {
                 bufs.remove(deleteBuf.id);
                 paths_to_ids.remove(buf.path);
                 if (!deleteBuf.unlink) {
+                    context.status_message(String.format("Removed the file, %s, from the workspace.", buf.path));
                     return;
                 }
                 String absPath = context.absPath(buf.path);
@@ -832,7 +835,7 @@ public class FlooHandler extends BaseHandler {
         for (String path : files) {
             Buf buf = get_buf_by_path(path);
             if (buf == null) {
-                Flog.info("buf does not exist");
+                context.status_message(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
                 continue;
             }
             buf.cancelTimeout();
