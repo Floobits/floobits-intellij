@@ -18,20 +18,23 @@ public class PersistentJson {
     public Boolean disable_account_creation = true;
     public LinkedList<Workspace> recent_workspaces = new LinkedList<Workspace>();
 
-    public void removeWorkspace(FlooUrl flooUrl) {
-        Map<String, Workspace> workspaces = this.workspaces.get(flooUrl.owner);
+    public static void removeWorkspace(FlooUrl flooUrl) {
+        PersistentJson persistentJson = getInstance();
+        Map<String, Workspace> workspaces = persistentJson.workspaces.get(flooUrl.owner);
         if (workspaces != null) {
             workspaces.remove(flooUrl.workspace);
         }
         URI uri = URI.create(flooUrl.toString());
 
-        for (int i=recent_workspaces.size()-1; i >=0; i--) {
+        LinkedList<Workspace> recent_workspaces = persistentJson.recent_workspaces;
+        for (int i= recent_workspaces.size()-1; i >=0; i--) {
             Workspace workspace = recent_workspaces.get(i);
             URI normalizedURL = URI.create(workspace.url);
             if (uri.getPath().equals(normalizedURL.getPath()) && uri.getHost().equals(normalizedURL.getHost())) {
                 recent_workspaces.remove(i);
             }
         }
+        persistentJson.save();
     }
 
     public void addWorkspace(FlooUrl flooUrl, String path) {

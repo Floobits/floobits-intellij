@@ -123,6 +123,7 @@ public class API {
             return null;
         }
         if (method.getStatusCode() >= 300) {
+            PersistentJson.removeWorkspace(f);
             return null;
         }
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
@@ -140,7 +141,11 @@ public class API {
             return false;
         }
 
-        return method.getStatusCode() < 400;
+        if (method.getStatusCode() >= 300){
+            PersistentJson.removeWorkspace(f);
+            return false;
+        }
+        return true;
     }
     static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context) throws IOException {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), context);

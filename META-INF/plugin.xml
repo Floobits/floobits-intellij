@@ -67,6 +67,7 @@
               description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
       </action>
       <action id="floobits.actions.ClearHighlights" class="floobits.actions.ClearHighlights" text="Clear Highlights"/>
+      <action id="floobits.actions.OpenProjectInWorkspace" class="floobits.actions.OpenProjectInWorkspace" text="Open Project In Workspace" description="Open the project in an existing workspace."/>
       <action id="floobits.actions.LeaveWorkspace" class="floobits.actions.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
       <action id="floobits.actions.OpenWorkspaceInBrowser" class="floobits.actions.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace">
@@ -74,6 +75,7 @@
       </action>
       <group id="Floobits" text="Floobits" description="Floobits" popup="true">
           <reference ref="floobits.actions.LeaveWorkspace"/>
+          <reference ref="floobits.actions.OpenProjectInWorkspace"/>
           <reference ref="floobits.actions.JoinWorkspace"/>
           <reference ref="floobits.JoinRecentWorkspace"/>
           <reference ref="floobits.actions.ShareProject"/>
