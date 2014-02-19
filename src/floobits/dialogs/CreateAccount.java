@@ -51,7 +51,6 @@ public class CreateAccount extends DialogWrapper {
         this.setTitle("No Floobits Account Detected");
         JLabel label = new JLabel("You need a Floobits account! If you don't have one we will create one for you.");
         jPanel.add(label);
-
     }
 
     @Override

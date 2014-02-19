@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.Constants;
+import floobits.common.PersistentJson;
 import floobits.common.Settings;
 import floobits.common.Utils;
 import floobits.utilities.Flog;
@@ -45,5 +46,9 @@ public class CompleteSignup extends AnAction {
         } catch (URISyntaxException error) {
             Flog.warn(error);
         }
+    }
+    public void update (AnActionEvent e) {
+        PersistentJson p = PersistentJson.getInstance();
+        e.getPresentation().setEnabledAndVisible(p.auto_generated_account);
     }
 }

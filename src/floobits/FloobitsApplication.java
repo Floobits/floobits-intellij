@@ -14,8 +14,8 @@ import java.awt.*;
 import java.net.URI;
 
 public class FloobitsApplication implements ApplicationComponent {
-    public boolean canMakeAccount = true;
     public static FloobitsApplication self;
+    private Boolean createAccount = true;
 
     public FloobitsApplication() {
         self = this;
@@ -29,9 +29,12 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public synchronized void projectOpened(FlooContext context) {
-        if (canMakeAccount && !new Settings(context).isComplete()) {
-            canMakeAccount = false;
-            new CreateAccount(context);
+        PersistentJson p = PersistentJson.getInstance();
+        if (createAccount && !new Settings(context).isComplete() && (p == null || !p.disable_account_creation)) {
+            createAccount = false;
+            CreateAccount createAccount1 = new CreateAccount(context);
+            createAccount1.createCenterPanel();
+            createAccount1.show();
         }
     }
 

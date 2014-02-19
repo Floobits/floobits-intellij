@@ -29,7 +29,7 @@ public class LinkEditorHandler extends BaseHandler {
         url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
         conn = new FlooConn(this);
         conn.start();
-        this.isJoined = true;
+        isJoined = true;
         openBrowser();
     }
 
@@ -50,22 +50,22 @@ public class LinkEditorHandler extends BaseHandler {
         } else {
             context.error_message("Something went wrong while receiving data, please contact Floobits support.");
         }
-        shutdown();
+        context.shutdown();
     }
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
             Utils.error_message("Floobits can't use a browser on this system.", context.project);
-            shutdown();
+            context.shutdown();
             return;
         }
         try {
             Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/%s/", Constants.defaultHost, token)));
         } catch (IOException error) {
-            shutdown();
+            context.shutdown();
             Flog.warn(error);
         } catch (URISyntaxException error) {
-            shutdown();
+            context.shutdown();
             Flog.warn(error);
         }
     }
@@ -73,6 +73,6 @@ public class LinkEditorHandler extends BaseHandler {
     @Override
     public void on_connect() {
         Flog.warn("Connected.");
-        this.conn.write(new FlooRequestCredentials(token));
+        conn.write(new FlooRequestCredentials(token));
     }
 }

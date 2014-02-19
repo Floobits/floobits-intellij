@@ -1,13 +1,12 @@
 package floobits.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.common.PersistentJson;
 import floobits.common.Workspace;
 
 import java.util.LinkedList;
 
-public class SelectRecentWorkspace extends AnAction {
+public class SelectRecentWorkspace extends CanFloobits {
 
     public void actionPerformed(AnActionEvent e) {
         PersistentJson persistentJson = PersistentJson.getInstance();

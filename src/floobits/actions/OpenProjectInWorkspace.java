@@ -1,6 +1,5 @@
 package floobits.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FlooContext;
 import floobits.FloobitsApplication;
@@ -8,14 +7,13 @@ import floobits.FloobitsPlugin;
 import floobits.common.*;
 import floobits.utilities.Flog;
 
-import javax.swing.*;
 import java.net.MalformedURLException;
 import java.util.Map;
 
 /**
  * Created by kans on 2/18/14.
  */
-public class OpenProjectInWorkspace extends AnAction {
+public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
         FlooContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
         FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());

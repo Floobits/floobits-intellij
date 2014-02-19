@@ -15,7 +15,7 @@ import org.apache.commons.io.FileUtils;
 public class PersistentJson {
     public HashMap<String, Map<String, Workspace>> workspaces = new HashMap<String, Map<String,Workspace>>();
     public Boolean auto_generated_account = false;
-    public Boolean disable_account_creation = true;
+    public Boolean disable_account_creation = false;
     public LinkedList<Workspace> recent_workspaces = new LinkedList<Workspace>();
 
     public static void removeWorkspace(FlooUrl flooUrl) {

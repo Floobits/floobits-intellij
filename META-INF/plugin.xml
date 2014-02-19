@@ -46,7 +46,7 @@
   </project-components>
 
   <actions>
-      <action id="floobits.actions.JoinWorkspace" class="floobits.actions.JoinWorkspace" text="Join Workspace"
+      <action id="floobits.actions.JoinWorkspace" class="floobits.actions.JoinWorkspace" text="Join Workspace by URL"
               description="Join Floobits workspace">
       </action>
       <action id="floobits.JoinRecentWorkspace" class="floobits.actions.SelectRecentWorkspace" text="Join Recent Workspace"
@@ -67,26 +67,30 @@
               description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
       </action>
       <action id="floobits.actions.ClearHighlights" class="floobits.actions.ClearHighlights" text="Clear Highlights"/>
-      <action id="floobits.actions.OpenProjectInWorkspace" class="floobits.actions.OpenProjectInWorkspace" text="Open Project In Workspace" description="Open the project in an existing workspace."/>
+      <action id="floobits.actions.OpenProjectInWorkspace" class="floobits.actions.OpenProjectInWorkspace" text="Join Project's Workspace" description="Open the project in an existing workspace."/>
       <action id="floobits.actions.LeaveWorkspace" class="floobits.actions.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
       <action id="floobits.actions.OpenWorkspaceInBrowser" class="floobits.actions.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace">
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </action>
       <group id="Floobits" text="Floobits" description="Floobits" popup="true">
-          <reference ref="floobits.actions.LeaveWorkspace"/>
-          <reference ref="floobits.actions.OpenProjectInWorkspace"/>
-          <reference ref="floobits.actions.JoinWorkspace"/>
-          <reference ref="floobits.JoinRecentWorkspace"/>
+
           <reference ref="floobits.actions.ShareProject"/>
           <reference ref="floobits.actions.ShareProjectPrivately"/>
-          <reference ref="floobits.actions.CompleteSignUp"/>
+          <separator/>
+          <reference ref="floobits.actions.JoinWorkspace"/>
+          <reference ref="floobits.JoinRecentWorkspace"/>
+          <reference ref="floobits.actions.OpenProjectInWorkspace"/>
+          <separator/>
+          <reference ref="floobits.actions.LeaveWorkspace"/>
           <separator/>
           <reference ref="floobits.actions.FollowMode"/>
           <reference ref="floobits.actions.Summon"/>
           <reference ref="floobits.actions.ClearHighlights"/>
           <reference ref="floobits.actions.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
+          <separator/>
+          <reference ref="floobits.actions.CompleteSignUp"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
   </actions>

@@ -28,29 +28,27 @@ public class CreateAccountHandler extends BaseHandler {
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
             settings.set(thing.getKey(), thing.getValue().getAsString());
         }
+        PersistentJson p = PersistentJson.getInstance();
         if (!settings.isComplete()) {
+            p.disable_account_creation = true;
+            p.save();
             context.error_message("Can't create an account at this time.");
-            shutdown();
+            context.shutdown();
             return;
         }
         settings.write();
-        PersistentJson p = PersistentJson.getInstance();
         p.auto_generated_account = true;
         p.disable_account_creation = true;
         p.save();
-        shutdown();
         // TODO: Show welcome message.
         context.status_message(String.format("Successfully created new Floobits account with username %s. You can now share a project or join a workspace.", settings.get("username")));
         Flog.info("All setup");
-    }
-
-    public void shutdown() {
-        this.conn.shutdown();
+        context.shutdown();
     }
 
     @Override
     public void on_connect() {
         Flog.warn("Connected.");
-        this.conn.write(new NewAccount());
+        conn.write(new NewAccount());
     }
 }
