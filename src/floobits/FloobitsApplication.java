@@ -30,11 +30,15 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public synchronized void projectOpened(FlooContext context) {
         PersistentJson p = PersistentJson.getInstance();
-        if (createAccount && !new Settings(context).isComplete() && (p == null || !p.disable_account_creation)) {
-            createAccount = false;
-            CreateAccount createAccount1 = new CreateAccount(context);
-            createAccount1.createCenterPanel();
-            createAccount1.show();
+        if (createAccount && !new Settings(context).isComplete()){
+            if (p.disable_account_creation) {
+                context.status_message("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/) ");
+            } else {
+                createAccount = false;
+                CreateAccount createAccount1 = new CreateAccount(context);
+                createAccount1.createCenterPanel();
+                createAccount1.show();
+            }
         }
     }
 
