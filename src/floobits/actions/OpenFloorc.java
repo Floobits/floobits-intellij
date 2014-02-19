@@ -21,6 +21,7 @@ import java.io.IOException;
 public class OpenFloorc extends AnAction {
     public void actionPerformed(AnActionEvent actionEvent) {
         Project project = actionEvent.getProject();
+
         FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(project);
         File file = new File(Settings.floorcPath);
         if (!file.exists()) {

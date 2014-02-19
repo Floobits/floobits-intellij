@@ -40,7 +40,7 @@ public class TextBuf extends Buf <String> {
         }
         this.buf = d.getText();
         this.md5 = DigestUtils.md5Hex(this.buf);
-        }
+    }
 
     public void write() {
         if (!isPopulated()) {
