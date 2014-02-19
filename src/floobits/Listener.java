@@ -87,7 +87,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
-       Flog.log("%s changed but has no document.", file.getPath());
+       Flog.debug("%s changed but has no document.", file.getPath());
     }
 
     @Override
@@ -103,11 +103,11 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void documentChanged(DocumentEvent event) {
-        Flog.info("Document changed.");
         if (!isListening.get()) {
             return;
         }
         Document document = event.getDocument();
+        Flog.debug("Document changed: %s", document);
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         if (virtualFile == null) {
             Flog.info("No virtual file for document %s", document);
@@ -159,9 +159,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     @Override
-    public void before(@NotNull List<? extends VFileEvent> events) {
-        Flog.info("Before");
-    }
+    public void before(@NotNull List<? extends VFileEvent> events) {}
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
@@ -177,7 +175,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
         for (VFileEvent event : events) {
-            Flog.info(" after event type %s", event.getClass().getSimpleName());
+            Flog.debug(" after event type %s", event.getClass().getSimpleName());
             if (event == null) {
                 continue;
             }
