@@ -199,6 +199,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 user_id = ri.user_id;
 
+
                 DotFloo.write(context.colabDir, url.toString());
 
                 final LinkedList<Buf> conflicts = new LinkedList<Buf>();

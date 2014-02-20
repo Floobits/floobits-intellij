@@ -1,5 +1,5 @@
 <idea-plugin version="2">
-  <id>com.floobits.unique.plugin.id</id>
+  <id>com.floobits</id>
   <name>Floobits</name>
   <version>1.0.5</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
