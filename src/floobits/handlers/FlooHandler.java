@@ -31,12 +31,9 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.AssertionError;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -694,6 +691,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 String absPath = context.absPath(buf.path);
                 final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
+
                 if (fileByPath == null) {
                     return;
                 }

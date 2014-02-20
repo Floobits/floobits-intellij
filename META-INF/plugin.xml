@@ -75,13 +75,17 @@
       <action id="floobits.actions.OpenProjectInWorkspace" class="floobits.actions.OpenProjectInWorkspace" text="Join Project's Workspace" description="Open the project in an existing workspace."/>
       <action id="floobits.actions.LeaveWorkspace" class="floobits.actions.LeaveWorkspace" text="Leave Workspace" description="Leave the current Workspace"/>
       <action id="floobits.actions.OpenWorkspaceInBrowser" class="floobits.actions.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
-      <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace">
-          <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-      </action>
-      <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open Floorc (settings)"  description="Open your ~/.floorc ">
-      </action>
-      <group id="Floobits" text="Floobits" description="Floobits" popup="true">
+      <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
+      <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
+      <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open Floorc (settings)"  description="Open your ~/.floorc "/>
 
+      <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo-themed.png">
+          <reference ref="floobits.actions.AddToWorkspace"/>
+          <reference ref="floobits.actions.DeleteFromWorkspace"/>
+          <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+      </group>
+
+      <group id="Floobits" text="Floobits" description="Floobits" popup="true" icon="/icons/floo.png">
           <reference ref="floobits.actions.ShareProject"/>
           <reference ref="floobits.actions.ShareProjectPrivately"/>
           <separator/>
@@ -103,14 +107,9 @@
           <reference ref="floobits.actions.OpenFloorc"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
-      <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace"
-              text="Remove From Workspace" description="Remove file(s) from workspace">
-          <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
   </extensions>
-
 </idea-plugin   >
