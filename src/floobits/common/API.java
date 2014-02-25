@@ -33,21 +33,21 @@ public class API {
     public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
 
-        method = new PostMethod("/api/workspace/");
+        method = new PostMethod("/api/workspace");
         Gson gson = new Gson();
         String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context);
+            apiRequest(method, context, Constants.defaultHost);
         } catch (IOException e) {
-            context.error_message(String.format("Could not create workspace: %s", e.toString()));
+            context.error_message(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
         }
 
         int code = method.getStatusCode();
         switch (code) {
             case 400:
-                // Todo: pick a new name or something
+                // Todo: pick a new name or something                                                                                                                                                                                               )
                 context.error_message("Invalid workspace name (a-zA-Z0-9).");
                 return false;
             case 402:
@@ -87,12 +87,12 @@ public class API {
     }
     public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
 
-        PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s/", f.owner, f.workspace));
+        PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
         Gson gson = new Gson();
         String json = gson.toJson(workspaceRequest);
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context);
+            apiRequest(method, context, f.host);
         } catch (IOException e) {
             context.error_message(String.format("Could not create workspace: %s", e.toString()));
             return false;
@@ -112,7 +112,7 @@ public class API {
 
         HttpMethod method;
         try {
-            method = API.getWorkspace(f.owner, f.workspace, context);
+            method = getWorkspace(f.owner, f.workspace, context, f.host);
         } catch (IOException e) {
             return null;
         }
@@ -122,6 +122,7 @@ public class API {
         } catch (IOException e) {
             return null;
         }
+        // Redirects aren't followed, so die here
         if (method.getStatusCode() >= 300) {
             PersistentJson.removeWorkspace(f);
             return null;
@@ -135,7 +136,7 @@ public class API {
         }
         HttpMethod method;
         try {
-            method = API.getWorkspace(f.owner, f.workspace, context);
+            method = getWorkspace(f.owner, f.workspace, context, f.host);
         } catch (IOException e) {
             Flog.warn(e);
             return false;
@@ -147,11 +148,12 @@ public class API {
         }
         return true;
     }
-    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s/", owner, workspace)), context);
+
+    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context, String host) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
 //        NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
@@ -165,7 +167,7 @@ public class API {
         client.setParams(params);
         Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        client.getHostConfiguration().setHost(Constants.defaultHost, 443, new Protocol("https", new SecureProtocolSocketFactory() {
+        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SecureProtocolSocketFactory() {
             @Override
             public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
@@ -192,11 +194,11 @@ public class API {
     }
 
     static public List<String> getOrgsCanAdmin(FlooContext context) {
-        final GetMethod method = new GetMethod("/api/orgs/can/admin/");
+        final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, context);
+            apiRequest(method, context, Constants.defaultHost);
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;
