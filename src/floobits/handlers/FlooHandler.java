@@ -346,6 +346,9 @@ public class FlooHandler extends BaseHandler {
     void get_document(final Integer id, boolean force, final RunLater<Document> on_document) {
         ThreadSafe.write(context, new Runnable() {
             public void run() {
+                if (bufs == null) {
+                    return;
+                }
                 Buf buf = bufs.get(id);
                 if (buf == null) {
                     Flog.info("Buf %d is not populated yet", id);
