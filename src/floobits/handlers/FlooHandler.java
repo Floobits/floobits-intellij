@@ -299,6 +299,9 @@ public class FlooHandler extends BaseHandler {
         queue(new QueuedAction(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf buf) {
+                if (bufs == null) {
+                    return;
+                }
                 bufs.put(buf.id, buf);
                 paths_to_ids.put(buf.path, buf.id);
                 buf.write();
@@ -672,8 +675,10 @@ public class FlooHandler extends BaseHandler {
             @Override
             public void run(Buf buf) {
                 buf.cancelTimeout();
-                bufs.remove(deleteBuf.id);
-                paths_to_ids.remove(buf.path);
+                if (bufs != null) {
+                    bufs.remove(deleteBuf.id);
+                    paths_to_ids.remove(buf.path);
+                }
                 if (!deleteBuf.unlink) {
                     context.status_message(String.format("Removed the file, %s, from the workspace.", buf.path));
                     return;

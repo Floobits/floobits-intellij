@@ -48,13 +48,17 @@ public class BinaryBuf extends Buf <byte[]> {
                         return;
                     }
                 }
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
                 try {
-                    context.getFlooHandler().listener.flooDisable();
+                    flooHandler.listener.flooDisable();
                     virtualFile.setBinaryContent(buf);
                 } catch (IOException e) {
                     Flog.warn("Writing binary content to disk failed. %s", path);
                 } finally {
-                    context.getFlooHandler().listener.flooEnable();
+                    flooHandler.listener.flooEnable();
                 }
 
             }
