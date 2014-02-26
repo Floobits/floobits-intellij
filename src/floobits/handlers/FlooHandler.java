@@ -37,36 +37,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-abstract class DocumentFetcher {
-    Boolean make_document = false;
-
-    DocumentFetcher(Boolean make_document) {
-        this.make_document = make_document;
-    }
-
-    abstract public void on_document(Document document);
-
-    public void fetch(final FlooContext context, final String path) {
-        ThreadSafe.write(context, new Runnable() {
-            public void run() {
-                String absPath = context.absPath(path);
-
-                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-                if (virtualFile == null || !virtualFile.exists()) {
-                    Flog.info("no virtual file for %s", path);
-                    return;
-                }
-                Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
-                if (d == null) {
-                    return;
-                }
-                on_document(d);
-            }
-        });
-    }
-}
 
 public class FlooHandler extends BaseHandler {
+
     class QueuedAction {
         public final Buf buf;
         public RunLater<Buf> runnable;
@@ -82,7 +55,7 @@ public class FlooHandler extends BaseHandler {
             }
         }
     }
-
+    public JsonObject lastHighlight;
     private Boolean shouldUpload = false;
     private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
@@ -155,11 +128,11 @@ public class FlooHandler extends BaseHandler {
         if (relPath == null) {
             return null;
         }
-        Integer id = this.paths_to_ids.get(FilenameUtils.separatorsToUnix(relPath));
+        Integer id = paths_to_ids.get(FilenameUtils.separatorsToUnix(relPath));
         if (id == null) {
             return null;
         }
-        return this.bufs.get(id);
+        return bufs.get(id);
     }
 
     void upload() {
@@ -193,7 +166,7 @@ public class FlooHandler extends BaseHandler {
                 tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
                 users = ri.users;
                 perms = new HashSet<String>(Arrays.asList(ri.perms));
-                if (!can("patch")){
+                if (!can("patch")) {
                     readOnly = true;
                     context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
                 }
@@ -250,28 +223,29 @@ public class FlooHandler extends BaseHandler {
                     }
                 }
 
-                if (conflictedPaths.size() <=0 ) {
+                if (conflictedPaths.size() <= 0) {
                     return;
                 }
                 String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
                 ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
-                    new RunLater<Void>() {
-                        @Override
-                        public void run(Void _) {
-                            for (Buf buf : conflicts) {
-                                send_get_buf(buf.id);
+                        new RunLater<Void>() {
+                            @Override
+                            public void run(Void _) {
+                                for (Buf buf : conflicts) {
+                                    send_get_buf(buf.id);
+                                }
+                                for (Buf buf : missing) {
+                                    send_get_buf(buf.id);
+                                }
                             }
-                            for (Buf buf : missing) {
-                                send_get_buf(buf.id);
+                        }, stompLater, readOnly,
+                        new RunLater<Void>() {
+                            @Override
+                            public void run(Void arg) {
+                                context.shutdown();
                             }
-                        }
-                    }, stompLater, readOnly,
-                    new RunLater<Void>() {
-                        @Override
-                        public void run(Void arg) {
-                            context.shutdown();
-                        }
-                    }, conflictedPathsArray);
+                        }, conflictedPathsArray
+                );
                 dialog.createCenterPanel();
                 dialog.show();
             }
@@ -369,22 +343,32 @@ public class FlooHandler extends BaseHandler {
         }));
     }
 
-    void get_document(Integer id, DocumentFetcher documentFetcher) {
-        Buf buf = this.bufs.get(id);
-        if (buf == null) {
-            Flog.info("Buf %d is not populated yet", id);
-            return;
-        }
-        if (buf.buf == null) {
-            Flog.info("Buf %s is not populated yet", buf.path);
-            return;
-        }
+    void get_document(final Integer id, boolean force, final RunLater<Document> on_document) {
+        ThreadSafe.write(context, new Runnable() {
+            public void run() {
+                Buf buf = bufs.get(id);
+                if (buf == null) {
+                    Flog.info("Buf %d is not populated yet", id);
+                    return;
+                }
+                if (buf.buf == null) {
+                    Flog.info("Buf %s is not populated yet", buf.path);
+                    return;
+                }
+                String absPath = context.absPath(buf.path);
 
-        this.get_document(buf.path, documentFetcher);
-    }
-
-    void get_document(String path, DocumentFetcher documentFetcher) {
-        documentFetcher.fetch(context, path);
+                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+                if (virtualFile == null || !virtualFile.exists()) {
+                    Flog.info("no virtual file for %s", buf.path);
+                    return;
+                }
+                Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                if (d == null) {
+                    return;
+                }
+                on_document.run(d);
+            }
+        });
     }
 
     Editor get_editor_for_document(Document document) {
@@ -432,9 +416,9 @@ public class FlooHandler extends BaseHandler {
             return;
         }
 
-        get_document(bufId, new DocumentFetcher(false) {
+        get_document(bufId, false, new RunLater<Document>() {
             @Override
-            public void on_document(Document document) {
+            public void run(Document document) {
                 Editor editor = get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
@@ -452,13 +436,14 @@ public class FlooHandler extends BaseHandler {
 
     }
 
-    void _on_highlight(JsonObject obj) {
+    public void _on_highlight(JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
-        final Boolean force = stalking || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
-        get_document(res.id, new DocumentFetcher(force) {
+        final Boolean force = (stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
+        lastHighlight = obj;
+        get_document(res.id, force, new RunLater<Document>() {
             @Override
-            public void on_document(Document document) {
+            public void run(Document document) {
                 final FileEditorManager manager = FileEditorManager.getInstance(context.project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
@@ -541,9 +526,9 @@ public class FlooHandler extends BaseHandler {
 
     void _on_saved(JsonObject obj) {
         Integer id = obj.get("id").getAsInt();
-        this.get_document(id, new DocumentFetcher(false) {
+        get_document(id, false, new RunLater<Document>() {
             @Override
-            public void on_document(Document document) {
+            public void run(Document document) {
                 if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, document)) {
                     Flog.info("Document: %s is not writable, can not save.", document);
                     return;
@@ -748,7 +733,7 @@ public class FlooHandler extends BaseHandler {
         }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        this.conn.write(new FlooHighlight(buf, ranges, true));
+        conn.write(new FlooHighlight(buf, ranges, true, stalking));
     }
 
     public void untellij_renamed(String path, String newPath) {
@@ -777,7 +762,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         buf.cancelTimeout();
-        this.conn.write(new RenameBuf(buf.id, newRelativePath));
+        conn.write(new RenameBuf(buf.id, newRelativePath));
         set_buf_path(buf, newRelativePath);
     }
 
@@ -811,7 +796,7 @@ public class FlooHandler extends BaseHandler {
             Flog.info("buf isn't populated yet %s", path);
             return;
         }
-        this.conn.write(new FlooHighlight(buf, textRanges, false));
+        conn.write(new FlooHighlight(buf, textRanges, false, stalking));
     }
 
     public void untellij_saved(String path) {
@@ -824,7 +809,7 @@ public class FlooHandler extends BaseHandler {
         if (!can("patch")) {
             return;
         }
-        this.conn.write(new SaveBuf(buf.id));
+        conn.write(new SaveBuf(buf.id));
     }
 
     public void untellij_soft_delete(HashSet<String> files) {
@@ -854,7 +839,7 @@ public class FlooHandler extends BaseHandler {
         }
         buf.cancelTimeout();
 
-        this.conn.write(new DeleteBuf(buf.id, true));
+        conn.write(new DeleteBuf(buf.id, true));
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
