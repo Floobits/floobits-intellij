@@ -9,5 +9,8 @@ public class FollowMode extends IsJoinedAction {
         flooHandler.context.status_message(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));
         e.getPresentation().setText(String.format("%s follow mode", mode ? "Disable" : "Enable"));
         flooHandler.stalking = mode;
+        if (mode && flooHandler.lastHighlight != null) {
+            flooHandler._on_highlight(flooHandler.lastHighlight);
+        }
     }
 }

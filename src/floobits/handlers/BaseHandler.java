@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
 import floobits.common.FlooConn;
 import floobits.common.FlooUrl;
-import org.jetbrains.annotations.Nullable;
 
 abstract public class BaseHandler {
     public FlooUrl url;
