@@ -32,7 +32,7 @@ public class FloobitsApplication implements ApplicationComponent {
         PersistentJson p = PersistentJson.getInstance();
         if (createAccount && !new Settings(context).isComplete()){
             if (p.disable_account_creation) {
-                context.status_message("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/) ");
+                context.status_message("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)");
             } else {
                 createAccount = false;
                 CreateAccount createAccount1 = new CreateAccount(context);

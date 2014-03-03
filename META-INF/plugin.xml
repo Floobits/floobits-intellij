@@ -107,6 +107,11 @@
           <reference ref="floobits.actions.OpenFloorc"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
+      <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions"
+              text="Request Edit Permissions"
+              description="Request edit permissions for a workspace, if you don&#39;t have them already.">
+          <add-to-group group-id="Floobits" anchor="last"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

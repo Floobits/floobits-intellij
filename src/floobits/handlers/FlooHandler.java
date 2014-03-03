@@ -31,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -887,7 +888,7 @@ public class FlooHandler extends BaseHandler {
         super.shutdown();
         listener.stop();
         cleanBufs();
-        clear_highlights();
+        clearHighlights();
         highlights = null;
         bufs = null;
         queue.clear();
@@ -916,7 +917,7 @@ public class FlooHandler extends BaseHandler {
         _on_error(obj);
     }
 
-    public void clear_highlights() {
+    public void clearHighlights() {
         if (highlights == null || highlights.size() <= 0) {
             return;
         }
@@ -930,5 +931,9 @@ public class FlooHandler extends BaseHandler {
                 remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
             }
         }
+    }
+
+    public void sendEditRequest() {
+        conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));
     }
 }
