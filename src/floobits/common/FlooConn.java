@@ -67,8 +67,15 @@ public class FlooConn extends Thread {
 
         if (socket != null)  {
             try {
+                socket.shutdownInput();
+            } catch (Exception ignored) {}
+            try {
+                socket.shutdownOutput();
+            } catch (Exception ignored) {}
+            try {
                 socket.close();
             } catch (Exception ignored) {}
+
             socket = null;
         }
 
