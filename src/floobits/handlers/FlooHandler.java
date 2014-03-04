@@ -31,7 +31,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -66,7 +65,7 @@ public class FlooHandler extends BaseHandler {
     private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
-    private String user_id;
+    private int user_id;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
@@ -171,7 +170,8 @@ public class FlooHandler extends BaseHandler {
                     readOnly = true;
                     context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
                 }
-                user_id = ri.user_id;
+                user_id = Integer.parseInt(ri.user_id);
+                Flog.info("Got roominfo with userId %d", user_id);
 
 
                 DotFloo.write(context.colabDir, url.toString());
@@ -314,16 +314,27 @@ public class FlooHandler extends BaseHandler {
     void _on_perms(JsonObject obj) {
         Perms res = new Gson().fromJson(obj, (Type) Perms.class);
 
-        if (!res.user_id.equals(this.user_id)) {
+        Boolean previousState = can("patch");
+        if (res.user_id != this.user_id) {
             return;
         }
         HashSet perms = new HashSet<String>(Arrays.asList(res.perms));
         if (res.action.equals("add")) {
             this.perms.addAll(perms);
+        } else if (res.action.equals("set")) {
+            this.perms.clear();
+            this.perms.addAll(perms);
         } else if (res.action.equals("remove")) {
             this.perms.removeAll(perms);
         }
         readOnly = !can("patch");
+        if (can("patch") != previousState) {
+            if (can("patch")) {
+                Utils.status_message("You can now edit this workspace.", context.project);
+            } else {
+                Utils.error_message("You can no longer edit this workspace.", context.project);
+            }
+        }
     }
 
     void _on_patch(JsonObject obj) {
@@ -455,7 +466,11 @@ public class FlooHandler extends BaseHandler {
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
-                    if ((res.ping || res.summon) && username != null) {
+                    Boolean summon = false;
+                    if (res.summon != null) {
+                       summon = res.summon;
+                    }
+                    if ((res.ping || summon) && username != null) {
                         context.status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
                     if (force && virtualFile.isValid()) {
@@ -934,6 +949,10 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void sendEditRequest() {
+        if (!can("request_perms")) {
+            Utils.error_message("You are not allowed to ask for edit permissions.", context.project);
+            return;
+        }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));
     }
 }

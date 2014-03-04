@@ -14,8 +14,6 @@ public class FlooHighlight implements Base {
     public ArrayList<ArrayList<Integer>> ranges;
     public Integer user_id;
 
-    public FlooHighlight(){}
-
     public FlooHighlight (Buf buf, ArrayList<ArrayList<Integer>> ranges, Boolean summon, Boolean following) {
         this.following = following;
         this.id = buf.id;

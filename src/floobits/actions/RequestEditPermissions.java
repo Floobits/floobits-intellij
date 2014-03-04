@@ -25,6 +25,6 @@ public class RequestEditPermissions extends IsJoinedAction {
         if (flooHandler == null) {
             return;
         }
-        e.getPresentation().setEnabled(!flooHandler.can("patch"));
+        e.getPresentation().setEnabled(!flooHandler.can("patch") && flooHandler.can("request_perms"));
     }
 }
