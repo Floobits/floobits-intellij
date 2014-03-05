@@ -92,10 +92,11 @@ public class FlooConn extends Thread {
         if (timeout != null) {
             timeout.cancel();
         }
-        timeout = handler.context.setTimeout(3000, new Runnable() {
+        timeout = handler.context.setTimeout(10000, new Runnable() {
              @Override
              public void run() {
                 timeout = null;
+                Flog.warn("Timeout reconnecting because of timeout.");
                 reconnect();
              }
         });

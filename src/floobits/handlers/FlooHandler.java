@@ -3,6 +3,7 @@ package floobits.handlers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -22,6 +23,7 @@ import floobits.common.protocol.send.CreateBufResponse;
 import floobits.common.protocol.send.FlooAuth;
 import floobits.common.protocol.send.GetBuf;
 import floobits.common.protocol.send.RoomInfoResponse;
+import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
@@ -634,7 +636,22 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_request_perms(JsonObject obj) {
-        Flog.log("got perms receive");
+        Flog.log("got perms receive %s", obj);
+        RequestPerms requestPerms = new Gson().fromJson(obj, (Type)RequestPerms.class);
+        final int userId = requestPerms.user_id;
+        final FlooUser u = users.get(userId);
+        if (u == null) {
+            Flog.info("Unknown user for id %s. Not handling request_perms event. %d", user_id);
+            return;
+        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context.project, null);
+                d.createCenterPanel();
+                d.show();
+            }
+        });
     }
 
     void _on_join(JsonObject obj) {
