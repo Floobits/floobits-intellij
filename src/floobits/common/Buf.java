@@ -13,8 +13,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 
@@ -46,7 +44,7 @@ public abstract class Buf <T> {
     public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
     }
-    public void cleanUp() {
+    public void clearReadOnly() {
         //Do nothing.
     }
 

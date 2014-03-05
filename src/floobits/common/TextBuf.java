@@ -136,8 +136,8 @@ public class TextBuf extends Buf <String> {
     }
 
     @Override
-    public void cleanUp() {
-        super.cleanUp();
+    public void clearReadOnly() {
+        super.clearReadOnly();
         Document document = getDocumentForVirtualFile(getVirtualFile());
         if (document != null) {
             document.setReadOnly(false);

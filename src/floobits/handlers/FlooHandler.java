@@ -331,6 +331,7 @@ public class FlooHandler extends BaseHandler {
         if (can("patch") != previousState) {
             if (can("patch")) {
                 Utils.status_message("You can now edit this workspace.", context.project);
+                clearReadOnlyBufs();
             } else {
                 Utils.error_message("You can no longer edit this workspace.", context.project);
             }
@@ -887,13 +888,13 @@ public class FlooHandler extends BaseHandler {
         return true;
     }
 
-    protected void cleanBufs() {
+    protected void clearReadOnlyBufs() {
         for (Integer bufferId : readOnlyBufferIds) {
             Buf buf = bufs.get(bufferId);
             if (buf == null) {
                 continue;
             }
-            buf.cleanUp();
+            buf.clearReadOnly();
         }
         readOnlyBufferIds.clear();
     }
@@ -902,7 +903,7 @@ public class FlooHandler extends BaseHandler {
     public void shutdown() {
         super.shutdown();
         listener.stop();
-        cleanBufs();
+        clearReadOnlyBufs();
         clearHighlights();
         highlights = null;
         bufs = null;
