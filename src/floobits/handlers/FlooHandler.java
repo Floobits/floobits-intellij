@@ -19,10 +19,7 @@ import floobits.common.*;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.receive.*;
-import floobits.common.protocol.send.CreateBufResponse;
-import floobits.common.protocol.send.FlooAuth;
-import floobits.common.protocol.send.GetBuf;
-import floobits.common.protocol.send.RoomInfoResponse;
+import floobits.common.protocol.send.*;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.ResolveConflictsDialogWrapper;
 import floobits.utilities.Colors;
@@ -647,7 +644,13 @@ public class FlooHandler extends BaseHandler {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context.project, null);
+                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context.project, new RunLater<String>() {
+                    @Override
+                    public void run(String action) {
+                        String[] perms = new String[]{"edit_room"};
+                        conn.write(new PermsChange(action, userId, perms));
+                    }
+                });
                 d.createCenterPanel();
                 d.show();
             }
