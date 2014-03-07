@@ -24,7 +24,7 @@ public class AddToWorkspace extends IsJoinedAction {
             if (filesToAdd.contains(virtualFile)) {
                 continue;
             }
-            if (!Utils.isSharableFile(virtualFile)) {
+            if (!Utils.isSharable(virtualFile)) {
                 continue;
             }
             if (!context.isShared(virtualFile.getPath())) {

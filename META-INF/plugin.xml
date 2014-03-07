@@ -112,6 +112,10 @@
               description="Request edit permissions for a workspace, if you don&#39;t have them already.">
           <add-to-group group-id="Floobits" anchor="last"/>
       </action>
+      <!--<action id="floobits.actions.chat" class="floobits.actions.ChatAction" text="Chat"-->
+              <!--description="Chat with others in your workspace">-->
+          <!--<add-to-group group-id="Floobits" anchor="first"/>-->
+      <!--</action>-->
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

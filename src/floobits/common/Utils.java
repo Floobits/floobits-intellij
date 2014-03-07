@@ -119,13 +119,10 @@ public class Utils {
         "NOsF/5oirpt9P/FlUQqmMGqz9IgcgA38corog14=\n" +
         "-----END CERTIFICATE-----";
 
-    public static Boolean isSharableFile(VirtualFile virtualFile) {
-        return (isFile(virtualFile) && virtualFile.exists() && virtualFile.isInLocalFileSystem());
+    public static Boolean isSharable(VirtualFile virtualFile) {
+        return (virtualFile != null  && virtualFile.isValid() && virtualFile.isInLocalFileSystem() && !virtualFile.is(VFileProperty.SPECIAL) && !virtualFile.is(VFileProperty.SYMLINK));
     }
-    public static Boolean isFile(VirtualFile virtualFile) {
-        return (virtualFile != null  && !(virtualFile.isDirectory() || virtualFile.is(VFileProperty.SPECIAL) ||
-                virtualFile.is(VFileProperty.SYMLINK)));
-    }
+
     public static Boolean isSamePath (String p1, String p2) {
         p1 = FilenameUtils.normalizeNoEndSeparator(p1);
         p2 = FilenameUtils.normalizeNoEndSeparator(p2);
