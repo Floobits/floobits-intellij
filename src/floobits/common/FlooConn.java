@@ -31,6 +31,10 @@ public class FlooConn extends Thread {
 
     public synchronized void write (Serializable obj) {
         String data = new Gson().toJson(obj);
+        if (out == null) {
+            Flog.warn("no connection to write to");
+            return;
+        }
         try {
             out.write(data + "\n");
             out.flush();

@@ -744,6 +744,9 @@ public class FlooHandler extends BaseHandler {
     void _on_term_stdout(JsonObject jsonObject) {}
     void _on_term_stdin(JsonObject jsonObject) {}
 
+    void _on_ping(JsonObject jsonObject) {
+        conn.write(new Pong());
+    }
     public void send_get_buf (Integer buf_id) {
         Buf buf = bufs.get(buf_id);
         if (buf != null) {
@@ -951,6 +954,7 @@ public class FlooHandler extends BaseHandler {
         _on_delete_buf(obj);
         _on_perms(obj);
         _on_error(obj);
+        _on_ping(obj);
     }
 
     public void clearHighlights() {
