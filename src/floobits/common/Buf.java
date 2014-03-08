@@ -37,6 +37,7 @@ public abstract class Buf <T> {
 
     public void cancelTimeout () {
         if (timeout != null) {
+            Flog.log("canceling timeout for %s", path);
             timeout.cancel();
             timeout = null;
         }

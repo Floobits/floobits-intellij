@@ -122,7 +122,7 @@ public class TextBuf extends Buf <String> {
     private void setGetBufTimeout() {
         final int buf_id = id;
         cancelTimeout();
-        this.timeout = context.setTimeout(2000, new Runnable() {
+        timeout = context.setTimeout(2000, new Runnable() {
             @Override
             public void run() {
                 Flog.info("Sending get buf after timeout.");

@@ -12,9 +12,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowAnchor;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
 import floobits.Listener;
@@ -30,6 +27,7 @@ import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,10 +50,6 @@ public class FlooHandler extends BaseHandler {
             this.buf = buf;
         }
         public void run() {
-            if (buf == null) {
-                Flog.log("Buf is fucking null?!");
-                return;
-            }
             long l = System.currentTimeMillis();
             synchronized (buf) {
                 runnable.run(buf);
@@ -291,17 +285,22 @@ public class FlooHandler extends BaseHandler {
         Gson gson = new Gson();
         final GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
         Buf b = bufs.get(res.id);
-        queue(new QueuedAction(b, new RunLater<Buf>() {
+        queue(b, new RunLater<Buf>() {
             @Override
             public void run(Buf b) {
                 b.set(res.buf, res.md5);
                 b.write();
                 Flog.info("on get buffed. %s", b.path);
             }
-        }));
+        });
     }
 
-    void queue(QueuedAction queuedAction) {
+    void queue(Buf buf, RunLater<Buf> runnable) {
+        if (buf == null) {
+            Flog.log("Buf is null abandoning adding new queue action.");
+            return;
+        }
+        QueuedAction queuedAction = new QueuedAction(buf, runnable);
         queue.add(queuedAction);
         if (isInUIThread.get()) {
             return;
@@ -309,6 +308,7 @@ public class FlooHandler extends BaseHandler {
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
+                // this could be set above.... but its dangerous
                 isInUIThread.set(true);
                 try {
                     Flog.log("Doing %s work", queue.size());
@@ -335,7 +335,7 @@ public class FlooHandler extends BaseHandler {
         } else {
             buf = new TextBuf(res.path, res.id, res.buf, res.md5, context);
         }
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf buf) {
                 if (bufs == null) {
@@ -346,7 +346,7 @@ public class FlooHandler extends BaseHandler {
                 buf.write();
                 context.status_message(String.format("Added the file, %s, to the workspace.", buf.path));
             }
-        }));
+        });
     }
 
     void _on_perms(JsonObject obj) {
@@ -379,7 +379,7 @@ public class FlooHandler extends BaseHandler {
     void _on_patch(JsonObject obj) {
         final FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
         final Buf buf = this.bufs.get(res.id);
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf b) {
                 if (b.buf == null) {
@@ -394,7 +394,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 b.patch(res);
             }
-        }));
+        });
     }
 
     Document get_document(final Integer id) {
@@ -470,7 +470,7 @@ public class FlooHandler extends BaseHandler {
         }
 
         final Buf buf = this.bufs.get(bufId);
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
                 Document document = get_document(bufId);
                 Editor editor = get_editor_for_document(document);
@@ -486,7 +486,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 rangeHighlighters.clear();
             }
-        }));
+        });
 
     }
 
@@ -586,14 +586,14 @@ public class FlooHandler extends BaseHandler {
                 }
             }
         };
-        queue(new QueuedAction(buf, runLater));
+        queue(buf, runLater);
 
     }
 
     void _on_saved(JsonObject obj) {
         final Integer id = obj.get("id").getAsInt();
         final Buf buf = this.bufs.get(id);
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
                 Document document = get_document(id);
                 if (document == null) {
@@ -605,7 +605,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 FileDocumentManager.getInstance().saveDocument(document);
             }
-        }));
+        });
     }
 
     private void set_buf_path(Buf buf, String newPath) {
@@ -629,7 +629,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
 
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf buf) {
                 final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
@@ -677,7 +677,7 @@ public class FlooHandler extends BaseHandler {
                     Flog.warn("Error moving file %s %s %s", e,oldPath, newPath);
                 }
             }}
-        ));
+        );
     }
 
     void _on_request_perms(JsonObject obj) {
@@ -755,7 +755,7 @@ public class FlooHandler extends BaseHandler {
             Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", deleteBuf.id));
             return;
         }
-        queue(new QueuedAction(buf, new RunLater<Buf>() {
+        queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf buf) {
                 buf.cancelTimeout();
@@ -778,8 +778,8 @@ public class FlooHandler extends BaseHandler {
                 } catch (IOException e) {
                     Flog.warn(e);
                 }
-            }}
-        ));
+            }
+        });
     }
 
     void _on_msg(JsonObject jsonObject){
