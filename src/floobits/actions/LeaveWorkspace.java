@@ -2,9 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
 import floobits.FloobitsPlugin;
-import floobits.handlers.FlooHandler;
 
 public class LeaveWorkspace extends AnAction {
     @Override

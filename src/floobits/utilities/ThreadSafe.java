@@ -6,13 +6,20 @@ import floobits.FlooContext;
 
 public class ThreadSafe {
     public static void write(final FlooContext context, final Runnable runnable) {
-		ApplicationManager.getApplication().invokeLater(new Runnable() {
+        final long l = System.currentTimeMillis();
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 CommandProcessor.getInstance().executeCommand(context.project, new Runnable() {
                     @Override
                     public void run() {
-                        ApplicationManager.getApplication().runWriteAction(runnable);
+                        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                Flog.log("spent %s getting lock", System.currentTimeMillis() - l);
+                                runnable.run();
+                            }
+                        });
                     }
                 }, "Floobits", null);
             }

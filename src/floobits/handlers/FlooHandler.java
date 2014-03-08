@@ -12,6 +12,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
 import floobits.Listener;
@@ -48,10 +51,16 @@ public class FlooHandler extends BaseHandler {
             this.buf = buf;
         }
         public void run() {
-            if (buf == null) return;
+            if (buf == null) {
+                Flog.log("Buf is fucking null?!");
+                return;
+            }
+            long l = System.currentTimeMillis();
             synchronized (buf) {
                 runnable.run(buf);
             }
+            long l1 = System.currentTimeMillis();
+            Flog.log("Spent %s in ui thread", l1 -l);
         }
     }
     public JsonObject lastHighlight;
@@ -110,6 +119,22 @@ public class FlooHandler extends BaseHandler {
         super(context);
         url = flooUrl;
         this.shouldUpload = shouldUpload;
+        createChatWindow();
+    }
+
+    protected void createChatWindow() {
+        /*
+            ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+            ToolWindow toolWindow = toolWindowManager.registerToolWindow("BiPad", true, ToolWindowAnchor.BOTTOM);
+            PeerFactory pf = com.intellij.peer.PeerFactory.getInstance();
+            Content content = pf.getContentFactory().createContent(biPadForm.getMasterPanel(), "", false); // first arg is a JPanel
+            toolWindow.getContentManager().addContent(content);
+            toolWindow.setIcon(IconLoader.getIcon("Bindows-Logo-12.png", BindowsApplicationComponent.class));
+         */
+//        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(context.project);
+//        ToolWindow toolWindow = toolWindowManager.registerToolWindow("Floobits chat", true, ToolWindowAnchor.BOTTOM);
+//        toolWindow.getContentManager().addContent();
+
     }
 
     public void go() {
@@ -283,6 +308,10 @@ public class FlooHandler extends BaseHandler {
                 if (action != null) {
                     action.run();
                 }
+                int size = queue.size();
+                if (size > 0) {
+                    Flog.log("Could have done %s more work", size);
+                }
             }
         });
     }
@@ -358,35 +387,31 @@ public class FlooHandler extends BaseHandler {
         }));
     }
 
-    void get_document(final Integer id, boolean force, final RunLater<Document> on_document) {
-        ThreadSafe.write(context, new Runnable() {
-            public void run() {
-                if (bufs == null) {
-                    return;
-                }
-                Buf buf = bufs.get(id);
-                if (buf == null) {
-                    Flog.info("Buf %d is not populated yet", id);
-                    return;
-                }
-                if (buf.buf == null) {
-                    Flog.info("Buf %s is not populated yet", buf.path);
-                    return;
-                }
-                String absPath = context.absPath(buf.path);
+    Document get_document(final Integer id) {
+        if (bufs == null) {
+            return null;
+        }
+        Buf buf = bufs.get(id);
+        if (buf == null) {
+            Flog.info("Buf %d is not populated yet", id);
+            return null;
+        }
+        if (buf.buf == null) {
+            Flog.info("Buf %s is not populated yet", buf.path);
+            return null;
+        }
+        String absPath = context.absPath(buf.path);
 
-                VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-                if (virtualFile == null || !virtualFile.exists()) {
-                    Flog.info("no virtual file for %s", buf.path);
-                    return;
-                }
-                Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
-                if (d == null) {
-                    return;
-                }
-                on_document.run(d);
-            }
-        });
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+        if (virtualFile == null || !virtualFile.exists()) {
+            Flog.info("no virtual file for %s", buf.path);
+            return null;
+        }
+        Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
+        if (d == null) {
+            return null;
+        }
+        return d;
     }
 
     Editor get_editor_for_document(Document document) {
@@ -404,7 +429,7 @@ public class FlooHandler extends BaseHandler {
         return EditorFactory.getInstance().createEditor(document, context.project, virtualFile, true);
     }
 
-    void remove_highlight(Integer userId, Integer bufId, Document document) {
+    void remove_highlight(Integer userId, final Integer bufId, final Document document) {
         HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
@@ -434,9 +459,10 @@ public class FlooHandler extends BaseHandler {
             return;
         }
 
-        get_document(bufId, false, new RunLater<Document>() {
-            @Override
-            public void run(Document document) {
+        final Buf buf = this.bufs.get(bufId);
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
+            public void run(Buf b) {
+                Document document = get_document(bufId);
                 Editor editor = get_editor_for_document(document);
                 MarkupModel markupModel = editor.getMarkupModel();
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
@@ -450,7 +476,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 rangeHighlighters.clear();
             }
-        });
+        }));
 
     }
 
@@ -459,16 +485,22 @@ public class FlooHandler extends BaseHandler {
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = (stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         lastHighlight = obj;
-        get_document(res.id, force, new RunLater<Document>() {
+        final Buf buf = this.bufs.get(res.id);
+
+        RunLater<Buf> runLater = new RunLater<Buf>() {
             @Override
-            public void run(Document document) {
+            public void run(Buf arg) {
+                Document document = get_document(res.id);
+                if (document == null) {
+                    return;
+                }
                 final FileEditorManager manager = FileEditorManager.getInstance(context.project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
                 String username = get_username(res.user_id);
                 if (virtualFile != null) {
                     Boolean summon = false;
                     if (res.summon != null) {
-                       summon = res.summon;
+                        summon = res.summon;
                     }
                     if ((res.ping || summon) && username != null) {
                         context.status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
@@ -543,21 +575,27 @@ public class FlooHandler extends BaseHandler {
                     integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
                 }
             }
-        });
+        };
+        queue(new QueuedAction(buf, runLater));
+
     }
 
     void _on_saved(JsonObject obj) {
-        Integer id = obj.get("id").getAsInt();
-        get_document(id, false, new RunLater<Document>() {
-            @Override
-            public void run(Document document) {
+        final Integer id = obj.get("id").getAsInt();
+        final Buf buf = this.bufs.get(id);
+        queue(new QueuedAction(buf, new RunLater<Buf>() {
+            public void run(Buf b) {
+                Document document = get_document(id);
+                if (document == null) {
+                    return;
+                }
                 if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, document)) {
                     Flog.info("Document: %s is not writable, can not save.", document);
                     return;
                 }
                 FileDocumentManager.getInstance().saveDocument(document);
             }
-        });
+        }));
     }
 
     private void set_buf_path(Buf buf, String newPath) {
@@ -675,7 +713,6 @@ public class FlooHandler extends BaseHandler {
             remove_highlight(userId, entry.getKey(), null);
         }
         context.status_message(String.format("%s left the workspace.", u.username));
-
     }
 
     void _on_error(JsonObject jsonObject) {
