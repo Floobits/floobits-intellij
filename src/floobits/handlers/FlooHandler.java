@@ -38,6 +38,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class FlooHandler extends BaseHandler {
@@ -79,6 +80,7 @@ public class FlooHandler extends BaseHandler {
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
+    public AtomicBoolean isInUIThread = new AtomicBoolean(false);
 
     String get_username(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -301,16 +303,24 @@ public class FlooHandler extends BaseHandler {
 
     void queue(QueuedAction queuedAction) {
         queue.add(queuedAction);
+        if (isInUIThread.get()) {
+            return;
+        }
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
-                QueuedAction action = queue.poll();
-                if (action != null) {
-                    action.run();
-                }
-                int size = queue.size();
-                if (size > 0) {
-                    Flog.log("Could have done %s more work", size);
+                isInUIThread.set(true);
+                try {
+                    Flog.log("Doing %s work", queue.size());
+                    while (true) {
+                        QueuedAction action = queue.poll();
+                        if (action == null) {
+                            return;
+                        }
+                        action.run();
+                    }
+                } finally {
+                    isInUIThread.set(false);
                 }
             }
         });
@@ -796,7 +806,7 @@ public class FlooHandler extends BaseHandler {
         if (!can("patch")) {
             return;
         }
-        Flog.log("Patching %s", buf.path);
+        Flog.log("Sending patch for %s", buf.path);
         FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
         this.conn.write(req);
     }
