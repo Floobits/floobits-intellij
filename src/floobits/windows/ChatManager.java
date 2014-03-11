@@ -8,12 +8,11 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import floobits.FlooContext;
 
-import javax.swing.*;
-
 
 public class ChatManager {
     protected FlooContext context;
     protected ToolWindow toolWindow;
+    protected ChatForm chatForm = new ChatForm();
 
     public ChatManager (FlooContext context) {
        this.context = context;
@@ -23,7 +22,7 @@ public class ChatManager {
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
-        Content content = ContentFactory.SERVICE.getInstance().createContent(new JLabel("Hello, World!"), "sup", true);
+        Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "Floobits Chat", true);
         toolWindow.getContentManager().addContent(content);
     }
 
