@@ -58,6 +58,7 @@ public class FlooHandler extends BaseHandler {
             Flog.log("Spent %s in ui thread", l1 -l);
         }
     }
+    private final Runnable dequeueRunnable;
     public JsonObject lastHighlight;
     private Boolean shouldUpload = false;
     private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
@@ -116,6 +117,26 @@ public class FlooHandler extends BaseHandler {
         url = flooUrl;
         this.shouldUpload = shouldUpload;
         createChatWindow();
+        dequeueRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // this could be set above.... but its dangerous because we hop call stacks at least twice
+                try {
+                    isInUIThread.set(true);
+                    Flog.log("Doing %s work", queue.size());
+                    while (true) {
+//                        TODO: set a limit here and continue later
+                        QueuedAction action = queue.poll();
+                        if (action == null) {
+                            return;
+                        }
+                        action.run();
+                    }
+                } finally {
+                    isInUIThread.set(false);
+                }
+            }
+        };
     }
 
     protected void createChatWindow() {
@@ -302,28 +323,10 @@ public class FlooHandler extends BaseHandler {
         }
         QueuedAction queuedAction = new QueuedAction(buf, runnable);
         queue.add(queuedAction);
-        if (isInUIThread.get()) {
+        if (isInUIThread.get() || queue.size() > 1) {
             return;
         }
-        ThreadSafe.write(context, new Runnable() {
-            @Override
-            public void run() {
-                // this could be set above.... but its dangerous
-                isInUIThread.set(true);
-                try {
-                    Flog.log("Doing %s work", queue.size());
-                    while (true) {
-                        QueuedAction action = queue.poll();
-                        if (action == null) {
-                            return;
-                        }
-                        action.run();
-                    }
-                } finally {
-                    isInUIThread.set(false);
-                }
-            }
-        });
+        ThreadSafe.write(context, dequeueRunnable);
     }
 
     void _on_create_buf(JsonObject obj) {
@@ -796,10 +799,13 @@ public class FlooHandler extends BaseHandler {
     }
     public void send_get_buf (Integer buf_id) {
         Buf buf = bufs.get(buf_id);
-        if (buf != null) {
+        if (buf == null) {
+            return;
+        }
+        synchronized (buf) {
             buf.set(null, null);
         }
-        this.conn.write(new GetBuf(buf_id));
+        conn.write(new GetBuf(buf_id));
     }
 
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
