@@ -27,7 +27,6 @@ import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -115,22 +114,6 @@ public class FlooHandler extends BaseHandler {
         super(context);
         url = flooUrl;
         this.shouldUpload = shouldUpload;
-        createChatWindow();
-    }
-
-    protected void createChatWindow() {
-        /*
-            ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-            ToolWindow toolWindow = toolWindowManager.registerToolWindow("BiPad", true, ToolWindowAnchor.BOTTOM);
-            PeerFactory pf = com.intellij.peer.PeerFactory.getInstance();
-            Content content = pf.getContentFactory().createContent(biPadForm.getMasterPanel(), "", false); // first arg is a JPanel
-            toolWindow.getContentManager().addContent(content);
-            toolWindow.setIcon(IconLoader.getIcon("Bindows-Logo-12.png", BindowsApplicationComponent.class));
-         */
-//        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(context.project);
-//        ToolWindow toolWindow = toolWindowManager.registerToolWindow("Floobits chat", true, ToolWindowAnchor.BOTTOM);
-//        toolWindow.getContentManager().addContent();
-
     }
 
     public void go() {

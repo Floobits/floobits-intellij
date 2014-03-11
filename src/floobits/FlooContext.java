@@ -12,6 +12,7 @@ import floobits.handlers.CreateAccountHandler;
 import floobits.handlers.FlooHandler;
 import floobits.handlers.LinkEditorHandler;
 import floobits.utilities.Flog;
+import floobits.windows.ChatManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -27,6 +28,7 @@ public class FlooContext {
     public String colabDir;
     public Project project;
     public BaseHandler handler;
+    public ChatManager chatManager;
     protected Ignore ignoreTree;
     private Timeouts timeouts;
 
@@ -41,6 +43,10 @@ public class FlooContext {
         Timeout timeout = new Timeout(time, runnable);
         timeouts.setTimeout(timeout);
         return timeout;
+    }
+
+    public void loadChatManager() {
+        chatManager = new ChatManager(this);
     }
 
     private boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
