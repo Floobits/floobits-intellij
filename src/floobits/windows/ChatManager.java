@@ -38,6 +38,10 @@ public class ChatManager {
         toolWindow.hide(null);
     }
 
+    public boolean isOpen() {
+        return toolWindow.isVisible();
+    }
+
     public void clearUsers() {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -78,6 +82,33 @@ public class ChatManager {
                 for (FlooUser user : userList) {
                     chatForm.addClients(user.username, user.client, user.platform);
                 }
+            }
+        });
+    }
+
+    public void statusMessage(final String message) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.statusMessage(message);
+            }
+        });
+    }
+
+    public void errorMessage(final String message) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.errorMessage(message);
+            }
+        });
+    }
+
+    public void chatMessage(final String username, final String msg, final Date messageDate) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.chatMessage(username, msg, messageDate);
             }
         });
     }

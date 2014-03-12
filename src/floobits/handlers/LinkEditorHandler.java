@@ -46,16 +46,16 @@ public class LinkEditorHandler extends BaseHandler {
         }
         if (settings.isComplete()) {
             settings.write();
-            context.status_message(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", settings.get("username")));
+            context.statusMessage(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", settings.get("username")));
         } else {
-            context.error_message("Something went wrong while receiving data, please contact Floobits support.");
+            context.errorMessage("Something went wrong while receiving data, please contact Floobits support.");
         }
         context.shutdown();
     }
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
-            Utils.error_message("Floobits can't use a browser on this system.", context.project);
+            Utils.errorMessage("Floobits can't use a browser on this system.", context.project);
             context.shutdown();
             return;
         }

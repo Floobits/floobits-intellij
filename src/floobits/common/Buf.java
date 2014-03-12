@@ -68,7 +68,7 @@ public abstract class Buf <T> {
             VfsUtil.createDirectories(parentPath);
         } catch (IOException e) {
             Flog.warn("createFile error %s", e);
-            Utils.error_message("The Floobits plugin was unable to create a file.", context.project);
+            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
@@ -81,7 +81,7 @@ public abstract class Buf <T> {
             newFile = parent.findOrCreateChildData(context, name);
         } catch (IOException e) {
             Flog.warn("Create file error %s", e);
-            Utils.error_message("The Floobits plugin was unable to create a file.", context.project);
+            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
             return null;
         }
         return newFile;

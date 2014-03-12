@@ -40,7 +40,7 @@ public class API {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             apiRequest(method, context, Constants.defaultHost);
         } catch (IOException e) {
-            context.error_message(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
+            context.errorMessage(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
         }
 
@@ -48,7 +48,7 @@ public class API {
         switch (code) {
             case 400:
                 // Todo: pick a new name or something                                                                                                                                                                                               )
-                context.error_message("Invalid workspace name (a-zA-Z0-9).");
+                context.errorMessage("Invalid workspace name (a-zA-Z0-9).");
                 return false;
             case 402:
                 String details;
@@ -60,16 +60,16 @@ public class API {
                     Flog.warn(e);
                     return false;
                 }
-                context.error_message(details);
+                context.errorMessage(details);
                 return false;
             case 409:
-                context.status_message("The workspace already exists so I am joining it.");
+                context.statusMessage("The workspace already exists so I am joining it.");
             case 201:
-                context.status_message("Workspace created.");
+                context.statusMessage("Workspace created.");
                 return true;
             case 401:
                 Flog.log("Auth failed");
-                context.error_message("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
+                context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
                 VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
                 if (floorc == null) {
                     return false;
@@ -94,7 +94,7 @@ public class API {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
             apiRequest(method, context, f.host);
         } catch (IOException e) {
-            context.error_message(String.format("Could not create workspace: %s", e.toString()));
+            context.errorMessage(String.format("Could not create workspace: %s", e.toString()));
             return false;
         }
         String responseBodyAsString;
@@ -219,7 +219,7 @@ public class API {
             }
         } catch (Exception e) {
             Flog.warn(e);
-            context.error_message("Error getting Floobits organizations. Try again later or please contact support.");
+            context.errorMessage("Error getting Floobits organizations. Try again later or please contact support.");
         }
 
         return orgs;

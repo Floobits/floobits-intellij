@@ -32,7 +32,7 @@ public class CreateAccountHandler extends BaseHandler {
         if (!settings.isComplete()) {
             p.disable_account_creation = true;
             p.save();
-            context.error_message("Can't create an account at this time.");
+            context.errorMessage("Can't create an account at this time.");
             context.shutdown();
             return;
         }
@@ -41,7 +41,7 @@ public class CreateAccountHandler extends BaseHandler {
         p.disable_account_creation = true;
         p.save();
         // TODO: Show welcome message.
-        context.status_message(String.format("Successfully created new Floobits account with username %s. You can now share a project or join a workspace.", settings.get("username")));
+        context.statusMessage(String.format("Successfully created new Floobits account with username %s. You can now share a project or join a workspace.", settings.get("username")));
         Flog.info("All setup");
         context.shutdown();
     }

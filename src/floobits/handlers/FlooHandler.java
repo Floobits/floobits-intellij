@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.sql.Time;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -85,7 +86,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
-        context.status_message(String.format("Opened connection to %s.", url.toString()));
+        context.statusMessage(String.format("Opened connection to %s.", url.toString()));
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -163,7 +164,7 @@ public class FlooHandler extends BaseHandler {
         ThreadSafe.read(new Runnable() {
             @Override
             public void run() {
-                context.status_message(String.format("You successfully joined %s ", url.toString()));
+                context.statusMessage(String.format("You successfully joined %s ", url.toString()));
                 context.chatManager.openChat();
                 RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                 isJoined = true;
@@ -173,7 +174,7 @@ public class FlooHandler extends BaseHandler {
                 perms = new HashSet<String>(Arrays.asList(ri.perms));
                 if (!can("patch")) {
                     readOnly = true;
-                    context.status_message("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
+                    context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
                 }
                 user_id = Integer.parseInt(ri.user_id);
                 Flog.info("Got roominfo with userId %d", user_id);
@@ -219,10 +220,10 @@ public class FlooHandler extends BaseHandler {
                 };
                 if (shouldUpload) {
                     if (readOnly) {
-                        context.status_message("You don't have permission to update remote files.");
+                        context.statusMessage("You don't have permission to update remote files.");
                     } else {
-                        context.status_message("Stomping on remote files and uploading new ones.");
-                        context.flash_message("Stomping on remote files and uploading new ones.");
+                        context.statusMessage("Stomping on remote files and uploading new ones.");
+                        context.flashMessage("Stomping on remote files and uploading new ones.");
                         upload();
                         stompLater.run(null);
                         return;
@@ -329,7 +330,7 @@ public class FlooHandler extends BaseHandler {
                 bufs.put(buf.id, buf);
                 paths_to_ids.put(buf.path, buf.id);
                 buf.write();
-                context.status_message(String.format("Added the file, %s, to the workspace.", buf.path));
+                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
             }
         });
     }
@@ -353,10 +354,10 @@ public class FlooHandler extends BaseHandler {
         readOnly = !can("patch");
         if (can("patch") != previousState) {
             if (can("patch")) {
-                Utils.status_message("You can now edit this workspace.", context.project);
+                Utils.statusMessage("You can now edit this workspace.", context.project);
                 clearReadOnlyBufs();
             } else {
-                Utils.error_message("You can no longer edit this workspace.", context.project);
+                Utils.errorMessage("You can no longer edit this workspace.", context.project);
             }
         }
     }
@@ -498,7 +499,7 @@ public class FlooHandler extends BaseHandler {
                         summon = res.summon;
                     }
                     if ((res.ping || summon) && username != null) {
-                        context.status_message(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
                     if (force && virtualFile.isValid()) {
                         manager.openFile(virtualFile, true, true);
@@ -624,7 +625,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 String newRelativePath = context.toProjectRelPath(newPath);
                 if (newRelativePath == null) {
-                    context.error_message("A file is now outside the workspace.");
+                    context.errorMessage("A file is now outside the workspace.");
                     return;
                 }
                 set_buf_path(buf, newRelativePath);
@@ -693,7 +694,7 @@ public class FlooHandler extends BaseHandler {
     void _on_join(JsonObject obj) {
         FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
-        context.status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
+        context.statusMessage(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
         context.chatManager.setUsers(this.users);
     }
 
@@ -709,7 +710,7 @@ public class FlooHandler extends BaseHandler {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        context.status_message(String.format("%s left the workspace.", u.username));
+        context.statusMessage(String.format("%s left the workspace.", u.username));
     }
 
     void _on_error(JsonObject jsonObject) {
@@ -718,8 +719,8 @@ public class FlooHandler extends BaseHandler {
         reason = String.format("Floobits Error: %s", reason);
         Flog.warn(reason);
         if (jsonObject.has("flash") && jsonObject.get("flash").getAsBoolean()) {
-            context.error_message(reason);
-            context.flash_message(reason);
+            context.errorMessage(reason);
+            context.flashMessage(reason);
         }
     }
 
@@ -727,10 +728,10 @@ public class FlooHandler extends BaseHandler {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
-            context.error_message(reason);
-            context.flash_message(reason);
+            context.errorMessage(reason);
+            context.flashMessage(reason);
         } else {
-            context.status_message("You have left the workspace");
+            context.statusMessage("You have left the workspace");
         }
         context.shutdown();
     }
@@ -751,7 +752,7 @@ public class FlooHandler extends BaseHandler {
                     paths_to_ids.remove(buf.path);
                 }
                 if (!deleteBuf.unlink) {
-                    context.status_message(String.format("Removed the file, %s, from the workspace.", buf.path));
+                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
                     return;
                 }
                 String absPath = context.absPath(buf.path);
@@ -772,7 +773,19 @@ public class FlooHandler extends BaseHandler {
     void _on_msg(JsonObject jsonObject){
         String msg = jsonObject.get("data").getAsString();
         String username = jsonObject.get("username").getAsString();
-        context.status_message(String.format("%s: %s", username, msg));
+        Double time = jsonObject.get("time").getAsDouble();
+        Date messageDate;
+        if (time == null) {
+           messageDate = new Date();
+        } else {
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(time.longValue());
+            messageDate = c.getTime();
+        }
+        if (!context.chatManager.isOpen()) {
+            context.statusMessage(String.format("%s: %s", username, msg));
+        }
+        context.chatManager.chatMessage(username, msg, messageDate);
     }
 
     void _on_term_stdout(JsonObject jsonObject) {}
@@ -902,7 +915,7 @@ public class FlooHandler extends BaseHandler {
         for (String path : files) {
             Buf buf = get_buf_by_path(path);
             if (buf == null) {
-                context.status_message(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
+                context.statusMessage(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
                 continue;
             }
             buf.cancelTimeout();
@@ -965,7 +978,7 @@ public class FlooHandler extends BaseHandler {
         highlights = null;
         bufs = null;
         queue.clear();
-        context.status_message(String.format("Leaving workspace: %s.", url.toString()));
+        context.statusMessage(String.format("Leaving workspace: %s.", url.toString()));
         context.chatManager.clearUsers();
     }
 
@@ -1010,7 +1023,7 @@ public class FlooHandler extends BaseHandler {
 
     public void sendEditRequest() {
         if (!can("request_perms")) {
-            Utils.error_message("You are not allowed to ask for edit permissions.", context.project);
+            Utils.errorMessage("You are not allowed to ask for edit permissions.", context.project);
             return;
         }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));

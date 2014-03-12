@@ -42,7 +42,9 @@
                 <children>
                   <component id="d00f5" class="javax.swing.JList" binding="messages">
                     <constraints/>
-                    <properties/>
+                    <properties>
+                      <enabled value="false"/>
+                    </properties>
                   </component>
                 </children>
               </scrollpane>

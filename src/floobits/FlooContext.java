@@ -123,7 +123,7 @@ public class FlooContext {
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
             if (!API.workspaceExists(flooUrl, this)) {
-                error_message(String.format("The workspace %s does not exist.", flooUrl));
+                errorMessage(String.format("The workspace %s does not exist.", flooUrl));
                 return;
             }
             setColabDir(Utils.unFuckPath(path));
@@ -153,7 +153,7 @@ public class FlooContext {
             createAccountHandler.go();
             return;
         }
-        status_message("You already have an account and are connected with it.");
+        statusMessage("You already have an account and are connected with it.");
         shutdown();
     }
 
@@ -165,7 +165,7 @@ public class FlooContext {
             linkEditorHandler.go();
             return;
         }
-        Utils.status_message("You already have an account and are connected with it.", project);
+        Utils.statusMessage("You already have an account and are connected with it.", project);
         shutdown();
     }
 
@@ -207,22 +207,26 @@ public class FlooContext {
         return ignoreTree.isIgnored(this, f);
     }
 
-    public void flash_message(final String message) {
-        Utils.flash_message(message, project);
+    public void flashMessage(final String message) {
+        Utils.flashMessage(message, project);
     }
 
-    public void status_message(String message, NotificationType notificationType) {
-        Utils.status_message(message, notificationType, project);
+    public void statusMessage(String message, NotificationType notificationType) {
+        Utils.statusMessage(message, notificationType, project);
     }
 
-    public void status_message(String message) {
+    public void statusMessage(String message) {
         Flog.log(message);
-        status_message(message, NotificationType.INFORMATION);
+        if (!chatManager.isOpen()) {
+            statusMessage(message, NotificationType.INFORMATION);
+        }
+        chatManager.statusMessage(message);
     }
 
-    public void error_message(String message) {
+    public void errorMessage(String message) {
         Flog.warn(message);
-        status_message(message, NotificationType.ERROR);
+        statusMessage(message, NotificationType.ERROR);
+        chatManager.errorMessage(message);
     }
 
     public void shutdown() {

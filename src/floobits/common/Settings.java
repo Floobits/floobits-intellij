@@ -51,15 +51,15 @@ public class Settings {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            Utils.error_message("Can't write new .floorc", project);
+            Utils.errorMessage("Can't write new .floorc", project);
             return;
         }
         try {
             writer = new PrintWriter(file, "UTF-8");
         } catch (FileNotFoundException e) {
-            Utils.error_message("Can't write new .floorc", project);
+            Utils.errorMessage("Can't write new .floorc", project);
         } catch (UnsupportedEncodingException e) {
-            Utils.error_message("Can't write new .floorc", project);
+            Utils.errorMessage("Can't write new .floorc", project);
         }
         for (Map.Entry<String, String> setting : this.settings.entrySet()) {
             writer.println(String.format("%s %s", setting.getKey(), setting.getValue()));

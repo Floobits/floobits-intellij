@@ -6,20 +6,16 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
-import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -321,7 +317,7 @@ public class Utils {
         return sc;
     }
 
-    public static void status_message(final String message, final NotificationType notificationType, final Project project) {
+    public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -334,15 +330,15 @@ public class Utils {
         });
     }
 
-    public static void status_message(String message, Project project) {
-        status_message(message, NotificationType.INFORMATION, project);
+    public static void statusMessage(String message, Project project) {
+        statusMessage(message, NotificationType.INFORMATION, project);
     }
 
-    public static void error_message(String message, Project project) {
-        status_message(message, NotificationType.ERROR, project);
+    public static void errorMessage(String message, Project project) {
+        statusMessage(message, NotificationType.ERROR, project);
     }
 
-    public static void flash_message(final String message, final Project project) {
+    public static void flashMessage(final String message, final Project project) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {

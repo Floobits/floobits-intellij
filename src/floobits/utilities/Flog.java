@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.Logger;
 
 /**
  * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
- * Utitls.error_message to notify the user of a problem and Flog.warn to log an exception in a way that doesn't
+ * Utitls.errorMessage to notify the user of a problem and Flog.warn to log an exception in a way that doesn't
  * disturb the user.
  */
 public class Flog {
