@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import floobits.common.protocol.Base;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 

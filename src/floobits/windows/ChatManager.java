@@ -105,6 +105,11 @@ public class ChatManager {
     }
 
     public void chatMessage(final String username, final String msg, final Date messageDate) {
+        if (context.lastChatMessage != null && context.lastChatMessage.compareTo(messageDate) > -1) {
+            // Don't replay previously shown chat messages.
+            return;
+        }
+        context.lastChatMessage = messageDate;
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {

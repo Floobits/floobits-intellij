@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ public class FlooContext {
     public ChatManager chatManager;
     protected Ignore ignoreTree;
     private Timeouts timeouts;
+    public Date lastChatMessage;
 
     public FlooContext(Project project) {
         this.project = project;
@@ -153,7 +155,7 @@ public class FlooContext {
             createAccountHandler.go();
             return;
         }
-        statusMessage("You already have an account and are connected with it.");
+        statusMessage("You already have an account and are connected with it.", false);
         shutdown();
     }
 
@@ -215,10 +217,14 @@ public class FlooContext {
         Utils.statusMessage(message, notificationType, project);
     }
 
-    public void statusMessage(String message) {
+    public void statusMessage(String message, boolean isChat) {
         Flog.log(message);
         if (!chatManager.isOpen()) {
             statusMessage(message, NotificationType.INFORMATION);
+        }
+        if (isChat) {
+            // No point in setting a status message to chat for chat since it already has the chat message.
+            return;
         }
         chatManager.statusMessage(message);
     }

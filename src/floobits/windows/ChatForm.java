@@ -1,6 +1,8 @@
 package floobits.windows;
 
 import javax.swing.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -10,12 +12,21 @@ public class ChatForm {
     private DefaultListModel messagesModel = new DefaultListModel();
     private DefaultListModel clientModel = new DefaultListModel();
     private JList clients;
-    private JTextField textField1;
+    private JScrollPane messagesScrollPane;
+    private boolean shouldScrollToBottom;
 
     public ChatForm () {
         super();
         messages.setModel(messagesModel);
         clients.setModel(clientModel);
+        messagesScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                if (shouldScrollToBottom) {
+                    e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+                }
+                shouldScrollToBottom = false;
+            }
+        });
     }
 
     public JPanel getChatPanel() {
@@ -32,19 +43,24 @@ public class ChatForm {
 
     public void statusMessage(String message) {
         String messageFormat = "<html>%s<b><i><span style=\"color:green\">%s</span></i></b></html>";
-        messagesModel.addElement(String.format(messageFormat, stampMessage("*status*", null), message));
+        addMessage(String.format(messageFormat, stampMessage("*status*", null), message));
     }
 
     public void errorMessage(String message) {
         String messageFormat = "<html>%s<b><i><span style=\"color:red\">%s</span></i></b></html>";
-        messagesModel.addElement(String.format(messageFormat, stampMessage("*error*", null), message));
+        addMessage(String.format(messageFormat, stampMessage("*error*", null), message));
     }
 
     public void chatMessage(String username, String msg, Date messageDate) {
-        messagesModel.addElement(String.format("<html>%s%s</html>", stampMessage(username, messageDate), msg));
+        addMessage(String.format("<html>%s%s</html>", stampMessage(username, messageDate), msg));
     }
 
-    private String stampMessage(String nick, Date when) {
+    protected void addMessage(String msg) {
+        shouldScrollToBottom = true;
+        messagesModel.addElement(msg);
+    }
+
+    protected String stampMessage(String nick, Date when) {
         if (when == null) {
             when = new Date();
         }

@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.sql.Time;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -86,7 +85,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
-        context.statusMessage(String.format("Opened connection to %s.", url.toString()));
+        context.statusMessage(String.format("Opened connection to %s.", url.toString()), false);
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -164,7 +163,7 @@ public class FlooHandler extends BaseHandler {
         ThreadSafe.read(new Runnable() {
             @Override
             public void run() {
-                context.statusMessage(String.format("You successfully joined %s ", url.toString()));
+                context.statusMessage(String.format("You successfully joined %s ", url.toString()), false);
                 context.chatManager.openChat();
                 RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                 isJoined = true;
@@ -174,7 +173,7 @@ public class FlooHandler extends BaseHandler {
                 perms = new HashSet<String>(Arrays.asList(ri.perms));
                 if (!can("patch")) {
                     readOnly = true;
-                    context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
+                    context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.", false);
                 }
                 user_id = Integer.parseInt(ri.user_id);
                 Flog.info("Got roominfo with userId %d", user_id);
@@ -220,9 +219,9 @@ public class FlooHandler extends BaseHandler {
                 };
                 if (shouldUpload) {
                     if (readOnly) {
-                        context.statusMessage("You don't have permission to update remote files.");
+                        context.statusMessage("You don't have permission to update remote files.", false);
                     } else {
-                        context.statusMessage("Stomping on remote files and uploading new ones.");
+                        context.statusMessage("Stomping on remote files and uploading new ones.", false);
                         context.flashMessage("Stomping on remote files and uploading new ones.");
                         upload();
                         stompLater.run(null);
@@ -330,7 +329,7 @@ public class FlooHandler extends BaseHandler {
                 bufs.put(buf.id, buf);
                 paths_to_ids.put(buf.path, buf.id);
                 buf.write();
-                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
+                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path), false);
             }
         });
     }
@@ -499,7 +498,7 @@ public class FlooHandler extends BaseHandler {
                         summon = res.summon;
                     }
                     if ((res.ping || summon) && username != null) {
-                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()), false);
                     }
                     if (force && virtualFile.isValid()) {
                         manager.openFile(virtualFile, true, true);
@@ -694,7 +693,7 @@ public class FlooHandler extends BaseHandler {
     void _on_join(JsonObject obj) {
         FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
-        context.statusMessage(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
+        context.statusMessage(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client), false);
         context.chatManager.setUsers(this.users);
     }
 
@@ -710,7 +709,7 @@ public class FlooHandler extends BaseHandler {
         for (Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
             remove_highlight(userId, entry.getKey(), null);
         }
-        context.statusMessage(String.format("%s left the workspace.", u.username));
+        context.statusMessage(String.format("%s left the workspace.", u.username), false);
     }
 
     void _on_error(JsonObject jsonObject) {
@@ -731,7 +730,7 @@ public class FlooHandler extends BaseHandler {
             context.errorMessage(reason);
             context.flashMessage(reason);
         } else {
-            context.statusMessage("You have left the workspace");
+            context.statusMessage("You have left the workspace", false);
         }
         context.shutdown();
     }
@@ -752,7 +751,7 @@ public class FlooHandler extends BaseHandler {
                     paths_to_ids.remove(buf.path);
                 }
                 if (!deleteBuf.unlink) {
-                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
+                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path), false);
                     return;
                 }
                 String absPath = context.absPath(buf.path);
@@ -779,11 +778,11 @@ public class FlooHandler extends BaseHandler {
            messageDate = new Date();
         } else {
             Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(time.longValue());
+            c.setTimeInMillis(time.longValue() * 1000);
             messageDate = c.getTime();
         }
         if (!context.chatManager.isOpen()) {
-            context.statusMessage(String.format("%s: %s", username, msg));
+            context.statusMessage(String.format("%s: %s", username, msg), true);
         }
         context.chatManager.chatMessage(username, msg, messageDate);
     }
@@ -978,7 +977,7 @@ public class FlooHandler extends BaseHandler {
         highlights = null;
         bufs = null;
         queue.clear();
-        context.statusMessage(String.format("Leaving workspace: %s.", url.toString()));
+        context.statusMessage(String.format("Leaving workspace: %s.", url.toString()), false);
         context.chatManager.clearUsers();
     }
 
