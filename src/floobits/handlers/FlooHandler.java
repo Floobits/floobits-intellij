@@ -169,6 +169,7 @@ public class FlooHandler extends BaseHandler {
                 isJoined = true;
                 tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
                 users = ri.users;
+                context.chatManager.setUsers(users);
                 perms = new HashSet<String>(Arrays.asList(ri.perms));
                 if (!can("patch")) {
                     readOnly = true;
@@ -693,12 +694,14 @@ public class FlooHandler extends BaseHandler {
         FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
         this.users.put(u.user_id, u);
         context.status_message(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client));
+        context.chatManager.setUsers(this.users);
     }
 
     void _on_part(JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
         FlooUser u = users.get(userId);
         this.users.remove(userId);
+        context.chatManager.setUsers(this.users);
         HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
@@ -963,6 +966,7 @@ public class FlooHandler extends BaseHandler {
         bufs = null;
         queue.clear();
         context.status_message(String.format("Leaving workspace: %s.", url.toString()));
+        context.chatManager.clearUsers();
     }
 
     @SuppressWarnings("unused")
