@@ -22,7 +22,7 @@ public class ChatManager {
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
-        Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "Floobits Chat", true);
+        Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
     }
 

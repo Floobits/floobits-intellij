@@ -164,6 +164,7 @@ public class FlooHandler extends BaseHandler {
             @Override
             public void run() {
                 context.status_message(String.format("You successfully joined %s ", url.toString()));
+                context.chatManager.openChat();
                 RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                 isJoined = true;
                 tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
