@@ -18,14 +18,14 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 
 public class Ignore {
+    static Ignore root;
+    private static String rootPath;
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo", ".idea"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml", ".git"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
     protected final VirtualFile file;
     private final int depth;
-    private String rootPath;
-    protected final Ignore parent;
     protected final String stringPath;
     protected final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
     protected final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
@@ -33,15 +33,18 @@ public class Ignore {
     private final IgnoreNode ignoreNode = new IgnoreNode();
 
     public Ignore(VirtualFile virtualFile) {
-        this(virtualFile, null, 0, virtualFile.getPath());
+        this(virtualFile, 0);
+        ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
+        ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
+        ignoreNode.addRule(new IgnoreRule(".git"));
+        root = this;
+        rootPath = virtualFile.getPath();
     }
-    private Ignore (VirtualFile virtualFile, Ignore parent, int depth, String rootPath) {
+
+    private Ignore (VirtualFile virtualFile, int depth) {
         this.file = virtualFile;
         this.depth = depth;
-        this.rootPath = rootPath;
         this.stringPath = virtualFile.getPath();
-        this.parent = parent;
-        this.rootPath = rootPath;
 
         Flog.debug("Initializing ignores for %s", this.file);
 
@@ -55,11 +58,6 @@ public class Ignore {
             } catch (IOException e) {
                 Flog.warn(e);
             }
-        }
-        if (depth==0){
-            ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
-            ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
-            ignoreNode.addRule(new IgnoreRule(".git"));
         }
     }
 
@@ -88,11 +86,12 @@ public class Ignore {
             if (file.getName().startsWith(".") && !WHITE_LIST.contains(file.getName())) {
                 continue;
             }
-            if (isIgnoredDown(Utils.toProjectRelPath(file.getPath(), rootPath), file.isDirectory())) {
+            String path = Utils.toProjectRelPath(file.getPath(), rootPath);
+            if (root.isGitIgnored(path, file.isDirectory(), path.split("/"))) {
                 continue;
             }
             if (file.isDirectory()) {
-                Ignore child = new Ignore(file, this, depth + 1, rootPath);
+                Ignore child = new Ignore(file, depth + 1);
                 children.put(file.getName(), child);
                 child.recurse();
                 size += child.size;
@@ -103,10 +102,11 @@ public class Ignore {
         }
     }
 
-    private boolean isIgnoredUp(String path, boolean isDir, String[] split) {
+    private boolean isGitIgnored(String path, boolean isDir, String[] split) {
         IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, isDir);
         switch (ignored) {
             case IGNORED:
+                Flog.log("Ignoring %s because it is ignored by git.", path);
                 return true;
             case NOT_IGNORED:
                 return false;
@@ -118,20 +118,7 @@ public class Ignore {
         }
         String nextName = split[depth + 1];
         Ignore ignore = children.get(nextName);
-        return ignore != null && ignore.isIgnoredUp(path, isDir, split);
-    }
-
-    private boolean isIgnoredDown(String path, boolean isDir) {
-        IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, isDir);
-        switch (ignored) {
-            case IGNORED:
-                return true;
-            case NOT_IGNORED:
-                return false;
-            case CHECK_PARENT:
-                break;
-        }
-        return parent != null && parent.isIgnoredDown(path, isDir);
+        return ignore != null && ignore.isGitIgnored(path, isDir, split);
     }
 
     private boolean isFlooIgnored(VirtualFile virtualFile, String absPath) {
@@ -170,7 +157,7 @@ public class Ignore {
             return true;
 
         path =  context.toProjectRelPath(path);
-        return isIgnoredUp(path, virtualFile.isDirectory(), path.split("/"));
+        return isGitIgnored(path, virtualFile.isDirectory(), path.split("/"));
     }
     public static void writeDefaultIgnores(FlooContext context) {
         Flog.log("Creating default ignores.");
