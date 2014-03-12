@@ -75,7 +75,6 @@ public class FlooHandler extends BaseHandler {
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
-    public AtomicBoolean isInUIThread = new AtomicBoolean(false);
 
     String get_username(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -120,20 +119,14 @@ public class FlooHandler extends BaseHandler {
         dequeueRunnable = new Runnable() {
             @Override
             public void run() {
-                // this could be set above.... but its dangerous because we hop call stacks at least twice
-                try {
-                    isInUIThread.set(true);
-                    Flog.log("Doing %s work", queue.size());
-                    while (true) {
+                Flog.log("Doing %s work", queue.size());
+                while (true) {
 //                        TODO: set a limit here and continue later
-                        QueuedAction action = queue.poll();
-                        if (action == null) {
-                            return;
-                        }
-                        action.run();
+                    QueuedAction action = queue.poll();
+                    if (action == null) {
+                        return;
                     }
-                } finally {
-                    isInUIThread.set(false);
+                    action.run();
                 }
             }
         };
@@ -323,7 +316,7 @@ public class FlooHandler extends BaseHandler {
         }
         QueuedAction queuedAction = new QueuedAction(buf, runnable);
         queue.add(queuedAction);
-        if (isInUIThread.get() || queue.size() > 1) {
+        if (queue.size() > 1) {
             return;
         }
         ThreadSafe.write(context, dequeueRunnable);
