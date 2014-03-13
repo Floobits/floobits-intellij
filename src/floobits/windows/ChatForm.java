@@ -1,6 +1,15 @@
 package floobits.windows;
 
+import com.intellij.ui.JBColor;
+import floobits.FlooContext;
+import floobits.common.Utils;
+import floobits.handlers.FlooHandler;
+import floobits.utilities.Colors;
+import floobits.utilities.Flog;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.text.SimpleDateFormat;
@@ -13,10 +22,14 @@ public class ChatForm {
     private DefaultListModel clientModel = new DefaultListModel();
     private JList clients;
     private JScrollPane messagesScrollPane;
+    private JButton chatButton;
+    private JTextField chatInput;
+    private FlooContext context;
     private boolean shouldScrollToBottom;
 
-    public ChatForm () {
+    public ChatForm (FlooContext context) {
         super();
+        this.context = context;
         messages.setModel(messagesModel);
         clients.setModel(clientModel);
         messagesScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
@@ -27,6 +40,34 @@ public class ChatForm {
                 shouldScrollToBottom = false;
             }
         });
+        chatInput.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Flog.log("Got action in chat");
+                sendChatContents();
+            }
+        });
+        chatButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+               Flog.log("Gog action from chat button");
+               sendChatContents();
+            }
+        });
+    }
+
+    private void sendChatContents() {
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
+        String chatContents = chatInput.getText().trim();
+        if (chatContents.length() < 1) {
+            return;
+        }
+        flooHandler.untellij_msg(chatContents);
+        chatInput.setText("");
+        chatMessage(flooHandler.getUsername(flooHandler.getMyConnectionId()), chatContents, null);
     }
 
     public JPanel getChatPanel() {
@@ -52,6 +93,10 @@ public class ChatForm {
     }
 
     public void chatMessage(String username, String msg, Date messageDate) {
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
         addMessage(String.format("<html>%s%s</html>", stampMessage(username, messageDate), msg));
     }
 
@@ -64,6 +109,12 @@ public class ChatForm {
         if (when == null) {
             when = new Date();
         }
-        return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), nick);
+        String displayNick = nick;
+        if (!nick.equals("*error*") && !nick.equals("*status*")) {
+            JBColor color = Colors.getColorForUser(nick);
+            String rgba = Colors.getHex(color);
+            displayNick = String.format("<span style=\"background-color:%s;color:white;\">%s</span", rgba, nick);
+        }
+        return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), displayNick);
     }
 }

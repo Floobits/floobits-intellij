@@ -16,10 +16,11 @@ import java.util.*;
 public class ChatManager {
     protected FlooContext context;
     protected ToolWindow toolWindow;
-    protected ChatForm chatForm = new ChatForm();
+    protected ChatForm chatForm;
 
     public ChatManager (FlooContext context) {
        this.context = context;
+       chatForm = new ChatForm(context);
        this.createChatWindow(context.project);
     }
 
@@ -56,7 +57,7 @@ public class ChatManager {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                // Copy users so we don't modify the floohandler user list:
+                // Copy users so we don't modify the flooHandler user list:
                 HashMap<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
                 users.putAll(originalUsers);
 

@@ -67,7 +67,7 @@ public class FlooHandler extends BaseHandler {
     private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
-    private int user_id;
+    private int connectionId;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
@@ -75,12 +75,16 @@ public class FlooHandler extends BaseHandler {
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
     public AtomicBoolean isInUIThread = new AtomicBoolean(false);
 
-    String get_username(Integer user_id) {
+    public String getUsername(Integer user_id) {
         FlooUser user = users.get(user_id);
         if (user == null) {
             return "";
         }
         return user.username;
+    }
+
+    public int getMyConnectionId() {
+        return connectionId;
     }
 
     public void on_connect () {
@@ -175,8 +179,8 @@ public class FlooHandler extends BaseHandler {
                     readOnly = true;
                     context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.", false);
                 }
-                user_id = Integer.parseInt(ri.user_id);
-                Flog.info("Got roominfo with userId %d", user_id);
+                connectionId = Integer.parseInt(ri.user_id);
+                Flog.info("Got roominfo with userId %d", connectionId);
 
 
                 DotFloo.write(context.colabDir, url.toString());
@@ -338,7 +342,7 @@ public class FlooHandler extends BaseHandler {
         Perms res = new Gson().fromJson(obj, (Type) Perms.class);
 
         Boolean previousState = can("patch");
-        if (res.user_id != this.user_id) {
+        if (res.user_id != this.connectionId) {
             return;
         }
         HashSet perms = new HashSet<String>(Arrays.asList(res.perms));
@@ -491,7 +495,7 @@ public class FlooHandler extends BaseHandler {
                 }
                 final FileEditorManager manager = FileEditorManager.getInstance(context.project);
                 VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                String username = get_username(res.user_id);
+                String username = getUsername(res.user_id);
                 if (virtualFile != null) {
                     Boolean summon = false;
                     if (res.summon != null) {
@@ -671,7 +675,7 @@ public class FlooHandler extends BaseHandler {
         final int userId = requestPerms.user_id;
         final FlooUser u = users.get(userId);
         if (u == null) {
-            Flog.info("Unknown user for id %s. Not handling request_perms event. %d", user_id);
+            Flog.info("Unknown user for id %s. Not handling request_perms event. %d", connectionId);
             return;
         }
         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -944,6 +948,10 @@ public class FlooHandler extends BaseHandler {
         for (String filePath : filePaths) {
             untellij_deleted(filePath);
         }
+    }
+
+    public void untellij_msg(String chatContents) {
+        conn.write(new FlooMessage(chatContents));
     }
 
     public boolean can(String perm) {

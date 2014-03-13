@@ -32,6 +32,23 @@ public class Colors {
         return new JBColor(new Color(255,255,255,255),new Color(255,255,255,255));
     }
 
+    // http://sny.no/2011/11/java-hex
+    public static String getHex(JBColor color) {
+        return toHex(color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    public static String toHex(int r, int g, int b) {
+        return "#" + toBrowserHexValue(r) + toBrowserHexValue(g) + toBrowserHexValue(b);
+    }
+
+    private static String toBrowserHexValue(int number) {
+        StringBuilder builder = new StringBuilder(Integer.toHexString(number & 0xff));
+        while (builder.length() < 2) {
+            builder.append("0");
+        }
+        return builder.toString().toUpperCase();
+    }
+
     public static JBColor getColorForUser(String username) {
         int i = 0;
         for(char c : DigestUtils.md5Hex(username).toCharArray()) {
