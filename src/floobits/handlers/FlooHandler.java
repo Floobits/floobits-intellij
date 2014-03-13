@@ -57,6 +57,7 @@ public class FlooHandler extends BaseHandler {
             Flog.log("Spent %s in ui thread", l1 -l);
         }
     }
+    private final Runnable dequeueRunnable;
     public JsonObject lastHighlight;
     private Boolean shouldUpload = false;
     private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
@@ -73,7 +74,6 @@ public class FlooHandler extends BaseHandler {
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
-    public AtomicBoolean isInUIThread = new AtomicBoolean(false);
 
     public String getUsername(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -118,6 +118,20 @@ public class FlooHandler extends BaseHandler {
         super(context);
         url = flooUrl;
         this.shouldUpload = shouldUpload;
+        dequeueRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Flog.log("Doing %s work", queue.size());
+                while (true) {
+                    // TODO: set a limit here and continue later
+                    QueuedAction action = queue.poll();
+                    if (action == null) {
+                        return;
+                    }
+                    action.run();
+                }
+            }
+        };
     }
 
     public void go() {
@@ -291,28 +305,10 @@ public class FlooHandler extends BaseHandler {
         }
         QueuedAction queuedAction = new QueuedAction(buf, runnable);
         queue.add(queuedAction);
-        if (isInUIThread.get()) {
+        if (queue.size() > 1) {
             return;
         }
-        ThreadSafe.write(context, new Runnable() {
-            @Override
-            public void run() {
-                // this could be set above.... but its dangerous
-                isInUIThread.set(true);
-                try {
-                    Flog.log("Doing %s work", queue.size());
-                    while (true) {
-                        QueuedAction action = queue.poll();
-                        if (action == null) {
-                            return;
-                        }
-                        action.run();
-                    }
-                } finally {
-                    isInUIThread.set(false);
-                }
-            }
-        });
+        ThreadSafe.write(context, dequeueRunnable);
     }
 
     void _on_create_buf(JsonObject obj) {
@@ -799,10 +795,13 @@ public class FlooHandler extends BaseHandler {
     }
     public void send_get_buf (Integer buf_id) {
         Buf buf = bufs.get(buf_id);
-        if (buf != null) {
+        if (buf == null) {
+            return;
+        }
+        synchronized (buf) {
             buf.set(null, null);
         }
-        this.conn.write(new GetBuf(buf_id));
+        conn.write(new GetBuf(buf_id));
     }
 
     public void send_patch (String textPatch, String before_md5, TextBuf buf) {
