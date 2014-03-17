@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
 import floobits.common.Settings;
-import floobits.common.Utils;
 import floobits.utilities.Flog;
 
 import java.io.File;
@@ -29,12 +28,12 @@ public class OpenFloorc extends AnAction {
             try {
                 created = file.createNewFile();
             } catch (IOException e) {
-                floobitsPlugin.context.error_message("Can not create ~/.floorc");
+                floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
                 Flog.warn(e);
                 return;
             }
             if (!created) {
-                floobitsPlugin.context.error_message("Can not create ~/.floorc");
+                floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
                 return;
             }
             Settings settings = new Settings(floobitsPlugin.context);
@@ -43,7 +42,7 @@ public class OpenFloorc extends AnAction {
         }
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(Settings.floorcPath);
         if (virtualFile == null) {
-            floobitsPlugin.context.error_message("no virtual file");
+            floobitsPlugin.context.errorMessage("no virtual file");
             return;
         }
         OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);

@@ -282,7 +282,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         } else {
             return;
         }
-        context.status_message(msg);
+        context.statusMessage(msg, false);
         final Document document = event.getDocument();
         document.setReadOnly(true);
         flooHandler.readOnlyBufferIds.add(bufByPath.id);

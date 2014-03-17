@@ -32,7 +32,7 @@ public class FloobitsApplication implements ApplicationComponent {
         PersistentJson p = PersistentJson.getInstance();
         if (createAccount && !new Settings(context).isComplete()){
             if (p.disable_account_creation) {
-                context.status_message("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)");
+                context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
             } else {
                 createAccount = false;
                 CreateAccount createAccount1 = new CreateAccount(context);
@@ -49,7 +49,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, String location) {
         if (!API.workspaceExists(flooUrl, context)) {
-            context.error_message(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
             return;
         }
         Project projectForPath = getProject(location);
@@ -74,7 +74,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Exception e) {
-            context.error_message(String.format("Invalid url: %s", e));
+            context.errorMessage(String.format("Invalid url: %s", e));
             return;
         }
 

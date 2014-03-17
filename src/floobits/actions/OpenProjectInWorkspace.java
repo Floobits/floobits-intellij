@@ -42,6 +42,6 @@ public class OpenProjectInWorkspace extends CanFloobits {
                 }
             }
         }
-        context.error_message("This project doesn't seem to be associated with a Floobits workspace.");
+        context.errorMessage("This project doesn't seem to be associated with a Floobits workspace.");
     }
 }

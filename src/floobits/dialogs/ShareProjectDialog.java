@@ -33,7 +33,7 @@ public class ShareProjectDialog extends DialogWrapper {
         super(project, true);
 
         if (orgs.size() < 1 && project != null) {
-            Utils.error_message("Unable to share project, do you have a Floobits account?", project);
+            Utils.errorMessage("Unable to share project, do you have a Floobits account?", project);
             return;
         }
         this.runLater = runLater;

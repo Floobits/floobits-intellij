@@ -2,8 +2,6 @@ package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.FloobitsPlugin;
-import floobits.Listener;
 import floobits.utilities.Flog;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.ThreadSafe;
@@ -44,7 +42,7 @@ public class BinaryBuf extends Buf <byte[]> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Utils.error_message("Unable to write file.", context.project);
+                        Utils.errorMessage("Unable to write file.", context.project);
                         return;
                     }
                 }

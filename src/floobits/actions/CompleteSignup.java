@@ -24,11 +24,11 @@ public class CompleteSignup extends AnAction {
         }
         Settings settings = new Settings(FloobitsPlugin.getInstance(project).context);
         if (!settings.isComplete()) {
-            Utils.error_message("Error, no account details detected. You will have to sign up manually.", project);
+            Utils.errorMessage("Error, no account details detected. You will have to sign up manually.", project);
             return;
         }
         if(!Desktop.isDesktopSupported()) {
-            Utils.error_message("Can't use a browser on this system.", project);
+            Utils.errorMessage("Can't use a browser on this system.", project);
             return;
         }
         String username = settings.get("username");

@@ -78,6 +78,9 @@
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
       <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
       <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open Floorc (settings)"  description="Open your ~/.floorc "/>
+      <action id="floobits.actions.chat" class="floobits.actions.ChatAction" text="Chat" description="Chat with others in your workspace"/>
+      <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions" text="Request Edit Permissions"
+              description="Request edit permissions for a workspace, if you don&#39;t have them already."/>
 
       <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo-themed.png">
           <reference ref="floobits.actions.AddToWorkspace"/>
@@ -101,21 +104,14 @@
           <reference ref="floobits.actions.OpenWorkspaceInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
           <action id="floobits.actions.DeleteFromWorkspace2" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
+          <reference ref="floobits.actions.chat"/>
           <separator/>
           <reference ref="floobits.actions.CompleteSignUp"/>
           <separator/>
           <reference ref="floobits.actions.OpenFloorc"/>
+          <reference ref="floobits.actions.RequestEditPermissions"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
-      <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions"
-              text="Request Edit Permissions"
-              description="Request edit permissions for a workspace, if you don&#39;t have them already.">
-          <add-to-group group-id="Floobits" anchor="last"/>
-      </action>
-      <!--<action id="floobits.actions.chat" class="floobits.actions.ChatAction" text="Chat"-->
-              <!--description="Chat with others in your workspace">-->
-          <!--<add-to-group group-id="Floobits" anchor="first"/>-->
-      <!--</action>-->
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

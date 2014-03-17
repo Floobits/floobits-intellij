@@ -50,7 +50,7 @@ public class TextBuf extends Buf <String> {
         if (virtualFile == null) {
             virtualFile = createFile();
             if (virtualFile == null) {
-                Utils.error_message("The Floobits plugin was unable to write to a file.", context.project);
+                Utils.errorMessage("The Floobits plugin was unable to write to a file.", context.project);
                 return;
             }
         }
@@ -74,7 +74,7 @@ public class TextBuf extends Buf <String> {
             virtualFile.setBinaryContent(buf.getBytes());
         } catch (IOException e) {
             Flog.warn(e);
-            Utils.error_message("The Floobits plugin was unable to write to a file.", context.project);
+            Utils.errorMessage("The Floobits plugin was unable to write to a file.", context.project);
         }
     }
 
