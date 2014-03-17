@@ -8,7 +8,6 @@ import floobits.utilities.Flog;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.event.ActionEvent;
@@ -40,6 +39,7 @@ public class ChatForm {
         doc = new HTMLDocument();
         messages.setEditorKit(kit);
         messages.setDocument(doc);
+        messages.setEditable(false);
         try {
             kit.insertHTML(doc, doc.getLength(), "<style>body { color: #7f7f7f;}</style>", 0, 0, null);
         } catch (Exception e) {
