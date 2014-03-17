@@ -40,11 +40,9 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="d00f5" class="javax.swing.JList" binding="messages">
+                  <component id="2db3b" class="javax.swing.JTextPane" binding="messages">
                     <constraints/>
-                    <properties>
-                      <enabled value="false"/>
-                    </properties>
+                    <properties/>
                   </component>
                 </children>
               </scrollpane>

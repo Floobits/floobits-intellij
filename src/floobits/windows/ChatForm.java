@@ -2,36 +2,49 @@ package floobits.windows;
 
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
-import floobits.common.Utils;
 import floobits.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ChatForm {
     private JPanel chatPanel;
-    private JList messages;
-    private DefaultListModel messagesModel = new DefaultListModel();
     private DefaultListModel clientModel = new DefaultListModel();
     private JList clients;
     private JScrollPane messagesScrollPane;
     private JButton chatButton;
     private JTextField chatInput;
+    private JTextPane messages;
+    private HTMLEditorKit kit;
+    private HTMLDocument doc;
     private FlooContext context;
     private boolean shouldScrollToBottom;
 
     public ChatForm (FlooContext context) {
         super();
         this.context = context;
-        messages.setModel(messagesModel);
         clients.setModel(clientModel);
+        kit = new HTMLEditorKit();
+        doc = new HTMLDocument();
+        messages.setEditorKit(kit);
+        messages.setDocument(doc);
+        try {
+            kit.insertHTML(doc, doc.getLength(), "<style>body { color: #7f7f7f;}</style>", 0, 0, null);
+        } catch (Exception e) {
+            Flog.warn("Couldn't insert initial HTML into chat %s.", e.toString());
+        }
         messagesScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 if (shouldScrollToBottom) {
@@ -83,12 +96,12 @@ public class ChatForm {
     }
 
     public void statusMessage(String message) {
-        String messageFormat = "<html>%s<b><i><span style=\"color:green\">%s</span></i></b></html>";
+        String messageFormat = "%s<b><i><span style=\"color:green\">%s</span></i></b><br/>";
         addMessage(String.format(messageFormat, stampMessage("*status*", null), message));
     }
 
     public void errorMessage(String message) {
-        String messageFormat = "<html>%s<b><i><span style=\"color:red\">%s</span></i></b></html>";
+        String messageFormat = "%s<b><i><span style=\"color:red\">%s</span></i></b><br/>";
         addMessage(String.format(messageFormat, stampMessage("*error*", null), message));
     }
 
@@ -97,12 +110,18 @@ public class ChatForm {
         if (flooHandler == null) {
             return;
         }
-        addMessage(String.format("<html>%s%s</html>", stampMessage(username, messageDate), msg));
+        addMessage(String.format("%s%s<br/>", stampMessage(username, messageDate), msg));
     }
 
     protected void addMessage(String msg) {
         shouldScrollToBottom = true;
-        messagesModel.addElement(msg);
+        try {
+            kit.insertHTML(doc, doc.getLength(), msg, 0, 0, null);
+        } catch (IOException e) {
+            Flog.warn("Was unable to add message to chat: %s at %d because %s", msg, doc.getLength(), e.toString());
+        } catch (BadLocationException e) {
+            Flog.warn("Was unable to add message to chat: %s at %d because %s", msg, doc.getLength(), e.toString());
+        }
     }
 
     protected String stampMessage(String nick, Date when) {
@@ -113,7 +132,7 @@ public class ChatForm {
         if (!nick.equals("*error*") && !nick.equals("*status*")) {
             JBColor color = Colors.getColorForUser(nick);
             String rgba = Colors.getHex(color);
-            displayNick = String.format("<span style=\"background-color:%s;color:white;\">%s</span", rgba, nick);
+            displayNick = String.format(" <span style=\"background-color:%s;color:white;\">&nbsp;</span> %s ", rgba, nick);
         }
         return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), displayNick);
     }
