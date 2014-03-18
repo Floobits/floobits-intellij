@@ -793,6 +793,7 @@ public class FlooHandler extends BaseHandler {
     void _on_ping(JsonObject jsonObject) {
         conn.write(new Pong());
     }
+
     public void send_get_buf (Integer buf_id) {
         Buf buf = bufs.get(buf_id);
         if (buf == null) {
