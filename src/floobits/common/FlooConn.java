@@ -117,7 +117,7 @@ public class FlooConn extends Thread {
         if (requestName.equals("pong")) {
             if (timeout != null) timeout.cancel();
 
-            timeout = handler.context.setTimeout(1000, new Runnable() {
+            timeout = handler.context.setTimeout(5000, new Runnable() {
                 @Override
                 public void run() {
                     setTimeout();
