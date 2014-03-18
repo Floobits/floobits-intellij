@@ -1,7 +1,6 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.handlers.FlooHandler;
 
@@ -11,7 +10,7 @@ public class RequestEditPermissions extends IsJoinedAction {
         flooHandler.sendEditRequest();
     }
 
-    protected boolean is_visible(FloobitsPlugin floobitsPlugin) {
+    protected boolean isVisible(FloobitsPlugin floobitsPlugin) {
         FlooHandler flooHandler = floobitsPlugin.context.getFlooHandler();
         return flooHandler != null && !flooHandler.can("patch") && flooHandler.can("request_perms");
 
