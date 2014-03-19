@@ -26,3 +26,20 @@ Questions? Join us on IRC on Freenode in #floobits.
 <a href="https://floobits.com/Floobits/intellij-plugin/redirect">
   <img alt="Floobits status" width="80" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
 </a>
+
+
+#### Making changes to common
+
+Changes in "common" are shared across IDEs (like Eclipse). Changes there should be pushed to the git subtree.
+
+To set up the git subtree for common:
+
+```
+git remote add -f common git@github.com:Floobits/plugin-java-common.git
+```
+
+Pushing changes for common:
+
+```
+git subtree push --prefix=src/floobits/common common master
+```
