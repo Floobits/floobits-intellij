@@ -14,7 +14,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;

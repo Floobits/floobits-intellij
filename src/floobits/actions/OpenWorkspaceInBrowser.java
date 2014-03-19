@@ -2,7 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.utilities.Flog;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 
 import java.awt.*;
 import java.io.IOException;

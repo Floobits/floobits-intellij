@@ -19,7 +19,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.Buf;
 import floobits.common.Ignore;
 import floobits.common.Utils;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import floobits.utilities.ThreadSafe;

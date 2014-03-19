@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.common.Utils;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 
 import java.util.ArrayList;
 import java.util.HashSet;

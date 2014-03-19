@@ -1,7 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 
 public class ClearHighlights extends IsJoinedAction {
     @Override

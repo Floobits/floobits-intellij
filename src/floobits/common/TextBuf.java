@@ -3,12 +3,12 @@ package floobits.common;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
-import dmp.FlooDmp;
-import dmp.FlooPatchPosition;
-import dmp.diff_match_patch;
+import floobits.common.dmp.FlooDmp;
+import floobits.common.dmp.FlooPatchPosition;
+import floobits.common.dmp.diff_match_patch;
 import floobits.FlooContext;
 import floobits.common.protocol.FlooPatch;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.digest.DigestUtils;
 

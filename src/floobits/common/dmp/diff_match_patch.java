@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package dmp;
+package floobits.common.dmp;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

@@ -29,6 +29,7 @@ public class ChatManager {
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
+        toolWindow.setTitle("fdafafsdasfs");
     }
 
     public void openChat() {

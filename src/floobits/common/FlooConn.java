@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import floobits.handlers.BaseHandler;
+import floobits.common.handlers.BaseHandler;
 import floobits.utilities.Flog;
 
 import javax.net.ssl.SSLContext;

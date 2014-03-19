@@ -2,7 +2,7 @@ package floobits.windows;
 
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 

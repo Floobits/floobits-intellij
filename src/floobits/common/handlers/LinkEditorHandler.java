@@ -1,4 +1,4 @@
-package floobits.handlers;
+package floobits.common.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

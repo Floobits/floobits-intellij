@@ -1,4 +1,4 @@
-package dmp;
+package floobits.common.dmp;
 
 public class FlooPatchPosition {
     public int start;

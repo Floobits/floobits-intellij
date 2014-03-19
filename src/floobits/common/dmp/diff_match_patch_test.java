@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package dmp;
+package floobits.common.dmp;
 
 import junit.framework.TestCase;
 
@@ -28,9 +28,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import dmp.diff_match_patch.Diff;
-import dmp.diff_match_patch.LinesToCharsResult;
-import dmp.diff_match_patch.Patch;
+import floobits.common.dmp.diff_match_patch.Diff;
+import floobits.common.dmp.diff_match_patch.LinesToCharsResult;
+import floobits.common.dmp.diff_match_patch.Patch;
 
 public class diff_match_patch_test extends TestCase {
 

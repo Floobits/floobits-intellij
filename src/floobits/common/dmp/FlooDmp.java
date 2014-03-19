@@ -1,4 +1,4 @@
-package dmp;
+package floobits.common.dmp;
 
 import java.util.LinkedList;
 

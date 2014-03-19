@@ -3,7 +3,7 @@ package floobits.common;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
-import floobits.handlers.FlooHandler;
+import floobits.common.handlers.FlooHandler;
 import floobits.utilities.ThreadSafe;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.binary.Base64;

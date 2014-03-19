@@ -1,4 +1,4 @@
-package floobits.handlers;
+package floobits.common.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -35,7 +35,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class FlooHandler extends BaseHandler {
