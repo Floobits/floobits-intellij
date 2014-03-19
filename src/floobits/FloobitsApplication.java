@@ -61,6 +61,7 @@ public class FloobitsApplication implements ApplicationComponent {
         } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
+
         Window window = WindowManager.getInstance().suggestParentWindow(context.project);
         if (window != null) {
             window.toFront();
