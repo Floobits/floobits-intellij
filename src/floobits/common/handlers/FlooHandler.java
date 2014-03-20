@@ -297,9 +297,9 @@ public class FlooHandler extends BaseHandler {
                 b.set(res.buf, res.md5);
                 b.write();
                 Flog.info("on get buffed. %s", b.path);
-                if (ideaBufs.size() > 0 && ideaBufs.contains(b.id)) {
+                if (ideaBufs.contains(b.id)) {
                     ideaBufs.remove(b.id);
-                    if (ideaBufs.size() == 0) {
+                    if (ideaBufs.isEmpty()) {
 //                        ProjectManager.getInstance().reloadProject(context.project);
                         SaveAndSyncHandlerImpl.refreshOpenFiles();
                         VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
