@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,11 +16,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Added request permission capability.
-          Can respond to permission requests.
-          Added a chat view.
-          Fixed various null pointer issues.
-          Fixed issues with freezing the UI while connected to a workspace.
+          Added icon to chat window.
     ]]>
   </change-notes>
 
