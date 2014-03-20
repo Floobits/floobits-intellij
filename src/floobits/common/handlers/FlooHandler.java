@@ -2,16 +2,14 @@ package floobits.common.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.intellij.ide.SaveAndSyncHandlerImpl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.ReadonlyStatusHandler;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
 import floobits.Listener;
@@ -72,6 +70,7 @@ public class FlooHandler extends BaseHandler {
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
+    private HashSet<Integer> ideaBufs = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
 
     public String getUsername(Integer user_id) {
@@ -141,6 +140,7 @@ public class FlooHandler extends BaseHandler {
         conn = new FlooConn(this);
         conn.start();
         listener.start();
+//        ProjectManagerEx.getInstanceEx().blockReloadingProjectOnExternalChanges();
     }
 
     public Buf get_buf_by_path(String absPath) {
@@ -249,6 +249,7 @@ public class FlooHandler extends BaseHandler {
                 if (conflictedPaths.size() <= 0) {
                     return;
                 }
+                final String ideaPath = context.project.getProjectFile().getParent().getPath();
                 String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
                 ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
                         new RunLater<Void>() {
@@ -258,6 +259,9 @@ public class FlooHandler extends BaseHandler {
                                     send_get_buf(buf.id);
                                 }
                                 for (Buf buf : missing) {
+                                    if (Utils.isChild(context.absPath(buf.path), ideaPath)) {
+                                        ideaBufs.add(buf.id);
+                                    }
                                     send_get_buf(buf.id);
                                 }
                             }
@@ -293,6 +297,15 @@ public class FlooHandler extends BaseHandler {
                 b.set(res.buf, res.md5);
                 b.write();
                 Flog.info("on get buffed. %s", b.path);
+                if (ideaBufs.contains(b.id)) {
+                    ideaBufs.remove(b.id);
+                    if (ideaBufs.isEmpty()) {
+//                        ProjectManager.getInstance().reloadProject(context.project);
+                        SaveAndSyncHandlerImpl.refreshOpenFiles();
+                        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
+//                        ProjectManagerEx.getInstanceEx().unblockReloadingProjectOnExternalChanges();
+                    }
+                }
             }
         });
     }
