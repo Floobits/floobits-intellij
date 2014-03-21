@@ -4,9 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
@@ -70,12 +67,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
-                if (floorc == null) {
-                    return false;
-                }
-                FileEditorManager.getInstance(context.project).openFile(floorc, true);
-                return false;
+                return context.openFile(new File(Settings.floorcPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));

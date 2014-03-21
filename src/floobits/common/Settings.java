@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
@@ -13,10 +12,10 @@ import org.apache.commons.io.FilenameUtils;
 public class Settings {
     protected HashMap<String, String> settings;
     public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
-    private Project project;
+    private FlooContext context;
 
     public Settings(FlooContext context) {
-        project = context != null ? context .project : null;
+        this.context = context;
         BufferedReader br;
         this.settings = new HashMap<String, String>();
         try {
@@ -51,15 +50,15 @@ public class Settings {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
+            context.errorMessage("Can't write new .floorc");
             return;
         }
         try {
             writer = new PrintWriter(file, "UTF-8");
         } catch (FileNotFoundException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
+            context.errorMessage("Can't write new .floorc");
         } catch (UnsupportedEncodingException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
+            context.errorMessage("Can't write new .floorc");
         }
         for (Map.Entry<String, String> setting : this.settings.entrySet()) {
             writer.println(String.format("%s %s", setting.getKey(), setting.getValue()));

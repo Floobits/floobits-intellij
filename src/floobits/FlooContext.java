@@ -1,7 +1,9 @@
 package floobits;
 
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
@@ -36,6 +38,7 @@ public class FlooContext {
 
     public FlooContext(Project project) {
         this.project = project;
+
     }
 
     public Timeout setTimeout(int time, final Runnable runnable) {
@@ -45,6 +48,15 @@ public class FlooContext {
         Timeout timeout = new Timeout(time, runnable);
         timeouts.setTimeout(timeout);
         return timeout;
+    }
+
+    public boolean openFile(File file) {
+        VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(file);
+        if (floorc == null) {
+            return false;
+        }
+        FileEditorManager.getInstance(this.project).openFile(floorc, true);
+        return true;
     }
 
     public void loadChatManager() {
