@@ -140,7 +140,6 @@ public class FlooHandler extends BaseHandler {
         conn = new FlooConn(this);
         conn.start();
         listener.start();
-//        ProjectManagerEx.getInstanceEx().blockReloadingProjectOnExternalChanges();
     }
 
     public Buf get_buf_by_path(String absPath) {
@@ -300,10 +299,8 @@ public class FlooHandler extends BaseHandler {
                 if (ideaBufs.contains(b.id)) {
                     ideaBufs.remove(b.id);
                     if (ideaBufs.isEmpty()) {
-//                        ProjectManager.getInstance().reloadProject(context.project);
                         SaveAndSyncHandlerImpl.refreshOpenFiles();
                         VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
-//                        ProjectManagerEx.getInstanceEx().unblockReloadingProjectOnExternalChanges();
                     }
                 }
             }

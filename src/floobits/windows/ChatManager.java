@@ -2,12 +2,15 @@ package floobits.windows;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import floobits.FlooContext;
+import floobits.common.FlooUrl;
+import floobits.common.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 
 import java.util.*;
@@ -27,13 +30,19 @@ public class ChatManager {
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
+        toolWindow.setIcon(IconLoader.getIcon("/icons/floo.png"));
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
-        toolWindow.setTitle("fdafafsdasfs");
     }
 
     public void openChat() {
         toolWindow.show(null);
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
+        FlooUrl url = flooHandler.getUrl();
+        toolWindow.setTitle(String.format("- %s", url.toString()));
     }
 
     public void closeChat() {
