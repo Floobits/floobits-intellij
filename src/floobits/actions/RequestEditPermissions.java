@@ -10,7 +10,10 @@ public class RequestEditPermissions extends IsJoinedAction {
         flooHandler.sendEditRequest();
     }
 
-    protected boolean isVisible(FloobitsPlugin floobitsPlugin) {
+    protected boolean isEnabled(FloobitsPlugin floobitsPlugin) {
+        if (!super.isEnabled(floobitsPlugin)) {
+            return false;
+        }
         FlooHandler flooHandler = floobitsPlugin.context.getFlooHandler();
         return flooHandler != null && !flooHandler.can("patch") && flooHandler.can("request_perms");
 

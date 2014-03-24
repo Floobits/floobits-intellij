@@ -27,11 +27,10 @@ public abstract class IsJoinedAction extends AnAction {
         if (floobitsPlugin == null) {
             return;
         }
-        e.getPresentation().setEnabled(floobitsPlugin.context.isJoined());
-        e.getPresentation().setVisible(isVisible(floobitsPlugin));
+        e.getPresentation().setEnabled(isEnabled(floobitsPlugin));
     }
 
-    protected boolean isVisible(FloobitsPlugin floobitsPlugin) {
-        return true;
+    protected boolean isEnabled(FloobitsPlugin floobitsPlugin) {
+        return floobitsPlugin.context.isJoined();
     }
 }
