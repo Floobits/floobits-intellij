@@ -8,6 +8,7 @@ import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
+import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -47,26 +48,31 @@ public class FloobitsApplication implements ApplicationComponent {
         return "FloobitsApplication";
     }
 
-    public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, String location) {
+    public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
         if (!API.workspaceExists(flooUrl, context)) {
             context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
             return;
         }
         Project projectForPath = getProject(location);
         if (projectForPath == null) {
-            if (context.isJoined()) {
-                projectForPath = createProject(location, flooUrl.workspace);
-                context = FloobitsPlugin.getInstance(projectForPath).context;
-            }
+            projectForPath = createProject(location, flooUrl.workspace);
+            context = FloobitsPlugin.getInstance(projectForPath).context;
         } else if (projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
-
-        Window window = WindowManager.getInstance().suggestParentWindow(context.project);
-        if (window != null) {
-            window.toFront();
-        }
-        context.joinWorkspace(flooUrl, location, false);
+        // not gonna work here
+        final FlooContext finalContext = context;
+        ThreadSafe.write(context, new Runnable() {
+            @Override
+            public void run() {
+                finalContext.project.save();
+                Window window = WindowManager.getInstance().suggestParentWindow(finalContext.project);
+                if (window != null) {
+                    window.toFront();
+                }
+                finalContext.joinWorkspace(flooUrl, location, false);
+            }
+        });
     }
 
     public void joinWorkspace(final FlooContext context, final String url) {
@@ -132,8 +138,15 @@ public class FloobitsApplication implements ApplicationComponent {
         ProjectManager pm = ProjectManager.getInstance();
         // Create project
         Project project = pm.createProject(name, path);
+        if (project == null) {
+            return null;
+        }
+        // TODO: does this ever actually happen?
+        if (project.isOpen()) {
+            return project;
+        }
         try {
-            ProjectManager.getInstance().loadAndOpenProject(path);
+            return ProjectManager.getInstance().loadAndOpenProject(path);
         } catch (Exception e) {
             Flog.warn(e);
         }

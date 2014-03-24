@@ -248,7 +248,9 @@ public class FlooHandler extends BaseHandler {
                 if (conflictedPaths.size() <= 0) {
                     return;
                 }
-                final String ideaPath = context.project.getProjectFile().getParent().getPath();
+
+                // XXXX: If this name ever changes, we are screwed
+                final String ideaPath = FilenameUtils.concat(Constants.baseDir, ".idea");
                 String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
                 ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
                         new RunLater<Void>() {
