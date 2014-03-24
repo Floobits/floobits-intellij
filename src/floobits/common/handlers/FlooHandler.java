@@ -838,6 +838,7 @@ public class FlooHandler extends BaseHandler {
         }
         Buf buf = this.get_buf_by_path(current);
         if (Buf.isBad(buf)) {
+            context.errorMessage(String.format("The file %s is not shared!", current));
             return;
         }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
