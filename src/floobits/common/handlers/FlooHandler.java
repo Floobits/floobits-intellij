@@ -9,6 +9,12 @@ import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.options.newEditor.OptionsEditorDialog;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.vfs.*;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
@@ -36,6 +42,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class FlooHandler extends BaseHandler {
+
+    private final Project project;
 
     class QueuedAction {
         public final Buf buf;
@@ -112,7 +120,7 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
+    public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
         url = flooUrl;
         this.shouldUpload = shouldUpload;
@@ -130,6 +138,24 @@ public class FlooHandler extends BaseHandler {
                 }
             }
         };
+        this.project = context.project;
+        if (ProjectRootManager.getInstance(this.project).getProjectSdk() == null) {
+            context.setTimeout(0, new Runnable() {
+                @Override
+                public void run() {
+                    ThreadSafe.read(new Runnable() {
+                        @Override
+                        public void run() {
+                            context.errorMessage("Select a SDK for the project");
+                            ShowSettingsUtil.getInstance().editConfigurable(project, OptionsEditorDialog.DIMENSION_KEY, ProjectStructureConfigurable.getInstance(project));
+                            if (ProjectRootManager.getInstance(project).getProjectSdk() == null) {
+                                context.errorMessage("You must select a SDK for the project before Intellij will let you do anything sane.");
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
 
     public void go() {
