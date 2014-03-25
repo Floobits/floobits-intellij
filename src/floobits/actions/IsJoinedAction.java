@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.common.handlers.FlooHandler;
+import floobits.utilities.Flog;
 
 public abstract class IsJoinedAction extends AnAction {
 
@@ -12,8 +13,12 @@ public abstract class IsJoinedAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        FlooContext instance = FloobitsPlugin.getInstance(e.getProject()).context;
-        FlooHandler flooHandler = instance.getFlooHandler();
+        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        if (floobitsPlugin == null) {
+            Flog.log("no floobits plugin, aborting.");
+            return;
+        }
+        FlooHandler flooHandler = floobitsPlugin.context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
