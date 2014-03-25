@@ -102,6 +102,9 @@
           <reference ref="floobits.actions.RequestEditPermissions"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
+      <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Floobits Join Workspace" icon="/icons/floo.png">
+          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="first"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

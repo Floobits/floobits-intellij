@@ -14,6 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.net.URI;
 
+class FakeContext extends FlooContext {
+
+    public FakeContext() {
+        super(null);
+    }
+}
+
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
     private Boolean createAccount = true;
@@ -46,6 +53,38 @@ public class FloobitsApplication implements ApplicationComponent {
     @NotNull
     public String getComponentName() {
         return "FloobitsApplication";
+    }
+
+    public void joinWorkspace(final String url) {
+        final FlooUrl f;
+        try {
+            f = new FlooUrl(url);
+        } catch (Exception e) {
+            Utils.errorMessage(String.format("Invalid url: %s", e), null);
+            return;
+        }
+        SelectFolder.build(new RunLater<String>() {
+            @Override
+            public void run(final String location) {
+                Project projectForPath = getProject(location);
+                if (projectForPath == null) {
+                    projectForPath = createProject(location, f.workspace);
+                }
+                final FlooContext context = FloobitsPlugin.getInstance(projectForPath).context;
+                ThreadSafe.write(context, new Runnable() {
+                    @Override
+                    public void run() {
+                        context.project.save();
+                        Window window = WindowManager.getInstance().suggestParentWindow(context.project);
+                        if (window != null) {
+                            window.toFront();
+                        }
+                        context.joinWorkspace(f, location, false);
+                    }
+                });
+            }
+        });
+
     }
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
@@ -81,7 +120,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Exception e) {
-            context.errorMessage(String.format("Invalid url: %s", e));
+            Utils.errorMessage(String.format("Invalid url: %s", e), context.project);
             return;
         }
 
@@ -134,6 +173,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
         return null;
     }
+
     private Project createProject(String path, String name) {
         ProjectManager pm = ProjectManager.getInstance();
         // Create project
@@ -152,4 +192,4 @@ public class FloobitsApplication implements ApplicationComponent {
         }
         return project;
     }
-}
+        }

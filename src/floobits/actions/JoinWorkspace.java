@@ -14,7 +14,11 @@ public class JoinWorkspace extends CanFloobits {
 
     public void actionPerformed(AnActionEvent e) {
         String url = "https://floobits.com/";
-        FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        if (floobitsPlugin == null) {
+            return;
+        }
+        FlooContext context = floobitsPlugin.context;
         FlooUrl floourl = DotFloo.read(context.project.getBasePath());
         if (floourl != null) {
             url = floourl.toString();
