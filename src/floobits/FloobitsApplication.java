@@ -14,13 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.net.URI;
 
-class FakeContext extends FlooContext {
-
-    public FakeContext() {
-        super(null);
-    }
-}
-
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
     private Boolean createAccount = true;
