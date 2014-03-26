@@ -94,9 +94,6 @@ public class PersistentJson {
             Flog.warn("Bad JSON in persistent json");
             pj = new Gson().fromJson(defaultJSON, (Type) PersistentJson.class);
         }
-        if (pj == null) {
-            pj = new Gson().fromJson(defaultJSON, (Type) PersistentJson.class);
-        }
         return pj;
     }
 }

@@ -764,8 +764,8 @@ public class FlooHandler extends BaseHandler {
         isJoined = false;
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
-            context.errorMessage(reason);
-            context.flashMessage(reason);
+            context.errorMessage(String.format("You have been disconnected from the workspace because %s", reason));
+            context.flashMessage("You have been disconnected from the workspace.");
         } else {
             context.statusMessage("You have left the workspace", false);
         }
