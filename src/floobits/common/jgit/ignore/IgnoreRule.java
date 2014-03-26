@@ -40,10 +40,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.eclipse.jgit.ignore;
+package floobits.common.jgit.ignore;
 
-import org.eclipse.jgit.errors.InvalidPatternException;
-import org.eclipse.jgit.fnmatch.FileNameMatcher;
+import floobits.common.jgit.errors.InvalidPatternException;
+import floobits.common.jgit.fnmatch.FileNameMatcher;
 
 /**
  * A single ignore rule corresponding to one line in a .gitignore or

@@ -42,7 +42,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.fnmatch;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,8 +51,8 @@ import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jgit.errors.InvalidPatternException;
-import org.eclipse.jgit.errors.NoClosingBracketException;
+import floobits.common.jgit.errors.InvalidPatternException;
+import floobits.common.jgit.errors.NoClosingBracketException;
 
 /**
  * This class can be used to match filenames against fnmatch like patterns. It

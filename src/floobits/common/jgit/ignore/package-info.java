@@ -1,4 +1,4 @@
 /**
  * Ignore rule parser/matcher (for .gitignore entries).
  */
-package org.eclipse.jgit.ignore;
+package floobits.common.jgit.ignore;

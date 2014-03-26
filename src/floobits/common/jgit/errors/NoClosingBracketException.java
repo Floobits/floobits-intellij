@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 2008, Florian Koeberle <florianskarten@web.de>
  * Copyright (C) 2008, Florian Köberle <florianskarten@web.de>
+ * Copyright (C) 2009, Vasyl' Vavrychuk <vvavrychuk@gmail.com>
+ * Copyright (C) 2009, Yann Simon <yann.simon.fr@gmail.com>
  * and other copyright owners as documented in the project's IP log.
  *
  * This program and the accompanying materials are made available
@@ -42,18 +44,40 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.errors;
 
-final class RestrictedWildCardHead extends AbstractHead {
-	private final char excludedCharacter;
+import java.text.MessageFormat;
 
-	RestrictedWildCardHead(final char excludedCharacter, final boolean star) {
-		super(star);
-		this.excludedCharacter = excludedCharacter;
+import floobits.common.jgit.internal.JGitText;
+
+/**
+ * Thrown when a pattern contains a character group which is open to the right
+ * side or a character class which is open to the right side.
+ */
+public class NoClosingBracketException extends InvalidPatternException {
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @param indexOfOpeningBracket
+	 *            the position of the [ character which has no ] character.
+	 * @param openingBracket
+	 *            the unclosed bracket.
+	 * @param closingBracket
+	 *            the missing closing bracket.
+	 * @param pattern
+	 *            the invalid pattern.
+	 */
+	public NoClosingBracketException(final int indexOfOpeningBracket,
+			final String openingBracket, final String closingBracket,
+			final String pattern) {
+		super(createMessage(indexOfOpeningBracket, openingBracket,
+				closingBracket), pattern);
 	}
 
-	@Override
-	protected final boolean matches(final char c) {
-		return c != excludedCharacter;
+	private static String createMessage(final int indexOfOpeningBracket,
+			final String openingBracket, final String closingBracket) {
+		return MessageFormat.format(JGitText.get().noClosingBracket,
+				closingBracket, openingBracket,
+				Integer.valueOf(indexOfOpeningBracket));
 	}
 }

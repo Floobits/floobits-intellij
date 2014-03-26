@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2008, Florian Koeberle <florianskarten@web.de>
- * Copyright (C) 2008, Florian Köberle <florianskarten@web.de>
+ * Copyright (C) 2010, 2013 Sasa Zivkov <sasa.zivkov@sap.com>
+ * Copyright (C) 2012, Research In Motion Limited
  * and other copyright owners as documented in the project's IP log.
  *
  * This program and the accompanying materials are made available
@@ -42,22 +42,23 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.internal;
 
-import java.util.List;
-
-final class LastHead implements Head {
-	static final Head INSTANCE = new LastHead();
+/**
+ * Translation bundle for JGit core
+ */
+public class JGitText {
 
 	/**
-	 * Don't call this constructor, use {@link #INSTANCE}
+	 * @return an instance of this translation bundle
 	 */
-	private LastHead() {
-		// defined because of javadoc and visibility modifier.
+	public static JGitText get() {
+		return new JGitText();
 	}
 
-	public List<Head> getNextHeads(char c) {
-		return FileNameMatcher.EMPTY_HEAD_LIST;
-	}
+	// @formatter:off
+	/***/ public String characterClassIsNotSupported = "Character class is not supported: %s";
+	/***/ public String noClosingBracket = "No closing bracket: %s, %s, %s";
+	/***/ public String propertyIsAlreadyNonNull = "Property is already not null!";
 
 }

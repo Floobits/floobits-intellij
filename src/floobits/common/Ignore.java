@@ -6,8 +6,8 @@ import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.eclipse.jgit.ignore.IgnoreNode;
-import org.eclipse.jgit.ignore.IgnoreRule;
+import floobits.common.jgit.ignore.IgnoreNode;
+import floobits.common.jgit.ignore.IgnoreRule;
 
 import java.io.File;
 import java.io.IOException;

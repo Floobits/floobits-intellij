@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2008, Florian Koeberle <florianskarten@web.de>
  * Copyright (C) 2008, Florian Köberle <florianskarten@web.de>
- * Copyright (C) 2009, Vasyl' Vavrychuk <vvavrychuk@gmail.com>
  * and other copyright owners as documented in the project's IP log.
  *
  * This program and the accompanying materials are made available
@@ -43,33 +42,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.errors;
+package floobits.common.jgit.fnmatch;
 
-/**
- * Thrown when a pattern passed in an argument was wrong.
- *
- */
-public class InvalidPatternException extends Exception {
-	private static final long serialVersionUID = 1L;
+final class CharacterHead extends AbstractHead {
+	private final char expectedCharacter;
 
-	private final String pattern;
-
-	/**
-	 * @param message
-	 *            explains what was wrong with the pattern.
-	 * @param pattern
-	 *            the invalid pattern.
-	 */
-	public InvalidPatternException(String message, String pattern) {
-		super(message);
-		this.pattern = pattern;
+	protected CharacterHead(final char expectedCharacter) {
+		super(false);
+		this.expectedCharacter = expectedCharacter;
 	}
 
-	/**
-	 * @return the invalid pattern.
-	 */
-	public String getPattern() {
-		return pattern;
+	@Override
+	protected final boolean matches(final char c) {
+		return c == expectedCharacter;
 	}
 
 }

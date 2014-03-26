@@ -42,11 +42,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.fnmatch;
 
 import java.util.List;
 
-import org.eclipse.jgit.internal.JGitText;
+import floobits.common.jgit.internal.JGitText;
 
 abstract class AbstractHead implements Head {
 	private List<Head> newHeads = null;

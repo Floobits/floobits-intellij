@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010, 2013 Sasa Zivkov <sasa.zivkov@sap.com>
- * Copyright (C) 2012, Research In Motion Limited
+ * Copyright (C) 2008, Florian Koeberle <florianskarten@web.de>
+ * Copyright (C) 2008, Florian Köberle <florianskarten@web.de>
  * and other copyright owners as documented in the project's IP log.
  *
  * This program and the accompanying materials are made available
@@ -42,23 +42,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.internal;
+package floobits.common.jgit.fnmatch;
 
-/**
- * Translation bundle for JGit core
- */
-public class JGitText {
+import java.util.List;
 
+interface Head {
 	/**
-	 * @return an instance of this translation bundle
+	 *
+	 * @param c
+	 *            the character which decides which heads are returned.
+	 * @return a list of heads based on the input.
 	 */
-	public static JGitText get() {
-		return new JGitText();
-	}
-
-	// @formatter:off
-	/***/ public String characterClassIsNotSupported = "Character class is not supported: %s";
-	/***/ public String noClosingBracket = "No closing bracket: %s, %s, %s";
-	/***/ public String propertyIsAlreadyNonNull = "Property is already not null!";
-
+	public abstract List<Head> getNextHeads(char c);
 }

@@ -42,15 +42,22 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.fnmatch;
 
-final class WildCardHead extends AbstractHead {
-	WildCardHead(boolean star) {
-		super(star);
+import java.util.List;
+
+final class LastHead implements Head {
+	static final Head INSTANCE = new LastHead();
+
+	/**
+	 * Don't call this constructor, use {@link #INSTANCE}
+	 */
+	private LastHead() {
+		// defined because of javadoc and visibility modifier.
 	}
 
-	@Override
-	protected final boolean matches(final char c) {
-		return true;
+	public List<Head> getNextHeads(char c) {
+		return FileNameMatcher.EMPTY_HEAD_LIST;
 	}
+
 }

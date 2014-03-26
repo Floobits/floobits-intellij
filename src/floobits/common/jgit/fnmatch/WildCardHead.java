@@ -1,8 +1,6 @@
 /*
  * Copyright (C) 2008, Florian Koeberle <florianskarten@web.de>
  * Copyright (C) 2008, Florian Köberle <florianskarten@web.de>
- * Copyright (C) 2009, Vasyl' Vavrychuk <vvavrychuk@gmail.com>
- * Copyright (C) 2009, Yann Simon <yann.simon.fr@gmail.com>
  * and other copyright owners as documented in the project's IP log.
  *
  * This program and the accompanying materials are made available
@@ -44,40 +42,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.errors;
+package floobits.common.jgit.fnmatch;
 
-import java.text.MessageFormat;
-
-import org.eclipse.jgit.internal.JGitText;
-
-/**
- * Thrown when a pattern contains a character group which is open to the right
- * side or a character class which is open to the right side.
- */
-public class NoClosingBracketException extends InvalidPatternException {
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * @param indexOfOpeningBracket
-	 *            the position of the [ character which has no ] character.
-	 * @param openingBracket
-	 *            the unclosed bracket.
-	 * @param closingBracket
-	 *            the missing closing bracket.
-	 * @param pattern
-	 *            the invalid pattern.
-	 */
-	public NoClosingBracketException(final int indexOfOpeningBracket,
-			final String openingBracket, final String closingBracket,
-			final String pattern) {
-		super(createMessage(indexOfOpeningBracket, openingBracket,
-				closingBracket), pattern);
+final class WildCardHead extends AbstractHead {
+	WildCardHead(boolean star) {
+		super(star);
 	}
 
-	private static String createMessage(final int indexOfOpeningBracket,
-			final String openingBracket, final String closingBracket) {
-		return MessageFormat.format(JGitText.get().noClosingBracket,
-				closingBracket, openingBracket,
-				Integer.valueOf(indexOfOpeningBracket));
+	@Override
+	protected final boolean matches(final char c) {
+		return true;
 	}
 }

@@ -42,16 +42,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.eclipse.jgit.fnmatch;
+package floobits.common.jgit.fnmatch;
 
-import java.util.List;
+final class RestrictedWildCardHead extends AbstractHead {
+	private final char excludedCharacter;
 
-interface Head {
-	/**
-	 *
-	 * @param c
-	 *            the character which decides which heads are returned.
-	 * @return a list of heads based on the input.
-	 */
-	public abstract List<Head> getNextHeads(char c);
+	RestrictedWildCardHead(final char excludedCharacter, final boolean star) {
+		super(star);
+		this.excludedCharacter = excludedCharacter;
+	}
+
+	@Override
+	protected final boolean matches(final char c) {
+		return c != excludedCharacter;
+	}
 }
