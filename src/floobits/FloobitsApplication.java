@@ -89,7 +89,7 @@ public class FloobitsApplication implements ApplicationComponent {
         if (projectForPath == null) {
             projectForPath = createProject(location, flooUrl.workspace);
             context = FloobitsPlugin.getInstance(projectForPath).context;
-        } else if (projectForPath != context.project) {
+        } else if (context == null || projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
@@ -128,14 +128,16 @@ public class FloobitsApplication implements ApplicationComponent {
             joinWorkspace(context, f, workspace.path);
             return;
         }
-        FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
-        if (flooUrl != null) {
-            URI uri = URI.create(flooUrl.toString());
-            URI normalizedURL = URI.create(url);
-    
-            if (uri.getPath().equals(normalizedURL.getPath())) {
-                joinWorkspace(context, flooUrl, context.project.getBasePath());
-                return;
+        if (context != null) { // Can be null if started from quick menu.
+            FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
+            if (flooUrl != null) {
+                URI uri = URI.create(flooUrl.toString());
+                URI normalizedURL = URI.create(url);
+
+                if (uri.getPath().equals(normalizedURL.getPath())) {
+                    joinWorkspace(context, flooUrl, context.project.getBasePath());
+                    return;
+                }
             }
         }
 

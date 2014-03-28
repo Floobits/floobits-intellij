@@ -36,8 +36,12 @@ public class SelectRecentWorkspace extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        FlooContext context = project.getComponent(FloobitsPlugin.class).context;
-        FloobitsApplication.self.joinWorkspace(context, selectWorkspace.getSelectedItem());
+        if (project != null) {
+            FlooContext context = project.getComponent(FloobitsPlugin.class).context;
+            FloobitsApplication.self.joinWorkspace(context, selectWorkspace.getSelectedItem());
+            return;
+        }
+        FloobitsApplication.self.joinWorkspace(null, selectWorkspace.getSelectedItem());
 
     }
 }
