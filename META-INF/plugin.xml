@@ -17,6 +17,7 @@
 
   <change-notes><![CDATA[
           Added icon to chat window.
+
     ]]>
   </change-notes>
 
@@ -102,8 +103,8 @@
           <reference ref="floobits.actions.RequestEditPermissions"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
-      <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Floobits Join Workspace" icon="/icons/floo.png">
-          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="first"/>
+      <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Join a Floobits Workspace" icon="/icons/floo.png">
+          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
   </actions>
 
