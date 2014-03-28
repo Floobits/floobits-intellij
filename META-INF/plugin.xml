@@ -18,6 +18,11 @@
   <change-notes><![CDATA[
           Added icon to chat window.
           Added join workspace to quick start.
+          Added a join recent workspace to quick start.
+          Stopped hiding ask for permissions options, disabled instead.
+          Fixed issues with running actions without a project.
+          Prompting user when trying to summon on file that isn't shared.
+          Fixed adding files on join.
     ]]>
   </change-notes>
 
