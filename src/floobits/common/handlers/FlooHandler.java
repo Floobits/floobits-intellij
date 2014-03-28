@@ -140,21 +140,7 @@ public class FlooHandler extends BaseHandler {
         };
         this.project = context.project;
         if (ProjectRootManager.getInstance(this.project).getProjectSdk() == null) {
-            context.setTimeout(0, new Runnable() {
-                @Override
-                public void run() {
-                    ThreadSafe.read(new Runnable() {
-                        @Override
-                        public void run() {
-                            context.errorMessage("Select a SDK for the project");
-                            ShowSettingsUtil.getInstance().editConfigurable(project, OptionsEditorDialog.DIMENSION_KEY, ProjectStructureConfigurable.getInstance(project));
-                            if (ProjectRootManager.getInstance(project).getProjectSdk() == null) {
-                                context.errorMessage("You must select an SDK for the project before Intellij will let you do anything sane.");
-                            }
-                        }
-                    });
-                }
-            });
+            Flog.warn("No SDK detected.");
         }
     }
 
