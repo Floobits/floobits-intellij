@@ -140,11 +140,11 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     public void caretAdded(CaretEvent caretEvent) {
-
+        // Not in use.
     }
 
     public void caretRemoved(CaretEvent caretEvent) {
-
+        // Not in use.
     }
 
     @Override
