@@ -140,6 +140,16 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     @Override
+    public void caretAdded(CaretEvent caretEvent) {
+
+    }
+
+    @Override
+    public void caretRemoved(CaretEvent caretEvent) {
+
+    }
+
+    @Override
     public void selectionChanged(final SelectionEvent event) {
         if (!isListening.get()) {
             return;
