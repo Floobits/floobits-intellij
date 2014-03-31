@@ -139,12 +139,10 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         });
     }
 
-    @Override
     public void caretAdded(CaretEvent caretEvent) {
 
     }
 
-    @Override
     public void caretRemoved(CaretEvent caretEvent) {
 
     }
