@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0.7</version>
+  <version>1.0.8</version>
   <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,6 +16,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
+          Fixed blocking the UI thread in places.
           Added icon to chat window.
           Added join workspace to quick start.
           Added a join recent workspace to quick start.
