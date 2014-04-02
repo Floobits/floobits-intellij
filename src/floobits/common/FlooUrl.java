@@ -61,6 +61,6 @@ public class FlooUrl {
                 port = String.format(":%s", this.port);
             }
         }
-        return String.format("%s://%s%s/%s/%s/", proto, this.host, port, this.owner, this.workspace);
+        return String.format("%s://%s%s/%s/%s", proto, this.host, port, this.owner, this.workspace);
     }
 }

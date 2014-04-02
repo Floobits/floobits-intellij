@@ -11,14 +11,18 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class FlooConn extends Thread {
+    // TODO: kill client pings. just check that we got a ping from server every n seconds
     private class Ping implements Serializable { public String name = "ping"; }
     protected Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
     protected BaseHandler handler;
     private Timeout timeout;
+    protected LinkedBlockingDeque<String> outQueue = new LinkedBlockingDeque<String>();
+    protected Thread writeThread;
 
     private Integer MAX_RETRIES = 20;
     private Integer INITIAL_RECONNECT_DELAY = 500;
@@ -29,18 +33,37 @@ public class FlooConn extends Thread {
         this.handler = handler;
     }
 
-    public synchronized void write (Serializable obj) {
+    protected void writeLoop() {
+        while(!(Thread.currentThread().isInterrupted()) && out != null) {
+            String data;
+            try {
+                data = outQueue.take();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                if (out == null) {
+                    return;
+                }
+                continue;
+            }
+            try {
+                out.write(data);
+                out.flush();
+            } catch (Exception e) {
+                // TODO: reconnect or something?
+                if (retries > -1) {
+                    Flog.warn(e);
+                }
+            }
+        }
+    }
+
+    public void write (Serializable obj) {
         String data = new Gson().toJson(obj);
         if (out == null) {
             Flog.warn("no connection to write to");
             return;
         }
-        try {
-            out.write(data + "\n");
-            out.flush();
-        } catch (Exception e) {
-            if (retries > -1) Flog.warn(e);
-        }
+        outQueue.addLast(data + "\n");
     }
 
     public void run () {
@@ -49,11 +72,21 @@ public class FlooConn extends Thread {
 
     public void shutdown() {
         retries = -1;
-        handler = null;
         cleanUp();
+        handler = null;
     }
 
     protected void cleanUp() {
+        outQueue.clear();
+        if (writeThread != null) {
+            writeThread.interrupt();
+            try {
+                writeThread.join(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            writeThread = null;
+        }
 
         if (out != null) {
             try {
@@ -61,7 +94,6 @@ public class FlooConn extends Thread {
             } catch (Exception ignored) {}
             out = null;
         }
-
         if (in != null) {
             try {
                 in.close();
@@ -115,7 +147,9 @@ public class FlooConn extends Thread {
         }
         String requestName = name.getAsString();
         if (requestName.equals("pong")) {
-            if (timeout != null) timeout.cancel();
+            if (timeout != null) {
+                timeout.cancel();
+            }
 
             timeout = handler.context.setTimeout(5000, new Runnable() {
                 @Override
@@ -166,8 +200,16 @@ public class FlooConn extends Thread {
             reconnect();
             return;
         }
+
         try {
             out = new OutputStreamWriter(socket.getOutputStream());
+            writeThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    writeLoop();
+                }
+            });
+            writeThread.start();
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             handler.on_connect();
             timeout = handler.context.setTimeout(10000, new Runnable() {
@@ -182,7 +224,9 @@ public class FlooConn extends Thread {
                 try {
                     line = in.readLine();
                     if (line == null) {
-                        if (retries != -1) Flog.warn("socket died");
+                        if (retries != -1) {
+                            Flog.warn("socket died");
+                        }
                         break;
                     }
                     retries = MAX_RETRIES;
@@ -195,12 +239,16 @@ public class FlooConn extends Thread {
                         return;
                     }
                 } catch (IOException e) {
-                    if (retries != -1) Flog.warn(e);
+                    if (retries != -1) {
+                        Flog.warn(e);
+                    }
                     break;
                 }
             }
         } catch (Exception e) {
-            if (retries != -1) Flog.warn(e);
+            if (retries != -1) {
+                Flog.warn(e);
+            }
         } finally {
             reconnect();
         }
