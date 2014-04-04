@@ -31,20 +31,24 @@ public class Ignore {
     protected final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
     protected int size = 0;
     private final IgnoreNode ignoreNode = new IgnoreNode();
+    protected int relPathLength;
 
-    public Ignore(VirtualFile virtualFile) {
-        this(virtualFile, 0);
-        ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
-        ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
-        ignoreNode.addRule(new IgnoreRule(".git"));
-        root = this;
+    public static Ignore BuildIgnore(VirtualFile virtualFile) {
+        Ignore ig = new Ignore(virtualFile, 0, 0);
+        ig.ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
+        ig.ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
+        ig.ignoreNode.addRule(new IgnoreRule(".git"));
+        root = ig;
         rootPath = virtualFile.getPath();
+        ig.recurse();
+        return ig;
     }
 
-    private Ignore (VirtualFile virtualFile, int depth) {
-        this.file = virtualFile;
+    private Ignore (VirtualFile virtualFile, int depth, int relPathLength) {
+        file = virtualFile;
         this.depth = depth;
-        this.stringPath = virtualFile.getPath();
+        stringPath = virtualFile.getPath();
+        this.relPathLength = relPathLength;
 
         Flog.debug("Initializing ignores for %s", this.file);
 
@@ -87,11 +91,13 @@ public class Ignore {
                 continue;
             }
             String path = Utils.toProjectRelPath(file.getPath(), rootPath);
-            if (root.isGitIgnored(path, file.isDirectory(), path.split("/"))) {
+
+            if (root.isGitIgnored("/" + path, file.isDirectory(), path.split("/"))) {
                 continue;
             }
             if (file.isDirectory()) {
-                Ignore child = new Ignore(file, depth + 1);
+//                path.length() - relPathLength + 1 => we want the length of the name of the directory (or 0 for the root) + 1 for the leading slash :(
+                Ignore child = new Ignore(file, depth + 1, path.length() - relPathLength + 1);
                 children.put(file.getName(), child);
                 child.recurse();
                 size += child.size;
@@ -113,12 +119,17 @@ public class Ignore {
             case CHECK_PARENT:
                 break;
         }
-        if (split.length <= depth + 1) {
+        if (split.length <= depth) {
             return false;
         }
-        String nextName = split[depth + 1];
+        String nextName = split[depth];
         Ignore ignore = children.get(nextName);
-        return ignore != null && ignore.isGitIgnored(path, isDir, split);
+        if (ignore == null) {
+            return false;
+        }
+//        make path relative to the ignore
+        String newPath = path.substring(ignore.relPathLength);
+        return ignore.isGitIgnored(newPath, isDir, split);
     }
 
     private boolean isFlooIgnored(VirtualFile virtualFile, String absPath) {
@@ -157,7 +168,7 @@ public class Ignore {
             return true;
 
         path =  context.toProjectRelPath(path);
-        return isGitIgnored(path, virtualFile.isDirectory(), path.split("/"));
+        return isGitIgnored("/"+path, virtualFile.isDirectory(), path.split("/"));
     }
     public static void writeDefaultIgnores(FlooContext context) {
         Flog.log("Creating default ignores.");

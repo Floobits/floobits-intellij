@@ -201,8 +201,7 @@ public class FlooContext {
 
     public void refreshIgnores() {
         VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
-        ignoreTree = new Ignore(fileByIoFile);
-        ignoreTree.recurse();
+        ignoreTree = Ignore.BuildIgnore(fileByIoFile);
     }
 
     public String absPath(String path) {
