@@ -174,13 +174,16 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void upload(VirtualFile virtualFile) {
+        if (readOnly) {
+            return;
+        }
+        if (!virtualFile.isValid()) {
+            return;
+        }
         String path = virtualFile.getPath();
         Buf b = get_buf_by_path(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
-            return;
-        }
-        if (readOnly) {
             return;
         }
         send_create_buf(virtualFile);
