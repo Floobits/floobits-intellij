@@ -22,29 +22,30 @@ public class Ignore {
     private static String rootPath;
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo", ".idea"));
-    static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml", ".git"));
+    static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
     protected final VirtualFile file;
-    private final int depth;
     protected final String stringPath;
     protected final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
     protected final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
     protected int size = 0;
     private final IgnoreNode ignoreNode = new IgnoreNode();
 
-    public Ignore(VirtualFile virtualFile) {
-        this(virtualFile, 0);
-        ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
-        ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
-        ignoreNode.addRule(new IgnoreRule(".git"));
-        root = this;
+    public static Ignore BuildIgnore(VirtualFile virtualFile) {
+        Ignore ig = new Ignore(virtualFile);
+        // TODO: add more hard-coded ignores
+        ig.ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
+        ig.ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
+        ig.ignoreNode.addRule(new IgnoreRule(".git"));
+        root = ig;
         rootPath = virtualFile.getPath();
+        ig.recurse();
+        return ig;
     }
 
-    private Ignore (VirtualFile virtualFile, int depth) {
-        this.file = virtualFile;
-        this.depth = depth;
-        this.stringPath = virtualFile.getPath();
+    private Ignore (VirtualFile virtualFile) {
+        file = virtualFile;
+        stringPath = virtualFile.getPath();
 
         Flog.debug("Initializing ignores for %s", this.file);
 
@@ -87,11 +88,12 @@ public class Ignore {
                 continue;
             }
             String path = Utils.toProjectRelPath(file.getPath(), rootPath);
-            if (root.isGitIgnored(path, file.isDirectory(), path.split("/"))) {
+
+            if (root.isGitIgnored(path, file.isDirectory())) {
                 continue;
             }
             if (file.isDirectory()) {
-                Ignore child = new Ignore(file, depth + 1);
+                Ignore child = new Ignore(file);
                 children.put(file.getName(), child);
                 child.recurse();
                 size += child.size;
@@ -102,7 +104,7 @@ public class Ignore {
         }
     }
 
-    private boolean isGitIgnored(String path, boolean isDir, String[] split) {
+    private boolean isGitIgnored(String path, boolean isDir) {
         IgnoreNode.MatchResult ignored = ignoreNode.isIgnored(path, isDir);
         switch (ignored) {
             case IGNORED:
@@ -113,12 +115,14 @@ public class Ignore {
             case CHECK_PARENT:
                 break;
         }
-        if (split.length <= depth + 1) {
+        String[] split = path.split("/", 2);
+        if (split.length != 2) {
             return false;
         }
-        String nextName = split[depth + 1];
+        String nextName = split[0];
+        path = split[1];
         Ignore ignore = children.get(nextName);
-        return ignore != null && ignore.isGitIgnored(path, isDir, split);
+        return ignore != null && ignore.isGitIgnored(path, isDir);
     }
 
     private boolean isFlooIgnored(VirtualFile virtualFile, String absPath) {
@@ -156,8 +160,8 @@ public class Ignore {
         if (isFlooIgnored(virtualFile, path))
             return true;
 
-        path =  context.toProjectRelPath(path);
-        return isGitIgnored(path, virtualFile.isDirectory(), path.split("/"));
+        path = context.toProjectRelPath(path);
+        return isGitIgnored(path, virtualFile.isDirectory());
     }
     public static void writeDefaultIgnores(FlooContext context) {
         Flog.log("Creating default ignores.");
@@ -175,6 +179,6 @@ public class Ignore {
     }
 
     public static boolean isIgnoreFile(VirtualFile virtualFile) {
-        return IGNORE_FILES.contains(virtualFile.getName()) && virtualFile.isValid();
+        return virtualFile != null && IGNORE_FILES.contains(virtualFile.getName()) && virtualFile.isValid();
     }
 }

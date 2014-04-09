@@ -82,12 +82,12 @@ public class FlooContext {
         return true;
     }
 
-    public void shareProject(final boolean notPublic) {
+    public void shareProject(final boolean _private_) {
         final String project_path = project.getBasePath();
 
         FlooUrl flooUrl = DotFloo.read(project_path);
 
-        String[] newPerms = notPublic ? new String[]{} : new String[]{"view_room"};
+        String[] newPerms = _private_ ? new String[]{} : new String[]{"view_room"};
 
         if (flooUrl != null && changePerms(flooUrl, newPerms)) {
             joinWorkspace(flooUrl, project_path, true);
@@ -124,7 +124,7 @@ public class FlooContext {
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
             public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, notPublic)) {
+                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
                     joinWorkspace(new FlooUrl(Constants.defaultHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
@@ -201,8 +201,7 @@ public class FlooContext {
 
     public void refreshIgnores() {
         VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
-        ignoreTree = new Ignore(fileByIoFile);
-        ignoreTree.recurse();
+        ignoreTree = Ignore.BuildIgnore(fileByIoFile);
     }
 
     public String absPath(String path) {
