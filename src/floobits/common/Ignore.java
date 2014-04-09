@@ -115,8 +115,8 @@ public class Ignore {
             case CHECK_PARENT:
                 break;
         }
-        String[] split = path.split(path, 1);
-        if (split.length < 2) {
+        String[] split = path.split("/", 2);
+        if (split.length != 2) {
             return false;
         }
         String nextName = split[0];
