@@ -33,7 +33,6 @@ public class FlooConn {
 
     public FlooConn(final BaseHandler handler) {
         this.handler = handler;
-        final FlooUrl flooUrl = handler.getUrl();
         uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
@@ -57,7 +56,7 @@ public class FlooConn {
             try {
                 out.write(data);
                 out.flush();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // TODO: reconnect or something?
                 if (retries > -1) {
                     Flog.warn(e);
