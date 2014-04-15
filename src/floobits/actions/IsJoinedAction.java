@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
+import floobits.common.API;
 import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
@@ -13,16 +14,24 @@ public abstract class IsJoinedAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
-        if (floobitsPlugin == null) {
-            Flog.log("no floobits plugin, aborting.");
-            return;
+        FloobitsPlugin floobitsPlugin;
+        FlooHandler flooHandler = null;
+        FlooContext context = null;
+        try {
+            floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+            if (floobitsPlugin == null) {
+                Flog.log("no floobits plugin, aborting.");
+                return;
+            }
+            context = floobitsPlugin.context;
+            flooHandler = context.getFlooHandler();
+            if (flooHandler == null) {
+                return;
+            }
+            actionPerformed(e, flooHandler);
+        } catch (Throwable throwable) {
+            API.uploadCrash(context, throwable);
         }
-        FlooHandler flooHandler = floobitsPlugin.context.getFlooHandler();
-        if (flooHandler == null) {
-            return;
-        }
-        actionPerformed(e, flooHandler);
     }
 
     @Override

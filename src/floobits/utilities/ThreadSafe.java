@@ -3,6 +3,8 @@ package floobits.utilities;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import floobits.FlooContext;
+import floobits.common.API;
+import floobits.common.handlers.FlooHandler;
 
 public class ThreadSafe {
     public static void write(final FlooContext context, final Runnable runnable) {
@@ -16,8 +18,12 @@ public class ThreadSafe {
                         ApplicationManager.getApplication().runWriteAction(new Runnable() {
                             @Override
                             public void run() {
-                                Flog.log("spent %s getting lock", System.currentTimeMillis() - l);
-                                runnable.run();
+                                try {
+                                    Flog.log("spent %s getting lock", System.currentTimeMillis() - l);
+                                    runnable.run();
+                                } catch (Throwable throwable) {
+                                    API.uploadCrash(context, throwable);
+                                }
                             }
                         });
                     }
@@ -25,11 +31,15 @@ public class ThreadSafe {
             }
         });
     }
-    public static void read(final Runnable runnable) {
+    public static void read(final FlooContext context, final Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                ApplicationManager.getApplication().runReadAction(runnable);
+                try {
+                    ApplicationManager.getApplication().runReadAction(runnable);
+                } catch(Throwable throwable) {
+                    API.uploadCrash(context, throwable);
+                }
             }
         }
         );

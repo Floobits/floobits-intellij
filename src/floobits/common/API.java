@@ -4,7 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.extensions.PluginId;
 import floobits.FlooContext;
+import floobits.common.handlers.BaseHandler;
+import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -17,15 +23,44 @@ import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class API {
+    public static class CrashDump implements Serializable {
+        public String owner;
+        public String workspace;
+        public String dir;
+        public String subject;
+        public String username;
+        public String useragent;
+        public HashMap<String, String> message = new HashMap<String, String>();
+
+        public CrashDump(Throwable e, String owner, String workspace, String dir, String username) {
+            this.owner = owner;
+            this.workspace = workspace;
+            this.dir = dir;
+            this.username = username;
+            message.put("sendingAt", String.format("%s", new Date().getTime()));
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            message.put("stack", sw.toString());
+            message.put("description", e.getMessage());
+            ApplicationInfo instance = ApplicationInfo.getInstance();
+            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+            String version = plugin != null ? plugin.getVersion() : "???";
+            useragent = String.format("%s-%s-%s %s (%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(),version, System.getProperty("os.name"));
+            subject = String.format("%s died!", instance.getVersionName());
+        }
+    }
+
 
     public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
@@ -44,7 +79,7 @@ public class API {
         int code = method.getStatusCode();
         switch (code) {
             case 400:
-                // Todo: pick a new name or something                                                                                                                                                                                               )
+                // Todo: pick a new name or something
                 context.errorMessage("Invalid workspace name (a-zA-Z0-9).");
                 return false;
             case 402:
@@ -215,5 +250,44 @@ public class API {
         }
 
         return orgs;
+    }
+    static public void uploadCrash(BaseHandler baseHandler, final FlooContext context, Throwable throwable) {
+        Flog.warn("Uploading crash report: %s", throwable);
+        try {
+            final PostMethod method;
+            String owner = "";
+            String workspace = "";
+            String colabDir = "";
+            String username = "";
+
+            if (baseHandler != null) {
+                owner = baseHandler.getUrl().owner;
+                workspace = baseHandler.getUrl().workspace;
+                colabDir = context != null ? context.colabDir : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).username : "???";
+            }
+            method = new PostMethod("/api/log");
+            Gson gson = new Gson();
+            CrashDump crashDump = new CrashDump(throwable, owner, workspace, colabDir, username);
+            String json = gson.toJson(crashDump);
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        apiRequest(method, context, Constants.defaultHost);
+                    } catch (Throwable e) {
+                        Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+                    }
+                }
+            }).run();
+      } catch (Throwable e) {
+            try {
+                Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+            } catch (Throwable ignored) {}
+        }
+    }
+    static public void uploadCrash(FlooContext context, Throwable throwable) {
+        uploadCrash(context.handler, context, throwable);
     }
 }
