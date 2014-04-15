@@ -182,7 +182,7 @@ public class API {
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
-//        NOTE: we cant tell java to follow redirects because they can fail.
+        // NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setParameter("http.protocol.handle-redirects", true);

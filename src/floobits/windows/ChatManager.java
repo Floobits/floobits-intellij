@@ -1,6 +1,7 @@
 package floobits.windows;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.ToolWindow;
@@ -59,7 +60,7 @@ public class ChatManager {
             public void run() {
                 chatForm.clearClients();
             }
-        });
+        }, ModalityState.NON_MODAL);
     }
 
     public void setUsers(final Map<Integer,FlooUser> originalUsers) {
@@ -94,7 +95,7 @@ public class ChatManager {
                     chatForm.addClients(user.username, user.client, user.platform);
                 }
             }
-        });
+        }, ModalityState.NON_MODAL);
     }
 
     public void statusMessage(final String message) {
@@ -103,7 +104,7 @@ public class ChatManager {
             public void run() {
                 chatForm.statusMessage(message);
             }
-        });
+        }, ModalityState.NON_MODAL);
     }
 
     public void errorMessage(final String message) {
@@ -112,7 +113,7 @@ public class ChatManager {
             public void run() {
                 chatForm.errorMessage(message);
             }
-        });
+        }, ModalityState.NON_MODAL);
     }
 
     public void chatMessage(final String username, final String msg, final Date messageDate) {
@@ -126,7 +127,7 @@ public class ChatManager {
             public void run() {
                 chatForm.chatMessage(username, msg, messageDate);
             }
-        });
+        }, ModalityState.NON_MODAL);
     }
 }
 
