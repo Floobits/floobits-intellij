@@ -95,6 +95,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
+        queue.clear();
         Settings settings = new Settings(context);
         username = settings.get("username");
         conn.write(new FlooAuth(settings, this.url.owner, this.url.workspace));
