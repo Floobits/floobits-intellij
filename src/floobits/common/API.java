@@ -56,8 +56,8 @@ public class API {
             ApplicationInfo instance = ApplicationInfo.getInstance();
             IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
             String version = plugin != null ? plugin.getVersion() : "???";
-            useragent = String.format("%s-%s-%s %s (%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(),version, System.getProperty("os.name"));
-            subject = String.format("%s died!", instance.getVersionName());
+            useragent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
+            subject = String.format("%s died%s!", instance.getVersionName(), username != null ? " for " + username : "");
         }
     }
 
