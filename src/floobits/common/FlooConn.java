@@ -73,7 +73,7 @@ public class FlooConn {
             public void run() {
                 connectLoop();
             }
-        });
+        }, "FlooConn Read Thread");
         readThread.start();
     }
 
@@ -241,7 +241,7 @@ public class FlooConn {
             public void run() {
                 writeLoop();
             }
-        });
+        }, "FlooConn Write Thread");
         writeThread.start();
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         handler.on_connect();
