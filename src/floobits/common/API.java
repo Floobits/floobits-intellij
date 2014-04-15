@@ -280,7 +280,7 @@ public class API {
                         Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
                     }
                 }
-            }).run();
+            }, "Floobits Crash Reporter").run();
       } catch (Throwable e) {
             try {
                 Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
