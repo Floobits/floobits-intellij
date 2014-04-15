@@ -81,13 +81,9 @@ public class FlooConn {
             public void run() {
                 connectLoop();
             }
-<<<<<<< HEAD
         }, "FlooConn Read Thread");
-=======
-        });
 
         readThread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
->>>>>>> fa7c5f0... upload exceptions
         readThread.start();
     }
 
