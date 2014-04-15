@@ -1,5 +1,7 @@
 package floobits.common;
 
+import floobits.FlooContext;
+
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -9,21 +11,25 @@ public class Timeouts {
     protected ConcurrentSkipListSet<Timeout> timeouts = new ConcurrentSkipListSet<Timeout>();
     private Timer autoUpdate;
 
-    public Timeouts () {
+    public Timeouts(final FlooContext context) {
         autoUpdate = new Timer();
         autoUpdate.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                long now = Calendar.getInstance().getTimeInMillis();
+                try {
+                    long now = Calendar.getInstance().getTimeInMillis();
 
-                for (Timeout t : timeouts) {
-                    if (t.timeout > now) {
-                        return;
+                    for (Timeout t : timeouts) {
+                        if (t.timeout > now) {
+                            return;
+                        }
+                        if (!t.isCanceled()) {
+                            t.runnable.run();
+                        }
+                        timeouts.remove(t);
                     }
-                    if (!t.isCanceled()) {
-                        t.runnable.run();
-                    }
-                    timeouts.remove(t);
+                } catch (Throwable e) {
+                    API.uploadCrash(context, e);
                 }
             }
         }, 0, 250);

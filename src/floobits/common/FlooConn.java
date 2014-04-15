@@ -29,9 +29,17 @@ public class FlooConn {
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
+    protected Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
-    public FlooConn(BaseHandler handler) {
+    public FlooConn(final BaseHandler handler) {
         this.handler = handler;
+        final FlooUrl flooUrl = handler.getUrl();
+        uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable throwable) {
+                API.uploadCrash(handler, handler.context, throwable);
+            }
+        };
     }
 
     protected void writeLoop() {
@@ -74,6 +82,8 @@ public class FlooConn {
                 connectLoop();
             }
         }, "FlooConn Read Thread");
+
+        readThread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
         readThread.start();
     }
 
@@ -89,8 +99,6 @@ public class FlooConn {
             } catch (NullPointerException ignored) {
             } catch (IOException e) {
                 Flog.log(e.getMessage());
-            } catch (Exception e) {
-                if (retries != -1) {Flog.warn(e);}
             }
             Flog.info("lost connection!");
             if (retries <= 0) {
@@ -130,7 +138,7 @@ public class FlooConn {
             try {
                 writeThread.join(1);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Flog.warn(e);
             }
             writeThread = null;
         }
@@ -178,7 +186,7 @@ public class FlooConn {
         if (timeout != null) {
             timeout.cancel();
         }
-        timeout = handler.context.setTimeout(10000, new Runnable() {
+        timeout = handler.context.setTimeout(20000, new Runnable() {
              @Override
              public void run() {
                 timeout = null;
@@ -216,7 +224,7 @@ public class FlooConn {
     }
 
     protected void connect() throws IOException {
-        FlooUrl flooUrl = handler.getUrl();
+        final FlooUrl flooUrl = handler.getUrl();
         SSLContext sslContext = Utils.createSSLContext();
         if (sslContext == null) {
             Utils.errorMessage("I can't do SSL.", handler.getProject());
@@ -242,6 +250,7 @@ public class FlooConn {
                 writeLoop();
             }
         }, "FlooConn Write Thread");
+        writeThread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
         writeThread.start();
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         handler.on_connect();

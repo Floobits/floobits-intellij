@@ -80,6 +80,7 @@ public class FlooHandler extends BaseHandler {
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
     private HashSet<Integer> ideaBufs = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
+    public String username = "";
 
     public String getUsername(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -94,7 +95,10 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
-        conn.write(new FlooAuth(new Settings(context), this.url.owner, this.url.workspace));
+        queue.clear();
+        Settings settings = new Settings(context);
+        username = settings.get("username");
+        conn.write(new FlooAuth(settings, this.url.owner, this.url.workspace));
         context.statusMessage(String.format("Opened connection to %s.", url.toString()), false);
     }
 
@@ -191,7 +195,7 @@ public class FlooHandler extends BaseHandler {
 
 
     void _on_room_info(final JsonObject obj) {
-        ThreadSafe.read(new Runnable() {
+        ThreadSafe.read(context, new Runnable() {
             @Override
             public void run() {
                 context.statusMessage(String.format("You successfully joined %s ", url.toString()), false);
@@ -259,6 +263,7 @@ public class FlooHandler extends BaseHandler {
                         return;
                     }
                 }
+
 
                 if (conflictedPaths.size() <= 0) {
                     return;
