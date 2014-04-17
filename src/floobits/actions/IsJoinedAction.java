@@ -2,7 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
 import floobits.common.handlers.FlooHandler;
@@ -16,7 +16,7 @@ public abstract class IsJoinedAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         FloobitsPlugin floobitsPlugin;
         FlooHandler flooHandler = null;
-        FlooContext context = null;
+        BaseContext context = null;
         try {
             floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
             if (floobitsPlugin == null) {

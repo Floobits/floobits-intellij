@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.utilities.Flog;
 import floobits.common.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
@@ -53,7 +53,7 @@ public class Utils {
         }
     }
 
-    public static void createFile(final FlooContext context, final VirtualFile virtualFile) {
+    public static void createFile(final BaseContext context, final VirtualFile virtualFile) {
         if (context.isIgnored(virtualFile)) {
             return;
         }
@@ -239,7 +239,7 @@ public class Utils {
         }
     }
 
-    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, VirtualFile vFile) {
+    public static ArrayList<String> getAllNestedFilePaths(final BaseContext context, VirtualFile vFile) {
         final ArrayList<String> filePaths = new ArrayList<String>();
         if (!vFile.isDirectory()) {
             filePaths.add(vFile.getPath());
@@ -257,7 +257,7 @@ public class Utils {
         return filePaths;
     }
 
-    public static ArrayList<VirtualFile> getAllValidNestedFiles(final FlooContext context, VirtualFile vFile) {
+    public static ArrayList<VirtualFile> getAllValidNestedFiles(final BaseContext context, VirtualFile vFile) {
         final ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
         if (!vFile.isDirectory()) {
             if (vFile.isValid() && !context.isIgnored(vFile)) virtualFiles.add(vFile);

@@ -2,7 +2,7 @@ package floobits.common;
 
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -151,7 +151,7 @@ public class Ignore {
         return false;
     }
 
-    public Boolean isIgnored(FlooContext context, VirtualFile virtualFile) {
+    public Boolean isIgnored(BaseContext context, VirtualFile virtualFile) {
         if (!virtualFile.isValid()){
             Flog.log("Ignoring %s because it is invalid.", virtualFile);
             return true;
@@ -163,7 +163,7 @@ public class Ignore {
         path = context.toProjectRelPath(path);
         return isGitIgnored(path, virtualFile.isDirectory());
     }
-    public static void writeDefaultIgnores(FlooContext context) {
+    public static void writeDefaultIgnores(BaseContext context) {
         Flog.log("Creating default ignores.");
         String path = FilenameUtils.concat(context.colabDir, ".flooignore");
 

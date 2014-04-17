@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
-    private final FlooContext context;
+    private final BaseContext context;
     private final FlooHandler flooHandler;
 
     public synchronized void flooEnable() {

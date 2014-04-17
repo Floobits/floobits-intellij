@@ -8,7 +8,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -62,7 +62,7 @@ public class API {
     }
 
 
-    public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String owner, String workspace, BaseContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -112,7 +112,7 @@ public class API {
                 return false;
         }
     }
-    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
+    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, BaseContext context) {
 
         PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
         Gson gson = new Gson();
@@ -135,7 +135,7 @@ public class API {
         return method.getStatusCode() < 300;
     }
 
-    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
+    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, BaseContext context) {
 
         HttpMethod method;
         try {
@@ -157,7 +157,7 @@ public class API {
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 
-    public static boolean workspaceExists(final FlooUrl f, FlooContext context) {
+    public static boolean workspaceExists(final FlooUrl f, BaseContext context) {
         if (f == null) {
             return false;
         }
@@ -176,11 +176,11 @@ public class API {
         return true;
     }
 
-    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context, String host) throws IOException {
+    static public HttpMethod getWorkspace(String owner, String workspace, BaseContext context, String host) throws IOException {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, BaseContext context, String host) throws IOException, IllegalArgumentException{
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
@@ -220,7 +220,7 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(FlooContext context) {
+    static public List<String> getOrgsCanAdmin(BaseContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
@@ -251,7 +251,7 @@ public class API {
 
         return orgs;
     }
-    static public void uploadCrash(BaseHandler baseHandler, final FlooContext context, Throwable throwable) {
+    static public void uploadCrash(BaseHandler baseHandler, final BaseContext context, Throwable throwable) {
         Flog.warn("Uploading crash report: %s", throwable);
         try {
             final PostMethod method;
@@ -287,7 +287,7 @@ public class API {
             } catch (Throwable ignored) {}
         }
     }
-    static public void uploadCrash(FlooContext context, Throwable throwable) {
+    static public void uploadCrash(BaseContext context, Throwable throwable) {
         uploadCrash(context.handler, context, throwable);
     }
 }

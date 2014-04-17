@@ -2,7 +2,7 @@ package floobits.common.handlers;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.common.FlooConn;
 import floobits.common.FlooUrl;
 
@@ -10,9 +10,9 @@ abstract public class BaseHandler {
     public FlooUrl url;
     public boolean isJoined = false;
     protected FlooConn conn;
-    public FlooContext context;
+    public BaseContext context;
 
-    public BaseHandler(FlooContext context) {
+    public BaseHandler(BaseContext context) {
         this.context = context;
     }
 

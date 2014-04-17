@@ -1,7 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.*;
@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
-        FlooContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
+        BaseContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
         FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
         if (flooUrl != null && API.workspaceExists(flooUrl, context)) {
             FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());

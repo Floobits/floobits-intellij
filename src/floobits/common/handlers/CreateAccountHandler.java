@@ -2,7 +2,7 @@ package floobits.common.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.common.*;
 import floobits.common.protocol.send.NewAccount;
 import floobits.utilities.Flog;
@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class CreateAccountHandler extends BaseHandler {
 
-    public CreateAccountHandler(FlooContext context) {
+    public CreateAccountHandler(BaseContext context) {
         super(context);
     }
 

@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.BaseContext;
 
 import java.util.Calendar;
 import java.util.Timer;
@@ -11,7 +11,7 @@ public class Timeouts {
     protected ConcurrentSkipListSet<Timeout> timeouts = new ConcurrentSkipListSet<Timeout>();
     private Timer autoUpdate;
 
-    public Timeouts(final FlooContext context) {
+    public Timeouts(final BaseContext context) {
         autoUpdate = new Timer();
         autoUpdate.scheduleAtFixedRate(new TimerTask() {
             @Override

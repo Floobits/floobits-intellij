@@ -2,7 +2,7 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.FloobitsPlugin;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +43,7 @@ public class CreateAccount extends DialogWrapper {
     }
 
 
-    public CreateAccount(FlooContext context) {
+    public CreateAccount(BaseContext context) {
         super(context.project, true);
         project = context.project;
         jPanel = new JPanel();

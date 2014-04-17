@@ -9,15 +9,11 @@ import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.options.newEditor.OptionsEditorDialog;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.vfs.*;
 import com.intellij.ui.JBColor;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.protocol.FlooPatch;
@@ -124,7 +120,7 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
+    public FlooHandler (final BaseContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
         url = flooUrl;
         this.shouldUpload = shouldUpload;

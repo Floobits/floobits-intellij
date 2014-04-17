@@ -5,7 +5,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -25,9 +25,9 @@ public abstract class Buf <T> {
     public Encoding encoding;
     public Timeout timeout;
     public boolean forced_patch = false;
-    protected FlooContext context;
+    protected BaseContext context;
 
-    public Buf(String path, Integer id, T buf, String md5, FlooContext context) {
+    public Buf(String path, Integer id, T buf, String md5, BaseContext context) {
         this.id = id;
         this.path = path;
         this.buf = buf;
@@ -100,13 +100,13 @@ public abstract class Buf <T> {
         }
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, FlooContext context) {
+    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, BaseContext context) {
         if (enc == Encoding.BASE64) {
             return new BinaryBuf(path, id, null, md5, context);
         }
         return new TextBuf(path, id, null, md5, context);
     }
-    public static Buf createBuf(VirtualFile virtualFile, FlooContext context) {
+    public static Buf createBuf(VirtualFile virtualFile, BaseContext context) {
         try {
             byte[] originalBytes = virtualFile.contentsToByteArray();
             String encodedContents = new String(originalBytes, "UTF-8");

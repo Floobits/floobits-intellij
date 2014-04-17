@@ -2,12 +2,12 @@ package floobits.utilities;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.common.API;
 import floobits.common.handlers.FlooHandler;
 
 public class ThreadSafe {
-    public static void write(final FlooContext context, final Runnable runnable) {
+    public static void write(final BaseContext context, final Runnable runnable) {
         final long l = System.currentTimeMillis();
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -31,7 +31,7 @@ public class ThreadSafe {
             }
         });
     }
-    public static void read(final FlooContext context, final Runnable runnable) {
+    public static void read(final BaseContext context, final Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {

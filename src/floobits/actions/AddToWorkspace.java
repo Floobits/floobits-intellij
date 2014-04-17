@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.FloobitsPlugin;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.Utils;
@@ -19,7 +19,7 @@ public class AddToWorkspace extends IsJoinedAction {
         if (virtualFiles == null) {
             return;
         }
-        FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        BaseContext context = FloobitsPlugin.getInstance(e.getProject()).context;
         for (final VirtualFile virtualFile : virtualFiles) {
             if (filesToAdd.contains(virtualFile)) {
                 continue;

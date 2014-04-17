@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * I am the link between a project and floobits
  */
-public class FlooContext {
+public class FlooContext extends BaseContext {
     public String colabDir;
     public Project project;
     public BaseHandler handler;
@@ -37,8 +37,7 @@ public class FlooContext {
     public Date lastChatMessage;
 
     public FlooContext(Project project) {
-        this.project = project;
-
+        super(project);
     }
 
     public Timeout setTimeout(int time, final Runnable runnable) {
@@ -63,7 +62,7 @@ public class FlooContext {
         chatManager = new ChatManager(this);
     }
 
-    private boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
+    protected boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
         HTTPWorkspaceRequest workspace = API.getWorkspace(flooUrl, this);
         if (workspace == null) {
             return false;

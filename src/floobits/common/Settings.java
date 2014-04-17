@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import floobits.FlooContext;
+import floobits.BaseContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 
@@ -12,9 +12,9 @@ import org.apache.commons.io.FilenameUtils;
 public class Settings {
     protected HashMap<String, String> settings;
     public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
-    private FlooContext context;
+    private BaseContext context;
 
-    public Settings(FlooContext context) {
+    public Settings(BaseContext context) {
         this.context = context;
         BufferedReader br;
         this.settings = new HashMap<String, String>();
