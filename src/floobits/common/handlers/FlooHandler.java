@@ -2,7 +2,6 @@ package floobits.common.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.intellij.ide.SaveAndSyncHandlerImpl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
@@ -11,7 +10,10 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.ReadonlyStatusHandler;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import floobits.BaseContext;
 import floobits.Listener;
@@ -40,6 +42,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class FlooHandler extends BaseHandler {
 
     private final Project project;
+    public final BaseContext context;
 
     class QueuedAction {
         public final Buf buf;
@@ -58,18 +61,19 @@ public class FlooHandler extends BaseHandler {
             Flog.log("Spent %s in ui thread", l1 -l);
         }
     }
+
     private final Runnable dequeueRunnable;
     public JsonObject lastHighlight;
     private Boolean shouldUpload = false;
     private HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights =
             new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
-    private HashSet<String> perms = new HashSet<String>();
-    private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
-    private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
-    private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
+    protected HashSet<String> perms = new HashSet<String>();
+    protected Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
+    protected HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    protected final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
     private RoomInfoTree tree;
-    private int connectionId;
+    protected int connectionId;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
@@ -120,10 +124,11 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (final BaseContext context, FlooUrl flooUrl, boolean shouldUpload) {
+    public FlooHandler (final BaseContext context, FlooUrl flooUrl, Boolean shouldUpload) {
         super(context);
-        url = flooUrl;
+        this.context = context;
         this.shouldUpload = shouldUpload;
+        url = flooUrl;
         dequeueRunnable = new Runnable() {
             @Override
             public void run() {
@@ -209,11 +214,9 @@ public class FlooHandler extends BaseHandler {
                 connectionId = Integer.parseInt(ri.user_id);
                 Flog.info("Got roominfo with userId %d", connectionId);
 
-
                 DotFloo.write(context.colabDir, url.toString());
-
-                final LinkedList<Buf> conflicts = new LinkedList<Buf>();
                 final LinkedList<Buf> missing = new LinkedList<Buf>();
+                final LinkedList<Buf> conflicts = new LinkedList<Buf>();
                 final LinkedList<String> conflictedPaths = new LinkedList<String>();
                 for (Map.Entry entry : ri.bufs.entrySet()) {
                     Integer buf_id = (Integer) entry.getKey();
@@ -248,6 +251,7 @@ public class FlooHandler extends BaseHandler {
                         }
                     }
                 };
+
                 if (shouldUpload) {
                     if (readOnly) {
                         context.statusMessage("You don't have permission to update remote files.", false);
@@ -314,13 +318,6 @@ public class FlooHandler extends BaseHandler {
                 b.set(res.buf, res.md5);
                 b.write();
                 Flog.info("on get buffed. %s", b.path);
-                if (ideaBufs.contains(b.id)) {
-                    ideaBufs.remove(b.id);
-                    if (ideaBufs.isEmpty()) {
-                        SaveAndSyncHandlerImpl.refreshOpenFiles();
-                        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
-                    }
-                }
             }
         });
     }
