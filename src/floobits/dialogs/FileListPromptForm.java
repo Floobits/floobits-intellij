@@ -2,13 +2,17 @@ package floobits.dialogs;
 
 import javax.swing.*;
 
-public class ResolveConflictsForm {
+public class FileListPromptForm {
     private JLabel promptText;
     private JList changedFiles;
     private JPanel contentPanel;
-    protected String promptTextFormat = "<html><p>The following remote %s different from your version.</p></html>";
+    protected String promptTextFormat;
     protected String multiPrompt = "files are";
     protected String singlePrompt = "file is";
+
+    public FileListPromptForm(String prompt) {
+        promptTextFormat = String.format("<html><p>%s</p></html>", prompt);
+    }
 
     public void setItems(final String[] conflicts) {
         changedFiles.setListData(conflicts);

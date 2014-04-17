@@ -6,10 +6,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 
-public class ResolveConflictsDialogWrapper extends CustomButtonDialogWrapper {
-    protected ResolveConflictsForm form = new ResolveConflictsForm();
+public class ResolveConflictsDialog extends CustomButtonDialogWrapper {
+    protected FileListPromptForm form = new FileListPromptForm("The following remote %s different from your version.");
 
-    public ResolveConflictsDialogWrapper(RunLater<Void> stompLocal, RunLater<Void> stompRemote, boolean readOnly, RunLater<Void> flee, final String[] conflicts) {
+    public ResolveConflictsDialog(RunLater<Void> stompLocal, RunLater<Void> stompRemote, boolean readOnly, RunLater<Void> flee, final String[] conflicts) {
         super(true);
         form.setItems(conflicts);
         CustomButtonAction stompRemoteAction = new CustomButtonAction("Stomp Remote Files", stompRemote);

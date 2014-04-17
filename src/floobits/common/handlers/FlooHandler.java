@@ -23,7 +23,7 @@ import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.HandleTooBigDialog;
-import floobits.dialogs.ResolveConflictsDialogWrapper;
+import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
@@ -209,7 +209,7 @@ public class FlooHandler extends BaseHandler {
             return;
         }
         String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
-        ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
+        ResolveConflictsDialog dialog = new ResolveConflictsDialog(
                 new RunLater<Void>() {
                     @Override
                     public void run(Void _) {
@@ -269,13 +269,16 @@ public class FlooHandler extends BaseHandler {
         }
         if (tooBigIgnores.size() > 0) {
             final Boolean[] shouldContinue = new Boolean[1];
-            HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(tooBigIgnores, new RunLater<Boolean>() {
+            // shouldContinue[0] is null when user closes dialog instead of clicking a button:
+            shouldContinue[0] = false;
+            HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(new RunLater<Boolean>() {
                 @Override
                 public void run(Boolean arg) {
                     shouldContinue[0] = arg;
                 }
-            });
+            }, tooBigIgnores);
 
+            handleTooBigDialog.createCenterPanel();
             handleTooBigDialog.show();
 
             if (!shouldContinue[0]) {
@@ -552,7 +555,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void _on_highlight(JsonObject obj) {
-        final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
+        final FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = (stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         lastHighlight = obj;
@@ -767,7 +770,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_join(JsonObject obj) {
-        FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
+        FlooUser u = new Gson().fromJson(obj, (Type) FlooUser.class);
         this.users.put(u.user_id, u);
         context.statusMessage(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client), false);
         context.chatManager.setUsers(this.users);
