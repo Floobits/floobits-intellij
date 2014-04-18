@@ -28,6 +28,7 @@ import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -286,6 +287,7 @@ public class FlooHandler extends BaseHandler {
                 return;
             }
         }
+
         HashSet<String> paths = new HashSet<String>();
         for (Ignore ig : allIgnores) {
             for (VirtualFile virtualFile : ig.files)
@@ -313,6 +315,7 @@ public class FlooHandler extends BaseHandler {
             }
             send_set_buf(buf);
         }
+
         LocalFileSystem instance = LocalFileSystem.getInstance();
         for (String path : paths) {
             VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
@@ -321,6 +324,26 @@ public class FlooHandler extends BaseHandler {
                 continue;
             }
             send_create_buf(fileByPath);
+
+        }
+
+        String flooignore = FilenameUtils.concat(context.colabDir, ".flooignore");
+
+        try {
+            File f = new File(flooignore);
+            List<String> strings;
+            if (f.exists()) {
+                strings = FileUtils.readLines(f);
+            } else {
+                strings = new ArrayList<String>();
+            }
+
+            for (Ignore ig : tooBigIgnores) {
+                strings.add("/" + context.toProjectRelPath(ig.stringPath) + "/*");
+            }
+            FileUtils.writeLines(f, strings);
+        } catch (IOException e) {
+            Flog.warn(e);
         }
     }
     void _on_room_info(final JsonObject obj) {
