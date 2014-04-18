@@ -345,6 +345,7 @@ public class FlooHandler extends BaseHandler {
         } catch (IOException e) {
             Flog.warn(e);
         }
+        shouldUpload = false;
     }
     void _on_room_info(final JsonObject obj) {
         ThreadSafe.read(context, new Runnable() {
