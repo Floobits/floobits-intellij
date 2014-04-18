@@ -271,7 +271,7 @@ public class FlooHandler extends BaseHandler {
             tooBigIgnores.add(ig);
         }
         if (tooBigIgnores.size() > 0) {
-            int TOO_MANY_BIG_DIRS = 20;
+            int TOO_MANY_BIG_DIRS = 50;
             if (tooBigIgnores.size() > TOO_MANY_BIG_DIRS) {
                 NumberFormat numberFormat = NumberFormat.getNumberInstance();
                 String howMany = numberFormat.format(tooBigIgnores.size());
