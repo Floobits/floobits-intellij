@@ -273,14 +273,16 @@ public class FlooHandler extends BaseHandler {
         if (tooBigIgnores.size() > 0) {
             int TOO_MANY_BIG_DIRS = 20;
             if (tooBigIgnores.size() > TOO_MANY_BIG_DIRS) {
-                String howMany = NumberFormat.getInstance().format(tooBigIgnores.size());
+                NumberFormat numberFormat = NumberFormat.getNumberInstance();
+                String howMany = numberFormat.format(tooBigIgnores.size());
+                String tooMuch = numberFormat.format(ri.max_size/1000);
+                String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
                 DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new RunLater<Void>() {
                     @Override
                     public void run(Void arg) {
                        context.shutdown();
                     }
-                }, String.format("You have too many large directories in this project to use with Floobits. We limit it to %d and you have %s big directories.",
-                        TOO_MANY_BIG_DIRS, howMany));
+                }, String.format("%s We limit it to %d and you have %s big directories.", notice, TOO_MANY_BIG_DIRS, howMany));
                 disconnectNoticeDialog.createCenterPanel();
                 disconnectNoticeDialog.show();
                 return;
