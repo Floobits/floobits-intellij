@@ -21,6 +21,7 @@ import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
+import floobits.dialogs.DisconnectNoticeDialog;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.HandleTooBigDialog;
 import floobits.dialogs.ResolveConflictsDialog;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -269,6 +271,20 @@ public class FlooHandler extends BaseHandler {
             tooBigIgnores.add(ig);
         }
         if (tooBigIgnores.size() > 0) {
+            int TOO_MANY_BIG_DIRS = 20;
+            if (tooBigIgnores.size() > TOO_MANY_BIG_DIRS) {
+                String howMany = NumberFormat.getInstance().format(tooBigIgnores.size());
+                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new RunLater<Void>() {
+                    @Override
+                    public void run(Void arg) {
+                       context.shutdown();
+                    }
+                }, String.format("You have too many large directories in this project to use with Floobits. We limit it to %d and you have %s big directories.",
+                        TOO_MANY_BIG_DIRS, howMany));
+                disconnectNoticeDialog.createCenterPanel();
+                disconnectNoticeDialog.show();
+                return;
+            }
             final Boolean[] shouldContinue = new Boolean[1];
             // shouldContinue[0] is null when user closes dialog instead of clicking a button:
             shouldContinue[0] = false;
