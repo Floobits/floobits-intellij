@@ -357,11 +357,24 @@ public class FlooHandler extends BaseHandler {
             }
 
             for (Ignore ig : tooBigIgnores) {
-                strings.add("/" + context.toProjectRelPath(ig.stringPath) + "/*");
+                String rule = "/" + context.toProjectRelPath(ig.stringPath);
+                if (!rule.endsWith("/")) {
+                    rule += "/";
+                }
+                rule += "*";
+                strings.add(rule);
             }
+            listener.flooDisable();
             FileUtils.writeLines(f, strings);
+            VirtualFile fileByIoFile = instance.findFileByIoFile(f);
+            if (fileByIoFile != null) {
+                fileByIoFile.refresh(false, false);
+                ignoreTree.addRules(fileByIoFile);
+            }
         } catch (IOException e) {
             Flog.warn(e);
+        } finally {
+            listener.flooEnable();
         }
         shouldUpload = false;
     }

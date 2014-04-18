@@ -12,10 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Ignore implements Comparable<Ignore>{
     static Ignore root;
@@ -47,18 +44,22 @@ public class Ignore implements Comparable<Ignore>{
         file = virtualFile;
         stringPath = virtualFile.getPath();
 
-        Flog.debug("Initializing ignores for %s", this.file);
+        Flog.debug("Initializing ignores for %s", file);
 
         for (VirtualFile vf : file.getChildren()) {
-            if (!IGNORE_FILES.contains(vf.getName()) || !vf.isValid()) {
-                continue;
-            }
+            addRules(vf);
+        }
+    }
 
-            try {
-                ignoreNode.parse(vf.getInputStream());
-            } catch (IOException e) {
-                Flog.warn(e);
-            }
+    public void addRules(VirtualFile virtualFile) {
+        if (!isIgnoreFile(virtualFile)) {
+            return;
+        }
+
+        try {
+            ignoreNode.parse(virtualFile.getInputStream());
+        } catch (IOException e) {
+            Flog.warn(e);
         }
     }
 
