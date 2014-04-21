@@ -3,32 +3,29 @@ package floobits.common;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
+import floobits.common.jgit.ignore.IgnoreNode;
+import floobits.common.jgit.ignore.IgnoreRule;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import floobits.common.jgit.ignore.IgnoreNode;
-import floobits.common.jgit.ignore.IgnoreRule;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
+import java.util.*;
 
-public class Ignore {
+public class Ignore implements Comparable<Ignore>{
     static Ignore root;
     private static String rootPath;
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo", ".idea"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml"));
     static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
-    protected final VirtualFile file;
-    protected final String stringPath;
-    protected final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
-    protected final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
-    protected int size = 0;
+    public final VirtualFile file;
+    public final String stringPath;
+    public final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
+    public final ArrayList<VirtualFile> files = new ArrayList<VirtualFile>();
+    public int size = 0;
     private final IgnoreNode ignoreNode = new IgnoreNode();
 
     public static Ignore BuildIgnore(VirtualFile virtualFile) {
@@ -47,28 +44,23 @@ public class Ignore {
         file = virtualFile;
         stringPath = virtualFile.getPath();
 
-        Flog.debug("Initializing ignores for %s", this.file);
+        Flog.debug("Initializing ignores for %s", file);
 
         for (VirtualFile vf : file.getChildren()) {
-            if (!IGNORE_FILES.contains(vf.getName()) || !vf.isValid()) {
-                continue;
-            }
-
-            try {
-                ignoreNode.parse(vf.getInputStream());
-            } catch (IOException e) {
-                Flog.warn(e);
-            }
+            addRules(vf);
         }
     }
 
-    public ArrayList<VirtualFile> getFiles() {
-        ArrayList<VirtualFile> arrayList= new ArrayList<VirtualFile>();
-        arrayList.addAll(files);
-        for (Entry<String, Ignore> entry: children.entrySet()) {
-            arrayList.addAll(entry.getValue().getFiles());
+    public void addRules(VirtualFile virtualFile) {
+        if (!isIgnoreFile(virtualFile)) {
+            return;
         }
-        return arrayList;
+
+        try {
+            ignoreNode.parse(virtualFile.getInputStream());
+        } catch (IOException e) {
+            Flog.warn(e);
+        }
     }
 
     @SuppressWarnings("UnsafeVfsRecursion")
@@ -81,22 +73,21 @@ public class Ignore {
             if (!file.isValid()) {
                 continue;
             }
-            if (file.is(VFileProperty.SYMLINK) || file.is(VFileProperty.SPECIAL)) {
+            String absPath = file.getPath();
+            if (isFlooIgnored(file, absPath))  {
                 continue;
             }
-            if (file.getName().startsWith(".") && !WHITE_LIST.contains(file.getName())) {
-                continue;
-            }
-            String path = Utils.toProjectRelPath(file.getPath(), rootPath);
+            String relPath = Utils.toProjectRelPath(absPath, rootPath);
 
-            if (root.isGitIgnored(path, file.isDirectory())) {
+            if (root.isGitIgnored(relPath, file.isDirectory())) {
                 continue;
             }
+
             if (file.isDirectory()) {
                 Ignore child = new Ignore(file);
                 children.put(file.getName(), child);
                 child.recurse();
-                size += child.size;
+                continue;
             }
 
             files.add(file);
@@ -126,23 +117,12 @@ public class Ignore {
     }
 
     private boolean isFlooIgnored(VirtualFile virtualFile, String absPath) {
-        if (!Utils.isShared(absPath, rootPath)) {
-            Flog.log("Ignoring %s because it isn't shared.", absPath);
-            return true;
-        }
-        if (absPath.equals(stringPath)) {
-            return false;
-        }
         if (virtualFile.is(VFileProperty.SPECIAL) || virtualFile.is(VFileProperty.SYMLINK)) {
             Flog.log("Ignoring %s because it is special or a symlink.", absPath);
             return true;
         }
-        String[] parts = Utils.toProjectRelPath(absPath, rootPath).split("/");
-        for (String name : parts) {
-            if (name.startsWith(".") && !WHITE_LIST.contains(name)) {
-                Flog.log("Ignoring %s because it is hidden.", absPath);
-                return true;
-            }
+        if (file.getName().startsWith(".") && !WHITE_LIST.contains(file.getName())) {
+            return true;
         }
         if (!virtualFile.isDirectory() && virtualFile.getLength() > MAX_FILE_SIZE) {
             Flog.log("Ignoring %s because it is too big (%s)", absPath, virtualFile.getLength());
@@ -152,17 +132,34 @@ public class Ignore {
     }
 
     public Boolean isIgnored(FlooContext context, VirtualFile virtualFile) {
+
         if (!virtualFile.isValid()){
             Flog.log("Ignoring %s because it is invalid.", virtualFile);
             return true;
         }
         String path = FilenameUtils.separatorsToUnix(virtualFile.getPath());
+
+        if (path.equals(stringPath)) {
+            return false;
+        }
+        if (!Utils.isShared(path, rootPath)) {
+            Flog.log("Ignoring %s because it isn't shared.", path);
+            return true;
+        }
+        String[] parts = Utils.toProjectRelPath(path, rootPath).split("/");
+        for (String name : parts) {
+            if (name.startsWith(".") && !WHITE_LIST.contains(name)) {
+                Flog.log("Ignoring %s because it is hidden.", path);
+                return true;
+            }
+        }
         if (isFlooIgnored(virtualFile, path))
             return true;
 
         path = context.toProjectRelPath(path);
         return isGitIgnored(path, virtualFile.isDirectory());
     }
+
     public static void writeDefaultIgnores(FlooContext context) {
         Flog.log("Creating default ignores.");
         String path = FilenameUtils.concat(context.colabDir, ".flooignore");
@@ -180,5 +177,10 @@ public class Ignore {
 
     public static boolean isIgnoreFile(VirtualFile virtualFile) {
         return virtualFile != null && IGNORE_FILES.contains(virtualFile.getName()) && virtualFile.isValid();
+    }
+
+    @Override
+    public int compareTo(@NotNull Ignore ignore) {
+        return ignore.size - size;
     }
 }

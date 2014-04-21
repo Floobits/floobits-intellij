@@ -2,20 +2,17 @@ package floobits.common.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.intellij.ide.SaveAndSyncHandlerImpl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.options.newEditor.OptionsEditorDialog;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.ReadonlyStatusHandler;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
 import floobits.Listener;
@@ -24,27 +21,28 @@ import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;
+import floobits.dialogs.DisconnectNoticeDialog;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
-import floobits.dialogs.ResolveConflictsDialogWrapper;
+import floobits.dialogs.HandleTooBigDialog;
+import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class FlooHandler extends BaseHandler {
-
-    private final Project project;
-
     class QueuedAction {
         public final Buf buf;
         public RunLater<Buf> runnable;
@@ -62,6 +60,7 @@ public class FlooHandler extends BaseHandler {
             Flog.log("Spent %s in ui thread", l1 -l);
         }
     }
+
     private final Runnable dequeueRunnable;
     public JsonObject lastHighlight;
     private Boolean shouldUpload = false;
@@ -72,15 +71,36 @@ public class FlooHandler extends BaseHandler {
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     private HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     private final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
-    private RoomInfoTree tree;
     private int connectionId;
     public Listener listener = new Listener(this);
     public boolean readOnly = false;
     // buffer ids are not removed from readOnlyBufferIds
     public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
-    private HashSet<Integer> ideaBufs = new HashSet<Integer>();
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
     public String username = "";
+
+    public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
+        super(context);
+        url = flooUrl;
+        this.shouldUpload = shouldUpload;
+        dequeueRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Flog.log("Doing %s work", queue.size());
+                while (true) {
+                    // TODO: set a limit here and continue later
+                    QueuedAction action = queue.poll();
+                    if (action == null) {
+                        return;
+                    }
+                    action.run();
+                }
+            }
+        };
+        if (ProjectRootManager.getInstance(context.project).getProjectSdk() == null) {
+            Flog.warn("No SDK detected.");
+        }
+    }
 
     public String getUsername(Integer user_id) {
         FlooUser user = users.get(user_id);
@@ -124,30 +144,6 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
-        super(context);
-        url = flooUrl;
-        this.shouldUpload = shouldUpload;
-        dequeueRunnable = new Runnable() {
-            @Override
-            public void run() {
-                Flog.log("Doing %s work", queue.size());
-                while (true) {
-                    // TODO: set a limit here and continue later
-                    QueuedAction action = queue.poll();
-                    if (action == null) {
-                        return;
-                    }
-                    action.run();
-                }
-            }
-        };
-        this.project = context.project;
-        if (ProjectRootManager.getInstance(this.project).getProjectSdk() == null) {
-            Flog.warn("No SDK detected.");
-        }
-    }
-
     public void go() {
         Flog.warn("join workspace");
         PersistentJson persistentJson = PersistentJson.getInstance();
@@ -170,13 +166,6 @@ public class FlooHandler extends BaseHandler {
         return bufs.get(id);
     }
 
-    void upload() {
-        ArrayList<VirtualFile> allNestedFiles = Utils.getAllValidNestedFiles(context, context.project.getBaseDir());
-        for (VirtualFile virtualFile : allNestedFiles) {
-            upload(virtualFile);
-        }
-    }
-
     public void upload(VirtualFile virtualFile) {
         if (readOnly) {
             return;
@@ -193,7 +182,202 @@ public class FlooHandler extends BaseHandler {
         send_create_buf(virtualFile);
     }
 
+    private void initialManageConflicts(RoomInfoResponse ri) {
+        final LinkedList<Buf> conflicts = new LinkedList<Buf>();
+        final LinkedList<Buf> missing = new LinkedList<Buf>();
+        final LinkedList<String> conflictedPaths = new LinkedList<String>();
+        for (Map.Entry entry : ri.bufs.entrySet()) {
+            Integer buf_id = (Integer) entry.getKey();
+            RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
+            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
+            bufs.put(buf_id, buf);
+            paths_to_ids.put(b.path, b.id);
+            buf.read();
+            if (buf.buf == null) {
+                if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
+                    send_get_buf(buf.id);
+                    continue;
+                }
+                missing.add(buf);
+                conflictedPaths.add(buf.path);
+                continue;
+            }
+            if (!b.md5.equals(buf.md5)) {
+                conflicts.add(buf);
+                conflictedPaths.add(buf.path);
+            }
+        }
 
+        if (conflictedPaths.size() <= 0) {
+            return;
+        }
+        String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
+        ResolveConflictsDialog dialog = new ResolveConflictsDialog(
+                new RunLater<Void>() {
+                    @Override
+                    public void run(Void _) {
+                        for (Buf buf : conflicts) {
+                            send_get_buf(buf.id);
+                        }
+                        for (Buf buf : missing) {
+                            send_get_buf(buf.id);
+                        }
+                    }
+                }, new RunLater<Void>() {
+            @Override
+            public void run(Void _) {
+                for (Buf buf : conflicts) {
+                    send_set_buf(buf);
+                }
+                for (Buf buf : missing) {
+                    buf.cancelTimeout();
+                    conn.write(new DeleteBuf(buf.id, false));
+                }
+            }
+        }, readOnly,
+                new RunLater<Void>() {
+                    @Override
+                    public void run(Void arg) {
+                        context.shutdown();
+                    }
+                }, conflictedPathsArray
+        );
+        dialog.createCenterPanel();
+        dialog.show();
+    }
+    private void initialUpload(RoomInfoResponse ri) {
+        context.statusMessage("Stomping on remote files and uploading new ones.", false);
+        context.flashMessage("Stomping on remote files and uploading new ones.");
+
+        final Ignore ignoreTree = context.getIgnoreTree();
+        ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
+        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>(){{ add(ignoreTree);}};
+        int size = 0;
+        Ignore ignore;
+        while (tempIgnores.size() > 0) {
+            ignore = tempIgnores.removeLast();
+            size += ignore.size;
+            allIgnores.add(ignore);
+            for(Ignore ig: ignore.children.values()) {
+                tempIgnores.add(ig);
+            }
+        }
+        LinkedList<Ignore> tooBigIgnores = new LinkedList<Ignore>();
+        Collections.sort(allIgnores);
+
+        while (size > ri.max_size) {
+            Ignore ig = allIgnores.remove(0);
+            size -= ig.size;
+            tooBigIgnores.add(ig);
+        }
+        if (tooBigIgnores.size() > 0) {
+            int TOO_MANY_BIG_DIRS = 50;
+            if (tooBigIgnores.size() > TOO_MANY_BIG_DIRS) {
+                NumberFormat numberFormat = NumberFormat.getNumberInstance();
+                String howMany = numberFormat.format(tooBigIgnores.size());
+                String tooMuch = numberFormat.format(ri.max_size/1000);
+                String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
+                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new RunLater<Void>() {
+                    @Override
+                    public void run(Void arg) {
+                       context.shutdown();
+                    }
+                }, String.format("%s We limit it to %d and you have %s big directories.", notice, TOO_MANY_BIG_DIRS, howMany));
+                disconnectNoticeDialog.createCenterPanel();
+                disconnectNoticeDialog.show();
+                return;
+            }
+            final Boolean[] shouldContinue = new Boolean[1];
+            // shouldContinue[0] is null when user closes dialog instead of clicking a button:
+            shouldContinue[0] = false;
+            HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(new RunLater<Boolean>() {
+                @Override
+                public void run(Boolean arg) {
+                    shouldContinue[0] = arg;
+                }
+            }, tooBigIgnores);
+
+            handleTooBigDialog.createCenterPanel();
+            handleTooBigDialog.show();
+
+            if (!shouldContinue[0]) {
+                context.shutdown();
+                return;
+            }
+        }
+
+        HashSet<String> paths = new HashSet<String>();
+        for (Ignore ig : allIgnores) {
+            for (VirtualFile virtualFile : ig.files)
+                paths.add(context.toProjectRelPath(virtualFile.getPath()));
+        }
+
+        for (Map.Entry entry : ri.bufs.entrySet()) {
+            Integer buf_id = (Integer) entry.getKey();
+            RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
+            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
+            bufs.put(buf_id, buf);
+            paths_to_ids.put(b.path, b.id);
+            if (!paths.contains(buf.path)) {
+                send_delete_buf(buf);
+                continue;
+            }
+            paths.remove(buf.path);
+            buf.read();
+            if (buf.buf == null) {
+                send_get_buf(buf.id);
+                continue;
+            }
+            if (b.md5.equals(buf.md5)) {
+                continue;
+            }
+            send_set_buf(buf);
+        }
+
+        LocalFileSystem instance = LocalFileSystem.getInstance();
+        for (String path : paths) {
+            VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
+            if (fileByPath == null || !fileByPath.isValid()) {
+                Flog.warn(String.format("path is no longer a valid virtual file"));
+                continue;
+            }
+            send_create_buf(fileByPath);
+
+        }
+
+        String flooignore = FilenameUtils.concat(context.colabDir, ".flooignore");
+
+        try {
+            File f = new File(flooignore);
+            List<String> strings;
+            if (f.exists()) {
+                strings = FileUtils.readLines(f);
+            } else {
+                strings = new ArrayList<String>();
+            }
+
+            for (Ignore ig : tooBigIgnores) {
+                String rule = "/" + context.toProjectRelPath(ig.stringPath);
+                if (!rule.endsWith("/")) {
+                    rule += "/";
+                }
+                rule += "*";
+                strings.add(rule);
+            }
+            listener.flooDisable();
+            FileUtils.writeLines(f, strings);
+            VirtualFile fileByIoFile = instance.findFileByIoFile(f);
+            if (fileByIoFile != null) {
+                fileByIoFile.refresh(false, false);
+                ignoreTree.addRules(fileByIoFile);
+            }
+        } catch (IOException e) {
+            Flog.warn(e);
+        } finally {
+            listener.flooEnable();
+        }
+        shouldUpload = false;
+    }
     void _on_room_info(final JsonObject obj) {
         ThreadSafe.read(context, new Runnable() {
             @Override
@@ -202,7 +386,6 @@ public class FlooHandler extends BaseHandler {
                 context.chatManager.openChat();
                 RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                 isJoined = true;
-                tree = new RoomInfoTree(obj.getAsJsonObject("tree"));
                 users = ri.users;
                 context.chatManager.setUsers(users);
                 perms = new HashSet<String>(Arrays.asList(ri.perms));
@@ -213,89 +396,16 @@ public class FlooHandler extends BaseHandler {
                 connectionId = Integer.parseInt(ri.user_id);
                 Flog.info("Got roominfo with userId %d", connectionId);
 
-
                 DotFloo.write(context.colabDir, url.toString());
 
-                final LinkedList<Buf> conflicts = new LinkedList<Buf>();
-                final LinkedList<Buf> missing = new LinkedList<Buf>();
-                final LinkedList<String> conflictedPaths = new LinkedList<String>();
-                for (Map.Entry entry : ri.bufs.entrySet()) {
-                    Integer buf_id = (Integer) entry.getKey();
-                    RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-                    Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context);
-                    bufs.put(buf_id, buf);
-                    paths_to_ids.put(b.path, b.id);
-                    buf.read();
-                    if (buf.buf == null) {
-                        if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
-                            send_get_buf(buf.id);
-                            continue;
-                        }
-                        missing.add(buf);
-                        conflictedPaths.add(buf.path);
-                        continue;
-                    }
-                    if (!b.md5.equals(buf.md5)) {
-                        conflicts.add(buf);
-                        conflictedPaths.add(buf.path);
-                    }
-                }
-                final RunLater<Void> stompLater = new RunLater<Void>() {
-                    @Override
-                    public void run(Void _) {
-                        for (Buf buf : conflicts) {
-                            send_set_buf(buf);
-                        }
-                        for (Buf buf : missing) {
-                            buf.cancelTimeout();
-                            conn.write(new DeleteBuf(buf.id, false));
-                        }
-                    }
-                };
                 if (shouldUpload) {
-                    if (readOnly) {
-                        context.statusMessage("You don't have permission to update remote files.", false);
-                    } else {
-                        context.statusMessage("Stomping on remote files and uploading new ones.", false);
-                        context.flashMessage("Stomping on remote files and uploading new ones.");
-                        upload();
-                        stompLater.run(null);
+                    if (!readOnly) {
+                        initialUpload(ri);
                         return;
                     }
+                    context.statusMessage("You don't have permission to update remote files.", false);
                 }
-
-
-                if (conflictedPaths.size() <= 0) {
-                    return;
-                }
-
-                // XXXX: If this name ever changes, we are screwed
-                final String ideaPath = FilenameUtils.concat(Constants.baseDir, ".idea");
-                String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
-                ResolveConflictsDialogWrapper dialog = new ResolveConflictsDialogWrapper(
-                        new RunLater<Void>() {
-                            @Override
-                            public void run(Void _) {
-                                for (Buf buf : conflicts) {
-                                    send_get_buf(buf.id);
-                                }
-                                for (Buf buf : missing) {
-                                    if (Utils.isChild(context.absPath(buf.path), ideaPath)) {
-                                        ideaBufs.add(buf.id);
-                                    }
-                                    send_get_buf(buf.id);
-                                }
-                            }
-                        }, stompLater, readOnly,
-                        new RunLater<Void>() {
-                            @Override
-                            public void run(Void arg) {
-                                context.shutdown();
-                            }
-                        }, conflictedPathsArray
-                );
-                dialog.createCenterPanel();
-                dialog.show();
+                initialManageConflicts(ri);
             }
         });
     }
@@ -318,13 +428,6 @@ public class FlooHandler extends BaseHandler {
                 b.set(res.buf, res.md5);
                 b.write();
                 Flog.info("on get buffed. %s", b.path);
-                if (ideaBufs.contains(b.id)) {
-                    ideaBufs.remove(b.id);
-                    if (ideaBufs.isEmpty()) {
-                        SaveAndSyncHandlerImpl.refreshOpenFiles();
-                        VirtualFileManager.getInstance().refreshWithoutFileWatcher(false);
-                    }
-                }
             }
         });
     }
@@ -507,7 +610,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void _on_highlight(JsonObject obj) {
-        final FlooHighlight res = new Gson().fromJson(obj, (Type)FlooHighlight.class);
+        final FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
         final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = (stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         lastHighlight = obj;
@@ -722,7 +825,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     void _on_join(JsonObject obj) {
-        FlooUser u = new Gson().fromJson(obj, (Type)FlooUser.class);
+        FlooUser u = new Gson().fromJson(obj, (Type) FlooUser.class);
         this.users.put(u.user_id, u);
         context.statusMessage(String.format("%s joined the workspace on %s (%s).", u.username, u.platform, u.client), false);
         context.chatManager.setUsers(this.users);
@@ -842,14 +945,19 @@ public class FlooHandler extends BaseHandler {
         }
         Flog.log("Sending patch for %s", buf.path);
         FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
-        this.conn.write(req);
+        conn.write(req);
+    }
+
+    public void send_delete_buf(Buf buf) {
+        buf.cancelTimeout();
+        conn.write(new DeleteBuf(buf.id, false));
     }
 
     public void send_set_buf (Buf b) {
         if (!can("patch")) {
             return;
         }
-        this.conn.write(new SetBuf(b));
+        conn.write(new SetBuf(b));
     }
 
     public void send_summon (String current, Integer offset) {

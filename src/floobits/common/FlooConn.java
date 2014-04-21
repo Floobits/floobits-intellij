@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class FlooConn {
     // TODO: kill client pings. just check that we got a ping from server every n seconds
     private class Ping implements Serializable { public String name = "ping"; }
-    protected Writer out;
+    protected volatile Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
     protected volatile BaseHandler handler;
@@ -33,7 +33,6 @@ public class FlooConn {
 
     public FlooConn(final BaseHandler handler) {
         this.handler = handler;
-        final FlooUrl flooUrl = handler.getUrl();
         uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
@@ -57,10 +56,10 @@ public class FlooConn {
             try {
                 out.write(data);
                 out.flush();
-            } catch (Exception e) {
-                // TODO: reconnect or something?
+            } catch (Throwable e) {
                 if (retries > -1) {
                     Flog.warn(e);
+                    cleanUp();
                 }
             }
         }

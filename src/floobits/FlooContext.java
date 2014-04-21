@@ -7,27 +7,25 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
-import floobits.dialogs.DialogBuilder;
-import floobits.dialogs.ShareProjectDialog;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
+import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * I am the link between a project and floobits
  */
 public class FlooContext {
+
     public String colabDir;
     public Project project;
     public BaseHandler handler;
@@ -38,7 +36,6 @@ public class FlooContext {
 
     public FlooContext(Project project) {
         this.project = project;
-
     }
 
     public Timeout setTimeout(int time, final Runnable runnable) {
@@ -218,6 +215,10 @@ public class FlooContext {
 
     public Boolean isIgnored(VirtualFile f) {
         return ignoreTree.isIgnored(this, f);
+    }
+
+    public Ignore getIgnoreTree() {
+        return ignoreTree;
     }
 
     public void flashMessage(final String message) {

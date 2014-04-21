@@ -8,5 +8,4 @@ public class Constants {
     final static public String pluginVersion = "0.01";
     final static public String defaultHost = "floobits.com";
     final static public int defaultPort = 3448;
-
 }

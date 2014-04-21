@@ -3,15 +3,18 @@ package floobits;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.platform.PlatformProjectOpenProcessor;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
-import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.io.File;
 import java.net.URI;
 
 public class FloobitsApplication implements ApplicationComponent {
@@ -60,9 +63,6 @@ public class FloobitsApplication implements ApplicationComponent {
             @Override
             public void run(final String location) {
                 Project projectForPath = getProject(location);
-                if (projectForPath == null) {
-                    projectForPath = createProject(location, f.workspace);
-                }
                 final FlooContext context = FloobitsPlugin.getInstance(projectForPath).context;
                 ThreadSafe.write(context, new Runnable() {
                     @Override
@@ -86,10 +86,7 @@ public class FloobitsApplication implements ApplicationComponent {
             return;
         }
         Project projectForPath = getProject(location);
-        if (projectForPath == null) {
-            projectForPath = createProject(location, flooUrl.workspace);
-            context = FloobitsPlugin.getInstance(projectForPath).context;
-        } else if (context == null || projectForPath != context.project) {
+        if (context == null || projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
@@ -97,7 +94,6 @@ public class FloobitsApplication implements ApplicationComponent {
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
-                finalContext.project.save();
                 Window window = WindowManager.getInstance().suggestParentWindow(finalContext.project);
                 if (window != null) {
                     window.toFront();
@@ -151,40 +147,14 @@ public class FloobitsApplication implements ApplicationComponent {
 
     private Project getProject(String path) {
         ProjectManager pm = ProjectManager.getInstance();
-        // Check open projects
         Project[] openProjects = pm.getOpenProjects();
         for (Project project : openProjects) {
             if (path.equals(project.getBasePath())) {
                 return project;
             }
         }
-
-        // Try to open existing project
-        try {
-            return pm.loadAndOpenProject(path);
-        } catch (Exception e) {
-            Flog.warn(e);
-        }
-
-        return null;
+        VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(new File(path));
+        return PlatformProjectOpenProcessor.getInstance().doOpenProject(file, null, false);
     }
 
-    private Project createProject(String path, String name) {
-        ProjectManager pm = ProjectManager.getInstance();
-        // Create project
-        Project project = pm.createProject(name, path);
-        if (project == null) {
-            return null;
-        }
-        // TODO: does this ever actually happen?
-        if (project.isOpen()) {
-            return project;
-        }
-        try {
-            return ProjectManager.getInstance().loadAndOpenProject(path);
-        } catch (Exception e) {
-            Flog.warn(e);
-        }
-        return project;
-    }
-        }
+}
