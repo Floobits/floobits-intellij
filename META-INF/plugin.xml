@@ -16,14 +16,12 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Fixed blocking the UI thread in places.
-          Added icon to chat window.
-          Added join workspace to quick start.
-          Added a join recent workspace to quick start.
-          Stopped hiding ask for permissions options, disabled instead.
-          Fixed issues with running actions without a project.
-          Prompting user when trying to summon on file that isn't shared.
-          Fixed adding files on join.
+          Improved handling big directories.
+          Fixed initial join not adding files to the workspace.
+          Fixed chat UI not showing disconnection properly.
+          Added crash reporting.
+          More connection and slowness improvements.
+          Null pointer and other bug fixes.
     ]]>
   </change-notes>
 
