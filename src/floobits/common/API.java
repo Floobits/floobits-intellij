@@ -53,11 +53,22 @@ public class API {
             e.printStackTrace(pw);
             message.put("stack", sw.toString());
             message.put("description", e.getMessage());
+            setContextInfo("%s died%s!");
+        }
+
+        public CrashDump(String description, String username) {
+            this.username = username;
+            message.put("sendingAt", String.format("%s", new Date().getTime()));
+            message.put("description", description);
+            setContextInfo("%s submitted an issues%s!");
+        }
+
+        protected void setContextInfo(String subjectText) {
             ApplicationInfo instance = ApplicationInfo.getInstance();
             IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
             String version = plugin != null ? plugin.getVersion() : "???";
             useragent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-            subject = String.format("%s died%s!", instance.getVersionName(), username != null ? " for " + username : "");
+            subject = String.format(subjectText, instance.getVersionName(), username != null ? " for " + username : "");
         }
     }
 
@@ -181,6 +192,7 @@ public class API {
     }
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
+        Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
@@ -289,5 +301,28 @@ public class API {
     }
     static public void uploadCrash(FlooContext context, Throwable throwable) {
         uploadCrash(context.handler, context, throwable);
+    }
+    static public void sendUserIssue(String description, String username) {
+        final PostMethod method;
+        method = new PostMethod("/api/log");
+        Gson gson = new Gson();
+        CrashDump crashDump = new CrashDump(String.format("User submitted an issue: %s", description), username);
+        String json = gson.toJson(crashDump);
+        try {
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            Flog.warn("Couldn't send a user issue.");
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    apiRequest(method, null, Constants.defaultHost);
+                } catch (Throwable e) {
+                    Utils.errorMessage(String.format("Couldn't send crash report %s", e), null);
+                }
+            }
+        }, "Floobits User Issue Submitter").run();
     }
 }
