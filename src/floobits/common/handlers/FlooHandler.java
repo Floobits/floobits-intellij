@@ -1095,6 +1095,9 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void untellij_kick(int userId) {
+        if (!can("kick")) {
+            return;
+        }
         conn.write(new FlooKick(userId));
     }
 
