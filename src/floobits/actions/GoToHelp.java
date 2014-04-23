@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * Created by bjorn on 4/23/14.
- */
 public class GoToHelp extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         if(!Desktop.isDesktopSupported()) {

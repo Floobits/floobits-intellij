@@ -1094,6 +1094,10 @@ public class FlooHandler extends BaseHandler {
         conn.write(new FlooMessage(chatContents));
     }
 
+    public void untellij_kick(int userId) {
+        conn.write(new FlooKick(userId));
+    }
+
     public boolean can(String perm) {
         if (!isJoined)
             return false;

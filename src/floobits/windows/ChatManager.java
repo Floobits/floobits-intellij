@@ -92,7 +92,7 @@ public class ChatManager {
 
                 // Add the list to the model.
                 for (FlooUser user : userList) {
-                    chatForm.addClients(user.username, user.client, user.platform);
+                    chatForm.addClients(user.username, user.client, user.platform, user.user_id);
                 }
             }
         }, ModalityState.NON_MODAL);
