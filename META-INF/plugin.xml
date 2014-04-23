@@ -2,7 +2,7 @@
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
   <version>1.0.9</version>
-  <vendor email="info@floobits.com" url="http://floobits.com">Floobits</vendor>
+  <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
       Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
@@ -81,6 +81,13 @@
       <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions" text="Request Edit Permissions"
               description="Request edit permissions for a workspace, if you don&#39;t have them already."/>
 
+      <action id="floobits.actions.SubmitIssue" class="floobits.actions.SubmitIssue" text="Report an Issue to Floobits"
+              description="Submit an Issue to Floobits">
+      </action>
+      <action id="floobits.actions.GoToHelp" class="floobits.actions.GoToHelp" text="Get Help with Floobits"
+              description="Get help for Floobits">
+      </action>
+
       <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo-themed.png">
           <reference ref="floobits.actions.AddToWorkspace"/>
           <reference ref="floobits.actions.DeleteFromWorkspace"/>
@@ -88,6 +95,9 @@
       </group>
 
       <group id="Floobits" text="Floobits" description="Floobits" popup="true" icon="/icons/floo.png">
+          <reference ref="floobits.actions.SubmitIssue"/>
+          <reference ref="floobits.actions.GoToHelp"/>
+          <separator/>
           <reference ref="floobits.actions.ShareProject"/>
           <reference ref="floobits.actions.ShareProjectPrivately"/>
           <separator/>
@@ -112,6 +122,12 @@
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
       <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Join a new Floobits Workspace" icon="/icons/floo.png">
+          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
+      </action>
+      <action id="floobits.actions.QuickStartSubmit" class="floobits.actions.SubmitIssue" text="Report an Issue to Floobits" icon="/icons/floo.png">
+          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
+      </action>
+      <action id="floobits.actions.QuickStartHelp" class="floobits.actions.GoToHelp" text="Get Help With Floobits" icon="/icons/floo.png">
           <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
   </actions>
