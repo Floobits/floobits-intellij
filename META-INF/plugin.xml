@@ -84,6 +84,9 @@
       <action id="floobits.actions.SubmitIssue" class="floobits.actions.SubmitIssue" text="Report an Issue to Floobits"
               description="Submit an Issue to Floobits">
       </action>
+      <action id="floobits.actions.GoToHelp" class="floobits.actions.GoToHelp" text="Get Help with Floobits"
+              description="Get help for Floobits">
+      </action>
 
       <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo-themed.png">
           <reference ref="floobits.actions.AddToWorkspace"/>
@@ -93,6 +96,7 @@
 
       <group id="Floobits" text="Floobits" description="Floobits" popup="true" icon="/icons/floo.png">
           <reference ref="floobits.actions.SubmitIssue"/>
+          <reference ref="floobits.actions.GoToHelp"/>
           <separator/>
           <reference ref="floobits.actions.ShareProject"/>
           <reference ref="floobits.actions.ShareProjectPrivately"/>
@@ -121,6 +125,9 @@
           <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
       <action id="floobits.actions.QuickStartSubmit" class="floobits.actions.SubmitIssue" text="Report an Issue to Floobits" icon="/icons/floo.png">
+          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
+      </action>
+      <action id="floobits.actions.QuickStartHelp" class="floobits.actions.GoToHelp" text="Get Help With Floobits" icon="/icons/floo.png">
           <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
   </actions>
