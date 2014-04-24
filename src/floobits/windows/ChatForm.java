@@ -7,6 +7,8 @@ import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
@@ -19,6 +21,25 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ChatForm {
+
+    protected class ClientModelItem {
+        public String username;
+        public String client;
+        public String platform;
+        public int userId;
+
+        public ClientModelItem(String username, String client, String platform, Integer userId) {
+            this.username = username;
+            this.client = client;
+            this.platform = platform;
+            this.userId = userId;
+        }
+
+        public String toString() {
+            return String.format("<html><b>%s</b> <small><i>%s (%s)</html></i></small>", username, client, platform);
+        }
+    }
+
     private JPanel chatPanel;
     private DefaultListModel clientModel = new DefaultListModel();
     private JList clients;
@@ -35,6 +56,7 @@ public class ChatForm {
         super();
         this.context = context;
         clients.setModel(clientModel);
+        setupPopupMenu();
         kit = new HTMLEditorKit();
         doc = new HTMLDocument();
         messages.setEditorKit(kit);
@@ -69,6 +91,39 @@ public class ChatForm {
         });
     }
 
+    private void setupPopupMenu() {
+        JPopupMenu popupMenu = new JPopupMenu();
+        final JMenuItem kickMenuItem = new JMenuItem("Kick");
+        kickMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                ClientModelItem item = (ClientModelItem) clients.getSelectedValue();
+                Flog.info("Kicking %s with user id %d.", item.username, item.userId);
+                flooHandler.untellij_kick(item.userId);
+            }
+        });
+        popupMenu.add(kickMenuItem);
+        popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                FlooHandler floohandler = context.getFlooHandler();
+                if (floohandler == null) {
+                    return;
+                }
+                kickMenuItem.setEnabled(floohandler.can("kick"));
+            }
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {}
+        });
+        clients.setComponentPopupMenu(popupMenu);
+    }
+
     private void sendChatContents() {
         FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
@@ -91,8 +146,8 @@ public class ChatForm {
         clientModel.clear();
     }
 
-    public void addClients(String username, String client, String platform) {
-        clientModel.addElement(String.format("<html><b>%s</b> <small><i>%s (%s)</html></i></small>", username, client, platform));
+    public void addClients(String username, String client, String platform, Integer user_id) {
+        clientModel.addElement(new ClientModelItem(username, client, platform, user_id));
     }
 
     public void statusMessage(String message) {
