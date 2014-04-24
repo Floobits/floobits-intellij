@@ -124,7 +124,7 @@ public class ChatForm {
             }
         });
         popupMenu.add(kickMenuItem);
-        final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions");
+        final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
         adminMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {

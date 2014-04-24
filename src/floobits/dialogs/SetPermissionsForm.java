@@ -18,6 +18,7 @@ public class SetPermissionsForm {
             public void actionPerformed(ActionEvent e) {
                 if (!viewCheckbox.isSelected()) {
                     editCheckbox.setSelected(false);
+                    requestPermCheckbox.setSelected(false);
                     adminCheckbox.setSelected(false);
                 }
             }
@@ -25,9 +26,11 @@ public class SetPermissionsForm {
         requestPermCheckbox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!requestPermCheckbox.isSelected()) {
-                   editCheckbox.setSelected(false);
-                   adminCheckbox.setSelected(false);
+                if (requestPermCheckbox.isSelected()) {
+                    viewCheckbox.setSelected(true);
+                } else {
+                    editCheckbox.setSelected(false);
+                    adminCheckbox.setSelected(false);
                 }
             }
         });

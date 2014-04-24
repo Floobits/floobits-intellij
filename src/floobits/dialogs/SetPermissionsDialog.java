@@ -18,7 +18,7 @@ public class SetPermissionsDialog extends CustomButtonDialogWrapper {
         form.setPermissions(view, request, edit, admin);
         actions = new Action[]{
             new CustomButtonAction("Cancel", null),
-            new CustomButtonAction("Change permissions", new RunLater<Void>() {
+            new CustomButtonAction("Save", new RunLater<Void>() {
                 @Override
                 public void run(Void arg) {
                     List<String> permissions = new ArrayList<String>();
