@@ -102,12 +102,21 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public String getUsername(Integer user_id) {
-        FlooUser user = users.get(user_id);
+    public String getUsername(int userId) {
+        FlooUser user = users.get(userId);
         if (user == null) {
             return "";
         }
         return user.username;
+    }
+
+    /**
+     * Get a user by their connection id (userId).
+     * @param userId
+     * @return null or the FlooUser object for the connection id.
+     */
+    public FlooUser getUser(int userId) {
+        return users.get(userId);
     }
 
     public int getMyConnectionId() {
@@ -1101,6 +1110,39 @@ public class FlooHandler extends BaseHandler {
         conn.write(new FlooKick(userId));
     }
 
+    public void untellij_perms_change(int userId, String[] perms) {
+        if (!can("kick")) {
+            return;
+        }
+        conn.write(new PermsChange("set", userId, perms));
+        changePermsForUser(userId, perms);
+    }
+
+    public void changePermsForUser(int userId, String[] permissions) {
+        FlooUser user = getUser(userId);
+        if (user == null) {
+            return;
+        }
+        List<String> givenPerms = java.util.Arrays.asList(permissions);
+        Set<String> translatedPermsSet = new HashSet<String>();
+        HashMap<String, String[]> permTypes = new HashMap<String, String[]>();
+        permTypes.put("edit_room", new String[]{
+            "patch", "get_buf", "set_buf", "create_buf", "delete_buf", "rename_buf", "set_temp_data", "delete_temp_data",
+            "highlight", "msg", "datamsg", "create_term", "term_stdin", "delete_term", "update_term", "term_stdout", "saved"
+        });
+        permTypes.put("view_room", new String[]{"get_buf", "ping", "pong"});
+        permTypes.put("request_perms", new String[]{"get_buf", "request_perms"});
+        permTypes.put("admin_room", new String[]{"kick", "pull_repo", "perms"});
+        for (Map.Entry<String, String[]> entry : permTypes.entrySet()) {
+            if (givenPerms.contains(entry.getKey())) {
+                for (String perm : entry.getValue()) {
+                    translatedPermsSet.add(perm);
+                }
+            }
+        }
+        user.perms = translatedPermsSet.toArray(new String[translatedPermsSet.size()]);
+    }
+
     public boolean can(String perm) {
         if (!isJoined)
             return false;
@@ -1182,4 +1224,5 @@ public class FlooHandler extends BaseHandler {
         }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));
     }
+
 }

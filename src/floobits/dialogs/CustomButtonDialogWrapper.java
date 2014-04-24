@@ -30,7 +30,9 @@ public class CustomButtonDialogWrapper extends DialogWrapper {
 
         @Override
         protected void doAction(ActionEvent e) {
-            action.run(null);
+            if (action != null) {
+                action.run(null);
+            }
             close(OK_EXIT_CODE);
         }
 

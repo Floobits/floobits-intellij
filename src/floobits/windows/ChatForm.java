@@ -2,7 +2,10 @@ package floobits.windows;
 
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
+import floobits.common.RunLater;
 import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.FlooUser;
+import floobits.dialogs.SetPermissionsDialog;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
@@ -19,8 +22,27 @@ import java.awt.event.AdjustmentListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class ChatForm {
+
+    protected class ClientChatActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FlooHandler flooHandler = context.getFlooHandler();
+            if (flooHandler == null) {
+                return;
+            }
+            ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
+            if (client == null) {
+                return;
+            }
+            clientActionPerformed(flooHandler, client);
+        }
+
+        protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {}
+    }
 
     protected class ClientModelItem {
         public String username;
@@ -94,19 +116,48 @@ public class ChatForm {
     private void setupPopupMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem kickMenuItem = new JMenuItem("Kick");
-        kickMenuItem.addActionListener(new ActionListener() {
+        kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                FlooHandler flooHandler = context.getFlooHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                ClientModelItem item = (ClientModelItem) clients.getSelectedValue();
-                Flog.info("Kicking %s with user id %d.", item.username, item.userId);
-                flooHandler.untellij_kick(item.userId);
+            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
+                Flog.info("Kicking %s with user id %d.", client.username, client.userId);
+                flooHandler.untellij_kick(client.userId);
             }
         });
         popupMenu.add(kickMenuItem);
+        final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions");
+        adminMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
+                final int userId = client.userId;
+                Flog.info("Opening up permission dialog for %s", client.username);
+                FlooUser user = flooHandler.getUser(client.userId);
+                if (user == null) {
+                    return;
+                }
+                List<String> permissions = java.util.Arrays.asList(user.perms);
+                SetPermissionsDialog setPermissionsDialog = new SetPermissionsDialog(
+                        new RunLater<String[]>() {
+                            @Override
+                            public void run(String[] permissions) {
+                                Flog.info("Submitting permission changes.");
+                                FlooHandler flooHandler = context.getFlooHandler();
+                                if (flooHandler == null) {
+                                    return;
+                                }
+                                flooHandler.untellij_perms_change(userId, permissions);
+                            }
+                        },
+                        permissions.contains("get_buf"),
+                        permissions.contains("request_perms"),
+                        permissions.contains("patch"),
+                        permissions.contains("kick")
+                );
+                setPermissionsDialog.setUsername(client.username);
+                setPermissionsDialog.createCenterPanel();
+                setPermissionsDialog.show();
+            }
+        });
+        popupMenu.add(adminMenuItem);
         popupMenu.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
@@ -115,6 +166,7 @@ public class ChatForm {
                     return;
                 }
                 kickMenuItem.setEnabled(floohandler.can("kick"));
+                adminMenuItem.setEnabled(floohandler.can("kick"));
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
