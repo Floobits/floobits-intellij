@@ -198,8 +198,9 @@ public class ChatForm {
         clientModel.clear();
     }
 
-    public void addClients(String username, String client, String platform, Integer user_id) {
+    public void addClient(String username, String client, String platform, Integer user_id) {
         clientModel.addElement(new ClientModelItem(username, client, platform, user_id));
+        clients.setSelectedIndex(clientModel.size() - 1);
     }
 
     public void statusMessage(String message) {
