@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -18,9 +17,9 @@ public class SetPermissionsDialog extends CustomButtonDialogWrapper {
         form.setPermissions(view, request, edit, admin);
         actions = new Action[]{
             new CustomButtonAction("Cancel", null),
-            new CustomButtonAction("Save", new RunLater<Void>() {
+            new CustomButtonAction("Save", new Runnable() {
                 @Override
-                public void run(Void arg) {
+                public void run() {
                     List<String> permissions = new ArrayList<String>();
                     if (form.canAdmin()) {
                         permissions.add("admin_room");

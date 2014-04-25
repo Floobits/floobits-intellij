@@ -222,9 +222,9 @@ public class FlooHandler extends BaseHandler {
         }
         String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
         ResolveConflictsDialog dialog = new ResolveConflictsDialog(
-                new RunLater<Void>() {
+                new Runnable() {
                     @Override
-                    public void run(Void _) {
+                    public void run() {
                         for (Buf buf : conflicts) {
                             send_get_buf(buf.id);
                         }
@@ -232,9 +232,9 @@ public class FlooHandler extends BaseHandler {
                             send_get_buf(buf.id);
                         }
                     }
-                }, new RunLater<Void>() {
+                }, new Runnable() {
             @Override
-            public void run(Void _) {
+            public void run() {
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
                 }
@@ -244,9 +244,9 @@ public class FlooHandler extends BaseHandler {
                 }
             }
         }, readOnly,
-                new RunLater<Void>() {
+                new Runnable() {
                     @Override
-                    public void run(Void arg) {
+                    public void run() {
                         context.shutdown();
                     }
                 }, conflictedPathsArray
@@ -286,9 +286,9 @@ public class FlooHandler extends BaseHandler {
                 String howMany = numberFormat.format(tooBigIgnores.size());
                 String tooMuch = numberFormat.format(ri.max_size/1000);
                 String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
-                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new RunLater<Void>() {
+                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new Runnable() {
                     @Override
-                    public void run(Void arg) {
+                    public void run() {
                        context.shutdown();
                     }
                 }, String.format("%s We limit it to %d and you have %s big directories.", notice, TOO_MANY_BIG_DIRS, howMany));

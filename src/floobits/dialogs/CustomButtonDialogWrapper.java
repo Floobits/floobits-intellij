@@ -2,7 +2,6 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.common.RunLater;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +20,9 @@ public class CustomButtonDialogWrapper extends DialogWrapper {
     }
 
     protected class CustomButtonAction extends DialogWrapperAction {
-        protected RunLater<Void> action;
+        protected Runnable action;
 
-        protected CustomButtonAction(String name, RunLater<Void> action) {
+        protected CustomButtonAction(String name, Runnable action) {
             super(name);
             this.action = action;
         }
@@ -31,7 +30,7 @@ public class CustomButtonDialogWrapper extends DialogWrapper {
         @Override
         protected void doAction(ActionEvent e) {
             if (action != null) {
-                action.run(null);
+                action.run();
             }
             close(OK_EXIT_CODE);
         }
