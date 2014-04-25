@@ -23,15 +23,15 @@ public class HandleTooBigDialog extends CustomButtonDialogWrapper {
             problems.add(String.format("<html><p>%s <i>(%s MB)</i></p></html>", ignore.file.getPath(), size));
         }
         form.setItems(problems.toArray(new String[problems.size()]));
-        CustomButtonAction cancelAction = new CustomButtonAction("Quit", new RunLater<Void>() {
+        CustomButtonAction cancelAction = new CustomButtonAction("Quit", new Runnable() {
             @Override
-            public void run(Void arg) {
+            public void run() {
                 runLater.run(false);
             }
         });
-        CustomButtonAction okAction = new CustomButtonAction("Ignore and Continue", new RunLater<Void>() {
+        CustomButtonAction okAction = new CustomButtonAction("Ignore and Continue", new Runnable() {
             @Override
-            public void run(Void arg) {
+            public void run() {
                 runLater.run(true);
             }
         });

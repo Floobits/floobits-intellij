@@ -13,24 +13,24 @@ public class HandleRequestPermsRequestDialog extends CustomButtonDialogWrapper {
     public HandleRequestPermsRequestDialog(String username, Project project, final RunLater<String> runLater) {
         super(project, true);
         actions = new Action[]{
-            new CustomButtonAction("Reject Request", new RunLater<Void>() {
+            new CustomButtonAction("Reject Request", new Runnable() {
                 @Override
-                public void run(Void _) {
+                public void run() {
                     Flog.log("Rejecting edit permission request.");
                     runLater.run("reject");
                 }
             }),
-            new CustomButtonAction("Grant Edit Permissions", new RunLater<Void>() {
+            new CustomButtonAction("Grant Edit Permissions", new Runnable() {
                 @Override
-                public void run(Void arg) {
+                public void run() {
                     Flog.log("Accepting edit permission request.");
                     runLater.run("add");
 
                 }
             }),
-            new CustomButtonAction("Ignore", new RunLater<Void>() {
+            new CustomButtonAction("Ignore", new Runnable() {
                 @Override
-                public void run(Void arg) {
+                public void run() {
                     Flog.log("Ignoring edit permission request.");
                 }
             }),

@@ -102,12 +102,21 @@ public class FlooHandler extends BaseHandler {
         }
     }
 
-    public String getUsername(Integer user_id) {
-        FlooUser user = users.get(user_id);
+    public String getUsername(int userId) {
+        FlooUser user = users.get(userId);
         if (user == null) {
             return "";
         }
         return user.username;
+    }
+
+    /**
+     * Get a user by their connection id (userId).
+     * @param userId
+     * @return null or the FlooUser object for the connection id.
+     */
+    public FlooUser getUser(int userId) {
+        return users.get(userId);
     }
 
     public int getMyConnectionId() {
@@ -213,9 +222,9 @@ public class FlooHandler extends BaseHandler {
         }
         String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
         ResolveConflictsDialog dialog = new ResolveConflictsDialog(
-                new RunLater<Void>() {
+                new Runnable() {
                     @Override
-                    public void run(Void _) {
+                    public void run() {
                         for (Buf buf : conflicts) {
                             send_get_buf(buf.id);
                         }
@@ -223,9 +232,9 @@ public class FlooHandler extends BaseHandler {
                             send_get_buf(buf.id);
                         }
                     }
-                }, new RunLater<Void>() {
+                }, new Runnable() {
             @Override
-            public void run(Void _) {
+            public void run() {
                 for (Buf buf : conflicts) {
                     send_set_buf(buf);
                 }
@@ -235,9 +244,9 @@ public class FlooHandler extends BaseHandler {
                 }
             }
         }, readOnly,
-                new RunLater<Void>() {
+                new Runnable() {
                     @Override
-                    public void run(Void arg) {
+                    public void run() {
                         context.shutdown();
                     }
                 }, conflictedPathsArray
@@ -277,9 +286,9 @@ public class FlooHandler extends BaseHandler {
                 String howMany = numberFormat.format(tooBigIgnores.size());
                 String tooMuch = numberFormat.format(ri.max_size/1000);
                 String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
-                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new RunLater<Void>() {
+                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new Runnable() {
                     @Override
-                    public void run(Void arg) {
+                    public void run() {
                        context.shutdown();
                     }
                 }, String.format("%s We limit it to %d and you have %s big directories.", notice, TOO_MANY_BIG_DIRS, howMany));
@@ -1101,6 +1110,39 @@ public class FlooHandler extends BaseHandler {
         conn.write(new FlooKick(userId));
     }
 
+    public void untellij_perms_change(int userId, String[] perms) {
+        if (!can("kick")) {
+            return;
+        }
+        conn.write(new PermsChange("set", userId, perms));
+        changePermsForUser(userId, perms);
+    }
+
+    public void changePermsForUser(int userId, String[] permissions) {
+        FlooUser user = getUser(userId);
+        if (user == null) {
+            return;
+        }
+        List<String> givenPerms = java.util.Arrays.asList(permissions);
+        Set<String> translatedPermsSet = new HashSet<String>();
+        HashMap<String, String[]> permTypes = new HashMap<String, String[]>();
+        permTypes.put("edit_room", new String[]{
+            "patch", "get_buf", "set_buf", "create_buf", "delete_buf", "rename_buf", "set_temp_data", "delete_temp_data",
+            "highlight", "msg", "datamsg", "create_term", "term_stdin", "delete_term", "update_term", "term_stdout", "saved"
+        });
+        permTypes.put("view_room", new String[]{"get_buf", "ping", "pong"});
+        permTypes.put("request_perms", new String[]{"get_buf", "request_perms"});
+        permTypes.put("admin_room", new String[]{"kick", "pull_repo", "perms"});
+        for (Map.Entry<String, String[]> entry : permTypes.entrySet()) {
+            if (givenPerms.contains(entry.getKey())) {
+                for (String perm : entry.getValue()) {
+                    translatedPermsSet.add(perm);
+                }
+            }
+        }
+        user.perms = translatedPermsSet.toArray(new String[translatedPermsSet.size()]);
+    }
+
     public boolean can(String perm) {
         if (!isJoined)
             return false;
@@ -1182,4 +1224,5 @@ public class FlooHandler extends BaseHandler {
         }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));
     }
+
 }
