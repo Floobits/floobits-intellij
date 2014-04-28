@@ -8,6 +8,8 @@ import floobits.FloobitsPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class SelectRecentWorkspace extends DialogWrapper {
@@ -19,6 +21,14 @@ public class SelectRecentWorkspace extends DialogWrapper {
         this.project = project;
         setTitle("Select a Workspace");
         selectWorkspace.setItems(items);
+        selectWorkspace.getRecentWorkspaces().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    doOKAction();
+                }
+            }
+        });
         init();
     }
 

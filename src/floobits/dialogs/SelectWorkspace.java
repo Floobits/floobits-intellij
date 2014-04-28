@@ -13,6 +13,10 @@ public class SelectWorkspace extends JDialog {
         setContentPane(contentPane);
     }
 
+    public JBList getRecentWorkspaces() {
+        return recentWorkspaces;
+    }
+
     public void setItems(final List<String> items) {
         recentWorkspaces.setListData(items.toArray());
         if (items.size() > 0) {
