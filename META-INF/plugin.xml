@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.0.9</version>
+  <version>1.1.0</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,12 +16,12 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Improved handling big directories.
-          Fixed initial join not adding files to the workspace.
-          Fixed chat UI not showing disconnection properly.
-          Added crash reporting.
-          More connection and slowness improvements.
-          Null pointer and other bug fixes.
+          Updated logo.
+          Add ability to report an issue from plugin.
+          Added link to help documentation.
+          Added more actions to Quickstart to help getting started.
+          Fixed null pointer errors.
+          Various UI improvements.
     ]]>
   </change-notes>
 
