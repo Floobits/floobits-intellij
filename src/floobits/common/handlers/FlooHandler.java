@@ -605,7 +605,13 @@ public class FlooHandler extends BaseHandler {
         queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
                 Document document = get_document(bufId);
+                if (document == null) {
+                    return;
+                }
                 Editor editor = get_editor_for_document(document);
+                if (editor == null) {
+                    return;
+                }
                 MarkupModel markupModel = editor.getMarkupModel();
                 for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
                     try {
