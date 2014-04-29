@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, CaretListener {
+public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
     private static AtomicBoolean isListening = new AtomicBoolean(true);
     private final FlooContext context;
     private final FlooHandler flooHandler;
@@ -56,6 +56,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addDocumentListener(this);
         em.addSelectionListener(this);
         em.addCaretListener(this);
+        em.addVisibleAreaListener(this);
 
 
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
@@ -118,25 +119,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
-        if (!isListening.get()) {
-            return;
-        }
-
-        Document document = event.getEditor().getDocument();
-        final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(context, new GetPath(document) {
-            @Override
-            public void if_path(String path, FlooHandler flooHandler) {
-                if (editors.length <= 0) {
-                    return;
-                }
-                Editor editor = editors[0];
-                ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
-                Integer offset = editor.getCaretModel().getOffset();
-                range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                flooHandler.untellij_selection_change(path, range);
-            }
-        });
+        sendCaretPosition(event.getEditor());
     }
 
     public void caretAdded(CaretEvent caretEvent) {
@@ -321,6 +304,32 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                         }
                     }
                 });
+            }
+        });
+    }
+
+    @Override
+    public void visibleAreaChanged(final VisibleAreaEvent event) {
+        sendCaretPosition(event.getEditor());
+    }
+
+    private void sendCaretPosition(Editor editor) {
+        if (!isListening.get()) {
+            return;
+        }
+        Document document = editor.getDocument();
+        final Editor[] editors = EditorFactory.getInstance().getEditors(document);
+        GetPath.getPath(context, new GetPath(document) {
+            @Override
+            public void if_path(String path, FlooHandler flooHandler) {
+                if (editors.length <= 0) {
+                    return;
+                }
+                Editor editor = editors[0];
+                ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
+                Integer offset = editor.getCaretModel().getOffset();
+                range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
+                flooHandler.untellij_selection_change(path, range);
             }
         });
     }
