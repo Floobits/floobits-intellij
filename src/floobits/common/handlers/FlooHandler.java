@@ -391,6 +391,10 @@ public class FlooHandler extends BaseHandler {
         ThreadSafe.read(context, new Runnable() {
             @Override
             public void run() {
+                if (bufs == null) {
+                    Flog.info("Disconnected, abandon room info handling.");
+                    return;
+                }
                 context.statusMessage(String.format("You successfully joined %s ", url.toString()), false);
                 context.chatManager.openChat();
                 RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
