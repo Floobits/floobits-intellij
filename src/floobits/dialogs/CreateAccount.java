@@ -43,9 +43,9 @@ public class CreateAccount extends DialogWrapper {
     }
 
 
-    public CreateAccount(FlooContext context) {
-        super(context.project, true);
-        project = context.project;
+    public CreateAccount(Project project) {
+        super(project, true);
+        this.project = project;
         jPanel = new JPanel();
         init();
         this.setTitle("No Floobits Account Detected");
@@ -69,13 +69,25 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        FloobitsPlugin.getInstance(project).context.linkEditor();
+        FlooContext context;
+        if (project == null) {
+            context = new FlooContext(null);
+        } else {
+            context = FloobitsPlugin.getInstance(project).context;
+        }
+        context.linkEditor();
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        FloobitsPlugin.getInstance(project).context.createAccount();
+        FlooContext context;
+        if (project == null) {
+            context = new FlooContext(null);
+        } else {
+            context = FloobitsPlugin.getInstance(project).context;
+        }
+        context.createAccount();
     }
 }
 

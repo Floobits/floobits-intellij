@@ -39,7 +39,7 @@ public class FloobitsApplication implements ApplicationComponent {
                 context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
             } else {
                 createAccount = false;
-                CreateAccount createAccount1 = new CreateAccount(context);
+                CreateAccount createAccount1 = new CreateAccount(context.project);
                 createAccount1.createCenterPanel();
                 createAccount1.show();
             }
