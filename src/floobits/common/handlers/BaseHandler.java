@@ -5,11 +5,12 @@ import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
 import floobits.common.FlooConn;
 import floobits.common.FlooUrl;
+import floobits.common.NettyFlooConn;
 
 abstract public class BaseHandler {
     public FlooUrl url;
     public boolean isJoined = false;
-    protected FlooConn conn;
+    protected NettyFlooConn conn;
     public FlooContext context;
 
     public BaseHandler(FlooContext context) {

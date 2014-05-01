@@ -158,7 +158,8 @@ public class FlooHandler extends BaseHandler {
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();
-        conn = new FlooConn(this);
+//        conn = new FlooConn(this);
+        conn = new NettyFlooConn(this, context.loopGroup);
         conn.start();
         listener.start();
     }

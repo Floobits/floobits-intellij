@@ -15,11 +15,15 @@ import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * I am the link between a project and floobits
@@ -33,6 +37,7 @@ public class FlooContext {
     protected Ignore ignoreTree;
     private Timeouts timeouts;
     public Date lastChatMessage;
+    public NioEventLoopGroup loopGroup = new NioEventLoopGroup();
 
     public FlooContext(Project project) {
         this.project = project;
