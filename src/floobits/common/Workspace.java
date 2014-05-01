@@ -16,8 +16,8 @@ public class Workspace implements Serializable {
     }
 
     public void clean() {
-      if (!this.url.endsWith("/")) {
-          this.url += "/";
+      if (url.endsWith("/")) {
+          url = url.substring(0, url.length() - 1);
       }
     }
 }
