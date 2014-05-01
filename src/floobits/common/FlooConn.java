@@ -14,8 +14,6 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class FlooConn {
-    // TODO: kill client pings. just check that we got a ping from server every n seconds
-    private class Ping implements Serializable { public String name = "ping"; }
     protected volatile Writer out;
     protected BufferedReader in;
     protected SSLSocket socket;
@@ -177,24 +175,6 @@ public class FlooConn {
         }
     }
 
-    private void setTimeout() {
-        if (handler == null) {
-            return;
-        }
-        write(new Ping());
-        if (timeout != null) {
-            timeout.cancel();
-        }
-        timeout = handler.context.setTimeout(20000, new Runnable() {
-             @Override
-             public void run() {
-                timeout = null;
-                Flog.warn("Timeout reconnecting because of timeout.");
-                cleanUp();
-             }
-        });
-    }
-
     protected void handle (String line) {
         if (handler == null) {
             return;
@@ -206,19 +186,6 @@ public class FlooConn {
             return;
         }
         String requestName = name.getAsString();
-        if (requestName.equals("pong")) {
-            if (timeout != null) {
-                timeout.cancel();
-            }
-
-            timeout = handler.context.setTimeout(5000, new Runnable() {
-                @Override
-                public void run() {
-                    setTimeout();
-                }
-            });
-            return;
-        }
         handler.on_data(requestName, obj);
     }
 
@@ -253,13 +220,6 @@ public class FlooConn {
         writeThread.start();
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         handler.on_connect();
-        timeout = handler.context.setTimeout(10000, new Runnable() {
-            @Override
-            public void run() {
-                timeout = null;
-                setTimeout();
-            }
-        });
         String line;
         while (true) {
             try {
