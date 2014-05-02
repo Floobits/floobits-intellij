@@ -1,6 +1,8 @@
 package floobits.common;
 
+import com.google.gson.Gson;
 import floobits.common.handlers.BaseHandler;
+import floobits.utilities.Flog;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -13,11 +15,14 @@ import io.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import java.io.Serializable;
 
 public class NettyFlooConn {
     private final BaseHandler handler;
     private EventLoopGroup workerGroup;
     public int RECONNECT_DELAY = 15;
+    ChannelFuture connect;
+    Channel channel;
 
     public NettyFlooConn(final BaseHandler handler, EventLoopGroup workerGroup){
         this.handler = handler;
@@ -44,7 +49,7 @@ public class NettyFlooConn {
                 pipeline.addLast("decoder", new StringDecoder());
                 pipeline.addLast("encoder", new StringEncoder());
                 // and then business logic.
-                pipeline.addLast("handler", new FlooClientHandler(handler, self));
+                pipeline.addLast("handler", handler);
             }
         });
         return b;
@@ -53,14 +58,27 @@ public class NettyFlooConn {
         try {
             Bootstrap bootstrap = bootstrap();
             FlooUrl flooUrl = handler.getUrl();
-            ChannelFuture f = bootstrap.connect(flooUrl.host, flooUrl.port).sync();
+            connect = bootstrap.connect(flooUrl.host, flooUrl.port);
+            ChannelFuture channelFuture = connect.sync();
+            channel = channelFuture.channel();
             // Wait until the connection is closed.
-            f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            workerGroup.shutdownGracefully();
+            Flog.warn(e);
         }
+    }
+
+    public void write(Serializable obj) {
+       String data = new Gson().toJson(obj);
+       channel.write(data + "\n");
+    }
+
+    public void shutdown() {
+        try {
+            channel.closeFuture().sync();
+        } catch (Exception e) {
+            Flog.warn(e);
+        }
+        connect.cancel(true);
     }
 
     public void start()  {

@@ -123,6 +123,7 @@ public class FlooHandler extends BaseHandler {
         return connectionId;
     }
 
+
     public void on_connect () {
         queue.clear();
         Settings settings = new Settings(context);

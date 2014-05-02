@@ -27,7 +27,7 @@ public class LinkEditorHandler extends BaseHandler {
 
     public void go() {
         url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
-        conn = new FlooConn(this);
+        conn = new NettyFlooConn(this, context.loopGroup);
         conn.start();
         isJoined = true;
         openBrowser();
