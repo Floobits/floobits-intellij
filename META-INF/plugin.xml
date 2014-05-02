@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,12 +16,10 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Updated logo.
-          Add ability to report an issue from plugin.
-          Added link to help documentation.
-          Added more actions to Quickstart to help getting started.
-          Fixed null pointer errors.
-          Various UI improvements.
+          Reduced the supported versions of IntelliJ to build 131 (IntelliJ 13 & and forks).
+          Fixed using QuickStart menu items with new Floorc.
+          Changed how we open new projects again.
+          Stopped pinging our server, this was creating connection instability.
     ]]>
   </change-notes>
 
