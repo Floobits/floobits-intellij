@@ -89,11 +89,10 @@ public class NettyFlooConn {
 
     public void shutdown() {
         try {
-            channel.closeFuture().sync();
+            channel.close();
         } catch (Exception e) {
             Flog.warn(e);
         }
-        connect.cancel(true);
     }
 
     public void start()  {

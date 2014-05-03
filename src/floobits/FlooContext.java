@@ -262,6 +262,15 @@ public class FlooContext {
             handler.shutdown();
             handler = null;
         }
+        if (loopGroup != null) {
+            try {
+                loopGroup.shutdownGracefully().sync();
+            } catch (InterruptedException e) {
+                Flog.warn(e);
+            }
+            loopGroup = null;
+        }
+
         ignoreTree = null;
     }
 }
