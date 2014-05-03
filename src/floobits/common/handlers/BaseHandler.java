@@ -8,6 +8,7 @@ import floobits.FlooContext;
 import floobits.common.FlooUrl;
 import floobits.common.NettyFlooConn;
 import floobits.utilities.Flog;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,6 +19,7 @@ import io.netty.util.ReferenceCountUtil;
 import java.net.ConnectException;
 import java.util.concurrent.TimeUnit;
 
+@ChannelHandler.Sharable
 abstract public class BaseHandler extends SimpleChannelInboundHandler<String> {
     public FlooUrl url;
     public boolean isJoined = false;
@@ -36,13 +38,8 @@ abstract public class BaseHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        Flog.log(msg);
-    }
-
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
-            JsonObject obj = (JsonObject)new JsonParser().parse((String)msg);
+            JsonObject obj = (JsonObject)new JsonParser().parse(msg);
             JsonElement name = obj.get("name");
             if (name == null) {
                 Flog.warn("No name for receive, ignoring");
@@ -50,7 +47,7 @@ abstract public class BaseHandler extends SimpleChannelInboundHandler<String> {
             }
             String requestName = name.getAsString();
             on_data(requestName, obj);
-            Flog.log((String)msg);
+            Flog.log(msg);
         } finally {
             ReferenceCountUtil.release(msg);
         }
@@ -85,7 +82,7 @@ abstract public class BaseHandler extends SimpleChannelInboundHandler<String> {
             @Override
             public void run() {
                 Flog.log("Reconnecting to: " + ctx.channel().remoteAddress());
-                conn.connect();
+                conn.reconnect();
             }
         }, conn.RECONNECT_DELAY, TimeUnit.SECONDS);
     }

@@ -7,15 +7,16 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.CharsetUtil;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.io.Serializable;
+
 
 public class NettyFlooConn {
     private final BaseHandler handler;
@@ -23,6 +24,7 @@ public class NettyFlooConn {
     public int RECONNECT_DELAY = 15;
     ChannelFuture connect;
     Channel channel;
+    Bootstrap bootstrap;
 
     public NettyFlooConn(final BaseHandler handler, EventLoopGroup workerGroup){
         this.handler = handler;
@@ -45,18 +47,30 @@ public class NettyFlooConn {
                 engine.setUseClientMode(true);
                 pipeline.addLast("ssl", new SslHandler(engine));
                 // On top of the SSL handler, add the text line codec.
-                pipeline.addLast("framer", new DelimiterBasedFrameDecoder(1000 * 1000 * 10, true, Delimiters.lineDelimiter()));
-                pipeline.addLast("decoder", new StringDecoder());
-                pipeline.addLast("encoder", new StringEncoder());
+                pipeline.addLast("framer", new LineBasedFrameDecoder(1000 * 1000 * 10, true, false));
+                pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
+                pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
                 // and then business logic.
                 pipeline.addLast("handler", handler);
             }
         });
         return b;
     }
+    public void reconnect() {
+        try {
+            FlooUrl flooUrl = handler.getUrl();
+            connect = bootstrap.connect(flooUrl.host, flooUrl.port);
+            ChannelFuture channelFuture = connect.sync();
+            channel = channelFuture.channel();
+            // Wait until the connection is closed.
+        } catch (InterruptedException e) {
+            Flog.warn(e);
+        }
+    }
+
     public void connect() {
         try {
-            Bootstrap bootstrap = bootstrap();
+            bootstrap = bootstrap();
             FlooUrl flooUrl = handler.getUrl();
             connect = bootstrap.connect(flooUrl.host, flooUrl.port);
             ChannelFuture channelFuture = connect.sync();
@@ -70,6 +84,7 @@ public class NettyFlooConn {
     public void write(Serializable obj) {
        String data = new Gson().toJson(obj);
        channel.write(data + "\n");
+       channel.flush();
     }
 
     public void shutdown() {
@@ -85,4 +100,3 @@ public class NettyFlooConn {
         connect();
     }
 }
-
