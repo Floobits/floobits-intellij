@@ -11,12 +11,12 @@ public class ResolveConflictsDialog extends CustomButtonDialogWrapper {
     public ResolveConflictsDialog(Runnable stompLocal, Runnable stompRemote, boolean readOnly, Runnable flee, final String[] conflicts) {
         super(true);
         form.setItems(conflicts);
-        CustomButtonAction stompRemoteAction = new CustomButtonAction("Stomp Remote Files", stompRemote);
+        CustomButtonAction stompRemoteAction = new CustomButtonAction("Overwrite Remote Files", stompRemote);
         if (readOnly) {
             stompRemoteAction.setEnabled(false);
         }
         actions = new Action[]{
-                new CustomButtonAction("Stomp Local Files", stompLocal),
+                new CustomButtonAction("Overwrite Local Files", stompLocal),
                 stompRemoteAction,
                 new CustomButtonAction("Disconnect", flee),
         };

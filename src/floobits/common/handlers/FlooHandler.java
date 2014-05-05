@@ -255,8 +255,8 @@ public class FlooHandler extends BaseHandler {
         dialog.show();
     }
     private void initialUpload(RoomInfoResponse ri) {
-        context.statusMessage("Stomping on remote files and uploading new ones.", false);
-        context.flashMessage("Stomping on remote files and uploading new ones.");
+        context.statusMessage("Overwriting remote files and uploading new ones.", false);
+        context.flashMessage("Overwriting remote files and uploading new ones.");
 
         final Ignore ignoreTree = context.getIgnoreTree();
         ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
