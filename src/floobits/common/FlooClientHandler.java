@@ -9,11 +9,11 @@ import floobits.common.handlers.BaseHandler;
 public class FlooClientHandler {
     private long startTime = -1;
     private BaseHandler handler;
-    private NettyFlooConn nettyFlooConn;
+    private Connection connection;
 
-    public FlooClientHandler(BaseHandler handler, NettyFlooConn nettyFlooConn) {
+    public FlooClientHandler(BaseHandler handler, Connection connection) {
         this.handler = handler;
-        this.nettyFlooConn = nettyFlooConn;
+        this.connection = connection;
     }
 
 }

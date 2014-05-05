@@ -25,12 +25,12 @@ import javax.net.ssl.SSLEngine;
 import java.io.Serializable;
 import java.net.ConnectException;
 
-public class NettyFlooConn extends SimpleChannelInboundHandler<String> {
+public class Connection extends SimpleChannelInboundHandler<String> {
     private class FlooChannelInitializer extends ChannelInitializer<SocketChannel> {
-        private NettyFlooConn nettyFlooConn;
+        private Connection connection;
 
-        private FlooChannelInitializer(NettyFlooConn nettyFlooConn) {
-            this.nettyFlooConn = nettyFlooConn;
+        private FlooChannelInitializer(Connection connection) {
+            this.connection = connection;
         }
 
         @Override
@@ -45,7 +45,7 @@ public class NettyFlooConn extends SimpleChannelInboundHandler<String> {
             pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
             pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
             // and then business logic.
-            pipeline.addLast("handler", nettyFlooConn);
+            pipeline.addLast("handler", connection);
         }
     }
     private final BaseHandler handler;
@@ -57,7 +57,7 @@ public class NettyFlooConn extends SimpleChannelInboundHandler<String> {
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
-    public NettyFlooConn(final BaseHandler handler, EventLoopGroup workerGroup){
+    public Connection(final BaseHandler handler, EventLoopGroup workerGroup){
         this.handler = handler;
         this.context = handler.context;
         this.workerGroup = workerGroup;
