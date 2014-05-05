@@ -3,11 +3,9 @@ package floobits.common.handlers;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
-import floobits.common.FlooUrl;
 import floobits.common.Connection;
-import io.netty.channel.ChannelHandler;
+import floobits.common.FlooUrl;
 
-@ChannelHandler.Sharable
 abstract public class BaseHandler {
     public FlooUrl url;
     public boolean isJoined = false;
