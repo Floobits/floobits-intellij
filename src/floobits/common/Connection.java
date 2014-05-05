@@ -65,8 +65,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
 
     public void write(Serializable obj) {
         String data = new Gson().toJson(obj);
-        channel.write(data + "\n");
-        channel.flush();
+        channel.writeAndFlush(data + "\n");
     }
 
     protected void _connect() {
@@ -107,6 +106,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     public void shutdown() {
         if (channel != null) {
             try {
+                channel.disconnect();
                 channel.close();
             } catch (Exception e) {
                 Flog.warn(e);
@@ -151,14 +151,16 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Flog.log("Disconnected from: " + ctx.channel().remoteAddress());
+    public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
+        Flog.log("Channel is now inactive.");
     }
 
     @Override
     public void channelUnregistered(final ChannelHandlerContext ctx) {
+        Flog.log("Disconnected from %s", ctx.channel().remoteAddress());
         if (retries <= 0) {
             Flog.log("Giving up!");
+            context.shutdown();
             return;
         }
         delay = Math.min(10000, Math.round((float) 1.5 * delay));
@@ -177,6 +179,6 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         if (cause instanceof ConnectException) {
             Flog.log("Failed to connect: " + cause.getMessage());
         }
-        API.uploadCrash(handler, context, cause);
+//        API.uploadCrash(handler, context, cause);
     }
 }
