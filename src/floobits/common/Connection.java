@@ -25,6 +25,7 @@ import javax.net.ssl.SSLEngine;
 import java.io.Serializable;
 import java.net.ConnectException;
 
+@ChannelHandler.Sharable
 public class Connection extends SimpleChannelInboundHandler<String> {
     private class FlooChannelInitializer extends ChannelInitializer<SocketChannel> {
         private Connection connection;
@@ -51,17 +52,14 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     private final BaseHandler handler;
     private final FlooContext context;
     Channel channel;
-    EventLoopGroup workerGroup;
     private Integer MAX_RETRIES = 20;
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
-    public Connection(final BaseHandler handler, EventLoopGroup workerGroup){
+    public Connection(final BaseHandler handler){
         this.handler = handler;
         this.context = handler.context;
-        this.workerGroup = workerGroup;
-
     }
 
     public void start() {
@@ -74,15 +72,6 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         channel.flush();
     }
 
-    public Bootstrap bootstrap() {
-        Bootstrap b = new Bootstrap();
-        b.group(workerGroup);
-        b.channel(NioSocketChannel.class);
-        b.option(ChannelOption.SO_KEEPALIVE, true);
-        b.option(ChannelOption.TCP_NODELAY, true);
-        b.handler(new FlooChannelInitializer(this));
-        return b;
-    }
     public void connect() {
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
@@ -90,9 +79,14 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         }
         try {
             retries -= 1;
-            Bootstrap bootstrap = bootstrap();
+            Bootstrap b = new Bootstrap();
+            b.group(context.getLoopGroup());
+            b.channel(NioSocketChannel.class);
+            b.option(ChannelOption.SO_KEEPALIVE, true);
+            b.option(ChannelOption.TCP_NODELAY, true);
+            b.handler(new FlooChannelInitializer(this));
             FlooUrl flooUrl = handler.getUrl();
-            ChannelFuture connect = bootstrap.connect(flooUrl.host, flooUrl.port).sync();
+            ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port).sync();
             channel = connect.channel();
             // Wait until the connection is closed.
             Flog.info("lost connection!");
@@ -102,11 +96,14 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     }
 
     public void shutdown() {
-        try {
-            channel.close();
-        } catch (Exception e) {
-            Flog.warn(e);
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (Exception e) {
+                Flog.warn(e);
+            }
         }
+        retries = -1;
     }
 
     @Override
@@ -154,6 +151,9 @@ public class Connection extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelUnregistered(final ChannelHandlerContext ctx) {
+        if (retries <= 0) {
+            return;
+        }
         delay = Math.min(10000, Math.round((float) 1.5 * delay));
         Flog.log("Connection lost. Reconnecting in %sms", delay);
         context.setTimeout(delay, new Runnable() {
@@ -170,6 +170,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         if (cause instanceof ConnectException) {
             Flog.log("Failed to connect: " + cause.getMessage());
         }
-        API.uploadCrash(handler, context, cause);
+//        API.uploadCrash(handler, context, cause);
+        Flog.warn(cause);
     }
 }

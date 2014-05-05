@@ -38,7 +38,11 @@ public class FlooContext {
     public ChatManager chatManager;
     protected Ignore ignoreTree;
     public Date lastChatMessage;
-    public NioEventLoopGroup loopGroup = new NioEventLoopGroup();
+    protected NioEventLoopGroup loopGroup = new NioEventLoopGroup();
+
+    public NioEventLoopGroup getLoopGroup() {
+        return loopGroup;
+    }
 
     public FlooContext(Project project) {
         this.project = project;
@@ -248,6 +252,9 @@ public class FlooContext {
     }
 
     public void shutdown() {
+        if (chatManager != null) {
+            chatManager.statusMessage("Disconnecting.");
+        }
         if (handler != null) {
             handler.shutdown();
             handler = null;
@@ -258,7 +265,7 @@ public class FlooContext {
             } catch (InterruptedException e) {
                 Flog.warn(e);
             }
-            loopGroup = null;
+            loopGroup = new NioEventLoopGroup();
         }
 
         ignoreTree = null;
