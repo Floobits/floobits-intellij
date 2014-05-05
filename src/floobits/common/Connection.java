@@ -170,7 +170,6 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         if (cause instanceof ConnectException) {
             Flog.log("Failed to connect: " + cause.getMessage());
         }
-//        API.uploadCrash(handler, context, cause);
-        Flog.warn(cause);
+        API.uploadCrash(handler, context, cause);
     }
 }

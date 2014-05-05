@@ -261,7 +261,7 @@ public class FlooContext {
         }
         if (loopGroup != null) {
             try {
-                loopGroup.shutdownGracefully().sync();
+                loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS).sync();
             } catch (InterruptedException e) {
                 Flog.warn(e);
             }
