@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
@@ -23,7 +24,7 @@ public abstract class Buf <T> {
     public volatile String md5;
     public volatile T buf;
     public Encoding encoding;
-    public Timeout timeout;
+    public ScheduledFuture timeout;
     public boolean forced_patch = false;
     protected FlooContext context;
 
@@ -38,7 +39,7 @@ public abstract class Buf <T> {
     public void cancelTimeout () {
         if (timeout != null) {
             Flog.log("canceling timeout for %s", path);
-            timeout.cancel();
+            timeout.cancel(false);
             timeout = null;
         }
     }

@@ -1,14 +1,17 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.*;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.openapi.editor.ScrollingModel;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.dmp.diff_match_patch;
-import floobits.FlooContext;
-import floobits.common.protocol.FlooPatch;
 import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.digest.DigestUtils;
 
