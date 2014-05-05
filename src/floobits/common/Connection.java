@@ -18,7 +18,6 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -41,17 +40,15 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             SSLEngine engine = sslContext.createSSLEngine();
             engine.setUseClientMode(true);
             pipeline.addLast("ssl", new SslHandler(engine));
-            // On top of the SSL handler, add the text line codec.
             pipeline.addLast("framer", new LineBasedFrameDecoder(1000 * 1000 * 10, true, false));
             pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
             pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
-            // and then business logic.
             pipeline.addLast("handler", connection);
         }
     }
     private final BaseHandler handler;
     private final FlooContext context;
-    Channel channel;
+    protected Channel channel;
     private Integer MAX_RETRIES = 20;
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected volatile Integer retries = MAX_RETRIES;
@@ -72,27 +69,39 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         channel.flush();
     }
 
-    public void connect() {
+    protected void _connect() {
+        retries -= 1;
+        Bootstrap b = new Bootstrap();
+        b.group(context.getLoopGroup());
+        b.channel(NioSocketChannel.class);
+        b.option(ChannelOption.SO_KEEPALIVE, true);
+        b.option(ChannelOption.TCP_NODELAY, true);
+        b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15*1000);
+        b.handler(new FlooChannelInitializer(this));
+        FlooUrl flooUrl = handler.getUrl();
+        ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port);
+        channel = connect.channel();
+    }
+
+    protected void connect() {
         if (retries <= 0) {
             Flog.warn("I give up connecting.");
             return;
         }
-        try {
-            retries -= 1;
-            Bootstrap b = new Bootstrap();
-            b.group(context.getLoopGroup());
-            b.channel(NioSocketChannel.class);
-            b.option(ChannelOption.SO_KEEPALIVE, true);
-            b.option(ChannelOption.TCP_NODELAY, true);
-            b.handler(new FlooChannelInitializer(this));
-            FlooUrl flooUrl = handler.getUrl();
-            ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port).sync();
-            channel = connect.channel();
-            // Wait until the connection is closed.
-            Flog.info("lost connection!");
-        } catch (InterruptedException e) {
-            Flog.warn(e);
+        if (channel == null) {
+            _connect();
+            return;
         }
+        try {
+            channel.deregister().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    channel.disconnect();
+                    channel.close();
+                    _connect();
+                }
+            });
+        } catch (Throwable ignored) {}
     }
 
     public void shutdown() {
@@ -102,6 +111,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             } catch (Exception e) {
                 Flog.warn(e);
             }
+            channel = null;
         }
         retries = -1;
     }
@@ -109,25 +119,21 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Flog.log("Connected to %s", ctx.channel().remoteAddress());
-        retries = MAX_RETRIES;
-        delay = INITIAL_RECONNECT_DELAY;
         handler.on_connect();
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        try {
-            JsonObject obj = (JsonObject)new JsonParser().parse(msg);
-            JsonElement name = obj.get("name");
-            if (name == null) {
-                Flog.warn("No name for receive, ignoring");
-                return;
-            }
-            String requestName = name.getAsString();
-            handler.on_data(requestName, obj);
-        } finally {
-            ReferenceCountUtil.release(msg);
+        JsonObject obj = (JsonObject)new JsonParser().parse(msg);
+        JsonElement name = obj.get("name");
+        if (name == null) {
+            Flog.warn("No name for receive, ignoring");
+            return;
         }
+        String requestName = name.getAsString();
+        retries = MAX_RETRIES;
+        delay = INITIAL_RECONNECT_DELAY;
+        handler.on_data(requestName, obj);
     }
 
     @Override
@@ -152,6 +158,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelUnregistered(final ChannelHandlerContext ctx) {
         if (retries <= 0) {
+            Flog.log("Giving up!");
             return;
         }
         delay = Math.min(10000, Math.round((float) 1.5 * delay));
@@ -159,7 +166,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         context.setTimeout(delay, new Runnable() {
             @Override
             public void run() {
-                Flog.log("Reconnecting to: " + ctx.channel().remoteAddress());
+                Flog.log("Reconnecting to %s", ctx.channel().remoteAddress());
                 connect();
             }
         });
