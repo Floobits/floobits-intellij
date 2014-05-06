@@ -15,8 +15,6 @@ import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 
 import javax.net.ssl.SSLContext;
@@ -158,16 +156,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (!(evt instanceof IdleStateEvent)) {
-            return;
-        }
-
-        IdleStateEvent e = (IdleStateEvent) evt;
-        if (e.state() == IdleState.READER_IDLE) {
-            // The connection was OK but there was no traffic for last period.
-            Flog.log("Disconnecting due to no inbound traffic");
-            ctx.close();
-        }
+        Flog.log("%s", evt.toString());
     }
 
     @Override
