@@ -149,6 +149,7 @@ public class FlooHandler extends BaseHandler {
         } catch (Exception e) {
             Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
             if (name.equals("room_info")) {
+                context.errorMessage("There was a critical error in the plugin" + e.toString());
                 context.shutdown();
             }
         }
