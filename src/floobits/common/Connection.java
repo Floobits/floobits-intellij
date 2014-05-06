@@ -21,6 +21,7 @@ import io.netty.util.CharsetUtil;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.ConnectException;
 
@@ -99,7 +100,27 @@ public class Connection extends SimpleChannelInboundHandler<String> {
                     _connect();
                 }
             });
-        } catch (Throwable ignored) {}
+        } catch (Throwable e) {
+            Flog.warn(e);
+            reconnect();
+        }
+    }
+
+    protected void reconnect() {
+        if (retries <= 0) {
+            Flog.log("Giving up!");
+            context.shutdown();
+            return;
+        }
+        delay = Math.min(10000, Math.round((float) 1.5 * delay));
+        Flog.log("Connection lost. Reconnecting in %sms", delay);
+        context.setTimeout(delay, new Runnable() {
+            @Override
+            public void run() {
+                Flog.log("Attempting to reconnect.");
+                connect();
+            }
+        });
     }
 
     public void shutdown() {
@@ -157,20 +178,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelUnregistered(final ChannelHandlerContext ctx) {
         Flog.log("Disconnected from %s", ctx.channel().remoteAddress());
-        if (retries <= 0) {
-            Flog.log("Giving up!");
-            context.shutdown();
-            return;
-        }
-        delay = Math.min(10000, Math.round((float) 1.5 * delay));
-        Flog.log("Connection lost. Reconnecting in %sms", delay);
-        context.setTimeout(delay, new Runnable() {
-            @Override
-            public void run() {
-                Flog.log("Reconnecting to %s", ctx.channel().remoteAddress());
-                connect();
-            }
-        });
+        reconnect();
     }
 
     @Override
@@ -180,6 +188,10 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         }
         if (cause instanceof ConnectException) {
             Flog.warn("Failed to connect: " + cause.getMessage());
+            return;
+        }
+        if (cause instanceof IOException){
+            Flog.warn(cause);
             return;
         }
         API.uploadCrash(handler, context, cause);
