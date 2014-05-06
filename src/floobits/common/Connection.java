@@ -91,11 +91,6 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             _connect();
             return;
         }
-        if (!channel.isOpen()) {
-            channel = null;
-            _connect();
-            return;
-        }
         try {
             channel.close().addListener(new ChannelFutureListener() {
                 @Override
@@ -108,6 +103,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     }
 
     public void shutdown() {
+        retries = -1;
         if (channel != null) {
             try {
                 channel.disconnect();
@@ -117,7 +113,6 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             }
             channel = null;
         }
-        retries = -1;
     }
 
     @Override
@@ -180,8 +175,12 @@ public class Connection extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (retries < 0) {
+            return;
+        }
         if (cause instanceof ConnectException) {
-            Flog.log("Failed to connect: " + cause.getMessage());
+            Flog.warn("Failed to connect: " + cause.getMessage());
+            return;
         }
         API.uploadCrash(handler, context, cause);
     }

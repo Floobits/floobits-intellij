@@ -129,7 +129,7 @@ public class FlooHandler extends BaseHandler {
         Settings settings = new Settings(context);
         username = settings.get("username");
         conn.write(new FlooAuth(settings, this.url.owner, this.url.workspace));
-        context.statusMessage(String.format("Opened connection to %s.", url.toString()), false);
+        context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
     }
 
     public void on_data (String name, JsonObject obj) {
