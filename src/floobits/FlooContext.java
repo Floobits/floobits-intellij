@@ -259,15 +259,16 @@ public class FlooContext {
             handler.shutdown();
             handler = null;
         }
+
         if (loopGroup != null) {
             try {
-                loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS).sync();
+                loopGroup.shutdownGracefully(100, 0, TimeUnit.MILLISECONDS);
+                loopGroup.awaitTermination(500, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Flog.warn(e);
             }
             loopGroup = new NioEventLoopGroup();
         }
-
         ignoreTree = null;
     }
 }

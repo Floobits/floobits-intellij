@@ -91,12 +91,16 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             _connect();
             return;
         }
+        if (!channel.isOpen()) {
+            channel = null;
+            _connect();
+            return;
+        }
         try {
-            channel.deregister().addListener(new ChannelFutureListener() {
+            channel.close().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    channel.disconnect();
-                    channel.close();
+                    channel = null;
                     _connect();
                 }
             });
