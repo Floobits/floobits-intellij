@@ -81,10 +81,10 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
-//        if (!API.workspaceExists(flooUrl, context)) {
-//            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
-//            return;
-//        }
+        if (!API.workspaceExists(flooUrl, context)) {
+            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            return;
+        }
         Project projectForPath = getProject(location);
         if (context == null || projectForPath != context.project) {
             context = FloobitsPlugin.getInstance(projectForPath).context;
