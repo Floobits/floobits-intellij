@@ -32,6 +32,6 @@ public class DeleteFromWorkspace extends IsJoinedAction {
             fileHashSet.addAll(allNestedFilePaths);
         }
 
-        editorEventHandler.untellij_soft_delete(fileHashSet);
+        editorEventHandler.softDeleted(fileHashSet);
     }
 }

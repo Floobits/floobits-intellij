@@ -120,7 +120,7 @@ public class ChatForm {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
                 Flog.info("Kicking %s with user id %d.", client.username, client.userId);
-                flooHandler.editorEventHandler.untellij_kick(client.userId);
+                flooHandler.editorEventHandler.kicked(client.userId);
             }
         });
         popupMenu.add(kickMenuItem);
@@ -144,7 +144,7 @@ public class ChatForm {
                                 if (flooHandler == null) {
                                     return;
                                 }
-                                flooHandler.editorEventHandler.untellij_perms_change(userId, permissions);
+                                flooHandler.editorEventHandler.changePerms(userId, permissions);
                             }
                         },
                         permissions.contains("get_buf"),
@@ -185,7 +185,7 @@ public class ChatForm {
         if (chatContents.length() < 1) {
             return;
         }
-        flooHandler.editorEventHandler.untellij_msg(chatContents);
+        flooHandler.editorEventHandler.msg(chatContents);
         chatInput.setText("");
         chatMessage(flooHandler.state.getUsername(flooHandler.state.getMyConnectionId()), chatContents, null);
     }

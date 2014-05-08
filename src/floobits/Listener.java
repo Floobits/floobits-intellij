@@ -69,7 +69,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                editorManager.untellij_renamed(oldValue, newValue);
+                editorManager.renamed(oldValue, newValue);
             }
         }
         );
@@ -92,7 +92,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path) {
-                editorManager.untellij_saved(path);
+                editorManager.saved(path);
             }
         });
     }
@@ -110,7 +110,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.untellij_changed(virtualFile);
+        editorManager.changed(virtualFile);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for(TextRange r : textRanges) {
                     ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
                 }
-                editorManager.untellij_selection_change(path, ranges);
+                editorManager.selectionChanged(path, ranges);
             }
         });
     }
@@ -178,7 +178,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    editorManager.untellij_renamed(oldFilePath, newFilePath);
+                    editorManager.renamed(oldFilePath, newFilePath);
                 }
                 continue;
             }
@@ -220,7 +220,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<VirtualFile> changedFiles;
                 changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
-                    editorManager.untellij_changed(file);
+                    editorManager.changed(file);
                 }
             }
         }
@@ -281,7 +281,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
                 Integer offset = editor.getCaretModel().getOffset();
                 range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                editorManager.untellij_selection_change(path, range);
+                editorManager.selectionChanged(path, range);
             }
         });
     }

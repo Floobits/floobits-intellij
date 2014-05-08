@@ -36,7 +36,7 @@ public class EditorEventHandler {
         listener = new Listener(this, context);
     }
 
-    public void untellij_renamed(String path, String newPath) {
+    public void renamed(String path, String newPath) {
         if (!state.can("patch")) {
             return;
         }
@@ -53,13 +53,13 @@ public class EditorEventHandler {
             return;
         }
         if (buf.path.equals(newRelativePath)) {
-            Flog.info("untellij_renamed handling workspace rename, aborting.");
+            Flog.info("renamed handling workspace rename, aborting.");
             return;
         }
         outbound.renameBuf(buf, newRelativePath);
     }
 
-    public void untellij_changed(VirtualFile file) {
+    public void changed(VirtualFile file) {
         String filePath = file.getPath();
         if (!state.can("patch")) {
             return;
@@ -80,17 +80,17 @@ public class EditorEventHandler {
         }
     }
 
-    public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
+    public void selectionChanged(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = state.get_buf_by_path(path);
         outbound.highlight(buf, textRanges, false);
     }
 
-    public void untellij_saved(String path) {
+    public void saved(String path) {
         Buf buf = state.get_buf_by_path(path);
         outbound.saveBuf(buf);
     }
 
-    public void untellij_soft_delete(HashSet<String> files) {
+    public void softDeleted(HashSet<String> files) {
         if (!state.can("patch")) {
             return;
         }
@@ -105,7 +105,7 @@ public class EditorEventHandler {
         }
     }
 
-    void untellij_deleted(String path) {
+    void deleted(String path) {
         Buf buf = state.get_buf_by_path(path);
         if (buf == null) {
             return;
@@ -119,19 +119,19 @@ public class EditorEventHandler {
         }
 
         for (String filePath : filePaths) {
-            untellij_deleted(filePath);
+            deleted(filePath);
         }
     }
 
-    public void untellij_msg(String chatContents) {
+    public void msg(String chatContents) {
         outbound.message(chatContents);
     }
 
-    public void untellij_kick(int userId) {
+    public void kicked(int userId) {
         outbound.kick(userId);
     }
 
-    public void untellij_perms_change(int userId, String[] perms) {
+    public void changePerms(int userId, String[] perms) {
         outbound.setPerms("set", userId, perms);
     }
 

@@ -39,17 +39,6 @@ public class EditorManager {
         }
     };
 
-    public void clearReadOnlyState() {
-        for (Integer bufferId : readOnlyBufferIds) {
-            Buf buf = state.bufs.get(bufferId);
-            if (buf == null) {
-                continue;
-            }
-            buf.clearReadOnly();
-        }
-        readOnlyBufferIds.clear();
-    }
-
     class QueuedAction {
         public final Buf buf;
         public RunLater<Buf> runnable;
@@ -68,15 +57,26 @@ public class EditorManager {
         }
     }
 
+    public EditorManager(FlooContext context, FloobitsState state) {
+        this.context = context;
+        this.state = state;
+    }
+
+    public void clearReadOnlyState() {
+        for (Integer bufferId : readOnlyBufferIds) {
+            Buf buf = state.bufs.get(bufferId);
+            if (buf == null) {
+                continue;
+            }
+            buf.clearReadOnly();
+        }
+        readOnlyBufferIds.clear();
+    }
+
     public void shutdown() {
         clearHighlights();
         queue.clear();
         clearReadOnlyState();
-    }
-
-    public EditorManager(FlooContext context, FloobitsState state) {
-        this.context = context;
-        this.state = state;
     }
 
     public void queue(Buf buf, RunLater<Buf> runnable) {
