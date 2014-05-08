@@ -32,6 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.NumberFormat;
 import java.util.*;
@@ -686,5 +687,28 @@ public class InboundRequestHandler {
         _on_perms(obj);
         _on_error(obj);
         _on_ping(obj);
+    }
+
+    public void on_data(String name, JsonObject obj) {
+        String method_name = "_on_" + name;
+        Method method;
+        try {
+            method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
+        } catch (NoSuchMethodException e) {
+            Flog.warn(String.format("Could not find %s method.\n%s", method_name, e.toString()));
+            return;
+        }
+        Object objects[] = new Object[1];
+        objects[0] = obj;
+        Flog.debug("Calling %s", method_name);
+        try {
+            method.invoke(this, objects);
+        } catch (Exception e) {
+            Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
+            if (name.equals("room_info")) {
+                context.errorMessage("There was a critical error in the plugin" + e.toString());
+                context.shutdown();
+            }
+        }
     }
 }

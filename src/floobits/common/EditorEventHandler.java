@@ -36,6 +36,9 @@ public class EditorEventHandler {
         listener = new Listener(this, context);
     }
 
+    public void go() {
+        listener.start();
+    }
     public void rename(String path, String newPath) {
         if (!state.can("patch")) {
             return;
