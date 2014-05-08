@@ -123,12 +123,13 @@ public class FlooHandler extends BaseHandler {
         return connectionId;
     }
 
+
     public void on_connect () {
         queue.clear();
         Settings settings = new Settings(context);
         username = settings.get("username");
         conn.write(new FlooAuth(settings, this.url.owner, this.url.workspace));
-        context.statusMessage(String.format("Opened connection to %s.", url.toString()), false);
+        context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
     }
 
     public void on_data (String name, JsonObject obj) {
@@ -148,17 +149,18 @@ public class FlooHandler extends BaseHandler {
         } catch (Exception e) {
             Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
             if (name.equals("room_info")) {
+                context.errorMessage("There was a critical error in the plugin" + e.toString());
                 context.shutdown();
             }
         }
     }
 
     public void go() {
-        Flog.warn("join workspace");
+        Flog.log("joining workspace %s", url);
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();
-        conn = new FlooConn(this);
+        conn = new Connection(this);
         conn.start();
         listener.start();
     }

@@ -3,13 +3,13 @@ package floobits.common.handlers;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
-import floobits.common.FlooConn;
+import floobits.common.Connection;
 import floobits.common.FlooUrl;
 
 abstract public class BaseHandler {
     public FlooUrl url;
     public boolean isJoined = false;
-    protected FlooConn conn;
+    protected Connection conn;
     public FlooContext context;
 
     public BaseHandler(FlooContext context) {

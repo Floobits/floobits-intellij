@@ -15,11 +15,17 @@ import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
+import io.fletty.channel.nio.NioEventLoopGroup;
+import io.fletty.util.concurrent.ScheduledFuture;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * I am the link between a project and floobits
@@ -31,20 +37,19 @@ public class FlooContext {
     public BaseHandler handler;
     public ChatManager chatManager;
     protected Ignore ignoreTree;
-    private Timeouts timeouts;
     public Date lastChatMessage;
+    protected NioEventLoopGroup loopGroup = new NioEventLoopGroup();
+
+    public NioEventLoopGroup getLoopGroup() {
+        return loopGroup;
+    }
 
     public FlooContext(Project project) {
         this.project = project;
     }
 
-    public Timeout setTimeout(int time, final Runnable runnable) {
-        if (timeouts == null) {
-            return null;
-        }
-        Timeout timeout = new Timeout(time, runnable);
-        timeouts.setTimeout(timeout);
-        return timeout;
+    public ScheduledFuture setTimeout(int time, final Runnable runnable) {
+        return loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
     }
 
     public boolean openFile(File file) {
@@ -138,7 +143,6 @@ public class FlooContext {
                 return;
             }
             setColabDir(Utils.unFuckPath(path));
-            timeouts = new Timeouts(this);
             handler = new FlooHandler(this, flooUrl, upload);
             handler.go();
             return;
@@ -251,14 +255,22 @@ public class FlooContext {
     }
 
     public void shutdown() {
-        if (timeouts != null) {
-            timeouts.shutdown();
-            timeouts = null;
+        if (chatManager != null) {
+            chatManager.statusMessage("Disconnecting.");
         }
-
         if (handler != null) {
             handler.shutdown();
             handler = null;
+        }
+
+        if (loopGroup != null) {
+            try {
+                loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
+                loopGroup.awaitTermination(500, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Flog.warn(e);
+            }
+            loopGroup = new NioEventLoopGroup();
         }
         ignoreTree = null;
     }

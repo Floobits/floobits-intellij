@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="fletty-4">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/fletty-4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
