@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="netty-all-4.0.19.Final">
+  <library name="fletty-4">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/netty-all-4.0.19.Final.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/fletty-4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
