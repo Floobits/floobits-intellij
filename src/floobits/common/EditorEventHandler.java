@@ -49,14 +49,14 @@ public class EditorEventHandler {
         String newRelativePath = context.toProjectRelPath(newPath);
         if (newRelativePath == null) {
             Flog.warn(String.format("%s was moved to %s, deleting from workspace.", buf.path, newPath));
-            outbound.send_delete_buf(buf, true);
+            outbound.deleteBuf(buf, true);
             return;
         }
         if (buf.path.equals(newRelativePath)) {
             Flog.info("untellij_renamed handling workspace rename, aborting.");
             return;
         }
-        outbound.send_rename_buf(buf, newRelativePath);
+        outbound.renameBuf(buf, newRelativePath);
     }
 
     public void untellij_changed(VirtualFile file) {
@@ -82,12 +82,12 @@ public class EditorEventHandler {
 
     public void untellij_selection_change(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = state.get_buf_by_path(path);
-        outbound.send_highlight(buf, textRanges, false);
+        outbound.highlight(buf, textRanges, false);
     }
 
     public void untellij_saved(String path) {
         Buf buf = state.get_buf_by_path(path);
-        outbound.send_save_buf(buf);
+        outbound.saveBuf(buf);
     }
 
     public void untellij_soft_delete(HashSet<String> files) {
@@ -101,7 +101,7 @@ public class EditorEventHandler {
                 context.statusMessage(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
                 continue;
             }
-            outbound.send_delete_buf(buf, false);
+            outbound.deleteBuf(buf, false);
         }
     }
 
@@ -110,7 +110,7 @@ public class EditorEventHandler {
         if (buf == null) {
             return;
         }
-        outbound.send_delete_buf(buf, true);
+        outbound.deleteBuf(buf, true);
     }
 
     public void untellij_deleted_directory(ArrayList<String> filePaths) {
@@ -124,15 +124,15 @@ public class EditorEventHandler {
     }
 
     public void untellij_msg(String chatContents) {
-        outbound.send_FlooMessage(chatContents);
+        outbound.message(chatContents);
     }
 
     public void untellij_kick(int userId) {
-        outbound.send_kick(userId);
+        outbound.kick(userId);
     }
 
     public void untellij_perms_change(int userId, String[] perms) {
-        outbound.send_perms_change(userId, perms);
+        outbound.setPerms("set", userId, perms);
     }
 
     public void upload(VirtualFile virtualFile) {
@@ -148,7 +148,7 @@ public class EditorEventHandler {
             Flog.info("Already in workspace: %s", path);
             return;
         }
-        outbound.send_create_buf(virtualFile);
+        outbound.createBuf(virtualFile);
     }
 
     public void beforeChange(final VirtualFile file, final Document document) {
@@ -209,11 +209,11 @@ public class EditorEventHandler {
     }
 
     public void summon(String path, Integer offset) {
-        outbound.send_summon(path, offset);
+        outbound.summon(path, offset);
     }
 
     public void sendEditRequest() {
-        outbound.sendEditRequest();
+        outbound.requestEdit();
     }
 
     public void clearHighlights (){

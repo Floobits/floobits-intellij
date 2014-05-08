@@ -83,7 +83,7 @@ public class BinaryBuf extends Buf <byte[]> {
         if (flooHandler == null) {
             return;
         }
-        flooHandler.outbound.send_get_buf(this.id);
+        flooHandler.outbound.getBuf(this.id);
         set((byte[]) null, null);
     }
 
@@ -105,6 +105,6 @@ public class BinaryBuf extends Buf <byte[]> {
             return;
         }
         set(contents, after_md5);
-        flooHandler.outbound.send_set_buf(this);
+        flooHandler.outbound.setBuf(this);
     }
 }

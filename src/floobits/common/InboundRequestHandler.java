@@ -67,7 +67,7 @@ public class InboundRequestHandler {
             buf.read();
             if (buf.buf == null) {
                 if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
-                    outbound.send_get_buf(buf.id);
+                    outbound.getBuf(buf.id);
                     continue;
                 }
                 missing.add(buf);
@@ -89,20 +89,20 @@ public class InboundRequestHandler {
                     @Override
                     public void run() {
                         for (Buf buf : conflicts) {
-                            outbound.send_get_buf(buf.id);
+                            outbound.getBuf(buf.id);
                         }
                         for (Buf buf : missing) {
-                            outbound.send_get_buf(buf.id);
+                            outbound.getBuf(buf.id);
                         }
                     }
                 }, new Runnable() {
             @Override
             public void run() {
                 for (Buf buf : conflicts) {
-                    outbound.send_set_buf(buf);
+                    outbound.setBuf(buf);
                 }
                 for (Buf buf : missing) {
-                    outbound.send_delete_buf(buf, false);
+                    outbound.deleteBuf(buf, false);
                 }
             }
         }, state.readOnly,
@@ -189,19 +189,19 @@ public class InboundRequestHandler {
             state.bufs.put(buf_id, buf);
             state.paths_to_ids.put(b.path, b.id);
             if (!paths.contains(buf.path)) {
-                outbound.send_delete_buf(buf);
+                outbound.deleteBuf(buf, false);
                 continue;
             }
             paths.remove(buf.path);
             buf.read();
             if (buf.buf == null) {
-                outbound.send_get_buf(buf.id);
+                outbound.getBuf(buf.id);
                 continue;
             }
             if (b.md5.equals(buf.md5)) {
                 continue;
             }
-            outbound.send_set_buf(buf);
+            outbound.setBuf(buf);
         }
 
         LocalFileSystem instance = LocalFileSystem.getInstance();
@@ -211,7 +211,7 @@ public class InboundRequestHandler {
                 Flog.warn(String.format("path is no longer a valid virtual file"));
                 continue;
             }
-            outbound.send_create_buf(fileByPath);
+            outbound.createBuf(fileByPath);
         }
         String flooignore = FilenameUtils.concat(context.colabDir, ".flooignore");
 
@@ -329,7 +329,7 @@ public class InboundRequestHandler {
                     @Override
                     public void run(String action) {
                         String[] perms = new String[]{"edit_room"};
-                        outbound.send_set_perms(action, userId, perms);
+                        outbound.setPerms(action, userId, perms);
                     }
                 });
                 d.createCenterPanel();
@@ -434,7 +434,7 @@ public class InboundRequestHandler {
     void _on_term_stdin(JsonObject jsonObject) {}
 
     void _on_ping(JsonObject jsonObject) {
-        outbound.sendPong();
+        outbound.pong();
     }
 
     public void _on_highlight(JsonObject obj) {
@@ -613,7 +613,7 @@ public class InboundRequestHandler {
             public void run(Buf b) {
                 if (b.buf == null) {
                     Flog.warn("no buffer");
-                    outbound.send_get_buf(res.id);
+                    outbound.getBuf(res.id);
                     return;
                 }
 

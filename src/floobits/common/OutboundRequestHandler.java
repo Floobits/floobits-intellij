@@ -10,9 +10,6 @@ import floobits.utilities.Flog;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * Created by kans on 5/7/14.
- */
 public class OutboundRequestHandler {
     private final FlooContext context;
     private final FloobitsState state;
@@ -25,7 +22,7 @@ public class OutboundRequestHandler {
         this.conn = conn;
     }
 
-    public void send_get_buf(Integer buf_id, boolean verify) {
+    public void getBuf(Integer buf_id) {
         Buf buf = state.bufs.get(buf_id);
         if (buf == null) {
             return;
@@ -33,15 +30,15 @@ public class OutboundRequestHandler {
         synchronized (buf) {
             buf.set(null, null);
         }
-        conn.write(new GetBuf(buf_id), verify ? requestId++ : null);
+        conn.write(new GetBuf(buf_id));
     }
 
-    public void send_get_buf (Integer buf_id) {
-        send_get_buf(buf_id, false);
-    }
-
-    public void send_patch (String textPatch, String before_md5, TextBuf buf) {
+    public void patch(String textPatch, String before_md5, TextBuf buf) {
         if (!state.can("patch")) {
+            return;
+        }
+        if (Buf.isBad(buf)) {
+            Flog.info("buf isn't populated yet %s", buf.path);
             return;
         }
         Flog.log("Sending patch for %s", buf.path);
@@ -49,24 +46,18 @@ public class OutboundRequestHandler {
         conn.write(req);
     }
 
-    void send_create_buf(VirtualFile virtualFile) {
-        send_create_buf(virtualFile, false);
-    }
-
-    void send_create_buf(VirtualFile virtualFile, boolean verify) {
+    void createBuf(VirtualFile virtualFile) {
         Buf buf = Buf.createBuf(virtualFile, context, this);
         if (buf == null) {
             return;
         }
-        conn.write(new CreateBuf(buf), verify ? requestId++ : null);
+        if (!state.can("patch")) {
+            return;
+        }
+        conn.write(new CreateBuf(buf));
     }
 
-    public void send_delete_buf(Buf buf) {
-        send_delete_buf(buf, false);
-    }
-
-    public void send_delete_buf(Buf buf, boolean unlink) {
-        buf.cancelTimeout();
+    public void deleteBuf(Buf buf, boolean unlink) {
         if (!state.can("patch")) {
             return;
         }
@@ -74,18 +65,26 @@ public class OutboundRequestHandler {
         conn.write(new DeleteBuf(buf.id, unlink));
     }
 
-    public void send_set_buf(Buf b) {
-        send_set_buf(b, false);
-    }
-
-    public void send_set_buf (Buf b, boolean verify) {
+    public void saveBuf(Buf b) {
+        if (Buf.isBad(b)) {
+            Flog.info("buf isn't populated yet %s", b.path);
+            return;
+        }
         if (!state.can("patch")) {
             return;
         }
-        conn.write(new SetBuf(b), verify ? requestId++ : null);
+        conn.write(new SaveBuf(b.id));
     }
 
-    public void send_rename_buf(Buf b, String newRelativePath) {
+    public void setBuf(Buf b) {
+        if (!state.can("patch")) {
+            return;
+        }
+        b.cancelTimeout();
+        conn.write(new SetBuf(b));
+    }
+
+    public void renameBuf(Buf b, String newRelativePath) {
         if (!state.can("patch")) {
             return;
         }
@@ -94,7 +93,7 @@ public class OutboundRequestHandler {
         conn.write(new RenameBuf(b.id, newRelativePath));
     }
 
-    public void send_highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon) {
+    public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon) {
         if (!state.can("highlight")) {
             return;
         }
@@ -105,7 +104,7 @@ public class OutboundRequestHandler {
         conn.write(new FlooHighlight(b, textRanges, summon, state.stalking));
     }
 
-    public void send_summon(String current, Integer offset) {
+    public void summon(String current, Integer offset) {
         if (!state.can("patch")) {
             return;
         }
@@ -119,7 +118,7 @@ public class OutboundRequestHandler {
         conn.write(new FlooHighlight(buf, ranges, true, state.stalking));
     }
 
-    public void sendEditRequest() {
+    public void requestEdit() {
         if (!state.can("request_perms")) {
             Utils.errorMessage("You are not allowed to ask for edit permissions.", context.project);
             return;
@@ -127,43 +126,26 @@ public class OutboundRequestHandler {
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));
     }
 
-    public void send_save_buf(Buf b) {
-        if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b.path);
-            return;
-        }
-        if (!state.can("patch")) {
-            return;
-        }
-        conn.write(new SaveBuf(b.id));
-    }
-
-    public void send_FlooMessage(String chatContents) {
+    public void message(String chatContents) {
         conn.write(new FlooMessage(chatContents));
     }
 
-    public void send_kick(int userId) {
+    public void kick(int userId) {
         if (!state.can("kick")) {
             return;
         }
         conn.write(new FlooKick(userId));
     }
-    public void send_perms_change(int userId, String[] perms) {
-        if (!state.can("kick")) {
-            return;
-        }
-        conn.write(new PermsChange("set", userId, perms));
-        state.changePermsForUser(userId, perms);
-    }
 
-    public void sendPong() {
+    public void pong() {
         conn.write(new Pong());
     }
 
-    public void send_set_perms(String action, int userId, String[] perms) {
+    public void setPerms(String action, int userId, String[] perms) {
         if (!state.can("kick")) {
             return;
         }
+        state.changePermsForUser(userId, perms);
         conn.write(new PermsChange(action, userId, perms));
     }
 }

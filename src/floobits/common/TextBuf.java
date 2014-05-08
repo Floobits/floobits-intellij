@@ -114,7 +114,7 @@ public class TextBuf extends Buf <String> {
             Flog.log("Not patching %s because no change.", path);
             return;
         }
-       outbound.send_patch(textPatch, before_md5, this);
+       outbound.patch(textPatch, before_md5, this);
     }
 
     private void setGetBufTimeout() {
@@ -125,7 +125,7 @@ public class TextBuf extends Buf <String> {
             public void run() {
                 Flog.info("Sending get buf after timeout.");
                 FlooHandler flooHandler = context.getFlooHandler();
-                outbound.send_get_buf(buf_id);
+                outbound.getBuf(buf_id);
             }
         });
     }
@@ -151,7 +151,7 @@ public class TextBuf extends Buf <String> {
         VirtualFile virtualFile = b.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
-            outbound.send_get_buf(id);
+            outbound.getBuf(id);
             return;
         }
         d = Buf.getDocumentForVirtualFile(virtualFile);
@@ -190,7 +190,7 @@ public class TextBuf extends Buf <String> {
         for (boolean clean : patchesClean) {
             if (!clean) {
                 Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
-               outbound.send_get_buf(res.id);
+               outbound.getBuf(res.id);
                 return;
             }
         }
@@ -234,7 +234,7 @@ public class TextBuf extends Buf <String> {
 
             if (e != null) {
                 Flog.warn(e);
-                outbound.send_get_buf(id);
+                outbound.getBuf(id);
                 return;
             }
         }
