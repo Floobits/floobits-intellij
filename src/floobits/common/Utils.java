@@ -64,7 +64,7 @@ public class Utils {
                 if (flooHandler == null) {
                     return;
                 }
-                flooHandler.upload(virtualFile);
+                flooHandler.editorEventHandler.upload(virtualFile);
             }
         });
     }

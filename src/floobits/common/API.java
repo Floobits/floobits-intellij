@@ -276,7 +276,7 @@ public class API {
                 owner = baseHandler.getUrl().owner;
                 workspace = baseHandler.getUrl().workspace;
                 colabDir = context != null ? context.colabDir : "???";
-                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).username : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).state.username : "???";
             }
             method = new PostMethod("/api/log");
             Gson gson = new Gson();

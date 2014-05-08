@@ -120,7 +120,7 @@ public class ChatForm {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
                 Flog.info("Kicking %s with user id %d.", client.username, client.userId);
-                flooHandler.untellij_kick(client.userId);
+                flooHandler.editorEventHandler.untellij_kick(client.userId);
             }
         });
         popupMenu.add(kickMenuItem);
@@ -130,7 +130,7 @@ public class ChatForm {
             public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
                 final int userId = client.userId;
                 Flog.info("Opening up permission dialog for %s", client.username);
-                FlooUser user = flooHandler.getUser(client.userId);
+                FlooUser user = flooHandler.state.getUser(client.userId);
                 if (user == null) {
                     return;
                 }
@@ -144,7 +144,7 @@ public class ChatForm {
                                 if (flooHandler == null) {
                                     return;
                                 }
-                                flooHandler.untellij_perms_change(userId, permissions);
+                                flooHandler.editorEventHandler.untellij_perms_change(userId, permissions);
                             }
                         },
                         permissions.contains("get_buf"),
@@ -165,8 +165,8 @@ public class ChatForm {
                 if (floohandler == null) {
                     return;
                 }
-                kickMenuItem.setEnabled(floohandler.can("kick"));
-                adminMenuItem.setEnabled(floohandler.can("kick"));
+                kickMenuItem.setEnabled(floohandler.state.can("kick"));
+                adminMenuItem.setEnabled(floohandler.state.can("kick"));
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
@@ -185,9 +185,9 @@ public class ChatForm {
         if (chatContents.length() < 1) {
             return;
         }
-        flooHandler.untellij_msg(chatContents);
+        flooHandler.editorEventHandler.untellij_msg(chatContents);
         chatInput.setText("");
-        chatMessage(flooHandler.getUsername(flooHandler.getMyConnectionId()), chatContents, null);
+        chatMessage(flooHandler.state.getUsername(flooHandler.state.getMyConnectionId()), chatContents, null);
     }
 
     public JPanel getChatPanel() {

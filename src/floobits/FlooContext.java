@@ -138,10 +138,10 @@ public class FlooContext {
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         if (!isJoined()) {
-//            if (!API.workspaceExists(flooUrl, this)) {
-//                errorMessage(String.format("The workspace %s does not exist.", flooUrl));
-//                return;
-//            }
+            if (!API.workspaceExists(flooUrl, this)) {
+                errorMessage(String.format("The workspace %s does not exist.", flooUrl));
+                return;
+            }
             setColabDir(Utils.unFuckPath(path));
             handler = new FlooHandler(this, flooUrl, upload);
             handler.go();
@@ -185,7 +185,13 @@ public class FlooContext {
     }
 
     public boolean isJoined() {
-        return handler != null;
+        return handler != null && handler.isJoined;
+    }
+
+    public void disconnected() {
+        if (handler != null) {
+            handler.isJoined = false;
+        }
     }
 
     public @Nullable FlooHandler getFlooHandler(){

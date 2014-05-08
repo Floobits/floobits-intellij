@@ -2,10 +2,11 @@ package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.utilities.Flog;
+import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
-import floobits.utilities.ThreadSafe;
 import floobits.common.protocol.FlooPatch;
+import floobits.utilities.Flog;
+import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -14,8 +15,8 @@ import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
 
-    public BinaryBuf(String path, Integer id, byte[] buf, String md5, FlooContext context) {
-        super(path, id, buf, md5, context);
+    public BinaryBuf(String path, Integer id, byte[] buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
+        super(path, id, buf, md5, context, outbound);
         this.encoding = Encoding.BASE64;
     }
 
@@ -51,12 +52,12 @@ public class BinaryBuf extends Buf <byte[]> {
                     return;
                 }
                 try {
-                    flooHandler.listener.flooDisable();
+                    Listener.flooDisable();
                     virtualFile.setBinaryContent(buf);
                 } catch (IOException e) {
                     Flog.warn("Writing binary content to disk failed. %s", path);
                 } finally {
-                    flooHandler.listener.flooEnable();
+                    Listener.flooEnable();
                 }
 
             }
@@ -82,7 +83,7 @@ public class BinaryBuf extends Buf <byte[]> {
         if (flooHandler == null) {
             return;
         }
-        flooHandler.send_get_buf(this.id);
+        flooHandler.outbound.send_get_buf(this.id);
         set((byte[]) null, null);
     }
 
@@ -104,6 +105,6 @@ public class BinaryBuf extends Buf <byte[]> {
             return;
         }
         set(contents, after_md5);
-        flooHandler.send_set_buf(this);
+        flooHandler.outbound.send_set_buf(this);
     }
 }

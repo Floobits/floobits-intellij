@@ -6,13 +6,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.EditorEventHandler;
 import floobits.common.Utils;
 
 import java.util.ArrayList;
 
 public class AddToWorkspace extends IsJoinedAction {
-    public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
         final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
@@ -35,7 +35,7 @@ public class AddToWorkspace extends IsJoinedAction {
         }
 
         for (VirtualFile virtualFile : filesToAdd) {
-            flooHandler.upload(virtualFile);
+            editorEventHandler.upload(virtualFile);
         }
     }
 }
