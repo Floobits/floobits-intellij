@@ -15,8 +15,8 @@ import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.util.concurrent.ScheduledFuture;
+import io.fletty.channel.nio.NioEventLoopGroup;
+import io.fletty.util.concurrent.ScheduledFuture;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

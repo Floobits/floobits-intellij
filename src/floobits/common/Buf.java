@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
-import io.netty.util.concurrent.ScheduledFuture;
+import io.fletty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
