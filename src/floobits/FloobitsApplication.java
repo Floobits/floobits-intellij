@@ -1,12 +1,15 @@
 package floobits;
 
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.fileChooser.impl.FileChooserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
+import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.utilities.SelectFolder;
@@ -39,7 +42,7 @@ public class FloobitsApplication implements ApplicationComponent {
                 context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
             } else {
                 createAccount = false;
-                CreateAccount createAccount1 = new CreateAccount(context);
+                CreateAccount createAccount1 = new CreateAccount(context.project);
                 createAccount1.createCenterPanel();
                 createAccount1.show();
             }
@@ -154,7 +157,15 @@ public class FloobitsApplication implements ApplicationComponent {
             }
         }
         VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(new File(path));
-        return PlatformProjectOpenProcessor.getInstance().doOpenProject(file, null, false);
+        Project openedProject;
+        if (ProjectAttachProcessor.canAttachToProject()) {
+            openedProject = PlatformProjectOpenProcessor.doOpenProject(file, null, false, -1, null, false);
+        } else {
+            openedProject = ProjectUtil.openOrImport(file.getPath(), null, false);
+        }
+        // This is something Intellij does when a user opens a project from the menu:
+        FileChooserUtil.setLastOpenedFile(openedProject, file);
+        return openedProject;
     }
 
 }
