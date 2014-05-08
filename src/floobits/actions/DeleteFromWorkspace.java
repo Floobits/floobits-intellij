@@ -32,6 +32,6 @@ public class DeleteFromWorkspace extends IsJoinedAction {
             fileHashSet.addAll(allNestedFilePaths);
         }
 
-        editorEventHandler.softDeleted(fileHashSet);
+        editorEventHandler.softDelete(fileHashSet);
     }
 }

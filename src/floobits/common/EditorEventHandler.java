@@ -36,7 +36,7 @@ public class EditorEventHandler {
         listener = new Listener(this, context);
     }
 
-    public void renamed(String path, String newPath) {
+    public void rename(String path, String newPath) {
         if (!state.can("patch")) {
             return;
         }
@@ -53,13 +53,13 @@ public class EditorEventHandler {
             return;
         }
         if (buf.path.equals(newRelativePath)) {
-            Flog.info("renamed handling workspace rename, aborting.");
+            Flog.info("rename handling workspace rename, aborting.");
             return;
         }
         outbound.renameBuf(buf, newRelativePath);
     }
 
-    public void changed(VirtualFile file) {
+    public void change(VirtualFile file) {
         String filePath = file.getPath();
         if (!state.can("patch")) {
             return;
@@ -80,17 +80,17 @@ public class EditorEventHandler {
         }
     }
 
-    public void selectionChanged(String path, ArrayList<ArrayList<Integer>> textRanges) {
+    public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges) {
         Buf buf = state.get_buf_by_path(path);
         outbound.highlight(buf, textRanges, false);
     }
 
-    public void saved(String path) {
+    public void save(String path) {
         Buf buf = state.get_buf_by_path(path);
         outbound.saveBuf(buf);
     }
 
-    public void softDeleted(HashSet<String> files) {
+    public void softDelete(HashSet<String> files) {
         if (!state.can("patch")) {
             return;
         }
@@ -105,7 +105,7 @@ public class EditorEventHandler {
         }
     }
 
-    void deleted(String path) {
+    void delete(String path) {
         Buf buf = state.get_buf_by_path(path);
         if (buf == null) {
             return;
@@ -113,13 +113,13 @@ public class EditorEventHandler {
         outbound.deleteBuf(buf, true);
     }
 
-    public void untellij_deleted_directory(ArrayList<String> filePaths) {
+    public void deleteDirectory(ArrayList<String> filePaths) {
         if (!state.can("patch")) {
             return;
         }
 
         for (String filePath : filePaths) {
-            deleted(filePath);
+            delete(filePath);
         }
     }
 
@@ -127,7 +127,7 @@ public class EditorEventHandler {
         outbound.message(chatContents);
     }
 
-    public void kicked(int userId) {
+    public void kick(int userId) {
         outbound.kick(userId);
     }
 

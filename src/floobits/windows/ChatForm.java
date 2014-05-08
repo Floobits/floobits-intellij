@@ -120,7 +120,7 @@ public class ChatForm {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
                 Flog.info("Kicking %s with user id %d.", client.username, client.userId);
-                flooHandler.editorEventHandler.kicked(client.userId);
+                flooHandler.editorEventHandler.kick(client.userId);
             }
         });
         popupMenu.add(kickMenuItem);

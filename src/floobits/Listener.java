@@ -69,7 +69,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                editorManager.renamed(oldValue, newValue);
+                editorManager.rename(oldValue, newValue);
             }
         }
         );
@@ -84,7 +84,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
-       Flog.debug("%s changed but has no document.", file.getPath());
+       Flog.debug("%s change but has no document.", file.getPath());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         GetPath.getPath(new GetPath(document) {
             @Override
             public void if_path(String path) {
-                editorManager.saved(path);
+                editorManager.save(path);
             }
         });
     }
@@ -104,13 +104,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
         Document document = event.getDocument();
-        Flog.debug("Document changed: %s", document);
+        Flog.debug("Document change: %s", document);
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         if (virtualFile == null) {
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.changed(virtualFile);
+        editorManager.change(virtualFile);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for(TextRange r : textRanges) {
                     ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
                 }
-                editorManager.selectionChanged(path, ranges);
+                editorManager.changeSelection(path, ranges);
             }
         });
     }
@@ -178,13 +178,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    editorManager.renamed(oldFilePath, newFilePath);
+                    editorManager.rename(oldFilePath, newFilePath);
                 }
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                editorManager.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
+                editorManager.deleteDirectory(Utils.getAllNestedFilePaths(context, event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -220,7 +220,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<VirtualFile> changedFiles;
                 changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
-                    editorManager.changed(file);
+                    editorManager.change(file);
                 }
             }
         }
@@ -281,7 +281,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
                 Integer offset = editor.getCaretModel().getOffset();
                 range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                editorManager.selectionChanged(path, range);
+                editorManager.changeSelection(path, range);
             }
         });
     }

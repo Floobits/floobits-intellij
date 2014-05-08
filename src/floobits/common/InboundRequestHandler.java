@@ -256,7 +256,7 @@ public class InboundRequestHandler {
             if (state.get_buf_by_path(newPath) == null) {
                 Flog.warn("Rename oldPath and newPath don't exist. %s %s", oldPath, newPath);
             } else {
-                Flog.info("We probably renamed this, nothing to rename.");
+                Flog.info("We probably rename this, nothing to rename.");
             }
             return;
         }
@@ -289,7 +289,7 @@ public class InboundRequestHandler {
                         String newParentDirectoryPath = newFile.getParent();
                         String oldParentDirectoryPath = oldFile.getParent();
                         if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
-                            Flog.warn("Only renamed file, don't need to move %s %s", oldPath, newPath);
+                            Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
                             return;
                         }
                         VirtualFile directory = null;

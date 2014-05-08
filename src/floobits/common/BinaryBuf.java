@@ -101,7 +101,7 @@ public class BinaryBuf extends Buf <byte[]> {
         }
         String after_md5 = DigestUtils.md5Hex(contents);
         if (md5.equals(after_md5)) {
-            Flog.debug("Binary file changed event but no change in md5 %s", virtualFile);
+            Flog.debug("Binary file change event but no change in md5 %s", virtualFile);
             return;
         }
         set(contents, after_md5);
