@@ -72,10 +72,8 @@ public class EditorManager {
     }
 
     public void shutdown() {
-        clearHighlights();
-        queue.clear();
+        reset();
         clearReadOnlyState();
-        highlights = null;
     }
 
     public void queue(Buf buf, RunLater<Buf> runnable) {
@@ -148,6 +146,7 @@ public class EditorManager {
 
     public void reset() {
         queue.clear();
+        clearHighlights();
     }
 
     public void clearHighlights() {
