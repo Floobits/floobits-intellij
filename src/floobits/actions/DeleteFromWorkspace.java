@@ -5,19 +5,19 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
+import floobits.common.EditorEventHandler;
 import floobits.common.Utils;
-import floobits.common.handlers.FlooHandler;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
 public class DeleteFromWorkspace extends IsJoinedAction {
     @Override
-    public void actionPerformed(AnActionEvent e, FlooHandler flooHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
         final HashSet<String> fileHashSet = new HashSet<String>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
-        if (flooHandler == null || virtualFiles == null) {
+        if (editorEventHandler == null || virtualFiles == null) {
             return;
         }
         FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
@@ -32,6 +32,6 @@ public class DeleteFromWorkspace extends IsJoinedAction {
             fileHashSet.addAll(allNestedFilePaths);
         }
 
-        flooHandler.untellij_soft_delete(fileHashSet);
+        editorEventHandler.softDelete(fileHashSet);
     }
 }

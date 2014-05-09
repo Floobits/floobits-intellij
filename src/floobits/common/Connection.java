@@ -22,6 +22,7 @@ import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.ConnectException;
+import java.util.concurrent.RejectedExecutionException;
 
 @ChannelHandler.Sharable
 public class Connection extends SimpleChannelInboundHandler<String> {
@@ -77,8 +78,16 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15*1000);
         b.handler(new FlooChannelInitializer(this));
         FlooUrl flooUrl = handler.getUrl();
-        ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port);
-        channel = connect.channel();
+        try {
+            ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port);
+            channel = connect.channel();
+        }   catch (RejectedExecutionException e) {
+            context.errorMessage("Can not connect to floobits!");
+            context.shutdown();
+        }   catch (Throwable e) {
+            Flog.warn(e);
+            reconnect();
+        }
     }
 
     protected void connect() {

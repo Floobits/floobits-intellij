@@ -64,7 +64,6 @@ public class ChatManager {
     }
 
     public void setUsers(final Map<Integer,FlooUser> originalUsers) {
-
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {

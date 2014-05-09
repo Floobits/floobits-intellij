@@ -27,13 +27,15 @@ public abstract class Buf <T> {
     public ScheduledFuture timeout;
     public boolean forced_patch = false;
     protected FlooContext context;
+    protected OutboundRequestHandler outbound;
 
-    public Buf(String path, Integer id, T buf, String md5, FlooContext context) {
+    public Buf(String path, Integer id, T buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
         this.id = id;
         this.path = path;
         this.buf = buf;
         this.md5 = md5;
         this.context = context;
+        this.outbound = outbound;
     }
 
     public void cancelTimeout () {
@@ -45,9 +47,6 @@ public abstract class Buf <T> {
     }
     public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
-    }
-    public void clearReadOnly() {
-        //Do nothing.
     }
 
     public Boolean isPopulated() {
@@ -101,13 +100,13 @@ public abstract class Buf <T> {
         }
         return FileDocumentManager.getInstance().getDocument(virtualFile);
     }
-    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, FlooContext context) {
+    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, FlooContext context, OutboundRequestHandler outbound) {
         if (enc == Encoding.BASE64) {
-            return new BinaryBuf(path, id, null, md5, context);
+            return new BinaryBuf(path, id, null, md5, context, outbound);
         }
-        return new TextBuf(path, id, null, md5, context);
+        return new TextBuf(path, id, null, md5, context, outbound);
     }
-    public static Buf createBuf(VirtualFile virtualFile, FlooContext context) {
+    public static Buf createBuf(VirtualFile virtualFile, FlooContext context, OutboundRequestHandler outbound) {
         try {
             byte[] originalBytes = virtualFile.contentsToByteArray();
             String encodedContents = new String(originalBytes, "UTF-8");
@@ -117,10 +116,10 @@ public abstract class Buf <T> {
                 Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
                 String contents = document == null ? encodedContents : document.getText();
                 String md5 = DigestUtils.md5Hex(contents);
-                return new TextBuf(filePath, null, contents, md5, context);
+                return new TextBuf(filePath, null, contents, md5, context, outbound);
             } else {
                 String md5 = DigestUtils.md5Hex(originalBytes);
-                return new BinaryBuf(filePath, null, originalBytes, md5, context);
+                return new BinaryBuf(filePath, null, originalBytes, md5, context, outbound);
             }
         } catch (IOException e) {
             Flog.warn("Error getting virtual file contents in createBuf %s", virtualFile);

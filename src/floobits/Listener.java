@@ -16,13 +16,11 @@ import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
-import floobits.common.Buf;
+import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
 import floobits.common.Utils;
-import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
-import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -31,23 +29,24 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
-    private static AtomicBoolean isListening = new AtomicBoolean(true);
+    private static final AtomicBoolean isListening = new AtomicBoolean(true);
     private final FlooContext context;
-    private final FlooHandler flooHandler;
+    private final EditorEventHandler editorManager;
+    private VirtualFileAdapter virtualFileAdapter;
 
-    public synchronized void flooEnable() {
+    public synchronized static void flooEnable() {
         isListening.set(true);
     }
-    public synchronized void flooDisable() {
+    public synchronized static void flooDisable() {
         isListening.set(false);
     }
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(FlooHandler flooHandler) {
-        this.context = flooHandler.context;
-        this.flooHandler = flooHandler;
+    public Listener(EditorEventHandler manager, FlooContext context) {
+        this.context = context;
+        this.editorManager = manager;
     }
 
     public void start() {
@@ -58,9 +57,8 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addCaretListener(this);
         em.addVisibleAreaListener(this);
 
-
-        VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
-            public void beforePropertyChange(final VirtualFilePropertyEvent event) {
+        virtualFileAdapter = new VirtualFileAdapter() {
+            public void beforePropertyChange(@NotNull final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
                     return;
                 }
@@ -71,32 +69,32 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String parentPath = parent.getPath();
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
-                FlooHandler handler = context.getFlooHandler();
-                if (handler != null)
-                    handler.untellij_renamed(oldValue, newValue);
+                editorManager.rename(oldValue, newValue);
             }
-        }
-        );
+        };
+        VirtualFileManager.getInstance().addVirtualFileListener(virtualFileAdapter);
     }
 
-    public void stop() {
+    public void shutdown() {
         connection.disconnect();
         em.removeSelectionListener(this);
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
+        em.removeVisibleAreaListener(this);
+        VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
     }
 
     @Override
     public void fileWithNoDocumentChanged(@NotNull VirtualFile file) {
-       Flog.debug("%s changed but has no document.", file.getPath());
+       Flog.debug("%s change but has no document.", file.getPath());
     }
 
     @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        GetPath.getPath(context, new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
-            public void if_path(String path, FlooHandler flooHandler) {
-                flooHandler.untellij_saved(path);
+            public void if_path(String path) {
+                editorManager.save(path);
             }
         });
     }
@@ -108,13 +106,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
         Document document = event.getDocument();
-        Flog.debug("Document changed: %s", document);
+        Flog.debug("Document change: %s", document);
         VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
         if (virtualFile == null) {
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        flooHandler.untellij_changed(virtualFile);
+        editorManager.change(virtualFile);
     }
 
     @Override
@@ -136,15 +134,15 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
         Document document = event.getEditor().getDocument();
-        GetPath.getPath(context, new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
-            public void if_path(String path, FlooHandler flooHandler) {
+            public void if_path(String path) {
                 TextRange[] textRanges = event.getNewRanges();
                 ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
                 for(TextRange r : textRanges) {
                     ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
                 }
-                flooHandler.untellij_selection_change(path, ranges);
+                editorManager.changeSelection(path, ranges);
             }
         });
     }
@@ -167,9 +165,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
         for (VFileEvent event : events) {
             Flog.debug(" after event type %s", event.getClass().getSimpleName());
-            if (event == null) {
-                continue;
-            }
             if (event instanceof VFileMoveEvent) {
                 Flog.info("move event %s", event);
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
@@ -182,13 +177,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    flooHandler.untellij_renamed(oldFilePath, newFilePath);
+                    editorManager.rename(oldFilePath, newFilePath);
                 }
                 continue;
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                flooHandler.untellij_deleted_directory(Utils.getAllNestedFilePaths(context, event.getFile()));
+                editorManager.deleteDirectory(Utils.getAllNestedFilePaths(context, event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -224,7 +219,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<VirtualFile> changedFiles;
                 changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
                 for (VirtualFile file : changedFiles) {
-                    flooHandler.untellij_changed(file);
+                    editorManager.change(file);
                 }
             }
         }
@@ -261,51 +256,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (file == null)
             return;
 
-        final Buf bufByPath = flooHandler.get_buf_by_path(file.getPath());
-        if (bufByPath == null) {
-            return;
-        }
-        String msg;
-        if (flooHandler.readOnly) {
-            msg = "This document is readonly because you don't have edit permission in the workspace.";
-        } else if (!bufByPath.isPopulated()) {
-            msg = "This document is temporarily readonly while we fetch a fresh copy.";
-        } else {
-            return;
-        }
-        context.statusMessage(msg, false);
-        final Document document = event.getDocument();
-        document.setReadOnly(true);
-        flooHandler.readOnlyBufferIds.add(bufByPath.id);
-        final String text = document.getText();
-        if (text == null) {
-            return;
-        }
-        context.setTimeout(0, new Runnable() {
-            @Override
-            public void run() {
-                ThreadSafe.write(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!flooHandler.readOnly && bufByPath.isPopulated()) {
-                            return;
-                        }
-                        Document d = FileDocumentManager.getInstance().getDocument(file);
-                        if (d == null) {
-                            return;
-                        }
-                        try{
-                            isListening.set(false);
-                            d.setReadOnly(false);
-                            d.setText(text);
-                            d.setReadOnly(true);
-                        } finally {
-                            isListening.set(true);
-                        }
-                    }
-                });
-            }
-        });
+        editorManager.beforeChange(file, event.getDocument());
     }
 
     @Override
@@ -319,9 +270,9 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
         Document document = editor.getDocument();
         final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(context, new GetPath(document) {
+        GetPath.getPath(new GetPath(document) {
             @Override
-            public void if_path(String path, FlooHandler flooHandler) {
+            public void if_path(String path) {
                 if (editors.length <= 0) {
                     return;
                 }
@@ -329,7 +280,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
                 Integer offset = editor.getCaretModel().getOffset();
                 range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                flooHandler.untellij_selection_change(path, range);
+                editorManager.changeSelection(path, range);
             }
         });
     }

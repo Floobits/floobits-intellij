@@ -7,10 +7,10 @@ import com.intellij.openapi.editor.ScrollingModel;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
+import floobits.Listener;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.dmp.diff_match_patch;
-import floobits.common.handlers.FlooHandler;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -22,8 +22,9 @@ import java.util.Map;
 
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
-    public  TextBuf(String path, Integer id, String buf, String md5, FlooContext context) {
-        super(path, id, buf, md5, context);
+
+    public TextBuf(String path, Integer id, String buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
+        super(path, id, buf, md5, context, outbound);
         if (buf != null) {
             this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
         }
@@ -53,22 +54,18 @@ public class TextBuf extends Buf <String> {
         if (virtualFile == null) {
             virtualFile = createFile();
             if (virtualFile == null) {
-                Utils.errorMessage("The Floobits plugin was unable to write to a file.", context.project);
+                context.errorMessage("The Floobits plugin was unable to write to a file.");
                 return;
             }
         }
         Document d = Buf.getDocumentForVirtualFile(virtualFile);
         if (d != null) {
-            FlooHandler flooHandler = context.getFlooHandler();
-            if (flooHandler == null) {
-                return;
-            }
             try {
-                flooHandler.listener.flooDisable();
+                Listener.flooDisable();
                 d.setReadOnly(false);
                 d.setText(buf);
             } finally {
-                flooHandler.listener.flooEnable();
+                Listener.flooEnable();
             }
             return;
         }
@@ -77,7 +74,7 @@ public class TextBuf extends Buf <String> {
             virtualFile.setBinaryContent(buf.getBytes());
         } catch (IOException e) {
             Flog.warn(e);
-            Utils.errorMessage("The Floobits plugin was unable to write to a file.", context.project);
+            context.errorMessage("The Floobits plugin was unable to write to a file.");
         }
     }
 
@@ -100,10 +97,7 @@ public class TextBuf extends Buf <String> {
     }
 
     public void send_patch(String current) {
-        FlooHandler flooHandler = context.getFlooHandler();
-        if (flooHandler == null) {
-            return;
-        }
+
         String before_md5;
         String textPatch;
         String after_md5;
@@ -119,7 +113,12 @@ public class TextBuf extends Buf <String> {
             Flog.log("Not patching %s because no change.", path);
             return;
         }
-        flooHandler.send_patch(textPatch, before_md5, this);
+       outbound.patch(textPatch, before_md5, this);
+    }
+
+    private void getBuf() {
+        cancelTimeout();
+        outbound.getBuf(id);
     }
 
     private void setGetBufTimeout() {
@@ -129,22 +128,9 @@ public class TextBuf extends Buf <String> {
             @Override
             public void run() {
                 Flog.info("Sending get buf after timeout.");
-                FlooHandler flooHandler = context.getFlooHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                flooHandler.send_get_buf(buf_id);
+                outbound.getBuf(buf_id);
             }
         });
-    }
-
-    @Override
-    public void clearReadOnly() {
-        super.clearReadOnly();
-        Document document = getDocumentForVirtualFile(getVirtualFile());
-        if (document != null) {
-            document.setReadOnly(false);
-        }
     }
 
     public void patch(final FlooPatch res) {
@@ -154,20 +140,18 @@ public class TextBuf extends Buf <String> {
         String text;
         String md5FromDoc;
         final Document d;
-        final FlooHandler flooHandler = context.getFlooHandler();
-        if (flooHandler == null) {
-            return;
-        }
+
         String oldText = buf;
         VirtualFile virtualFile = b.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
-            flooHandler.send_get_buf(id);
+            getBuf();
             return;
         }
         d = Buf.getDocumentForVirtualFile(virtualFile);
         if (d == null) {
             Flog.warn("Document not found for %s", virtualFile);
+            getBuf();
             return;
         }
         String viewText;
@@ -201,7 +185,7 @@ public class TextBuf extends Buf <String> {
         for (boolean clean : patchesClean) {
             if (!clean) {
                 Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
-                flooHandler.send_get_buf(res.id);
+                getBuf();
                 return;
             }
         }
@@ -235,17 +219,17 @@ public class TextBuf extends Buf <String> {
             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
             Exception e = null;
             try {
-                flooHandler.listener.flooDisable();
+                Listener.flooDisable();
                 d.replaceString(start, end_ld, contents);
             } catch (Exception exception) {
                 e = exception;
             } finally {
-                flooHandler.listener.flooEnable();
+                Listener.flooEnable();
             }
 
             if (e != null) {
                 Flog.warn(e);
-                flooHandler.send_get_buf(id);
+                getBuf();
                 return;
             }
         }

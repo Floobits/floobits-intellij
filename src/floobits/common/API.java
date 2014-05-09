@@ -20,6 +20,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 
@@ -200,6 +201,7 @@ public class API {
         connectionParams.setParameter("http.protocol.handle-redirects", true);
         connectionParams.setSoTimeout(3000);
         connectionParams.setConnectionTimeout(3000);
+        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024*1024);
         Settings settings = new Settings(context);
         HttpClientParams params = client.getParams();
         params.setAuthenticationPreemptive(true);
@@ -276,7 +278,7 @@ public class API {
                 owner = baseHandler.getUrl().owner;
                 workspace = baseHandler.getUrl().workspace;
                 colabDir = context != null ? context.colabDir : "???";
-                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).username : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).state.username : "???";
             }
             method = new PostMethod("/api/log");
             Gson gson = new Gson();

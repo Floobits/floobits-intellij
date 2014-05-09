@@ -4,12 +4,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
+import floobits.common.EditorEventHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
 public abstract class IsJoinedAction extends RequiresAccountAction {
 
-    public abstract void actionPerformed(AnActionEvent e, FlooHandler flooHandler);
+    public abstract void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler);
 
     @Override
     public void actionPerformedHasAccount(AnActionEvent e) {
@@ -27,7 +28,7 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
             if (flooHandler == null) {
                 return;
             }
-            actionPerformed(e, flooHandler);
+            actionPerformed(e, flooHandler.editorEventHandler);
         } catch (Throwable throwable) {
             API.uploadCrash(context, throwable);
         }
