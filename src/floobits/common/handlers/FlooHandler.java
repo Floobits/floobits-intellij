@@ -18,7 +18,7 @@ public class FlooHandler extends BaseHandler {
         super(context);
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
-        editor = new EditorManager(context, state);
+        editor = new EditorManager(context);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
         inbound = new InboundRequestHandler(context, state, editor, outbound, shouldUpload);

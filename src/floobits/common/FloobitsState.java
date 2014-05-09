@@ -1,7 +1,6 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import com.intellij.openapi.editor.markup.RangeHighlighter;
 import floobits.FlooContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.send.RoomInfoResponse;
@@ -15,7 +14,6 @@ import java.util.*;
  */
 public class FloobitsState {
     public JsonObject lastHighlight;
-    public HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>>();
     public Boolean stalking = false;
     public HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
@@ -133,7 +131,6 @@ public class FloobitsState {
     }
 
     public void shutdown() {
-        highlights = null;
         bufs = null;
     }
 }

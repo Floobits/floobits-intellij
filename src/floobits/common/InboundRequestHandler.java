@@ -347,12 +347,12 @@ public class InboundRequestHandler {
     void _on_part(JsonObject obj) {
         Integer userId = obj.get("user_id").getAsInt();
         state.removeUser(userId);
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = state.highlights.get(userId);
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = editor.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
-        for (Map.Entry<Integer, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
-            editor.remove_highlight(userId, entry.getKey(), null);
+        for (Map.Entry<String, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
+            editor.remove_highlight(userId, entry.getKey());
         }
     }
 
@@ -444,11 +444,11 @@ public class InboundRequestHandler {
         final Boolean force = (state.stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         state.lastHighlight = obj;
         final Buf buf = this.state.bufs.get(res.id);
-
+        final EditorManager fleditor = this.editor;
         RunLater<Buf> runLater = new RunLater<Buf>() {
             @Override
             public void run(Buf arg) {
-                Document document = editor.get_document(res.id);
+                Document document = editor.get_document(buf.path);
                 if (document == null) {
                     return;
                 }
@@ -467,7 +467,7 @@ public class InboundRequestHandler {
                         manager.openFile(virtualFile, true, true);
                     }
                 }
-                editor.remove_highlight(res.user_id, res.id, document);
+                editor.remove_highlight(res.user_id, buf.path, document);
 
                 int textLength = document.getTextLength();
                 if (textLength == 0) {
@@ -524,13 +524,13 @@ public class InboundRequestHandler {
                             first = false;
                         }
                     }
-                    HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = state.highlights.get(res.user_id);
+                    HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = fleditor.highlights.get(res.user_id);
 
                     if (integerRangeHighlighterHashMap == null) {
-                        integerRangeHighlighterHashMap = new HashMap<Integer, LinkedList<RangeHighlighter>>();
-                        state.highlights.put(res.user_id, integerRangeHighlighterHashMap);
+                        integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
+                        fleditor.highlights.put(res.user_id, integerRangeHighlighterHashMap);
                     }
-                    integerRangeHighlighterHashMap.put(res.id, rangeHighlighters);
+                    integerRangeHighlighterHashMap.put(buf.path, rangeHighlighters);
                 }
             }
         };
@@ -543,7 +543,7 @@ public class InboundRequestHandler {
         final Buf buf = this.state.bufs.get(id);
         editor.queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
-                Document document = editor.get_document(id);
+                Document document = editor.get_document(buf.path);
                 if (document == null) {
                     return;
                 }

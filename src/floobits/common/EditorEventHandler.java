@@ -169,7 +169,7 @@ public class EditorEventHandler {
         }
         context.statusMessage(msg, false);
         document.setReadOnly(true);
-        editor.readOnlyBufferIds.add(bufByPath.id);
+        editor.readOnlyBufferIds.add(bufByPath.path);
         final String text = document.getText();
         if (text == null) {
             return;

@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class EditorManager {
     public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
     private final FlooContext context;
-    private final FloobitsState state;
     // buffer ids are not removed from readOnlyBufferIds
-    public HashSet<Integer> readOnlyBufferIds = new HashSet<Integer>();
+    public HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
+    public HashSet<String> readOnlyBufferIds = new HashSet<String>();
     private final Runnable dequeueRunnable = new Runnable() {
         @Override
         public void run() {
@@ -38,17 +38,6 @@ public class EditorManager {
             }
         }
     };
-
-    public void clearReadOnlyState() {
-        for (Integer bufferId : readOnlyBufferIds) {
-            Buf buf = state.bufs.get(bufferId);
-            if (buf == null) {
-                continue;
-            }
-            buf.clearReadOnly();
-        }
-        readOnlyBufferIds.clear();
-    }
 
     class QueuedAction {
         public final Buf buf;
@@ -68,9 +57,18 @@ public class EditorManager {
         }
     }
 
-    public EditorManager(FlooContext context, FloobitsState state) {
+    public EditorManager(FlooContext context) {
         this.context = context;
-        this.state = state;
+    }
+
+    public void clearReadOnlyState() {
+        for (String path : readOnlyBufferIds) {
+            Document document = get_document(path);
+            if (document != null) {
+                document.setReadOnly(false);
+            }
+        }
+        readOnlyBufferIds.clear();
     }
 
     public void shutdown() {
@@ -92,119 +90,88 @@ public class EditorManager {
         ThreadSafe.write(context, dequeueRunnable);
     }
 
-    void remove_highlight(Integer userId, final Integer bufId, final Document document) {
-        HashMap<Integer, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = state.highlights.get(userId);
+    protected Document get_document(String path) {
+        String absPath = context.absPath(path);
+
+        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+        if (virtualFile == null) {
+            Flog.info("no virtual file for %s", path);
+            return null;
+        }
+        return FileDocumentManager.getInstance().getDocument(virtualFile);
+    }
+
+    void remove_highlight(Integer userId, final String path) {
+        remove_highlight(userId, path, get_document(path));
+    }
+
+    void remove_highlight(Integer userId, final String path, final Document document) {
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
-        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(bufId);
+        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(path);
         if (rangeHighlighters == null) {
             return;
         }
-        if (document != null) {
-            Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-            for (Editor editor : editors) {
-                if (editor.isDisposed()) {
-                    continue;
-                }
-                MarkupModel markupModel = editor.getMarkupModel();
-                RangeHighlighter[] highlights = markupModel.getAllHighlighters();
-
-                for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
-                    for (RangeHighlighter markupHighlighter : highlights) {
-                        if (rangeHighlighter == markupHighlighter) {
-                            markupModel.removeHighlighter(rangeHighlighter);
-                        }
-                    }
-                }
-            }
-            rangeHighlighters.clear();
+        if (document == null) {
             return;
         }
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
+        for (Editor editor : editors) {
+            if (editor.isDisposed()) {
+                continue;
+            }
+            MarkupModel markupModel = editor.getMarkupModel();
+            RangeHighlighter[] highlights = markupModel.getAllHighlighters();
 
-        final Buf buf = this.state.bufs.get(bufId);
-        queue(buf, new RunLater<Buf>() {
-            public void run(Buf b) {
-                Document document = get_document(bufId);
-                if (document == null) {
-                    return;
-                }
-                Editor editor = get_editor_for_document(document);
-                if (editor == null) {
-                    return;
-                }
-                MarkupModel markupModel = editor.getMarkupModel();
-                for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
-                    try {
+            for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                for (RangeHighlighter markupHighlighter : highlights) {
+                    if (rangeHighlighter == markupHighlighter) {
                         markupModel.removeHighlighter(rangeHighlighter);
-                    } catch (AssertionError e) {
-                        Flog.info("Assertion error on removeHighlighter");
-                    } catch (Exception e) {
-                        Flog.info(Utils.stackToString(e));
                     }
                 }
-                rangeHighlighters.clear();
             }
-        });
+        }
+        rangeHighlighters.clear();
+        //        ThreadSafe.write(context, new Runnable() {
+//            @Override
+//            public void run() {
+//                Editor editor = get_editor_for_document(document);
+//                if (editor == null) {
+//                    return;
+//                }
+//                MarkupModel markupModel = editor.getMarkupModel();
+//                for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
+//                    try {
+//                        markupModel.removeHighlighter(rangeHighlighter);
+//                    } catch (AssertionError e) {
+//                        Flog.info("Assertion error on removeHighlighter");
+//                    } catch (Exception e) {
+//                        Flog.info(Utils.stackToString(e));
+//                    }
+//                }
+//                rangeHighlighters.clear();
+//            }
+//        });
 
     }
     public void reset() {
         queue.clear();
     }
     public void clearHighlights() {
-        if (state.highlights == null || state.highlights.size() <= 0) {
+        if (highlights == null || highlights.size() <= 0) {
             return;
         }
-        for (Map.Entry<Integer, HashMap<Integer, LinkedList<RangeHighlighter>>> entry : state.highlights.entrySet()) {
-            HashMap<Integer, LinkedList<RangeHighlighter>> highlightsForUser = entry.getValue();
+        for (Map.Entry<Integer, HashMap<String, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
+            HashMap<String, LinkedList<RangeHighlighter>> highlightsForUser = entry.getValue();
             if (highlightsForUser == null || highlightsForUser.size() <= 0) {
                 continue;
             }
             Integer user_id = entry.getKey();
-            for (Map.Entry<Integer, LinkedList<RangeHighlighter>> integerLinkedListEntry: highlightsForUser.entrySet()) {
-                remove_highlight(user_id, integerLinkedListEntry.getKey(), null);
+            for (Map.Entry<String, LinkedList<RangeHighlighter>> integerLinkedListEntry: highlightsForUser.entrySet()) {
+                remove_highlight(user_id, integerLinkedListEntry.getKey());
             }
         }
-    }
-    Document get_document(final Integer id) {
-        if (state.bufs == null) {
-            return null;
-        }
-        Buf buf = state.bufs.get(id);
-        if (buf == null) {
-            Flog.info("Buf %d is not populated yet", id);
-            return null;
-        }
-        if (buf.buf == null) {
-            Flog.info("Buf %s is not populated yet", buf.path);
-            return null;
-        }
-        String absPath = context.absPath(buf.path);
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-        if (virtualFile == null || !virtualFile.exists()) {
-            Flog.info("no virtual file for %s", buf.path);
-            return null;
-        }
-        Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
-        if (d == null) {
-            return null;
-        }
-        return d;
-    }
-
-    public Editor get_editor_for_document(Document document) {
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-        for (Editor editor : editors) {
-            Flog.warn("is disposed? %s", editor.isDisposed());
-        }
-        if (editors.length > 0) {
-            return editors[0];
-        }
-        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-        if (virtualFile == null) {
-            return null;
-        }
-        return EditorFactory.getInstance().createEditor(document, context.project, virtualFile, true);
     }
 }
