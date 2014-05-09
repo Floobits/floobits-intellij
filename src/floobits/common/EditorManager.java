@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EditorManager {
-    public final ConcurrentLinkedQueue<QueuedAction> queue = new ConcurrentLinkedQueue<QueuedAction>();
+    public final ConcurrentLinkedQueue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
     private final FlooContext context;
     // buffer ids are not removed from readOnlyBufferIds
     public HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
@@ -30,7 +30,7 @@ public class EditorManager {
             Flog.log("Doing %s work", queue.size());
             while (true) {
                 // TODO: set a limit here and continue later
-                QueuedAction action = queue.poll();
+                Runnable action = queue.poll();
                 if (action == null) {
                     return;
                 }
@@ -39,7 +39,7 @@ public class EditorManager {
         }
     };
 
-    class QueuedAction {
+    class QueuedAction implements Runnable {
         public final Buf buf;
         public RunLater<Buf> runnable;
 
@@ -84,7 +84,11 @@ public class EditorManager {
             return;
         }
         QueuedAction queuedAction = new QueuedAction(buf, runnable);
-        queue.add(queuedAction);
+        queue(queuedAction);
+    }
+
+    protected void queue(Runnable runnable) {
+        queue.add(runnable);
         if (queue.size() > 1) {
             return;
         }
@@ -118,48 +122,34 @@ public class EditorManager {
         if (document == null) {
             return;
         }
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-        for (Editor editor : editors) {
-            if (editor.isDisposed()) {
-                continue;
-            }
-            MarkupModel markupModel = editor.getMarkupModel();
-            RangeHighlighter[] highlights = markupModel.getAllHighlighters();
+        queue(new Runnable() {
+            @Override
+            public void run() {
+                Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
+                for (Editor editor : editors) {
+                    if (editor.isDisposed()) {
+                        continue;
+                    }
+                    MarkupModel markupModel = editor.getMarkupModel();
+                    RangeHighlighter[] highlights = markupModel.getAllHighlighters();
 
-            for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
-                for (RangeHighlighter markupHighlighter : highlights) {
-                    if (rangeHighlighter == markupHighlighter) {
-                        markupModel.removeHighlighter(rangeHighlighter);
+                    for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
+                        for (RangeHighlighter markupHighlighter : highlights) {
+                            if (rangeHighlighter == markupHighlighter) {
+                                markupModel.removeHighlighter(rangeHighlighter);
+                            }
+                        }
                     }
                 }
+                rangeHighlighters.clear();
             }
-        }
-        rangeHighlighters.clear();
-        //        ThreadSafe.write(context, new Runnable() {
-//            @Override
-//            public void run() {
-//                Editor editor = get_editor_for_document(document);
-//                if (editor == null) {
-//                    return;
-//                }
-//                MarkupModel markupModel = editor.getMarkupModel();
-//                for (RangeHighlighter rangeHighlighter : rangeHighlighters) {
-//                    try {
-//                        markupModel.removeHighlighter(rangeHighlighter);
-//                    } catch (AssertionError e) {
-//                        Flog.info("Assertion error on removeHighlighter");
-//                    } catch (Exception e) {
-//                        Flog.info(Utils.stackToString(e));
-//                    }
-//                }
-//                rangeHighlighters.clear();
-//            }
-//        });
-
+        });
     }
+
     public void reset() {
         queue.clear();
     }
+
     public void clearHighlights() {
         if (highlights == null || highlights.size() <= 0) {
             return;
