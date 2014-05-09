@@ -243,8 +243,11 @@ public class FlooContext {
 
     public void statusMessage(String message, boolean isChat) {
         Flog.log(message);
-        if (!chatManager.isOpen()) {
+        if (chatManager == null || !chatManager.isOpen()) {
             statusMessage(message, NotificationType.INFORMATION);
+        }
+        if (chatManager == null) {
+            return;
         }
         if (isChat) {
             // No point in setting a status message to chat for chat since it already has the chat message.
