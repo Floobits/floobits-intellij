@@ -257,11 +257,11 @@ public class FlooContext {
 
     public void shutdown() {
         if (handler != null) {
+            handler.shutdown();
+            editor.shutdown();
             if (chatManager != null) {
                 chatManager.statusMessage("Disconnecting.");
             }
-            handler.shutdown();
-            editor.shutdown();
             handler = null;
         }
 
