@@ -75,6 +75,7 @@ public class EditorManager {
         clearHighlights();
         queue.clear();
         clearReadOnlyState();
+        highlights = null;
     }
 
     public void queue(Buf buf, RunLater<Buf> runnable) {

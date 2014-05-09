@@ -130,15 +130,6 @@ public class TextBuf extends Buf <String> {
         });
     }
 
-    @Override
-    public void clearReadOnly() {
-        super.clearReadOnly();
-        Document document = getDocumentForVirtualFile(getVirtualFile());
-        if (document != null) {
-            document.setReadOnly(false);
-        }
-    }
-
     public void patch(final FlooPatch res) {
         final TextBuf b = this;
         Flog.info("Got _on_patch");
