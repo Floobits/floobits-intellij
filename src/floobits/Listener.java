@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
-    private static AtomicBoolean isListening = new AtomicBoolean(true);
+    private static final AtomicBoolean isListening = new AtomicBoolean(true);
     private final FlooContext context;
     private final EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
@@ -58,7 +58,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addVisibleAreaListener(this);
 
         virtualFileAdapter = new VirtualFileAdapter() {
-            public void beforePropertyChange(final VirtualFilePropertyEvent event) {
+            public void beforePropertyChange(@NotNull final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
                     return;
                 }
@@ -165,9 +165,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
         for (VFileEvent event : events) {
             Flog.debug(" after event type %s", event.getClass().getSimpleName());
-            if (event == null) {
-                continue;
-            }
             if (event instanceof VFileMoveEvent) {
                 Flog.info("move event %s", event);
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();

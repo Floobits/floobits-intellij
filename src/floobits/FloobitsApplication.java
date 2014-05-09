@@ -158,10 +158,10 @@ public class FloobitsApplication implements ApplicationComponent {
         }
         VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(new File(path));
         Project openedProject;
-        if (ProjectAttachProcessor.canAttachToProject()) {
+        if (ProjectAttachProcessor.canAttachToProject() && file != null) {
             openedProject = PlatformProjectOpenProcessor.doOpenProject(file, null, false, -1, null, false);
         } else {
-            openedProject = ProjectUtil.openOrImport(file.getPath(), null, false);
+            openedProject = ProjectUtil.openOrImport(path, null, false);
         }
         // This is something Intellij does when a user opens a project from the menu:
         FileChooserUtil.setLastOpenedFile(openedProject, file);

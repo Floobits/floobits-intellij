@@ -150,7 +150,7 @@ public class EditorManager {
     }
 
     public void clearHighlights() {
-        if (highlights == null || highlights.size() <= 0) {
+        if (highlights.size() <= 0) {
             return;
         }
         for (Map.Entry<Integer, HashMap<String, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {

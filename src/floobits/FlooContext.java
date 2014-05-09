@@ -37,7 +37,7 @@ public class FlooContext {
     public BaseHandler handler;
     public ChatManager chatManager;
     protected Ignore ignoreTree;
-    public EditorManager editor;
+    public final EditorManager editor;
     public Date lastChatMessage;
     protected NioEventLoopGroup loopGroup = new NioEventLoopGroup();
 
@@ -245,8 +245,6 @@ public class FlooContext {
         Flog.log(message);
         if (chatManager == null || !chatManager.isOpen()) {
             statusMessage(message, NotificationType.INFORMATION);
-        }
-        if (chatManager == null) {
             return;
         }
         if (isChat) {
@@ -269,14 +267,9 @@ public class FlooContext {
         }
         if (handler != null) {
             handler.shutdown();
+            editor.shutdown();
             handler = null;
         }
-
-        if (editor != null) {
-            editor.shutdown();
-            editor = null;
-        }
-
         if (loopGroup != null) {
             try {
                 loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
