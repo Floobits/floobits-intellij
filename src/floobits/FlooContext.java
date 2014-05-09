@@ -245,9 +245,8 @@ public class FlooContext {
         Flog.log(message);
         if (chatManager == null || !chatManager.isOpen()) {
             statusMessage(message, NotificationType.INFORMATION);
-            return;
         }
-        if (isChat) {
+        if (isChat || chatManager == null) {
             // No point in setting a status message to chat for chat since it already has the chat message.
             return;
         }
