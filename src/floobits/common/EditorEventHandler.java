@@ -22,15 +22,13 @@ import java.util.HashSet;
 public class EditorEventHandler {
     private final FlooContext context;
     private final FloobitsState state;
-    private final EditorManager editor;
     private final Listener listener;
     private final OutboundRequestHandler outbound;
     private InboundRequestHandler inbound;
 
-    public EditorEventHandler(FlooContext context, FloobitsState state, EditorManager editor, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
+    public EditorEventHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
         this.context = context;
         this.state = state;
-        this.editor = editor;
         this.outbound = outbound;
         this.inbound = inbound;
         listener = new Listener(this, context);
@@ -169,7 +167,7 @@ public class EditorEventHandler {
         }
         context.statusMessage(msg, false);
         document.setReadOnly(true);
-        editor.readOnlyBufferIds.add(bufByPath.path);
+        context.editor.readOnlyBufferIds.add(bufByPath.path);
         final String text = document.getText();
         if (text == null) {
             return;
@@ -220,7 +218,7 @@ public class EditorEventHandler {
     }
 
     public void clearHighlights (){
-        editor.clearHighlights();
+        context.editor.clearHighlights();
     }
 
     public void openChat() {

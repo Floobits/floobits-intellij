@@ -37,15 +37,17 @@ public class FlooContext {
     public BaseHandler handler;
     public ChatManager chatManager;
     protected Ignore ignoreTree;
+    public EditorManager editor;
     public Date lastChatMessage;
     protected NioEventLoopGroup loopGroup = new NioEventLoopGroup();
 
-    public NioEventLoopGroup getLoopGroup() {
-        return loopGroup;
-    }
-
     public FlooContext(Project project) {
         this.project = project;
+        editor = new EditorManager(this);
+    }
+
+    public NioEventLoopGroup getLoopGroup() {
+        return loopGroup;
     }
 
     public ScheduledFuture setTimeout(int time, final Runnable runnable) {
@@ -264,6 +266,11 @@ public class FlooContext {
         if (handler != null) {
             handler.shutdown();
             handler = null;
+        }
+
+        if (editor != null) {
+            editor.shutdown();
+            editor = null;
         }
 
         if (loopGroup != null) {

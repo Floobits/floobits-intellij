@@ -11,18 +11,16 @@ import floobits.utilities.Flog;
 public class FlooHandler extends BaseHandler {
     public FloobitsState state;
     InboundRequestHandler inbound;
-    EditorManager editor;
     public EditorEventHandler editorEventHandler;
 
     public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
         super(context);
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
-        editor = new EditorManager(context);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
-        inbound = new InboundRequestHandler(context, state, editor, outbound, shouldUpload);
-        editorEventHandler = new EditorEventHandler(context, state, editor, outbound, inbound);
+        inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
+        editorEventHandler = new EditorEventHandler(context, state, outbound, inbound);
         if (ProjectRootManager.getInstance(context.project).getProjectSdk() == null) {
             Flog.warn("No SDK detected.");
         }
@@ -39,13 +37,22 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         super.on_connect();
-        editor.reset();
+        context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
         conn.write(new FlooAuth(new Settings(context), url.owner, url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {
-        inbound.on_data(name, obj);
+        Flog.debug("Calling %s", name);
+        try {
+            inbound.on_data(name, obj);
+        } catch (Exception e) {
+            Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
+            if (name.equals("room_info")) {
+                context.errorMessage("There was a critical error in the plugin" + e.toString());
+                context.shutdown();
+            }
+        }
     }
 
     @Override
@@ -53,7 +60,6 @@ public class FlooHandler extends BaseHandler {
         super.shutdown();
         context.statusMessage(String.format("Leaving workspace: %s.", url.toString()), false);
         editorEventHandler.shutdown();
-        editor.shutdown();
         context.chatManager.clearUsers();
         state.shutdown();
     }

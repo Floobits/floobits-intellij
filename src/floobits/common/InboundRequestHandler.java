@@ -32,7 +32,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.NumberFormat;
 import java.util.*;
@@ -43,14 +42,18 @@ import java.util.*;
 public class InboundRequestHandler {
     private FlooContext context;
     private final FloobitsState state;
-    private EditorManager editor;
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
+    private EditorManager editor;
 
-    public InboundRequestHandler(FlooContext context, FloobitsState state, EditorManager editor, OutboundRequestHandler outbound, boolean shouldUpload) {
+    enum Events {
+        room_info, get_buf, patch, highlight, saved, join, part, disconnect, create_buf,
+        request_perms, msg, rename_buf, term_stdin, term_stdout, delete_buf, perms, error, ping
+    }
+    public InboundRequestHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, boolean shouldUpload) {
         this.context = context;
+        editor = context.editor;
         this.state = state;
-        this.editor = editor;
         this.outbound = outbound;
         this.shouldUpload = shouldUpload;
     }
@@ -263,54 +266,54 @@ public class InboundRequestHandler {
         }
 
         editor.queue(buf, new RunLater<Buf>() {
-                    @Override
-                    public void run(Buf buf) {
-                        final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
-                        if (foundFile == null) {
-                            Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
-                            return;
-                        }
-                        String newRelativePath = context.toProjectRelPath(newPath);
-                        if (newRelativePath == null) {
-                            context.errorMessage("A file is now outside the workspace.");
-                            return;
-                        }
-                        state.set_buf_path(buf, newRelativePath);
+                @Override
+                public void run(Buf buf) {
+                    final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+                    if (foundFile == null) {
+                        Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
+                        return;
+                    }
+                    String newRelativePath = context.toProjectRelPath(newPath);
+                    if (newRelativePath == null) {
+                        context.errorMessage("A file is now outside the workspace.");
+                        return;
+                    }
+                    state.set_buf_path(buf, newRelativePath);
 
-                        File oldFile = new File(oldPath);
-                        File newFile = new File(newPath);
-                        String newFileName = newFile.getName();
-                        // Rename file
-                        try {
-                            foundFile.rename(null, newFileName);
-                        } catch (IOException e) {
-                            Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
-                        }
-                        // Move file
-                        String newParentDirectoryPath = newFile.getParent();
-                        String oldParentDirectoryPath = oldFile.getParent();
-                        if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
-                            Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
-                            return;
-                        }
-                        VirtualFile directory = null;
-                        try {
-                            directory = VfsUtil.createDirectories(newParentDirectoryPath);
-                        } catch (IOException e) {
-                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                    File oldFile = new File(oldPath);
+                    File newFile = new File(newPath);
+                    String newFileName = newFile.getName();
+                    // Rename file
+                    try {
+                        foundFile.rename(null, newFileName);
+                    } catch (IOException e) {
+                        Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
+                    }
+                    // Move file
+                    String newParentDirectoryPath = newFile.getParent();
+                    String oldParentDirectoryPath = oldFile.getParent();
+                    if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
+                        Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
+                        return;
+                    }
+                    VirtualFile directory = null;
+                    try {
+                        directory = VfsUtil.createDirectories(newParentDirectoryPath);
+                    } catch (IOException e) {
+                        Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
 
-                        }
-                        if (directory == null) {
-                            Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
-                            return;
-                        }
-                        try {
-                            foundFile.move(null, directory);
-                        } catch (IOException e) {
-                            Flog.warn("Error moving file %s %s %s", e, oldPath, newPath);
-                        }
+                    }
+                    if (directory == null) {
+                        Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
+                        return;
+                    }
+                    try {
+                        foundFile.move(null, directory);
+                    } catch (IOException e) {
+                        Flog.warn("Error moving file %s %s %s", e, oldPath, newPath);
                     }
                 }
+            }
         );
     }
 
@@ -666,49 +669,62 @@ public class InboundRequestHandler {
         });
     }
 
-    @SuppressWarnings("unused")
-    public void testHandlers () throws IOException {
-        JsonObject obj = new JsonObject();
-        _on_room_info(obj);
-        _on_get_buf(obj);
-        _on_patch(obj);
-        _on_highlight(obj);
-        _on_saved(obj);
-        _on_join(obj);
-        _on_part(obj);
-        _on_disconnect(obj);
-        _on_create_buf(obj);
-        _on_request_perms(obj);
-        _on_msg(obj);
-        _on_rename_buf(obj);
-        _on_term_stdin(obj);
-        _on_term_stdout(obj);
-        _on_delete_buf(obj);
-        _on_perms(obj);
-        _on_error(obj);
-        _on_ping(obj);
-    }
-
     public void on_data(String name, JsonObject obj) {
-        String method_name = "_on_" + name;
-        Method method;
-        try {
-            method = this.getClass().getDeclaredMethod(method_name, new Class[]{JsonObject.class});
-        } catch (NoSuchMethodException e) {
-            Flog.warn(String.format("Could not find %s method.\n%s", method_name, e.toString()));
-            return;
-        }
-        Object objects[] = new Object[1];
-        objects[0] = obj;
-        Flog.debug("Calling %s", method_name);
-        try {
-            method.invoke(this, objects);
-        } catch (Exception e) {
-            Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
-            if (name.equals("room_info")) {
-                context.errorMessage("There was a critical error in the plugin" + e.toString());
-                context.shutdown();
-            }
+        switch (Events.valueOf(name)) {
+            case room_info:
+                _on_room_info(obj);
+                break;
+            case get_buf:
+                _on_get_buf(obj);
+                break;
+            case patch:
+                _on_patch(obj);
+                break;
+            case highlight:
+                _on_highlight(obj);
+                break;
+            case saved:
+                _on_saved(obj);
+                break;
+            case join:
+                _on_join(obj);
+                break;
+            case part:
+                _on_part(obj);
+                break;
+            case disconnect:
+                _on_disconnect(obj);
+                break;
+            case create_buf:
+                _on_create_buf(obj);
+                break;
+            case request_perms:
+                _on_request_perms(obj);
+                break;
+            case msg:
+                _on_msg(obj);
+                break;
+            case rename_buf:
+                _on_rename_buf(obj);
+                break;
+            case term_stdin:
+                _on_term_stdin(obj);
+                break;
+            case term_stdout:
+                _on_term_stdout(obj);
+                break;
+            case delete_buf:
+                _on_delete_buf(obj);
+                break;
+            case perms:
+                _on_perms(obj);
+                break;
+            case error:
+                _on_error(obj);
+                break;
+            case ping:
+                _on_ping(obj);
+                break;
         }
     }
 }
