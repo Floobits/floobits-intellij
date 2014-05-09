@@ -39,7 +39,7 @@ public class FlooContext {
     protected Ignore ignoreTree;
     public final EditorManager editor;
     public Date lastChatMessage;
-    protected NioEventLoopGroup loopGroup = new NioEventLoopGroup();
+    protected NioEventLoopGroup loopGroup;
 
     public FlooContext(Project project) {
         this.project = project;
@@ -139,17 +139,9 @@ public class FlooContext {
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
-        if (!isJoined()) {
-            if (!API.workspaceExists(flooUrl, this)) {
-                errorMessage(String.format("The workspace %s does not exist.", flooUrl));
-                return;
-            }
-            setColabDir(Utils.unFuckPath(path));
-            handler = new FlooHandler(this, flooUrl, upload);
-            handler.go();
+        if (setupHandler(new FlooHandler(this, flooUrl, upload, path))) {
             return;
         }
-
         String title = String.format("Really leave %s?", handler.url.workspace);
         String body = String.format("Leave %s and join %s ?", handler.url.toString(), handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {
@@ -164,10 +156,7 @@ public class FlooContext {
     }
 
     public void createAccount() {
-        if (!isJoined()) {
-            CreateAccountHandler createAccountHandler = new CreateAccountHandler(this);
-            handler = createAccountHandler;
-            createAccountHandler.go();
+        if (setupHandler(new CreateAccountHandler(this))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.", false);
@@ -176,14 +165,21 @@ public class FlooContext {
 
 
     public void linkEditor() {
-        if (!isJoined()) {
-            LinkEditorHandler linkEditorHandler = new LinkEditorHandler(this);
-            handler = linkEditorHandler;
-            linkEditorHandler.go();
+        if (setupHandler(new LinkEditorHandler(this))) {
             return;
         }
         Utils.statusMessage("You already have an account and are connected with it.", project);
         shutdown();
+    }
+
+    private boolean setupHandler(BaseHandler handler) {
+        if (isJoined()) {
+            return false;
+        }
+        this.handler = handler;
+        loopGroup = new NioEventLoopGroup();
+        handler.go();
+        return true;
     }
 
     public boolean isJoined() {
@@ -260,15 +256,19 @@ public class FlooContext {
     }
 
     public void shutdown() {
-        if (chatManager != null) {
-            chatManager.statusMessage("Disconnecting.");
-            chatManager.clearUsers();
-        }
         if (handler != null) {
+            if (chatManager != null) {
+                chatManager.statusMessage("Disconnecting.");
+            }
             handler.shutdown();
             editor.shutdown();
             handler = null;
         }
+
+        if (chatManager != null) {
+            chatManager.clearUsers();
+        }
+
         if (loopGroup != null) {
             try {
                 loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
@@ -276,7 +276,7 @@ public class FlooContext {
             } catch (InterruptedException e) {
                 Flog.warn(e);
             }
-            loopGroup = new NioEventLoopGroup();
+            loopGroup = null;
         }
         ignoreTree = null;
     }

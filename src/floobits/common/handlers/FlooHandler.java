@@ -13,8 +13,13 @@ public class FlooHandler extends BaseHandler {
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
 
-    public FlooHandler (final FlooContext context, FlooUrl flooUrl, boolean shouldUpload) {
+    public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path) {
         super(context);
+        if (!API.workspaceExists(flooUrl, context)) {
+            context.errorMessage(String.format("The workspace %s does not exist.", flooUrl));
+            return;
+        }
+        context.setColabDir(Utils.unFuckPath(path));
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
         conn = new Connection(this);
