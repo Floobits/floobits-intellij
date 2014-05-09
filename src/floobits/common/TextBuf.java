@@ -11,7 +11,6 @@ import floobits.Listener;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.dmp.diff_match_patch;
-import floobits.common.handlers.FlooHandler;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -117,6 +116,11 @@ public class TextBuf extends Buf <String> {
        outbound.patch(textPatch, before_md5, this);
     }
 
+    private void getBuf() {
+        cancelTimeout();
+        outbound.getBuf(id);
+    }
+
     private void setGetBufTimeout() {
         final int buf_id = id;
         cancelTimeout();
@@ -124,7 +128,6 @@ public class TextBuf extends Buf <String> {
             @Override
             public void run() {
                 Flog.info("Sending get buf after timeout.");
-                FlooHandler flooHandler = context.getFlooHandler();
                 outbound.getBuf(buf_id);
             }
         });
@@ -142,12 +145,13 @@ public class TextBuf extends Buf <String> {
         VirtualFile virtualFile = b.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
-            outbound.getBuf(id);
+            getBuf();
             return;
         }
         d = Buf.getDocumentForVirtualFile(virtualFile);
         if (d == null) {
             Flog.warn("Document not found for %s", virtualFile);
+            getBuf();
             return;
         }
         String viewText;
@@ -181,7 +185,7 @@ public class TextBuf extends Buf <String> {
         for (boolean clean : patchesClean) {
             if (!clean) {
                 Flog.log("Patch not clean for %s. Sending get_buf and setting readonly.", d);
-               outbound.getBuf(res.id);
+                getBuf();
                 return;
             }
         }
@@ -225,7 +229,7 @@ public class TextBuf extends Buf <String> {
 
             if (e != null) {
                 Flog.warn(e);
-                outbound.getBuf(id);
+                getBuf();
                 return;
             }
         }
