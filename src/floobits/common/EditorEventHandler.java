@@ -22,7 +22,7 @@ import java.util.HashSet;
 public class EditorEventHandler {
     private final FlooContext context;
     private final FloobitsState state;
-    private final Listener listener;
+    private Listener listener;
     private final OutboundRequestHandler outbound;
     private InboundRequestHandler inbound;
 
@@ -239,6 +239,9 @@ public class EditorEventHandler {
         }
     }
     public void shutdown() {
-        listener.stop();
+        if (listener != null) {
+            listener.shutdown();
+            listener = null;
+        }
     }
 }

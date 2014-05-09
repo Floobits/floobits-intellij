@@ -60,7 +60,6 @@ public class FlooHandler extends BaseHandler {
         super.shutdown();
         context.statusMessage(String.format("Leaving workspace: %s.", url.toString()), false);
         editorEventHandler.shutdown();
-        context.chatManager.clearUsers();
         state.shutdown();
     }
 }

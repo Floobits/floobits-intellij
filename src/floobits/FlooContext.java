@@ -262,6 +262,7 @@ public class FlooContext {
     public void shutdown() {
         if (chatManager != null) {
             chatManager.statusMessage("Disconnecting.");
+            chatManager.clearUsers();
         }
         if (handler != null) {
             handler.shutdown();

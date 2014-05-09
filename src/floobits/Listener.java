@@ -32,6 +32,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private static AtomicBoolean isListening = new AtomicBoolean(true);
     private final FlooContext context;
     private final EditorEventHandler editorManager;
+    private VirtualFileAdapter virtualFileAdapter;
 
     public synchronized static void flooEnable() {
         isListening.set(true);
@@ -56,8 +57,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addCaretListener(this);
         em.addVisibleAreaListener(this);
 
-
-        VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileAdapter() {
+        virtualFileAdapter = new VirtualFileAdapter() {
             public void beforePropertyChange(final VirtualFilePropertyEvent event) {
                 if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
                     return;
@@ -71,15 +71,17 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
                 editorManager.rename(oldValue, newValue);
             }
-        }
-        );
+        };
+        VirtualFileManager.getInstance().addVirtualFileListener(virtualFileAdapter);
     }
 
-    public void stop() {
+    public void shutdown() {
         connection.disconnect();
         em.removeSelectionListener(this);
         em.removeDocumentListener(this);
         em.removeCaretListener(this);
+        em.removeVisibleAreaListener(this);
+        VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
     }
 
     @Override

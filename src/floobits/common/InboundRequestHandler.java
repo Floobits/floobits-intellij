@@ -725,6 +725,8 @@ public class InboundRequestHandler {
             case ping:
                 _on_ping(obj);
                 break;
+            default:
+                Flog.log("No handler for %s", name);
         }
     }
 }
