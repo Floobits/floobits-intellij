@@ -18,6 +18,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class TextBuf extends Buf <String> {
@@ -176,8 +177,8 @@ public class TextBuf extends Buf <String> {
             Flog.warn("starting md5s don't match for %s. this is dangerous!", b.path);
         }
 
-        LinkedList patches = (LinkedList) dmp.patch_fromText(res.patch);
-        final Object[] results = dmp.patch_apply(patches, oldText);
+        List<diff_match_patch.Patch> patches =  dmp.patch_fromText(res.patch);
+        final Object[] results = dmp.patch_apply((LinkedList<diff_match_patch.Patch>) patches, oldText);
         final String patchedContents = (String) results[0];
         final boolean[] patchesClean = (boolean[]) results[1];
         final FlooPatchPosition[] positions = (FlooPatchPosition[]) results[2];

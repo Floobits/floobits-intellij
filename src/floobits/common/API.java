@@ -199,7 +199,7 @@ public class API {
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setParameter("http.protocol.handle-redirects", true);
-        connectionParams.setSoTimeout(3000);
+        connectionParams.setSoTimeout(5000);
         connectionParams.setConnectionTimeout(3000);
         connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024*1024);
         Settings settings = new Settings(context);

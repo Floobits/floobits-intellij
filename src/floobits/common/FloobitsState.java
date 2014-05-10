@@ -6,6 +6,7 @@ import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -61,7 +62,8 @@ public class FloobitsState {
         paths_to_ids.put(buf.path, buf.id);
     }
 
-    public Buf get_buf_by_path(String absPath) {
+    public @Nullable
+    Buf get_buf_by_path(String absPath) {
         String relPath = context.toProjectRelPath(absPath);
         if (relPath == null) {
             return null;

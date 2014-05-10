@@ -33,16 +33,16 @@ public class OutboundRequestHandler {
         conn.write(new GetBuf(buf_id));
     }
 
-    public void patch(String textPatch, String before_md5, TextBuf buf) {
+    public void patch(String textPatch, String before_md5, TextBuf b) {
         if (!state.can("patch")) {
             return;
         }
-        if (Buf.isBad(buf)) {
-            Flog.info("buf isn't populated yet %s", buf.path);
+        if (Buf.isBad(b)) {
+            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
-        Flog.log("Sending patch for %s", buf.path);
-        FlooPatch req = new FlooPatch(textPatch, before_md5, buf);
+        Flog.log("Sending patch for %s", b.path);
+        FlooPatch req = new FlooPatch(textPatch, before_md5, b);
         conn.write(req);
     }
 
@@ -67,7 +67,7 @@ public class OutboundRequestHandler {
 
     public void saveBuf(Buf b) {
         if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b.path);
+            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
         if (!state.can("patch")) {
@@ -98,7 +98,7 @@ public class OutboundRequestHandler {
             return;
         }
         if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b.path);
+            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
         conn.write(new FlooHighlight(b, textRanges, summon, state.stalking));
