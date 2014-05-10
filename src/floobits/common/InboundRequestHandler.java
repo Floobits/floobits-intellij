@@ -633,24 +633,28 @@ public class InboundRequestHandler {
         ThreadSafe.read(context, new Runnable() {
             @Override
             public void run() {
-                if (state.bufs == null) {
-                    Flog.info("Disconnected, abandon room info handling.");
-                    return;
-                }
-                context.statusMessage(String.format("You successfully joined %s ", state.url.toString()), false);
-                context.chatManager.openChat();
-                RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
-                state.handleRoomInfo(ri);
+                try{
+                    RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
+                    state.handleRoomInfo(ri);
 
-                DotFloo.write(context.colabDir, state.url.toString());
-                if (shouldUpload) {
-                    if (!state.readOnly) {
-                        initialUpload(ri);
-                        return;
+                    context.statusMessage(String.format("You successfully joined %s ", state.url.toString()), false);
+                    context.chatManager.openChat();
+
+                    DotFloo.write(context.colabDir, state.url.toString());
+
+                    if (shouldUpload) {
+                        if (!state.readOnly) {
+                            initialUpload(ri);
+                            return;
+                        }
+                        context.statusMessage("You don't have permission to update remote files.", false);
                     }
-                    context.statusMessage("You don't have permission to update remote files.", false);
+                    initialManageConflicts(ri);
+                } catch (Throwable e) {
+                    API.uploadCrash(context, e);
+                    context.errorMessage("There was a critical error in the plugin" + e.toString());
+                    context.shutdown();
                 }
-                initialManageConflicts(ri);
             }
         });
     }

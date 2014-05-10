@@ -44,19 +44,18 @@ public class FlooHandler extends BaseHandler {
         super.on_connect();
         context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
-        conn.write(new FlooAuth(new Settings(context), url.owner, url.workspace));
+        Settings settings = new Settings(context);
+        state.username = settings.get("username");
+        conn.write(new FlooAuth(settings, url.owner, url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {
         Flog.debug("Calling %s", name);
         try {
             inbound.on_data(name, obj);
-        } catch (Exception e) {
-            Flog.warn(String.format("on_data error \n\n%s", Utils.stackToString(e)));
-            if (name.equals("room_info")) {
-                context.errorMessage("There was a critical error in the plugin" + e.toString());
-                context.shutdown();
-            }
+        } catch (Throwable e) {
+            Flog.warn(String.format("on_data error \n\n%s", e.toString()));
+            API.uploadCrash(this, context, e);
         }
     }
 

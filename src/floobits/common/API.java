@@ -266,8 +266,8 @@ public class API {
         return orgs;
     }
     static public void uploadCrash(BaseHandler baseHandler, final FlooContext context, Throwable throwable) {
-        Flog.warn("Uploading crash report: %s", throwable);
         try {
+            Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
             String owner = "";
             String workspace = "";
