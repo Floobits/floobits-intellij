@@ -12,6 +12,7 @@ import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
+import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +67,10 @@ public class FloobitsApplication implements ApplicationComponent {
             @Override
             public void run(final String location) {
                 Project projectForPath = getProject(location);
+                if (projectForPath == null) {
+                    Utils.errorMessage("The editor could not open the project :(", null);
+                    return;
+                }
                 final FlooContext context = FloobitsPlugin.getInstance(projectForPath).context;
                 ThreadSafe.write(context, new Runnable() {
                     @Override
@@ -89,7 +94,12 @@ public class FloobitsApplication implements ApplicationComponent {
             return;
         }
         Project projectForPath = getProject(location);
+
         if (context == null || projectForPath != context.project) {
+            if (projectForPath == null) {
+                Utils.errorMessage("The editor could not open the project :(", null);
+                return;
+            }
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
@@ -162,6 +172,15 @@ public class FloobitsApplication implements ApplicationComponent {
             openedProject = PlatformProjectOpenProcessor.doOpenProject(file, null, false, -1, null, false);
         } else {
             openedProject = ProjectUtil.openOrImport(path, null, false);
+        }
+        if (openedProject == null) {
+            try {
+                openedProject = ProjectManager.getInstance().loadAndOpenProject(path);
+            } catch (Throwable e) {
+                Flog.warn(e);
+                API.uploadCrash(null, null, e);
+                return null;
+            }
         }
         // This is something Intellij does when a user opens a project from the menu:
         FileChooserUtil.setLastOpenedFile(openedProject, file);
