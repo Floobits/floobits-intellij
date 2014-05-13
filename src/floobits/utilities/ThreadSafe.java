@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import floobits.FlooContext;
 import floobits.common.API;
-import floobits.common.handlers.FlooHandler;
 
 public class ThreadSafe {
     public static void write(final FlooContext context, final Runnable runnable) {
@@ -18,8 +17,11 @@ public class ThreadSafe {
                         ApplicationManager.getApplication().runWriteAction(new Runnable() {
                             @Override
                             public void run() {
+                                long time = System.currentTimeMillis() - l;
+                                if (time > 200) {
+                                    Flog.log("spent %s getting lock", time);
+                                }
                                 try {
-                                    Flog.log("spent %s getting lock", System.currentTimeMillis() - l);
                                     runnable.run();
                                 } catch (Throwable throwable) {
                                     API.uploadCrash(context, throwable);

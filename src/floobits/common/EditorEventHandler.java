@@ -169,9 +169,6 @@ public class EditorEventHandler {
         document.setReadOnly(true);
         context.editor.readOnlyBufferIds.add(bufByPath.path);
         final String text = document.getText();
-        if (text == null) {
-            return;
-        }
         context.setTimeout(0, new Runnable() {
             @Override
             public void run() {

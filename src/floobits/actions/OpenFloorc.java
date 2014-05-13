@@ -45,6 +45,10 @@ public class OpenFloorc extends AnAction {
             floobitsPlugin.context.errorMessage("no virtual file");
             return;
         }
+        if (project == null) {
+            floobitsPlugin.context.errorMessage("Can not open floorc");
+            return;
+        }
         OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);
         FileEditorManager.getInstance(project).openTextEditor(openFileDescriptor, true);
     }

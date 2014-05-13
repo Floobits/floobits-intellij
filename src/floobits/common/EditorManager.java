@@ -27,7 +27,9 @@ public class EditorManager {
     private final Runnable dequeueRunnable = new Runnable() {
         @Override
         public void run() {
-            Flog.log("Doing %s work", queue.size());
+            if (queue.size() > 5) {
+                Flog.log("Doing %s work", queue.size());
+            }
             while (true) {
                 // TODO: set a limit here and continue later
                 Runnable action = queue.poll();
