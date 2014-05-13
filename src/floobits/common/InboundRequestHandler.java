@@ -674,7 +674,15 @@ public class InboundRequestHandler {
     }
 
     public void on_data(String name, JsonObject obj) {
-        switch (Events.valueOf(name)) {
+        Events event;
+
+        try {
+            event = Events.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            Flog.log("No handler for %s", name);
+            return;
+        }
+        switch (event) {
             case room_info:
                 _on_room_info(obj);
                 break;
