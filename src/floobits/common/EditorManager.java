@@ -52,8 +52,10 @@ public class EditorManager {
             synchronized (buf) {
                 runnable.run(buf);
             }
-            long l1 = System.currentTimeMillis();
-            Flog.log("Spent %s in ui thread", l1 -l);
+            long l1 = System.currentTimeMillis() - l;
+            if (l1 > 200) {
+                Flog.log("Spent %s in ui thread", l1);
+            }
         }
     }
 
