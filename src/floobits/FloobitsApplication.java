@@ -27,14 +27,14 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public FloobitsApplication() {
         self = this;
+    }
+
+    public void initComponent() {
         Settings settings = new Settings(null);
         String default_host = settings.get("default_host");
         if (default_host != null) {
             Constants.defaultHost = default_host;
         }
-    }
-
-    public void initComponent() {
     }
 
     public void disposeComponent() {
