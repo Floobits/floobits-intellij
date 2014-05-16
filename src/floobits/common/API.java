@@ -82,7 +82,7 @@ public class API {
         String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context, Constants.defaultHost);
+            apiRequest(method, context, Settings.getHost(context));
         } catch (IOException e) {
             context.errorMessage(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
@@ -239,7 +239,7 @@ public class API {
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, context, Constants.defaultHost);
+            apiRequest(method, context, Settings.getHost(context));
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;
@@ -289,7 +289,7 @@ public class API {
                 @Override
                 public void run() {
                     try {
-                        apiRequest(method, context, Constants.defaultHost);
+                        apiRequest(method, context, Constants.floobitsDomain);
                     } catch (Throwable e) {
                         Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
                     }
@@ -320,7 +320,7 @@ public class API {
             @Override
             public void run() {
                 try {
-                    apiRequest(method, null, Constants.defaultHost);
+                    apiRequest(method, null, Constants.floobitsDomain);
                 } catch (Throwable e) {
                     Utils.errorMessage(String.format("Couldn't send crash report %s", e), null);
                 }

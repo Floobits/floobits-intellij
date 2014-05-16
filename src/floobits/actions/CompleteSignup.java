@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
-import floobits.common.Constants;
 import floobits.common.PersistentJson;
 import floobits.common.Settings;
 import floobits.common.Utils;
@@ -37,7 +36,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
         String secret = settings.get("secret");
-        String url = String.format("https://%s/%s/pinocchio/%s/", Constants.defaultHost, username, secret);
+        String url = String.format("https://%s/%s/pinocchio/%s/", Settings.getHost(null), username, secret);
         try {
             URI uri = new URI(url);
             Desktop.getDesktop().browse(uri);

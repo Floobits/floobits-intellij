@@ -6,6 +6,7 @@ public class Constants {
     final static public String baseDir = FilenameUtils.concat(System.getProperty("user.home"), "floobits");
     final static public String version = "0.11";
     final static public String pluginVersion = "0.01";
+    final static public String floobitsDomain = "floobits.com";
     static public String defaultHost = "floobits.com";
     final static public int defaultPort = 3448;
 }

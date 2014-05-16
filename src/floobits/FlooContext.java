@@ -129,7 +129,8 @@ public class FlooContext {
             @Override
             public void run(ShareProjectDialog dialog) {
                 if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                    joinWorkspace(new FlooUrl(Constants.defaultHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
+                    String host = Settings.getHost(context);
+                    joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
         });

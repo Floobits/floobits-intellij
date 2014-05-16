@@ -18,15 +18,17 @@ import java.util.UUID;
 
 public class LinkEditorHandler extends BaseHandler {
     protected String token;
+    private String host;
 
     public LinkEditorHandler(FlooContext context) {
         super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
+        host = Settings.getHost(context);
     }
 
     public void go() {
-        url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
+        url = new FlooUrl(host, null, null, Constants.defaultPort, true);
         conn = new Connection(this);
         conn.start();
         isJoined = true;
@@ -60,7 +62,7 @@ public class LinkEditorHandler extends BaseHandler {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s/", Constants.defaultHost, token)));
+            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s/", host, token)));
         } catch (IOException error) {
             context.shutdown();
             Flog.warn(error);

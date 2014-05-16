@@ -30,11 +30,7 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
-        Settings settings = new Settings(null);
-        String default_host = settings.get("default_host");
-        if (default_host != null) {
-            Constants.defaultHost = default_host;
-        }
+        Constants.defaultHost = Settings.getHost(null);
     }
 
     public void disposeComponent() {

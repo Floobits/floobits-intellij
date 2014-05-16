@@ -1,18 +1,27 @@
 package floobits.common;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Settings {
     protected HashMap<String, String> settings;
     public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
     private FlooContext context;
+
+    public static String getHost(FlooContext context) {
+        Settings settings = new Settings(context);
+        String host = settings.get("default_host");
+        if (host == null) {
+            host = Constants.defaultHost;
+        }
+        return host;
+    }
 
     public Settings(FlooContext context) {
         this.context = context;

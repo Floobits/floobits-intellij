@@ -11,12 +11,15 @@ import java.util.Map;
 
 public class CreateAccountHandler extends BaseHandler {
 
+    private String host;
+
     public CreateAccountHandler(FlooContext context) {
         super(context);
+        host = Settings.getHost(context);
     }
 
     public void go() {
-        url = new FlooUrl(Constants.defaultHost, null, null, Constants.defaultPort, true);
+        url = new FlooUrl(host, null, null, Constants.defaultPort, true);
         conn = new Connection(this);
         conn.start();
     }
