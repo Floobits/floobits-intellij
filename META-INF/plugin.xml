@@ -119,7 +119,7 @@
           <reference ref="floobits.actions.RequestEditPermissions"/>
           <add-to-group group-id="ToolsMenu" anchor="first" />
       </group>
-      <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Join a new Floobits Workspace" icon="/icons/floo.png">
+      <action id="floobits.actions.QuickStartJoin" class="floobits.actions.QuickStartJoin" text="Join a Floobits Workspace" icon="/icons/floo.png">
           <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
       <action id="floobits.actions.QuickStartSubmit" class="floobits.actions.SubmitIssue" text="Report an Issue to Floobits" icon="/icons/floo.png">

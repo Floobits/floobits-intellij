@@ -29,7 +29,11 @@ public class CreateAccountHandler extends BaseHandler {
         Flog.info("on_data %s %s", obj, name);
         Settings settings = new Settings(context);
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
-            settings.set(thing.getKey(), thing.getValue().getAsString());
+            String key = thing.getKey();
+            if (key.equals("name")) {
+                continue;
+            }
+            settings.set(key, thing.getValue().getAsString());
         }
         PersistentJson p = PersistentJson.getInstance();
         if (!settings.isComplete()) {

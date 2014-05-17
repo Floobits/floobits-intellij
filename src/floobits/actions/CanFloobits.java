@@ -13,6 +13,7 @@ abstract public class CanFloobits extends AnAction {
         super.update(e);
         FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
         if (floobitsPlugin == null) {
+            e.getPresentation().setEnabled(false);
             return;
         }
         e.getPresentation().setEnabled(new Settings(floobitsPlugin.context).isComplete());
