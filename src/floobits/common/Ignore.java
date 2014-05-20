@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class Ignore implements Comparable<Ignore>{
-    static Ignore root;
-    private static String rootPath;
+    private Ignore root;
+    private String rootPath;
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final HashSet<String> WHITE_LIST = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore", ".floo", ".idea"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml"));
@@ -30,28 +30,30 @@ public class Ignore implements Comparable<Ignore>{
 
     public static Ignore BuildIgnore(VirtualFile virtualFile) {
         Ignore ig = new Ignore(virtualFile);
+        ig.init(ig);
         // TODO: add more hard-coded ignores
         ig.ignoreNode.addRule(new IgnoreRule(".idea/workspace.xml"));
         ig.ignoreNode.addRule(new IgnoreRule(".idea/misc.xml"));
         ig.ignoreNode.addRule(new IgnoreRule(".git"));
-        root = ig;
-        rootPath = virtualFile.getPath();
         ig.recurse();
         return ig;
     }
 
-    private Ignore (VirtualFile virtualFile) {
+    private Ignore(VirtualFile virtualFile) {
         file = virtualFile;
         stringPath = virtualFile.getPath();
-
         Flog.debug("Initializing ignores for %s", file);
+    }
 
+    public void init(Ignore ig) {
+        root = ig;
+        rootPath = root.file.getPath();
         for (VirtualFile vf : file.getChildren()) {
             addRules(vf);
         }
     }
 
-    public void addRules(VirtualFile virtualFile) {
+    protected void addRules(VirtualFile virtualFile) {
         if (!isIgnoreFile(virtualFile)) {
             return;
         }
@@ -85,6 +87,7 @@ public class Ignore implements Comparable<Ignore>{
 
             if (file.isDirectory()) {
                 Ignore child = new Ignore(file);
+                child.init(root);
                 children.put(file.getName(), child);
                 child.recurse();
                 continue;
