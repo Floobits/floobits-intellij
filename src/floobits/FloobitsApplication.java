@@ -30,6 +30,7 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
+        Migrations.migrateFloorc();
         Constants.defaultHost = Settings.getHost(null);
     }
 
