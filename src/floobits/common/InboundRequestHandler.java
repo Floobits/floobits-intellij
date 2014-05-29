@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
@@ -348,7 +349,11 @@ public class InboundRequestHandler {
     }
 
     void _on_part(JsonObject obj) {
-        Integer userId = obj.get("user_id").getAsInt();
+        JsonElement id = obj.get("user_id");
+        if (id == null){
+            return;
+        }
+        Integer userId = id.getAsInt();
         state.removeUser(userId);
         HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = editor.highlights.get(userId);
         if (integerRangeHighlighterHashMap == null) {

@@ -51,7 +51,11 @@ public class ChatManager {
     }
 
     public boolean isOpen() {
-        return toolWindow.isVisible();
+        try {
+            return toolWindow.isVisible();
+        } catch (IllegalStateException e) {
+            return false;
+        }
     }
 
     public void clearUsers() {
