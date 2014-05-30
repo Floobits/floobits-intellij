@@ -126,7 +126,7 @@ public class FlooContext {
         } else if (size == 1) {
             host = (String)floorcJson.auth.keySet().toArray()[0];
         } else {
-            SelectHost selectHost = new SelectHost(project);
+            SelectHost selectHost = new SelectHost(project, floorcJson.auth.keySet());
             selectHost.show();
         }
 
