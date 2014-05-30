@@ -10,7 +10,7 @@ public abstract class RequiresAccountAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         PersistentJson p = PersistentJson.getInstance();
-        if (!new Settings(null).isComplete()){
+        if (Settings.canFloobits()){
             CreateAccount createAccount1 = new CreateAccount(null);
             createAccount1.createCenterPanel();
             createAccount1.show();

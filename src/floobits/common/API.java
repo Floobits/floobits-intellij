@@ -74,7 +74,7 @@ public class API {
     }
 
 
-    public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String host, String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -82,7 +82,7 @@ public class API {
         String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context, Settings.getHost(context));
+            apiRequest(method, context, host);
         } catch (IOException e) {
             context.errorMessage(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
@@ -151,7 +151,7 @@ public class API {
 
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
+            method = getWorkspaceMethod(f, context);
         } catch (IOException e) {
             return null;
         }
@@ -175,7 +175,7 @@ public class API {
         }
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
+            method = getWorkspaceMethod(f, context);
         } catch (IOException e) {
             Flog.warn(e);
             return false;
@@ -188,8 +188,8 @@ public class API {
         return true;
     }
 
-    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context, String host) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
+    static private HttpMethod getWorkspaceMethod(FlooUrl f, FlooContext context) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace)), context, f.host);
     }
 
     static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException {
@@ -243,12 +243,12 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(FlooContext context) {
+    static public List<String> getOrgsCanAdmin(String host, FlooContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, context, Settings.getHost(context));
+            apiRequest(method, context, host);
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;

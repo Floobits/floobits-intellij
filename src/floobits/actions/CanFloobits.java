@@ -16,6 +16,6 @@ abstract public class CanFloobits extends AnAction {
             e.getPresentation().setEnabled(false);
             return;
         }
-        e.getPresentation().setEnabled(new Settings(floobitsPlugin.context).isComplete());
+        e.getPresentation().setEnabled(Settings.canFloobits());
     }
 }

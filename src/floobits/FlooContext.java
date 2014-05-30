@@ -12,6 +12,7 @@ import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
 import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.SelectHost;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
@@ -117,19 +118,31 @@ public class FlooContext {
                 }
             }
         }
+        FloorcJson floorcJson = Settings.get();
+        String host = null;
+        int size = floorcJson.auth.size();
+        if (size <= 0) {
+            return;
+        } else if (size == 1) {
+            host = (String)floorcJson.auth.keySet().toArray()[0];
+        } else {
+            SelectHost selectHost = new SelectHost(project);
+            selectHost.show();
+        }
 
-        String owner = settings.get("username");
+
+        String owner = floorcJson.auth.get(host).get("username");
         final String name = new File(project_path).getName();
         final FlooContext context = this;
 
-        List<String> orgs = API.getOrgsCanAdmin(this);
+        List<String> orgs = API.getOrgsCanAdmin(host, this);
         orgs.add(0, owner);
+        final String finalHost = host;
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
             public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                    String host = Settings.getHost(context);
-                    joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
+                if (API.createWorkspace(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
+                    joinWorkspace(new FlooUrl(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
         });

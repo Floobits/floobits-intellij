@@ -51,7 +51,17 @@ public class Settings {
         }
     }
 
-    public static Boolean isComplete(HashMap<String, String> settings) {
+    public static Boolean isAuthComplete(HashMap<String, String> settings) {
         return (settings.get("secret") != null && (settings.get("username") != null || settings.get("api_key") != null));
+    }
+
+    public static Boolean canFloobits() {
+        HashMap<String, HashMap<String, String>> auth = get().auth;
+        for (String host : auth.keySet()) {
+            if (isAuthComplete(auth.get(host))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

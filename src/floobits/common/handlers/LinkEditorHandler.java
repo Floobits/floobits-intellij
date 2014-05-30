@@ -57,7 +57,7 @@ public class LinkEditorHandler extends BaseHandler {
             auth_host.put(key, thing.getValue().getAsString());
         }
 
-        if (Settings.isComplete(auth_host)) {
+        if (Settings.isAuthComplete(auth_host)) {
             Settings.write(context, floorcJson);
             context.statusMessage(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", auth_host.get("username")), false);
         } else {
