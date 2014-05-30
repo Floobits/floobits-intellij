@@ -19,6 +19,7 @@ public class CreateAccountHandler extends BaseHandler {
     }
 
     public void go() {
+        super.go();
         url = new FlooUrl(host, null, null, Constants.defaultPort, true);
         conn = new Connection(this);
         conn.start();

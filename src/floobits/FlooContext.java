@@ -187,12 +187,6 @@ public class FlooContext {
         return handler != null && handler.isJoined;
     }
 
-    public void disconnected() {
-        if (handler != null) {
-            handler.isJoined = false;
-        }
-    }
-
     public @Nullable FlooHandler getFlooHandler(){
         if (handler != null && handler instanceof FlooHandler)
             return (FlooHandler)handler;

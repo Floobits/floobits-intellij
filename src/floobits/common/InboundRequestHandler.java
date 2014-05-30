@@ -365,7 +365,6 @@ public class InboundRequestHandler {
     }
 
     void _on_error(JsonObject jsonObject) {
-        context.disconnected();
         String reason = jsonObject.get("msg").getAsString();
         reason = String.format("Floobits Error: %s", reason);
         Flog.warn(reason);
@@ -376,7 +375,6 @@ public class InboundRequestHandler {
     }
 
     void _on_disconnect(JsonObject jsonObject) {
-        context.disconnected();
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
             context.errorMessage(String.format("You have been disconnected from the workspace because %s", reason));
