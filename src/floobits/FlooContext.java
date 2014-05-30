@@ -118,7 +118,6 @@ public class FlooContext {
             }
         }
 
-        Settings settings = new Settings(this);
         String owner = settings.get("username");
         final String name = new File(project_path).getName();
         final FlooContext context = this;

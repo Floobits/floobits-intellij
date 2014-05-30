@@ -1,81 +1,57 @@
 package floobits.common;
 
+import com.google.gson.Gson;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Map;
 
 
 public class Settings {
-    protected HashMap<String, String> settings;
-    public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
-    private FlooContext context;
+    public static String floorcJsonPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc.json");
 
-    public static String getHost(FlooContext context) {
-        Settings settings = new Settings(context);
-        String host = settings.get("default_host");
-        if (host == null) {
-            host = Constants.defaultHost;
-        }
-        return host;
-    }
-
-    public Settings(FlooContext context) {
-        this.context = context;
-        BufferedReader br;
-        this.settings = new HashMap<String, String>();
+    public static FloorcJson get() {
+        File f = new File(floorcJsonPath);
+        String string;
         try {
-            br = new BufferedReader(new FileReader(floorcPath));
-            String line = br.readLine();
-
-            while (line != null) {
-                if (line.length() < 1 || line.substring(0, 1).equals("#")){
-                    line = br.readLine();
-                    continue;
-                }
-                String[] shit = line.split(" ");
-                this.settings.put(shit[0], shit[1]);
-                line = br.readLine();
-            }
-        } catch (Exception e) {
-            Flog.info("Got an exception %s", e);
-        }
-    }
-
-    public String get(String k) {
-        return this.settings.get(k);
-    }
-    
-    public void set(String k, String v) {
-        this.settings.put(k, v);
-    }
-    
-    public void write() {
-        PrintWriter writer = null;
-        File file = new File(floorcPath);
-        try {
-            file.createNewFile();
+            string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
-            context.errorMessage("Can't write new .floorc");
-            return;
+            Flog.warn(e);
+            return new FloorcJson();
         }
-        try {
-            writer = new PrintWriter(file, "UTF-8");
-        } catch (FileNotFoundException e) {
-            context.errorMessage("Can't write new .floorc");
-        } catch (UnsupportedEncodingException e) {
-            context.errorMessage("Can't write new .floorc");
-        }
-        for (Map.Entry<String, String> setting : this.settings.entrySet()) {
-            writer.println(String.format("%s %s", setting.getKey(), setting.getValue()));
-        }
-        writer.close();
+        return new Gson().fromJson(string, (Type)FloorcJson.class);
     }
 
-    public Boolean isComplete() {
+    public static void write(FlooContext context, FloorcJson floorcJson) {
+        File file = new File(floorcJsonPath);
+        if (!file.exists()) {
+            boolean newFile;
+            try {
+                newFile = file.createNewFile();
+            } catch (IOException e) {
+                context.errorMessage("Can't write new .floorc");
+                return;
+            }
+            if (!newFile) {
+                context.errorMessage("Can't write new .floorc");
+                return;
+            }
+        }
+
+        try {
+            FileUtils.write(file, new Gson().toJson(floorcJson));
+        } catch (IOException e) {
+            Flog.warn(e);
+            context.errorMessage("Can't write new .floorc");
+        }
+    }
+
+    public static Boolean isComplete(HashMap<String, String> settings) {
         return (settings.get("secret") != null && (settings.get("username") != null || settings.get("api_key") != null));
     }
 }

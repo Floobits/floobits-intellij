@@ -114,7 +114,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.openFile(new File(Settings.floorcPath));
+                return context.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
@@ -192,7 +192,7 @@ public class API {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException {
         Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
@@ -201,12 +201,21 @@ public class API {
         connectionParams.setParameter("http.protocol.handle-redirects", true);
         connectionParams.setSoTimeout(5000);
         connectionParams.setConnectionTimeout(3000);
-        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024*1024);
-        Settings settings = new Settings(context);
+        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
+        FloorcJson floorcJson = Settings.get();
+        HashMap<String, String> auth = floorcJson.auth.get(host);
+        String username, secret;
+        if (auth != null) {
+            username = auth.get("username");
+            secret = auth.get("secret");
+        } else {
+            username = "";
+            secret = "";
+        }
         HttpClientParams params = client.getParams();
         params.setAuthenticationPreemptive(true);
         client.setParams(params);
-        Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
+        Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
         client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SecureProtocolSocketFactory() {
             @Override

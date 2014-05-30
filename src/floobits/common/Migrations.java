@@ -18,7 +18,6 @@ public class Migrations {
         BufferedReader br;
         FloorcJson floorcJson = new FloorcJson();
         String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
-        String floorcJsonPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc.json");
         HashMap<String, String> settings = new HashMap<String, String>();
         try {
             br = new BufferedReader(new FileReader(floorcPath));
@@ -70,7 +69,7 @@ public class Migrations {
             floorcJson.debug = false;
         }
         PrintWriter writer = null;
-        File file = new File(floorcJsonPath);
+        File file = new File(Settings.floorcJsonPath);
         if (file.exists()) {
             return;
         }

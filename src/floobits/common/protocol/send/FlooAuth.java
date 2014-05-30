@@ -1,7 +1,5 @@
 package floobits.common.protocol.send;
 
-import floobits.common.Settings;
-
 public class FlooAuth extends InitialBase {
     // TODO: Share this code with NewAccount
     public String username;
@@ -12,11 +10,11 @@ public class FlooAuth extends InitialBase {
     public String room_owner;
     public String[] supported_encodings = { "utf8", "base64" };
 
-    public FlooAuth (Settings settings, String owner, String workspace) {
-        this.username = settings.get("username");
-        this.api_key = settings.get("api_key");
+    public FlooAuth (String username, String api_key, String secret, String owner, String workspace) {
+        this.username = username;
+        this.api_key = api_key;
+        this.secret = secret;
         this.room = workspace;
         this.room_owner = owner;
-        this.secret = settings.get("secret");
     }
 }

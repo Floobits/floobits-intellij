@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
+import java.util.Set;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
@@ -31,7 +32,11 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public void initComponent() {
         Migrations.migrateFloorc();
-        Constants.defaultHost = Settings.getHost(null);
+        FloorcJson floorcJson = Settings.get();
+        Set<String> strings = floorcJson.auth.keySet();
+        if (strings.size() == 1) {
+            Constants.defaultHost = (String) strings.toArray()[0];
+        }
     }
 
     public void disposeComponent() {
@@ -39,8 +44,9 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public synchronized void projectOpened(FlooContext context) {
-        PersistentJson p = PersistentJson.getInstance();
-        if (createAccount && !new Settings(context).isComplete()){
+        FloorcJson floorcJson = Settings.get();
+        if (createAccount && floorcJson.auth.size() >= 1){
+            PersistentJson p = PersistentJson.getInstance();
             if (p.disable_account_creation) {
                 context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
             } else {

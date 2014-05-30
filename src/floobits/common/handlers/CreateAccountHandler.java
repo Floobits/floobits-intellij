@@ -7,6 +7,7 @@ import floobits.common.*;
 import floobits.common.protocol.send.NewAccount;
 import floobits.utilities.Flog;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class CreateAccountHandler extends BaseHandler {
@@ -15,7 +16,7 @@ public class CreateAccountHandler extends BaseHandler {
 
     public CreateAccountHandler(FlooContext context) {
         super(context);
-        host = Settings.getHost(context);
+        host = url.host;
     }
 
     public void go() {
@@ -27,28 +28,26 @@ public class CreateAccountHandler extends BaseHandler {
     @Override
     public void on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
-        Settings settings = new Settings(context);
+        FloorcJson floorcJson = Settings.get();
+        HashMap<String, String> auth_host = floorcJson.auth.get(host);
+        if (auth_host == null) {
+            auth_host = new HashMap<String, String>();
+            floorcJson.auth.put(host, auth_host);
+        }
         for (Map.Entry<String, JsonElement> thing : obj.entrySet()) {
             String key = thing.getKey();
             if (key.equals("name")) {
                 continue;
             }
-            settings.set(key, thing.getValue().getAsString());
+            auth_host.put(key, thing.getValue().getAsString());
         }
         PersistentJson p = PersistentJson.getInstance();
-        if (!settings.isComplete()) {
-            p.disable_account_creation = true;
-            p.save();
-            context.errorMessage("Can't create an account at this time.");
-            context.shutdown();
-            return;
-        }
-        settings.write();
+        Settings.write(context, floorcJson);
         p.auto_generated_account = true;
         p.disable_account_creation = true;
         p.save();
-        // TODO: Show welcome message.
-        context.statusMessage(String.format("Successfully created new Floobits account with username %s. You can now share a project or join a workspace.", settings.get("username")), false);
+        context.statusMessage(String.format("Successfully created new Floobits account with username %s. " +
+                "You can now share a project or join a workspace.", auth_host.get("username")), false);
         Flog.info("All setup");
         context.shutdown();
     }

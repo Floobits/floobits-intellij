@@ -7,6 +7,8 @@ import floobits.common.*;
 import floobits.common.protocol.send.FlooAuth;
 import floobits.utilities.Flog;
 
+import java.util.HashMap;
+
 
 public class FlooHandler extends BaseHandler {
     public FloobitsState state;
@@ -44,9 +46,11 @@ public class FlooHandler extends BaseHandler {
         super.on_connect();
         context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
-        Settings settings = new Settings(context);
-        state.username = settings.get("username");
-        conn.write(new FlooAuth(settings, url.owner, url.workspace));
+        FloorcJson floorcJson = Settings.get();
+        HashMap<String, String> auth = floorcJson.auth.get(url.host);
+        String username = auth.get("username");
+        state.username = username;
+        conn.write(new FlooAuth(username, auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {

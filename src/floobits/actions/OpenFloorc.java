@@ -22,7 +22,7 @@ public class OpenFloorc extends AnAction {
         Project project = actionEvent.getProject();
 
         FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(project);
-        File file = new File(Settings.floorcPath);
+        File file = new File(Settings.floorcJsonPath);
         if (!file.exists()) {
             boolean created;
             try {
@@ -36,11 +36,9 @@ public class OpenFloorc extends AnAction {
                 floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
                 return;
             }
-            Settings settings = new Settings(floobitsPlugin.context);
-            settings.set("#I am emtpy:", "https://floobits.com/help/floorc/");
-            settings.write();
+            Settings.write(floobitsPlugin.context, Settings.get());
         }
-        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(Settings.floorcPath);
+        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(Settings.floorcJsonPath);
         if (virtualFile == null) {
             floobitsPlugin.context.errorMessage("no virtual file");
             return;

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class LinkEditorHandler extends BaseHandler {
         super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
-        host = Settings.getHost(context);
+        host = url.host;
     }
 
     public void go() {
@@ -41,14 +42,24 @@ public class LinkEditorHandler extends BaseHandler {
         if (!name.equals("credentials")) {
             return;
         }
-        Settings settings = new Settings(context);
+        FloorcJson floorcJson = Settings.get();
+        HashMap<String, String> auth_host = floorcJson.auth.get(host);
+        if (auth_host == null) {
+            auth_host = new HashMap<String, String>();
+            floorcJson.auth.put(host, auth_host);
+        }
         JsonObject credentials = (JsonObject) obj.get("credentials");
         for (Map.Entry<String, JsonElement> thing : credentials.entrySet()) {
-            settings.set(thing.getKey(), thing.getValue().getAsString());
+            String key = thing.getKey();
+            if (key.equals("name")) {
+                continue;
+            }
+            auth_host.put(key, thing.getValue().getAsString());
         }
-        if (settings.isComplete()) {
-            settings.write();
-            context.statusMessage(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", settings.get("username")), false);
+
+        if (Settings.isComplete(auth_host)) {
+            Settings.write(context, floorcJson);
+            context.statusMessage(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", auth_host.get("username")), false);
         } else {
             context.errorMessage("Something went wrong while receiving data, please contact Floobits support.");
         }
