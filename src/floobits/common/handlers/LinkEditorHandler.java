@@ -6,6 +6,7 @@ import floobits.FlooContext;
 import floobits.common.*;
 import floobits.common.protocol.send.FlooRequestCredentials;
 import floobits.utilities.Flog;
+import floobits.utilities.ThreadSafe;
 
 import java.awt.*;
 import java.io.IOException;
@@ -18,14 +19,20 @@ import java.util.UUID;
 
 
 public class LinkEditorHandler extends BaseHandler {
+    private Runnable runnable = null;
     protected String token;
     private String host;
 
-    public LinkEditorHandler(FlooContext context) {
+    public LinkEditorHandler(FlooContext context, String host) {
         super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
-        host = url.host;
+        this.host = host;
+    }
+
+    public LinkEditorHandler(FlooContext context, String host, Runnable runnable) {
+        this(context, host);
+        this.runnable = runnable;
     }
 
     public void go() {
@@ -61,9 +68,16 @@ public class LinkEditorHandler extends BaseHandler {
             Settings.write(context, floorcJson);
             context.statusMessage(String.format("Your account, %s, was successfully retrieved.  You can now share a project or join a workspace.", auth_host.get("username")), false);
         } else {
+            runnable = null;
             context.errorMessage("Something went wrong while receiving data, please contact Floobits support.");
         }
+
         context.shutdown();
+
+        if (runnable == null) {
+            return;
+        }
+        ThreadSafe.read(context, runnable);
     }
 
     protected void openBrowser() {

@@ -12,7 +12,6 @@ import javax.swing.*;
  */
 public class SelectAccount extends DialogWrapper {
     private JComboBox cccccomboBox;
-    private JLabel label;
     private JPanel contentPanel;
 
     public SelectAccount(@Nullable Project project, String[] accounts) {
@@ -24,7 +23,7 @@ public class SelectAccount extends DialogWrapper {
             cccccomboBox.setSelectedIndex(0);
         }
         contentPanel.add(cccccomboBox);
-        label = new JLabel("Select Account");
+        JLabel label = new JLabel("Select Account");
         contentPanel.add(label);
         init();
     }

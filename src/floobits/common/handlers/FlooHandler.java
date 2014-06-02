@@ -11,12 +11,14 @@ import java.util.HashMap;
 
 
 public class FlooHandler extends BaseHandler {
+    private final HashMap<String, String> auth;
     public FloobitsState state;
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
 
-    public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path) {
+    public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path, HashMap<String, String> auth) {
         super(context);
+        this.auth = auth;
         if (!API.workspaceExists(flooUrl, context)) {
             context.errorMessage(String.format("The workspace %s does not exist.", flooUrl));
             return;
@@ -24,6 +26,7 @@ public class FlooHandler extends BaseHandler {
         context.setColabDir(Utils.unFuckPath(path));
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
+        state.username = auth.get("username");
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
         inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
@@ -46,11 +49,7 @@ public class FlooHandler extends BaseHandler {
         super.on_connect();
         context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
-        FloorcJson floorcJson = Settings.get();
-        HashMap<String, String> auth = floorcJson.auth.get(url.host);
-        String username = auth.get("username");
-        state.username = username;
-        conn.write(new FlooAuth(username, auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
+        conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {

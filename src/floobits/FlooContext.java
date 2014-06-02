@@ -23,10 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -163,7 +160,19 @@ public class FlooContext {
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
-        if (setupHandler(new FlooHandler(this, flooUrl, upload, path))) {
+        FloorcJson floorcJson = Settings.get();
+
+        HashMap<String, String> auth = floorcJson.auth.get(flooUrl.host);
+        if (auth == null) {
+            setupHandler(new LinkEditorHandler(this, flooUrl.host, new Runnable() {
+                @Override
+                public void run() {
+                    joinWorkspace(flooUrl, path, upload);
+                }
+            }));
+            return;
+        }
+        if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth))) {
             return;
         }
         String title = String.format("Really leave %s?", handler.url.workspace);
@@ -189,7 +198,7 @@ public class FlooContext {
 
 
     public void linkEditor() {
-        if (setupHandler(new LinkEditorHandler(this))) {
+        if (setupHandler(new LinkEditorHandler(this, Constants.floobitsDomain))) {
             return;
         }
         Utils.statusMessage("You already have an account and are connected with it.", project);
