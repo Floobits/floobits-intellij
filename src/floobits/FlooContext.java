@@ -305,7 +305,6 @@ public class FlooContext {
         if (loopGroup != null) {
             try {
                 loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
-                loopGroup.awaitTermination(500, TimeUnit.MILLISECONDS);
             } catch (Throwable e) {
                 Flog.warn(e);
             }
