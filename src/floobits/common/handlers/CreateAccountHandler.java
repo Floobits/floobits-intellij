@@ -14,13 +14,13 @@ public class CreateAccountHandler extends BaseHandler {
 
     private String host;
 
-    public CreateAccountHandler(FlooContext context) {
+    public CreateAccountHandler(FlooContext context, String _host) {
         super(context);
-        host = url.host;
+        host = _host;
+        url = new FlooUrl(host, null, null, Constants.defaultPort, true);
     }
 
     public void go() {
-        url = new FlooUrl(host, null, null, Constants.defaultPort, true);
         conn = new Connection(this);
         conn.start();
     }

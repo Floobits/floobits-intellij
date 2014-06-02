@@ -189,7 +189,7 @@ public class FlooContext {
     }
 
     public void createAccount() {
-        if (setupHandler(new CreateAccountHandler(this))) {
+        if (setupHandler(new CreateAccountHandler(this, Constants.defaultHost))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.", false);
@@ -198,7 +198,7 @@ public class FlooContext {
 
 
     public void linkEditor() {
-        if (setupHandler(new LinkEditorHandler(this, Constants.floobitsDomain))) {
+        if (setupHandler(new LinkEditorHandler(this, Constants.defaultHost))) {
             return;
         }
         Utils.statusMessage("You already have an account and are connected with it.", project);
