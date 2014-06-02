@@ -204,12 +204,15 @@ public class API {
         connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
         FloorcJson floorcJson = Settings.get();
         HashMap<String, String> auth = floorcJson.auth.get(host);
-        String username, secret;
+        String username = null, secret = null;
         if (auth != null) {
             username = auth.get("username");
             secret = auth.get("secret");
-        } else {
+        }
+        if (username == null) {
             username = "";
+        }
+        if (secret == null) {
             secret = "";
         }
         HttpClientParams params = client.getParams();

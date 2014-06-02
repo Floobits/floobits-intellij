@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
@@ -44,7 +45,7 @@ public class Settings {
         }
 
         try {
-            FileUtils.write(file, new Gson().toJson(floorcJson));
+            FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson));
         } catch (IOException e) {
             Flog.warn(e);
             context.errorMessage("Can't write new .floorc");
