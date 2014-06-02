@@ -37,6 +37,9 @@ public class FloobitsApplication implements ApplicationComponent {
         if (strings.size() == 1) {
             Constants.defaultHost = (String) strings.toArray()[0];
         }
+        if (Settings.canFloobits()) {
+          createAccount = false;
+        }
     }
 
     public void disposeComponent() {
@@ -44,18 +47,18 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public synchronized void projectOpened(FlooContext context) {
-        FloorcJson floorcJson = Settings.get();
-        if (createAccount && floorcJson.auth.size() >= 1){
-            PersistentJson p = PersistentJson.getInstance();
-            if (p.disable_account_creation) {
-                context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
-            } else {
-                createAccount = false;
-                CreateAccount createAccount1 = new CreateAccount(context.project);
-                createAccount1.createCenterPanel();
-                createAccount1.show();
-            }
+        if (!createAccount) {
+            return;
         }
+        PersistentJson p = PersistentJson.getInstance();
+        if (p.disable_account_creation) {
+            context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
+            return;
+        }
+        createAccount = false;
+        CreateAccount createAccount = new CreateAccount(context.project);
+        createAccount.createCenterPanel();
+        createAccount.show();
     }
 
     @NotNull

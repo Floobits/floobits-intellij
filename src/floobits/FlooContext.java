@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -12,7 +13,7 @@ import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
 import floobits.dialogs.DialogBuilder;
-import floobits.dialogs.SelectHost;
+import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
@@ -118,16 +119,26 @@ public class FlooContext {
                 }
             }
         }
+
+        String host;
         FloorcJson floorcJson = Settings.get();
-        String host = null;
         int size = floorcJson.auth.size();
         if (size <= 0) {
             return;
-        } else if (size == 1) {
-            host = (String)floorcJson.auth.keySet().toArray()[0];
+        }
+        String[] keys = new String[size];
+        floorcJson.auth.keySet().toArray(keys);
+
+        if (keys.length == 1) {
+            host = keys[0];
         } else {
-            SelectHost selectHost = new SelectHost(project, floorcJson.auth.keySet());
-            selectHost.show();
+            SelectAccount selectAccount = new SelectAccount(project, keys);
+            selectAccount.show();
+            int exitCode = selectAccount.getExitCode();
+            if (exitCode != DialogWrapper.OK_EXIT_CODE) {
+                return;
+            }
+            host = selectAccount.getAccount();
         }
 
 
