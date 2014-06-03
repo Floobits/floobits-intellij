@@ -185,9 +185,16 @@ public class FlooContext {
             }));
             return;
         }
+
+        if (!API.workspaceExists(flooUrl, this)) {
+            errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
+            return;
+        }
+
         if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth))) {
             return;
         }
+
         String title = String.format("Really leave %s?", handler.url.workspace);
         String body = String.format("Leave %s and join %s ?", handler.url.toString(), handler.url.toString());
         DialogBuilder.build(title, body, new RunLater<Boolean>() {

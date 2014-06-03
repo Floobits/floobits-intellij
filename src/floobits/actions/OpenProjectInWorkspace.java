@@ -17,7 +17,7 @@ public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
         FlooContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
         FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
-        if (flooUrl != null && API.workspaceExists(flooUrl, context)) {
+        if (flooUrl != null) {
             FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());
             return;
         }
@@ -35,10 +35,8 @@ public class OpenProjectInWorkspace extends CanFloobits {
                         Flog.warn(e);
                         continue;
                     }
-                    if (API.workspaceExists(flooUrl, context)) {
-                        FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());
-                        return;
-                    }
+                    FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());
+                    return;
                 }
             }
         }
