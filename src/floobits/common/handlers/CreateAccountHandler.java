@@ -27,8 +27,11 @@ public class CreateAccountHandler extends BaseHandler {
     }
 
     @Override
-    public void on_data(String name, JsonObject obj) {
+    public void _on_data(String name, JsonObject obj) {
         Flog.info("on_data %s %s", obj, name);
+        if (!name.equals("create_user")) {
+            return;
+        }
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();

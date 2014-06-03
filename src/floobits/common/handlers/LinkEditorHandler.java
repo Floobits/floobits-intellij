@@ -45,7 +45,7 @@ public class LinkEditorHandler extends BaseHandler {
 
 
     @Override
-    public void on_data(String name, JsonObject obj) {
+    public void _on_data(String name, JsonObject obj) {
         if (!name.equals("credentials")) {
             return;
         }

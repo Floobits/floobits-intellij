@@ -54,7 +54,7 @@ public class FlooHandler extends BaseHandler {
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
-    public void on_data (String name, JsonObject obj) {
+    public void _on_data (String name, JsonObject obj) {
         Flog.debug("Calling %s", name);
         try {
             inbound.on_data(name, obj);
