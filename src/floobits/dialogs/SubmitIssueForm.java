@@ -43,8 +43,12 @@ public class SubmitIssueForm {
 
 
     public void show() {
-        FloorcJson floorcJson = Settings.get();
-        HashMap<String, String> auth = floorcJson.auth.get(Constants.defaultHost);
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception ignored) {}
+
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(Constants.defaultHost) : null;
         String username = "?";
         if (auth != null) {
             username = auth.get("username");

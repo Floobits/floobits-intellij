@@ -30,7 +30,13 @@ public class CompleteSignup extends AnAction {
             Utils.errorMessage("Can't use a browser on this system.", project);
             return;
         }
-        HashMap<String, HashMap<String, String>> auth = Settings.get().auth;
+        HashMap<String, HashMap<String, String>> auth = null;
+        try {
+            auth = Settings.get().auth;
+        } catch (Exception e1) {
+            Utils.errorMessage("Invalid ~/.floor.json (not json)", project);
+            return;
+        }
 
         if (auth.size() <= 1) {
             Flog.warn("No auth.");

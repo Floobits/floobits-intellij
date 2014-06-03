@@ -2,6 +2,7 @@ package floobits.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 public class Settings {
     public static String floorcJsonPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc.json");
 
-    public static FloorcJson get() {
+    public static FloorcJson get() throws Exception {
         File f = new File(floorcJsonPath);
         String string;
         try {
@@ -25,7 +26,11 @@ public class Settings {
             Flog.warn(e);
             return new FloorcJson();
         }
-        return new Gson().fromJson(string, (Type)FloorcJson.class);
+        try {
+            return new Gson().fromJson(string, (Type) FloorcJson.class);
+        } catch (JsonSyntaxException e) {
+           throw new Exception("Invalid JSON.");
+       }
     }
 
     public static void write(FlooContext context, FloorcJson floorcJson) {
@@ -57,7 +62,12 @@ public class Settings {
     }
 
     public static Boolean canFloobits() {
-        HashMap<String, HashMap<String, String>> auth = get().auth;
+        HashMap<String, HashMap<String, String>> auth = null;
+        try {
+            auth = get().auth;
+        } catch (Exception e) {
+            return false;
+        }
         for (String host : auth.keySet()) {
             if (isAuthComplete(auth.get(host))) {
                 return true;

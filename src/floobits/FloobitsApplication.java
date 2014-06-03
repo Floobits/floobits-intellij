@@ -32,9 +32,14 @@ public class FloobitsApplication implements ApplicationComponent {
 
     public void initComponent() {
         Migrations.migrateFloorc();
-        FloorcJson floorcJson = Settings.get();
-        Set<String> strings = floorcJson.auth.keySet();
-        if (strings.size() == 1) {
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.warn(e);
+        }
+        Set<String> strings = floorcJson != null ? floorcJson.auth.keySet() : null;
+        if ((strings != null ? strings.size() : 0) == 1) {
             Constants.defaultHost = (String) strings.toArray()[0];
         }
         if (Settings.canFloobits()) {

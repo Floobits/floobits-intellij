@@ -118,7 +118,14 @@ public class FlooContext {
         }
 
         String host;
-        FloorcJson floorcJson = Settings.get();
+        FloorcJson floorcJson;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.log("Invalid .floorc.json");
+            statusMessage("Invalid .floorc.json", false);
+            return;
+        }
         int size = floorcJson.auth.size();
         if (size <= 0) {
             Flog.log("No credentials.");
@@ -161,9 +168,14 @@ public class FlooContext {
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
-        FloorcJson floorcJson = Settings.get();
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            statusMessage("Invalid JSON in your .floorc.json.", false);
+        }
 
-        HashMap<String, String> auth = floorcJson.auth.get(flooUrl.host);
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(flooUrl.host) : null;
         if (auth == null) {
             setupHandler(new LinkEditorHandler(this, flooUrl.host, new Runnable() {
                 @Override

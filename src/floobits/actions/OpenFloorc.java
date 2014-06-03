@@ -36,7 +36,6 @@ public class OpenFloorc extends AnAction {
                 floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
                 return;
             }
-            Settings.write(floobitsPlugin.context, Settings.get());
         }
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(Settings.floorcJsonPath);
         if (virtualFile == null) {

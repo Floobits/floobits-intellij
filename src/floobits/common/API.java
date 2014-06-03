@@ -202,8 +202,13 @@ public class API {
         connectionParams.setSoTimeout(5000);
         connectionParams.setConnectionTimeout(3000);
         connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
-        FloorcJson floorcJson = Settings.get();
-        HashMap<String, String> auth = floorcJson.auth.get(host);
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.warn(e);
+        }
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(host) : null;
         String username = null, secret = null;
         if (auth != null) {
             username = auth.get("username");
