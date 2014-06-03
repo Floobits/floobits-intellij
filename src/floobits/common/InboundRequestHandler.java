@@ -48,7 +48,7 @@ public class InboundRequestHandler {
     private EditorManager editor;
 
     enum Events {
-        room_info, get_buf, patch, highlight, saved, join, part, disconnect, create_buf,
+        room_info, get_buf, patch, highlight, saved, join, part, disconnect, create_buf, ack,
         request_perms, msg, rename_buf, term_stdin, term_stdout, delete_buf, perms, error, ping
     }
     public InboundRequestHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, boolean shouldUpload) {
@@ -365,7 +365,6 @@ public class InboundRequestHandler {
     }
 
     void _on_error(JsonObject jsonObject) {
-        context.disconnected();
         String reason = jsonObject.get("msg").getAsString();
         reason = String.format("Floobits Error: %s", reason);
         Flog.warn(reason);
@@ -376,7 +375,6 @@ public class InboundRequestHandler {
     }
 
     void _on_disconnect(JsonObject jsonObject) {
-        context.disconnected();
         String reason = jsonObject.get("reason").getAsString();
         if (reason != null) {
             context.errorMessage(String.format("You have been disconnected from the workspace because %s", reason));
@@ -684,7 +682,7 @@ public class InboundRequestHandler {
         try {
             event = Events.valueOf(name);
         } catch (IllegalArgumentException e) {
-            Flog.log("No handler for %s", name);
+            Flog.log("No enum for %s", name);
             return;
         }
         switch (event) {
@@ -741,6 +739,8 @@ public class InboundRequestHandler {
                 break;
             case ping:
                 _on_ping(obj);
+                break;
+            case ack:
                 break;
             default:
                 Flog.log("No handler for %s", name);

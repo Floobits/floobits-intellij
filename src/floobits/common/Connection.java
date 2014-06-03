@@ -136,7 +136,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             try {
                 channel.disconnect();
                 channel.close();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 Flog.warn(e);
             }
             channel = null;

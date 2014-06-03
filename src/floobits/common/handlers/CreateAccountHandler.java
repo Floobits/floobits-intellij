@@ -21,6 +21,7 @@ public class CreateAccountHandler extends BaseHandler {
     }
 
     public void go() {
+        super.go();
         conn = new Connection(this);
         conn.start();
     }

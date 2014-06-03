@@ -19,9 +19,7 @@ abstract public class BaseHandler {
     }
 
     public abstract void on_data(String name, JsonObject obj);
-    public void on_connect() {
-        isJoined = true;
-    }
+    public abstract void on_connect();
 
     public Project getProject() {
         return context.project;
@@ -31,7 +29,9 @@ abstract public class BaseHandler {
         return url;
     }
 
-    public abstract void go();
+    public void go() {
+        isJoined = true;
+    }
 
     public void shutdown() {
         if (conn != null) {

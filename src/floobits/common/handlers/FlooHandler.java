@@ -12,6 +12,7 @@ import java.util.HashMap;
 
 public class FlooHandler extends BaseHandler {
     private final HashMap<String, String> auth;
+    private final boolean shouldUpload;
     public FloobitsState state;
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
@@ -19,6 +20,7 @@ public class FlooHandler extends BaseHandler {
     public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path, HashMap<String, String> auth) {
         super(context);
         this.auth = auth;
+        this.shouldUpload = shouldUpload;
         if (!API.workspaceExists(flooUrl, context)) {
             context.errorMessage(String.format("The workspace %s does not exist.", flooUrl));
             return;
@@ -27,6 +29,11 @@ public class FlooHandler extends BaseHandler {
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
         state.username = auth.get("username");
+    }
+
+    public void go() {
+        super.go();
+        Flog.log("joining workspace %s", url);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
         inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
@@ -34,10 +41,6 @@ public class FlooHandler extends BaseHandler {
         if (ProjectRootManager.getInstance(context.project).getProjectSdk() == null) {
             Flog.warn("No SDK detected.");
         }
-    }
-
-    public void go() {
-        Flog.log("joining workspace %s", url);
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();
@@ -46,7 +49,6 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
-        super.on_connect();
         context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
