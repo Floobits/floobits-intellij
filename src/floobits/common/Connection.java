@@ -59,6 +59,9 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         this.context = handler.context;
     }
 
+    public void setRetries(int retries) {
+        this.retries = retries;
+    }
     public void start() {
         connect();
     }
