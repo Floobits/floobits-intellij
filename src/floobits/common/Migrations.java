@@ -15,6 +15,10 @@ import java.util.Map;
 public class Migrations {
 
     public static void migrateFloorc() {
+        File file = new File(Settings.floorcJsonPath);
+        if (file.exists()) {
+            return;
+        }
         BufferedReader br;
         FloorcJson floorcJson = new FloorcJson();
         String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
@@ -69,7 +73,6 @@ public class Migrations {
             floorcJson.debug = false;
         }
         PrintWriter writer = null;
-        File file = new File(Settings.floorcJsonPath);
         if (file.exists()) {
             return;
         }

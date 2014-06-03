@@ -121,6 +121,7 @@ public class FlooContext {
         FloorcJson floorcJson = Settings.get();
         int size = floorcJson.auth.size();
         if (size <= 0) {
+            Flog.log("No credentials.");
             return;
         }
         String[] keys = new String[size];
