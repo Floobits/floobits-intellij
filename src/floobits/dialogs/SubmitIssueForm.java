@@ -1,6 +1,8 @@
 package floobits.dialogs;
 
 import floobits.common.API;
+import floobits.common.Constants;
+import floobits.common.FloorcJson;
 import floobits.common.Settings;
 
 import javax.swing.*;
@@ -8,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 public class SubmitIssueForm {
     private JPanel contentContainer;
@@ -40,8 +43,16 @@ public class SubmitIssueForm {
 
 
     public void show() {
-        Settings settings = new Settings(null);
-        String username = settings.get("username");
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception ignored) {}
+
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(Constants.defaultHost) : null;
+        String username = "?";
+        if (auth != null) {
+            username = auth.get("username");
+        }
         usernameInput.setText(username);
         frame = new JFrame();
         frame.getContentPane().add(contentContainer);
@@ -52,11 +63,11 @@ public class SubmitIssueForm {
         contentContainer.setBorder(new EmptyBorder(5, 5, 5, 5));
         frame.setVisible(true);
         String contents = "<html><body><p>When you submit an "
-            + "issue we will be notified right away. If we have contact information for you<br/> we will respond. You can also "
-            + "contact us via support@floobits.com, on IRC in #floobits<br/> "
-            + "on Freenode, or via @floobits Twitter. If you run into "
-            + "a bug it may help us if you send us your <br/>log. You can find it by going to Help -&gt; Find "
-            + "log....     </p></body></html>";
+                + "issue we will be notified right away. If we have contact information for you<br/> we will respond. You can also "
+                + "contact us via support@floobits.com, on IRC in #floobits<br/> "
+                + "on Freenode, or via @floobits Twitter. If you run into "
+                + "a bug it may help us if you send us your <br/>log. You can find it by going to Help -&gt; Find "
+                + "log....     </p></body></html>";
 
         instructionsLabel.setText(contents);
         instructionsLabel.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);

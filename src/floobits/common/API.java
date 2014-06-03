@@ -74,7 +74,7 @@ public class API {
     }
 
 
-    public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String host, String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -82,7 +82,7 @@ public class API {
         String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context, Settings.getHost(context));
+            apiRequest(method, context, host);
         } catch (IOException e) {
             context.errorMessage(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
@@ -114,7 +114,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.openFile(new File(Settings.floorcPath));
+                return context.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
@@ -151,7 +151,7 @@ public class API {
 
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
+            method = getWorkspaceMethod(f, context);
         } catch (IOException e) {
             return null;
         }
@@ -175,7 +175,7 @@ public class API {
         }
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
+            method = getWorkspaceMethod(f, context);
         } catch (IOException e) {
             Flog.warn(e);
             return false;
@@ -188,11 +188,11 @@ public class API {
         return true;
     }
 
-    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context, String host) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
+    static private HttpMethod getWorkspaceMethod(FlooUrl f, FlooContext context) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace)), context, f.host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
+    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException {
         Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
@@ -201,12 +201,29 @@ public class API {
         connectionParams.setParameter("http.protocol.handle-redirects", true);
         connectionParams.setSoTimeout(5000);
         connectionParams.setConnectionTimeout(3000);
-        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024*1024);
-        Settings settings = new Settings(context);
+        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.warn(e);
+        }
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(host) : null;
+        String username = null, secret = null;
+        if (auth != null) {
+            username = auth.get("username");
+            secret = auth.get("secret");
+        }
+        if (username == null) {
+            username = "";
+        }
+        if (secret == null) {
+            secret = "";
+        }
         HttpClientParams params = client.getParams();
         params.setAuthenticationPreemptive(true);
         client.setParams(params);
-        Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
+        Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
         client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SecureProtocolSocketFactory() {
             @Override
@@ -234,12 +251,12 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(FlooContext context) {
+    static public List<String> getOrgsCanAdmin(String host, FlooContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, context, Settings.getHost(context));
+            apiRequest(method, context, host);
         } catch (Exception e) {
             Flog.warn(e);
             return orgs;

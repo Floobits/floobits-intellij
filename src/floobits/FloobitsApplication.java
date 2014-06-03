@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
+import java.util.Set;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
@@ -30,7 +31,20 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
-        Constants.defaultHost = Settings.getHost(null);
+        Migrations.migrateFloorc();
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.warn(e);
+        }
+        Set<String> strings = floorcJson != null ? floorcJson.auth.keySet() : null;
+        if ((strings != null ? strings.size() : 0) == 1) {
+            Constants.defaultHost = (String) strings.toArray()[0];
+        }
+        if (Settings.canFloobits()) {
+          createAccount = false;
+        }
     }
 
     public void disposeComponent() {
@@ -38,17 +52,18 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public synchronized void projectOpened(FlooContext context) {
-        PersistentJson p = PersistentJson.getInstance();
-        if (createAccount && !new Settings(context).isComplete()){
-            if (p.disable_account_creation) {
-                context.statusMessage("Please create a Floobits account and/or make a ~/.floorc (https://floobits.com/help/floorc/)", false);
-            } else {
-                createAccount = false;
-                CreateAccount createAccount1 = new CreateAccount(context.project);
-                createAccount1.createCenterPanel();
-                createAccount1.show();
-            }
+        if (!createAccount) {
+            return;
         }
+        PersistentJson p = PersistentJson.getInstance();
+        if (p.disable_account_creation) {
+            context.statusMessage("Please create a Floobits account and/or make a ~/.floorc.json (https://floobits.com/help/floorc/)", false);
+            return;
+        }
+        createAccount = false;
+        CreateAccount createAccount = new CreateAccount(context.project);
+        createAccount.createCenterPanel();
+        createAccount.show();
     }
 
     @NotNull
@@ -90,10 +105,10 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
-        if (!API.workspaceExists(flooUrl, context)) {
-            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
-            return;
-        }
+//        if (!API.workspaceExists(flooUrl, context)) {
+//            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
+//            return;
+//        }
         Project projectForPath = getProject(location);
 
         if (context == null || projectForPath != context.project) {

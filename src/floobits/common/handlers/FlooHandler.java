@@ -7,15 +7,19 @@ import floobits.common.*;
 import floobits.common.protocol.send.FlooAuth;
 import floobits.utilities.Flog;
 
+import java.util.HashMap;
+
 
 public class FlooHandler extends BaseHandler {
+    private final HashMap<String, String> auth;
     private final boolean shouldUpload;
     public FloobitsState state;
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
 
-    public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path) {
+    public FlooHandler(final FlooContext context, FlooUrl flooUrl, boolean shouldUpload, String path, HashMap<String, String> auth) {
         super(context);
+        this.auth = auth;
         this.shouldUpload = shouldUpload;
         if (!API.workspaceExists(flooUrl, context)) {
             context.errorMessage(String.format("The workspace %s does not exist.", flooUrl));
@@ -23,12 +27,13 @@ public class FlooHandler extends BaseHandler {
         }
         context.setColabDir(Utils.unFuckPath(path));
         url = flooUrl;
+        state = new FloobitsState(context, flooUrl);
+        state.username = auth.get("username");
     }
 
     public void go() {
         super.go();
         Flog.log("joining workspace %s", url);
-        state = new FloobitsState(context, url);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
         inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
@@ -46,9 +51,7 @@ public class FlooHandler extends BaseHandler {
     public void on_connect () {
         context.editor.reset();
         context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
-        Settings settings = new Settings(context);
-        state.username = settings.get("username");
-        conn.write(new FlooAuth(settings, url.owner, url.workspace));
+        conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
     public void on_data (String name, JsonObject obj) {

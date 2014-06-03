@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -12,6 +13,7 @@ import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
 import floobits.dialogs.DialogBuilder;
+import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
@@ -21,10 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -118,19 +117,48 @@ public class FlooContext {
             }
         }
 
-        Settings settings = new Settings(this);
-        String owner = settings.get("username");
+        String host;
+        FloorcJson floorcJson;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            Flog.log("Invalid .floorc.json");
+            statusMessage("Invalid .floorc.json", false);
+            return;
+        }
+        int size = floorcJson.auth.size();
+        if (size <= 0) {
+            Flog.log("No credentials.");
+            return;
+        }
+        String[] keys = new String[size];
+        floorcJson.auth.keySet().toArray(keys);
+
+        if (keys.length == 1) {
+            host = keys[0];
+        } else {
+            SelectAccount selectAccount = new SelectAccount(project, keys);
+            selectAccount.show();
+            int exitCode = selectAccount.getExitCode();
+            if (exitCode != DialogWrapper.OK_EXIT_CODE) {
+                return;
+            }
+            host = selectAccount.getAccount();
+        }
+
+
+        String owner = floorcJson.auth.get(host).get("username");
         final String name = new File(project_path).getName();
         final FlooContext context = this;
 
-        List<String> orgs = API.getOrgsCanAdmin(this);
+        List<String> orgs = API.getOrgsCanAdmin(host, this);
         orgs.add(0, owner);
+        final String finalHost = host;
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
             public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                    String host = Settings.getHost(context);
-                    joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
+                if (API.createWorkspace(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
+                    joinWorkspace(new FlooUrl(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
                 }
             }
         });
@@ -140,7 +168,24 @@ public class FlooContext {
     }
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
-        if (setupHandler(new FlooHandler(this, flooUrl, upload, path))) {
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            statusMessage("Invalid JSON in your .floorc.json.", false);
+        }
+
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(flooUrl.host) : null;
+        if (auth == null) {
+            setupHandler(new LinkEditorHandler(this, flooUrl.host, new Runnable() {
+                @Override
+                public void run() {
+                    joinWorkspace(flooUrl, path, upload);
+                }
+            }));
+            return;
+        }
+        if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth))) {
             return;
         }
         String title = String.format("Really leave %s?", handler.url.workspace);
@@ -157,7 +202,7 @@ public class FlooContext {
     }
 
     public void createAccount() {
-        if (setupHandler(new CreateAccountHandler(this))) {
+        if (setupHandler(new CreateAccountHandler(this, Constants.defaultHost))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.", false);
@@ -166,7 +211,7 @@ public class FlooContext {
 
 
     public void linkEditor() {
-        if (setupHandler(new LinkEditorHandler(this))) {
+        if (setupHandler(new LinkEditorHandler(this, Constants.defaultHost))) {
             return;
         }
         Utils.statusMessage("You already have an account and are connected with it.", project);
@@ -267,7 +312,6 @@ public class FlooContext {
         if (loopGroup != null) {
             try {
                 loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
-                loopGroup.awaitTermination(500, TimeUnit.MILLISECONDS);
             } catch (Throwable e) {
                 Flog.warn(e);
             }
