@@ -50,7 +50,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         context.editor.reset();
-        context.statusMessage(String.format("Connecting to %s.", url.toString()), false);
+        context.statusMessage(String.format("Connecting to %s.", url.toString()));
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
@@ -67,7 +67,7 @@ public class FlooHandler extends BaseHandler {
     @Override
     public void shutdown() {
         super.shutdown();
-        context.statusMessage(String.format("Leaving workspace: %s.", url.toString()), false);
+        context.statusMessage(String.format("Leaving workspace: %s.", url.toString()));
         editorEventHandler.shutdown();
         state.shutdown();
     }

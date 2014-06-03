@@ -107,9 +107,9 @@ public class API {
                 context.errorMessage(details);
                 return false;
             case 409:
-                context.statusMessage("The workspace already exists so I am joining it.", false);
+                context.statusMessage("The workspace already exists so I am joining it.");
             case 201:
-                context.statusMessage("Workspace created.", false);
+                context.statusMessage("Workspace created.");
                 return true;
             case 401:
                 Flog.log("Auth failed");

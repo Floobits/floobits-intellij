@@ -165,7 +165,7 @@ public class EditorEventHandler {
         } else {
             return;
         }
-        context.statusMessage(msg, false);
+        context.statusMessage(msg);
         document.setReadOnly(true);
         context.editor.readOnlyBufferIds.add(bufByPath.path);
         final String text = document.getText();
@@ -199,7 +199,7 @@ public class EditorEventHandler {
     public boolean follow() {
         boolean mode = !state.stalking;
         state.stalking = mode;
-        context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"), false);;
+        context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));;
         if (mode && state.lastHighlight != null) {
             inbound._on_highlight(state.lastHighlight);
         }
@@ -224,7 +224,7 @@ public class EditorEventHandler {
     }
     public void openInBrowser() {
         if(!Desktop.isDesktopSupported()) {
-            context.statusMessage("This version of java lacks to support to open your browser.", false);
+            context.statusMessage("This version of java lacks to support to open your browser.");
             return;
         }
         try {

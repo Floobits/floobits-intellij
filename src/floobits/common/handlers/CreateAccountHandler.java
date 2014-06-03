@@ -57,7 +57,7 @@ public class CreateAccountHandler extends BaseHandler {
         p.disable_account_creation = true;
         p.save();
         context.statusMessage(String.format("Successfully created new Floobits account with username %s. " +
-                "You can now share a project or join a workspace.", auth_host.get("username")), false);
+                "You can now share a project or join a workspace.", auth_host.get("username")));
         Flog.info("All setup");
         context.shutdown();
     }

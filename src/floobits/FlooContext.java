@@ -123,7 +123,7 @@ public class FlooContext {
             floorcJson = Settings.get();
         } catch (Exception e) {
             Flog.log("Invalid .floorc.json");
-            statusMessage("Invalid .floorc.json", false);
+            statusMessage("Invalid .floorc.json");
             return;
         }
         int size = floorcJson.auth.size();
@@ -172,7 +172,7 @@ public class FlooContext {
         try {
             floorcJson = Settings.get();
         } catch (Exception e) {
-            statusMessage("Invalid JSON in your .floorc.json.", false);
+            statusMessage("Invalid JSON in your .floorc.json.");
         }
 
         HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(flooUrl.host) : null;
@@ -205,7 +205,7 @@ public class FlooContext {
         if (setupHandler(new CreateAccountHandler(this, Constants.defaultHost))) {
             return;
         }
-        statusMessage("You already have an account and are connected with it.", false);
+        statusMessage("You already have an account and are connected with it.");
         shutdown();
     }
 
@@ -277,14 +277,10 @@ public class FlooContext {
         Utils.statusMessage(message, notificationType, project);
     }
 
-    public void statusMessage(String message, boolean isChat) {
+    public void statusMessage(String message) {
         Flog.log(message);
         if (chatManager == null || !chatManager.isOpen()) {
             statusMessage(message, NotificationType.INFORMATION);
-        }
-        if (isChat || chatManager == null) {
-            // No point in setting a status message to chat for chat since it already has the chat message.
-            return;
         }
         chatManager.statusMessage(message);
     }

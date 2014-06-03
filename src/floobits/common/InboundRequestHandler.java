@@ -122,7 +122,7 @@ public class InboundRequestHandler {
         dialog.show();
     }
     private void initialUpload(RoomInfoResponse ri) {
-        context.statusMessage("Overwriting remote files and uploading new ones.", false);
+        context.statusMessage("Overwriting remote files and uploading new ones.");
         context.flashMessage("Overwriting remote files and uploading new ones.");
 
         final Ignore ignoreTree = context.getIgnoreTree();
@@ -380,7 +380,7 @@ public class InboundRequestHandler {
             context.errorMessage(String.format("You have been disconnected from the workspace because %s", reason));
             context.flashMessage("You have been disconnected from the workspace.");
         } else {
-            context.statusMessage("You have left the workspace", false);
+            context.statusMessage("You have left the workspace");
         }
         context.shutdown();
     }
@@ -401,7 +401,7 @@ public class InboundRequestHandler {
                     state.paths_to_ids.remove(buf.path);
                 }
                 if (!deleteBuf.unlink) {
-                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path), false);
+                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
                     return;
                 }
                 String absPath = context.absPath(buf.path);
@@ -431,8 +431,11 @@ public class InboundRequestHandler {
             c.setTimeInMillis(time.longValue() * 1000);
             messageDate = c.getTime();
         }
+        if (context.chatManager == null) {
+            return;
+        }
         if (!context.chatManager.isOpen()) {
-            context.statusMessage(String.format("%s: %s", username, msg), true);
+            context.statusMessage(String.format("%s: %s", username, msg));
         }
         context.chatManager.chatMessage(username, msg, messageDate);
     }
@@ -467,7 +470,7 @@ public class InboundRequestHandler {
                         summon = res.summon;
                     }
                     if ((res.ping || summon) && username != null) {
-                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()), false);
+                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
                     }
                     if (force && virtualFile.isValid()) {
                         manager.openFile(virtualFile, true, true);
@@ -580,7 +583,7 @@ public class InboundRequestHandler {
                 state.bufs.put(buf.id, buf);
                 state.paths_to_ids.put(buf.path, buf.id);
                 buf.write();
-                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path), false);
+                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
             }
         });
     }
@@ -640,7 +643,7 @@ public class InboundRequestHandler {
                     RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                     state.handleRoomInfo(ri);
 
-                    context.statusMessage(String.format("You successfully joined %s ", state.url.toString()), false);
+                    context.statusMessage(String.format("You successfully joined %s ", state.url.toString()));
                     context.chatManager.openChat();
 
                     DotFloo.write(context.colabDir, state.url.toString());
@@ -650,7 +653,7 @@ public class InboundRequestHandler {
                             initialUpload(ri);
                             return;
                         }
-                        context.statusMessage("You don't have permission to update remote files.", false);
+                        context.statusMessage("You don't have permission to update remote files.");
                     }
                     initialManageConflicts(ri);
                 } catch (Throwable e) {

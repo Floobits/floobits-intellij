@@ -50,7 +50,7 @@ public class FloobitsState {
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
-            context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.", false);
+            context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
         }
         connectionId = Integer.parseInt(ri.user_id);
         Flog.info("Got roominfo with userId %d", connectionId);
@@ -93,14 +93,14 @@ public class FloobitsState {
 
     public void addUser(FlooUser flooser) {
         users.put(flooser.user_id, flooser);
-        context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client), false);
+        context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client));
         context.chatManager.setUsers(users);
     }
 
     public void removeUser(int userId) {
         FlooUser u = users.get(userId);
         users.remove(userId);
-        context.statusMessage(String.format("%s left the workspace.", u.username), false);
+        context.statusMessage(String.format("%s left the workspace.", u.username));
         context.chatManager.setUsers(this.users);
     }
     public int getMyConnectionId() {

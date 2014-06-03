@@ -25,15 +25,15 @@ public class AddToWorkspace extends IsJoinedAction {
                 continue;
             }
             if (!Utils.isSharable(virtualFile)) {
-                context.statusMessage(String.format("Skipped adding %s because it is a special file.", virtualFile.getPath()), false);
+                context.statusMessage(String.format("Skipped adding %s because it is a special file.", virtualFile.getPath()));
                 continue;
             }
             if (!context.isShared(virtualFile.getPath())) {
-                context.statusMessage(String.format("Skipped adding %s because it is not in %s.", virtualFile.getPath(), context.colabDir), false);
+                context.statusMessage(String.format("Skipped adding %s because it is not in %s.", virtualFile.getPath(), context.colabDir));
                 continue;
             }
             if (context.isIgnored(virtualFile)) {
-                context.statusMessage(String.format("Skipped adding %s because it is ignored.", virtualFile.getPath()), false);
+                context.statusMessage(String.format("Skipped adding %s because it is ignored.", virtualFile.getPath()));
                 continue;
             }
 
