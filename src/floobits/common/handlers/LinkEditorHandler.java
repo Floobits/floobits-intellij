@@ -49,17 +49,8 @@ public class LinkEditorHandler extends BaseHandler {
         if (!name.equals("credentials")) {
             return;
         }
-        FloorcJson floorcJson = null;
-        try {
-            floorcJson = Settings.get();
-        } catch (Exception e) {
-            Flog.warn(e);
-        }
-        HashMap<String, String> auth_host;
-        if (floorcJson == null) {
-            floorcJson = new FloorcJson();
-        }
-        auth_host = floorcJson.auth.get(host);
+        FloorcJson floorcJson = FloorcJson.getFloorcJsonFromSettings();
+        HashMap<String, String> auth_host = floorcJson.auth.get(host);
         if (auth_host == null) {
             auth_host = new HashMap<String, String>();
             floorcJson.auth.put(host, auth_host);
