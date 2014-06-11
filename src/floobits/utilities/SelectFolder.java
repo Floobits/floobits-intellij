@@ -20,7 +20,7 @@ public class SelectFolder {
         FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, false, false, false, false);
         descriptor.setTitle("Select Folder For Workspace");
         descriptor.setDescription("NOTE: Floobits will NOT make a new, root directory inside the folder you choose. If you have cloned the project already, select that folder.");
-        String path = FilenameUtils.concat(Constants.baseDir, owner);
+        String path = FilenameUtils.concat(Constants.shareDir, owner);
         path = FilenameUtils.concat(path, workspace);
         File file = new File(path);
         try {
