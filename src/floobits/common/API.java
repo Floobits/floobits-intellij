@@ -176,7 +176,7 @@ public class API {
         HttpMethod method;
         try {
             method = getWorkspaceMethod(f, context);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             Flog.warn(e);
             return false;
         }
