@@ -60,7 +60,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
         String secret = hostAuth.get("secret");
-        String url = String.format("https://%s/%s/pinocchio/%s/", host, username, secret);
+        String url = String.format("https://%s/%s/pinocchio/%s", host, username, secret);
         try {
             URI uri = new URI(url);
             Desktop.getDesktop().browse(uri);

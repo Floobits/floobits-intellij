@@ -87,7 +87,7 @@ public class LinkEditorHandler extends BaseHandler {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s/", host, token)));
+            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s", host, token)));
         } catch (IOException error) {
             context.shutdown();
             Flog.warn(error);
