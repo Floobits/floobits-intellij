@@ -38,7 +38,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
 
-        if (auth.size() <= 1) {
+        if (auth.size() < 1) {
             Flog.warn("No auth.");
             return;
         }
