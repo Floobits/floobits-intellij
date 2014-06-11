@@ -34,7 +34,7 @@ public class CompleteSignup extends AnAction {
         try {
             auth = Settings.get().auth;
         } catch (Throwable e1) {
-            Utils.errorMessage("Invalid ~/.floor.json (not json)", project);
+            Utils.errorMessage("Invalid JSON in ~/.floorc.json", project);
             return;
         }
 
