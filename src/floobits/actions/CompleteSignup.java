@@ -43,7 +43,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
         String host;
-        if (auth.size() >= 1) {
+        if (auth.size() > 1) {
             host = Constants.floobitsDomain;
         } else {
             host = (String) auth.keySet().toArray()[0];
