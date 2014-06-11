@@ -79,7 +79,7 @@ public class FloobitsApplication implements ApplicationComponent {
             Utils.errorMessage(String.format("Invalid url: %s", e), null);
             return;
         }
-        SelectFolder.build(f.workspace, new RunLater<String>() {
+        SelectFolder.build(f.owner, f.workspace, new RunLater<String>() {
             @Override
             public void run(final String location) {
                 Project projectForPath = getProject(location);
@@ -166,7 +166,7 @@ public class FloobitsApplication implements ApplicationComponent {
             }
         }
 
-        SelectFolder.build(f.workspace, new RunLater<String>() {
+        SelectFolder.build(f.owner, f.workspace, new RunLater<String>() {
             @Override
             public void run(String path) {
                 joinWorkspace(context, f, path);
