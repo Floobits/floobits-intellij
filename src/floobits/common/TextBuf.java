@@ -218,11 +218,11 @@ public class TextBuf extends Buf <String> {
             int end_ld = Math.max(start + flooPatchPosition.end, start);
             end_ld = Math.min(end_ld, d.getTextLength());
             String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-            Exception e = null;
+            Throwable e = null;
             try {
                 Listener.flooDisable();
                 d.replaceString(start, end_ld, contents);
-            } catch (Exception exception) {
+            } catch (Throwable exception) {
                 e = exception;
             } finally {
                 Listener.flooEnable();

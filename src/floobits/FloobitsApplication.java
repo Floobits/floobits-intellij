@@ -35,7 +35,7 @@ public class FloobitsApplication implements ApplicationComponent {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
         Set<String> strings = floorcJson != null ? floorcJson.auth.keySet() : null;
@@ -146,7 +146,7 @@ public class FloobitsApplication implements ApplicationComponent {
         Workspace workspace;
         try {
             workspace = persistentJson.workspaces.get(f.owner).get(f.workspace);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             workspace = null;
         }
         if (workspace != null) {

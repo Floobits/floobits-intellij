@@ -205,7 +205,7 @@ public class API {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
         HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(host) : null;
@@ -257,7 +257,7 @@ public class API {
 
         try {
             apiRequest(method, context, host);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
             return orgs;
         }
@@ -275,7 +275,7 @@ public class API {
                 String orgName = org.get("name").getAsString();
                 orgs.add(orgName);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
             context.errorMessage("Error getting Floobits organizations. Try again later or please contact support.");
         }

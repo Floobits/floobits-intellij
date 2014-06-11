@@ -46,7 +46,7 @@ public class SubmitIssueForm {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
-        } catch (Exception ignored) {}
+        } catch (Throwable ignored) {}
 
         HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(Constants.defaultHost) : null;
         String username = "?";

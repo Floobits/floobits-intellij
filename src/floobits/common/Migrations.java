@@ -36,8 +36,9 @@ public class Migrations {
                 settings.put(shit[0].toUpperCase(), shit[1]);
                 line = br.readLine();
             }
-        } catch (Exception e) {
-            Flog.info("Got an exception %s", e);
+        } catch (Throwable e) {
+            Flog.info("Got an exception migrating floorc");
+            Flog.warn(e);
         }
         String default_host = settings.get("DEFAULT_HOST");
         default_host = default_host != null ? default_host : Constants.defaultHost;

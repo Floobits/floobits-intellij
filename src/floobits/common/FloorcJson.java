@@ -17,7 +17,7 @@ public class FloorcJson implements Serializable {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
         if (floorcJson == null) {

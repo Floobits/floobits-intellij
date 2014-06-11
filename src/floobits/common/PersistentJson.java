@@ -1,15 +1,18 @@
 package floobits.common;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.*;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import floobits.utilities.Flog;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 
 
 public class PersistentJson {
@@ -69,7 +72,7 @@ public class PersistentJson {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try {
             FileUtils.write(getFile(), gson.toJson(this), "UTF-8");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
     }
@@ -83,7 +86,7 @@ public class PersistentJson {
         String defaultJSON = "{}";
         try {
             s = FileUtils.readFileToString(getFile(), "UTF-8");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.info("Couldn't find persistent.json");
             s = defaultJSON;
         }

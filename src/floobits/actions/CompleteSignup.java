@@ -33,7 +33,7 @@ public class CompleteSignup extends AnAction {
         HashMap<String, HashMap<String, String>> auth = null;
         try {
             auth = Settings.get().auth;
-        } catch (Exception e1) {
+        } catch (Throwable e1) {
             Utils.errorMessage("Invalid ~/.floor.json (not json)", project);
             return;
         }

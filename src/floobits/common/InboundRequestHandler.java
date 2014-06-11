@@ -494,7 +494,7 @@ public class InboundRequestHandler {
                             Listener.flooDisable();
                             rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
                                     attributes, HighlighterTargetArea.EXACT_RANGE);
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             Flog.warn(e);
                         } finally {
                             Listener.flooEnable();

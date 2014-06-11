@@ -65,7 +65,7 @@ public class Settings {
         HashMap<String, HashMap<String, String>> auth = null;
         try {
             auth = get().auth;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return false;
         }
         for (String host : auth.keySet()) {

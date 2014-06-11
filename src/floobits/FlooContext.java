@@ -121,7 +121,7 @@ public class FlooContext {
         FloorcJson floorcJson;
         try {
             floorcJson = Settings.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.log("Invalid .floorc.json");
             statusMessage("Invalid .floorc.json");
             return;
@@ -171,7 +171,7 @@ public class FlooContext {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             statusMessage("Invalid JSON in your .floorc.json.");
         }
 

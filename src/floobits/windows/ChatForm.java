@@ -86,7 +86,7 @@ public class ChatForm {
         messages.setEditable(false);
         try {
             kit.insertHTML(doc, doc.getLength(), "<style>body { color: #7f7f7f;}</style>", 0, 0, null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn("Couldn't insert initial HTML into chat %s.", e.toString());
         }
         messagesScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
