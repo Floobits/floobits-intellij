@@ -40,11 +40,11 @@ public class Settings {
             try {
                 newFile = file.createNewFile();
             } catch (IOException e) {
-                context.errorMessage("Can't write new .floorc");
+                context.errorMessage("Can't write new ~/.floorc.json");
                 return;
             }
             if (!newFile) {
-                context.errorMessage("Can't write new .floorc");
+                context.errorMessage("Can't write new ~/.floorc.json");
                 return;
             }
         }
@@ -53,7 +53,7 @@ public class Settings {
             FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson));
         } catch (IOException e) {
             Flog.warn(e);
-            context.errorMessage("Can't write new .floorc");
+            context.errorMessage("Can't write new ~/.floorc.json");
         }
     }
 

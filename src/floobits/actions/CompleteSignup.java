@@ -34,16 +34,16 @@ public class CompleteSignup extends AnAction {
         try {
             auth = Settings.get().auth;
         } catch (Throwable e1) {
-            Utils.errorMessage("Invalid ~/.floor.json (not json)", project);
+            Utils.errorMessage("Invalid JSON in ~/.floorc.json", project);
             return;
         }
 
-        if (auth.size() <= 1) {
+        if (auth.size() < 1) {
             Flog.warn("No auth.");
             return;
         }
         String host;
-        if (auth.size() >= 1) {
+        if (auth.size() > 1) {
             host = Constants.floobitsDomain;
         } else {
             host = (String) auth.keySet().toArray()[0];

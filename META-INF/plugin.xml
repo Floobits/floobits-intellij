@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.2.0</version>
+  <version>1.3.0</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -74,7 +74,7 @@
       <action id="floobits.actions.OpenWorkspaceInBrowser" class="floobits.actions.OpenWorkspaceInBrowser" text="Open Workspace in Browser" description="Open the current workspace in your browser"/>
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
       <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
-      <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open Floorc (settings)"  description="Open your ~/.floorc "/>
+      <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open settings (~/.floorc.json)"  description="Open your ~/.floorc.json"/>
       <action id="floobits.actions.chat" class="floobits.actions.ChatAction" text="Chat" description="Chat with others in your workspace"/>
       <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions" text="Request Edit Permissions"
               description="Request edit permissions for a workspace, if you don&#39;t have them already."/>

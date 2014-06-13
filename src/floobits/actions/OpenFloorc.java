@@ -28,22 +28,22 @@ public class OpenFloorc extends AnAction {
             try {
                 created = file.createNewFile();
             } catch (IOException e) {
-                floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
+                floobitsPlugin.context.errorMessage("Can't create ~/.floorc.json");
                 Flog.warn(e);
                 return;
             }
             if (!created) {
-                floobitsPlugin.context.errorMessage("Can not create ~/.floorc");
+                floobitsPlugin.context.errorMessage("Can't create ~/.floorc.json");
                 return;
             }
         }
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(Settings.floorcJsonPath);
         if (virtualFile == null) {
-            floobitsPlugin.context.errorMessage("no virtual file");
+            floobitsPlugin.context.errorMessage("No virtual file");
             return;
         }
         if (project == null) {
-            floobitsPlugin.context.errorMessage("Can not open floorc");
+            floobitsPlugin.context.errorMessage("Can't open ~/.floorc.json");
             return;
         }
         OpenFileDescriptor openFileDescriptor = new OpenFileDescriptor(project, virtualFile);
