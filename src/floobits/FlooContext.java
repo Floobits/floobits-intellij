@@ -50,7 +50,10 @@ public class FlooContext {
     }
 
     public ScheduledFuture setTimeout(int time, final Runnable runnable) {
-        return loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
+        if (loopGroup != null) {
+            return loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
+        }
+        return null;
     }
 
     public boolean openFile(File file) {

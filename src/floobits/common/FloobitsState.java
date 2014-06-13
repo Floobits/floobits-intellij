@@ -98,10 +98,14 @@ public class FloobitsState {
     }
 
     public void removeUser(int userId) {
+        if (users.remove(userId) != null) {
+            context.chatManager.setUsers(users);
+        }
         FlooUser u = users.get(userId);
-        users.remove(userId);
+        if (u == null) {
+            return;
+        }
         context.statusMessage(String.format("%s left the workspace.", u.username));
-        context.chatManager.setUsers(this.users);
     }
     public int getMyConnectionId() {
         return connectionId;
@@ -124,9 +128,7 @@ public class FloobitsState {
         permTypes.put("admin_room", new String[]{"kick", "pull_repo", "perms"});
         for (Map.Entry<String, String[]> entry : permTypes.entrySet()) {
             if (givenPerms.contains(entry.getKey())) {
-                for (String perm : entry.getValue()) {
-                    translatedPermsSet.add(perm);
-                }
+                Collections.addAll(translatedPermsSet, entry.getValue());
             }
         }
         user.perms = translatedPermsSet.toArray(new String[translatedPermsSet.size()]);

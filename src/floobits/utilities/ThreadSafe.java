@@ -26,8 +26,8 @@ public class ThreadSafe {
                                 } catch (Throwable throwable) {
                                     API.uploadCrash(context, throwable);
                                 }
-                            }
-                        });
+     }
+                });
                     }
                 }, "Floobits", null);
             }
