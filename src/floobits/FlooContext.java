@@ -17,6 +17,7 @@ import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
+import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.util.concurrent.ScheduledFuture;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * I am the link between a project and floobits
@@ -38,22 +41,39 @@ public class FlooContext {
     protected Ignore ignoreTree;
     public final EditorManager editor;
     public Date lastChatMessage;
-    protected NioEventLoopGroup loopGroup;
+    protected volatile NioEventLoopGroup loopGroup;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public FlooContext(Project project) {
         this.project = project;
         editor = new EditorManager(this);
     }
 
-    public NioEventLoopGroup getLoopGroup() {
-        return loopGroup;
+    public boolean addGroup(Bootstrap b) {
+        boolean b1 = false;
+        try {
+            lock.readLock().lock();
+            if (loopGroup != null) {
+                b.group(loopGroup);
+                b1 = true;
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return b1;
     }
 
     public ScheduledFuture setTimeout(int time, final Runnable runnable) {
-        if (loopGroup != null) {
-            return loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
+        ScheduledFuture schedule = null;
+        try {
+            lock.readLock().lock();
+            if (loopGroup != null) {
+                schedule = loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
+            }
+        } finally {
+            lock.readLock().unlock();
         }
-        return null;
+        return schedule;
     }
 
     public boolean openFile(File file) {
@@ -314,14 +334,22 @@ public class FlooContext {
         if (chatManager != null) {
             chatManager.clearUsers();
         }
-
-        if (loopGroup != null) {
-            try {
-                loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
-            } catch (Throwable e) {
-                Flog.warn(e);
+        try {
+            lock.readLock().lock();
+            if (loopGroup != null) {
+                lock.readLock().unlock();
+                lock.writeLock().lock();
+                try {
+                    loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
+                } catch (Throwable e) {
+                    Flog.warn(e);
+                } finally {
+                    loopGroup = null;
+                    lock.writeLock().unlock();
+                }
             }
-            loopGroup = null;
+        } finally {
+            lock.writeLock().unlock();
         }
         ignoreTree = null;
     }

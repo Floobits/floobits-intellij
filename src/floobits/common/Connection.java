@@ -9,7 +9,6 @@ import floobits.common.handlers.BaseHandler;
 import floobits.utilities.Flog;
 import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.*;
-import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.channel.socket.SocketChannel;
 import io.fletty.channel.socket.nio.NioSocketChannel;
 import io.fletty.handler.codec.LineBasedFrameDecoder;
@@ -79,12 +78,11 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     protected void _connect() {
         retries -= 1;
         Bootstrap b = new Bootstrap();
-        NioEventLoopGroup loopGroup = context.getLoopGroup();
-        if (loopGroup == null) {
+
+        if (!context.addGroup(b)) {
             Flog.warn("no loopgroup, will not reconnect");
             return;
         }
-        b.group(loopGroup);
         b.channel(NioSocketChannel.class);
         b.option(ChannelOption.SO_KEEPALIVE, true);
         b.option(ChannelOption.TCP_NODELAY, true);
