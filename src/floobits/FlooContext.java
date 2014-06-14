@@ -36,7 +36,7 @@ public class FlooContext {
 
     public String colabDir;
     public Project project;
-    public BaseHandler handler;
+    public volatile BaseHandler handler;
     public ChatManager chatManager;
     protected Ignore ignoreTree;
     public final EditorManager editor;
@@ -252,8 +252,11 @@ public class FlooContext {
         if (isJoined()) {
             return false;
         }
+
+        lock.writeLock().lock();
         this.handler = handler;
         loopGroup = new NioEventLoopGroup();
+        lock.writeLock().unlock();
         handler.go();
         return true;
     }
@@ -322,36 +325,33 @@ public class FlooContext {
     }
 
     public void shutdown() {
-        if (handler != null) {
-            handler.shutdown();
-            editor.shutdown();
-            if (chatManager != null) {
-                chatManager.statusMessage("Disconnecting.");
-            }
-            handler = null;
-        }
-
-        if (chatManager != null) {
-            chatManager.clearUsers();
-        }
-        lock.readLock().lock();
+        lock.writeLock().lock();
         try {
+            if (handler != null) {
+                handler.shutdown();
+                editor.shutdown();
+                if (chatManager != null) {
+                    chatManager.statusMessage("Disconnecting.");
+                }
+                handler = null;
+            }
+
+            if (chatManager != null) {
+                chatManager.clearUsers();
+            }
+
             if (loopGroup != null) {
-                lock.readLock().unlock();
-                lock.writeLock().lock();
                 try {
                     loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
                 } catch (Throwable e) {
                     Flog.warn(e);
                 } finally {
                     loopGroup = null;
-                    lock.readLock().lock();
-                    lock.writeLock().unlock();
                 }
             }
+            ignoreTree = null;
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
-        ignoreTree = null;
     }
 }
