@@ -334,8 +334,8 @@ public class FlooContext {
         if (chatManager != null) {
             chatManager.clearUsers();
         }
+        lock.readLock().lock();
         try {
-            lock.readLock().lock();
             if (loopGroup != null) {
                 lock.readLock().unlock();
                 lock.writeLock().lock();
@@ -345,11 +345,12 @@ public class FlooContext {
                     Flog.warn(e);
                 } finally {
                     loopGroup = null;
+                    lock.readLock().lock();
                     lock.writeLock().unlock();
                 }
             }
         } finally {
-            lock.writeLock().unlock();
+            lock.readLock().unlock();
         }
         ignoreTree = null;
     }
