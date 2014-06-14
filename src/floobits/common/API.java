@@ -22,7 +22,7 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -225,7 +225,7 @@ public class API {
         client.setParams(params);
         Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SecureProtocolSocketFactory() {
+        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SSLProtocolSocketFactory() {
             @Override
             public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
