@@ -312,16 +312,18 @@ public class FlooContext {
 
     public void statusMessage(String message) {
         Flog.log(message);
-        if (chatManager == null || !chatManager.isOpen()) {
-            statusMessage(message, NotificationType.INFORMATION);
+        if (chatManager != null && chatManager.isOpen()) {
+            chatManager.statusMessage(message);
         }
-        chatManager.statusMessage(message);
+        statusMessage(message, NotificationType.INFORMATION);
     }
 
     public void errorMessage(String message) {
         Flog.warn(message);
         statusMessage(message, NotificationType.ERROR);
-        chatManager.errorMessage(message);
+        if (chatManager != null && chatManager.isOpen()) {
+            chatManager.errorMessage(message);
+        }
     }
 
     public void shutdown() {
@@ -330,9 +332,7 @@ public class FlooContext {
             if (handler != null) {
                 handler.shutdown();
                 editor.shutdown();
-                if (chatManager != null) {
-                    chatManager.statusMessage("Disconnecting.");
-                }
+                statusMessage("Disconnecting.");
                 handler = null;
             }
 
