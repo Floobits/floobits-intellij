@@ -39,11 +39,15 @@ public class BinaryBuf extends Buf <byte[]> {
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
+                if (!isPopulated()) {
+                    Flog.warn("Unable to write %s because it's not populated yet.", path);
+                    return;
+                }
                 VirtualFile virtualFile = getVirtualFile();
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Utils.errorMessage("Unable to write file.", context.project);
+                        Utils.errorMessage("Unable to write file. virtualFile is null.", context.project);
                         return;
                     }
                 }

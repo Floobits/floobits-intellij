@@ -49,6 +49,7 @@ public class TextBuf extends Buf <String> {
 
     public void write() {
         if (!isPopulated()) {
+            Flog.warn("Unable to write %s because it's not populated yet.", path);
             return;
         }
         VirtualFile virtualFile = getVirtualFile();
