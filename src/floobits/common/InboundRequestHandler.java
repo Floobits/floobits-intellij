@@ -532,7 +532,7 @@ public class InboundRequestHandler {
         editor.queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
                 Document document = editor.get_document(buf.path);
-                if (document == null) {
+                if (document == null || context.project == null) {
                     return;
                 }
                 if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, document)) {
