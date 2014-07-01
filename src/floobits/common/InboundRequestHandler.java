@@ -127,7 +127,8 @@ public class InboundRequestHandler {
 
         final Ignore ignoreTree = context.getIgnoreTree();
         ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
-        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>(){{ add(ignoreTree);}};
+        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
+        tempIgnores.add(ignoreTree);
         int size = 0;
         Ignore ignore;
         while (tempIgnores.size() > 0) {
