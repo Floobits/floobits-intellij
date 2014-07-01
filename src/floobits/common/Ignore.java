@@ -33,7 +33,6 @@ public class Ignore implements Comparable<Ignore>{
         ig.ignoreNode.addRule(new IgnoreRule(".git"));
         ig.ignoreNode.addRule(new IgnoreRule(".svn"));
         ig.ignoreNode.addRule(new IgnoreRule(".hg"));
-        ig.ignoreNode.addRule(new IgnoreRule(".cvs"));
         ig.recurse(ig, virtualFile.getPath());
         return ig;
     }
