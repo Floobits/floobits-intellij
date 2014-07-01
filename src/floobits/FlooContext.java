@@ -295,7 +295,14 @@ public class FlooContext {
     }
 
     public Boolean isIgnored(VirtualFile f) {
-        return ignoreTree.isIgnored(this, f);
+        String path = f.getPath();
+
+        if (!isShared(path)) {
+            Flog.log("Ignoring %s because it isn't shared.", path);
+            return true;
+        }
+
+        return ignoreTree.isIgnored(f, path, toProjectRelPath(path), f.isDirectory());
     }
 
     public Ignore getIgnoreTree() {
