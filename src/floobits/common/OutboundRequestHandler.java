@@ -38,7 +38,7 @@ public class OutboundRequestHandler {
             return;
         }
         if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
+            Flog.info("Not sending patch. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
         Flog.log("Sending patch for %s", b.path);
@@ -67,7 +67,7 @@ public class OutboundRequestHandler {
 
     public void saveBuf(Buf b) {
         if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
+            Flog.info("Not sending save. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
         if (!state.can("patch")) {
@@ -98,7 +98,7 @@ public class OutboundRequestHandler {
             return;
         }
         if (Buf.isBad(b)) {
-            Flog.info("buf isn't populated yet %s", b != null ? b.path : "?");
+            Flog.info("Not sending highlight. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
         conn.write(new FlooHighlight(b, textRanges, summon, state.stalking));
