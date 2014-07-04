@@ -14,6 +14,10 @@ import java.util.List;
 abstract public class TextBuf<T> extends Buf<String, T> {
     protected static FlooDmp dmp = new FlooDmp();
 
+    protected abstract String getViewText();
+    protected abstract Object[] applyPatch(FlooPatchPosition[] positions);
+    protected abstract void updateScroll(Object context);
+
     public TextBuf (String path, Integer id, String buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
         super(path, id, buf, md5, context, outbound);
         if (buf != null) {
@@ -22,14 +26,7 @@ abstract public class TextBuf<T> extends Buf<String, T> {
         this.encoding = Encoding.UTF8;
     }
 
-
-    public abstract String getText();
-    protected abstract String getText(T f);
-    protected abstract String getViewText();
-    protected abstract Object[] applyPatch(FlooPatchPosition[] positions);
-    protected abstract void updateScroll(Object context);
-
-    public void read () {
+    public void load () {
         String text = getText();
         if (text == null) {
             return;

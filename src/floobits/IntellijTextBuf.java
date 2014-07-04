@@ -36,11 +36,6 @@ public class IntellijTextBuf extends TextBuf<VirtualFile> {
     }
 
     @Override
-    public VirtualFile createFile() {
-        return BufHelper.createFile(context, path);
-    }
-
-    @Override
     protected String getText(VirtualFile f) {
         if (f == null) {
             Flog.warn("Can't get virtual file to read from disk %s", this);
@@ -64,7 +59,7 @@ public class IntellijTextBuf extends TextBuf<VirtualFile> {
     public void updateView() {
         VirtualFile virtualFile = BufHelper.getVirtualFile(context, path);
         if (virtualFile == null) {
-            virtualFile = createFile();
+            virtualFile = BufHelper.createFile(context, path);
             if (virtualFile == null) {
                 context.errorMessage("The Floobits plugin was unable to write to a file.");
                 return;

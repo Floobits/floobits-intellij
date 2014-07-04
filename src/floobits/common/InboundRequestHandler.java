@@ -70,7 +70,7 @@ public class InboundRequestHandler {
             Buf buf = BufHelper.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
             state.bufs.put(buf_id, buf);
             state.paths_to_ids.put(b.path, b.id);
-            buf.read();
+            buf.load();
             if (buf.buf == null) {
                 if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
                     outbound.getBuf(buf.id);
@@ -200,7 +200,7 @@ public class InboundRequestHandler {
                 continue;
             }
             paths.remove(buf.path);
-            buf.read();
+            buf.load();
             if (buf.buf == null) {
                 outbound.getBuf(buf.id);
                 continue;

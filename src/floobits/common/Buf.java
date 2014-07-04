@@ -20,6 +20,15 @@ public abstract class Buf <T, T2> {
     protected FlooContext context;
     protected OutboundRequestHandler outbound;
 
+    abstract protected T getText();
+    abstract protected T getText(T2 f);
+    abstract public void load();
+    abstract public void updateView();
+    abstract public void set (String s, String md5);
+    abstract public void patch (FlooPatch res);
+    abstract public void send_patch (T2 f);
+    abstract public String serialize();
+
     public Buf(String path, Integer id, T buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
         this.id = id;
         this.path = path;
@@ -29,6 +38,19 @@ public abstract class Buf <T, T2> {
         this.outbound = outbound;
     }
 
+    public void write() {
+        if (!isPopulated()) {
+            Flog.warn("Unable to write %s because it's not populated yet.", path);
+            return;
+        }
+        updateView();
+    }
+
+    synchronized public void set (T s, String md5) {
+        buf = s;
+        this.md5 = md5;
+    }
+
     public void cancelTimeout () {
         if (timeout != null) {
             Flog.log("canceling timeout for %s", path);
@@ -36,6 +58,7 @@ public abstract class Buf <T, T2> {
             timeout = null;
         }
     }
+
     public static boolean isBad(Buf b) {
         return (b == null || !b.isPopulated());
     }
@@ -47,21 +70,5 @@ public abstract class Buf <T, T2> {
     public String toString() {
         return String.format("id: %s file: %s", id, path);
     }
-
-    abstract public T2 createFile();
-    abstract public void read ();
-
-    public void write() {
-        if (!isPopulated()) {
-            Flog.warn("Unable to write %s because it's not populated yet.", path);
-            return;
-        }
-        updateView();
-    }
-    public abstract void updateView();
-    abstract public void set (String s, String md5);
-    abstract public void patch (FlooPatch res);
-    abstract public void send_patch (T2 f);
-    abstract public String serialize();
 }
 
