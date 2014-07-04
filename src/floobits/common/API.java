@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.extensions.PluginId;
+import floobits.Editor;
 import floobits.FlooContext;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.FlooHandler;
@@ -65,11 +62,8 @@ public class API {
         }
 
         protected void setContextInfo(String subjectText) {
-            ApplicationInfo instance = ApplicationInfo.getInstance();
-            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-            String version = plugin != null ? plugin.getVersion() : "???";
-            useragent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-            subject = String.format(subjectText, instance.getVersionName(), username != null ? " for " + username : "");
+            useragent = Editor.userAgent();
+            subject = String.format(subjectText, Editor.editorName(), username != null ? " for " + username : "");
         }
     }
 

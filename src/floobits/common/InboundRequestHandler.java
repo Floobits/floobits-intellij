@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
+import floobits.BufHelper;
 import floobits.FlooContext;
 import floobits.Listener;
 import floobits.common.protocol.FlooPatch;
@@ -66,7 +67,7 @@ public class InboundRequestHandler {
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
+            Buf buf = BufHelper.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
             state.bufs.put(buf_id, buf);
             state.paths_to_ids.put(b.path, b.id);
             buf.read();
@@ -191,7 +192,7 @@ public class InboundRequestHandler {
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
-            Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
+            Buf buf = BufHelper.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
             state.bufs.put(buf_id, buf);
             state.paths_to_ids.put(b.path, b.id);
             if (!paths.contains(buf.path)) {
@@ -548,11 +549,12 @@ public class InboundRequestHandler {
     void _on_create_buf(JsonObject obj) {
         Gson gson = new Gson();
         GetBufResponse res = gson.fromJson(obj, (Type) CreateBufResponse.class);
-        Buf buf;
+//        String path, Integer id, Encoding enc, String md5, FlooContext context, OutboundRequestHandler outbound
+        Buf buf = BufHelper.createBuf(res.path, res.id, Encoding.from(res.encoding), res.md5, context, outbound);
         if (res.encoding.equals(Encoding.BASE64.toString())) {
-            buf = new BinaryBuf(res.path, res.id, new Base64().decode(res.buf.getBytes()), res.md5, context, outbound);
+            buf.buf = new Base64().decode(res.buf.getBytes());
         } else {
-            buf = new TextBuf(res.path, res.id, res.buf, res.md5, context, outbound);
+            buf.buf = res.buf;
         }
         editor.queue(buf, new RunLater<Buf>() {
             @Override

@@ -1,24 +1,15 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
+import floobits.utilities.Flog;
 import io.fletty.util.concurrent.ScheduledFuture;
-import org.apache.commons.codec.digest.DigestUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 
-public abstract class Buf <T> {
-    static final Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
+public abstract class Buf <T, T2> {
+    protected static final Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
     public String path;
     public final Integer id;
     public volatile String md5;
@@ -53,78 +44,24 @@ public abstract class Buf <T> {
         return this.id != null && this.buf != null;
     }
 
-    public VirtualFile getVirtualFile() {
-        return LocalFileSystem.getInstance().findFileByPath(context.absPath(this.path));
-    }
     public String toString() {
         return String.format("id: %s file: %s", id, path);
     }
 
-    public VirtualFile createFile() {
-        File file = new File(context.absPath(path));
-        String name = file.getName();
-        String parentPath = file.getParent();
-        try {
-            VfsUtil.createDirectories(parentPath);
-        } catch (IOException e) {
-            Flog.warn("createFile error %s", e);
-            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
-            return null;
-        }
-        VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
-        if (parent == null) {
-            Flog.warn("Virtual file is null? %s", parentPath);
-            return null;
-        }
-        VirtualFile newFile;
-        try {
-            newFile = parent.findOrCreateChildData(context, name);
-        } catch (IOException e) {
-            Flog.warn("Create file error %s", e);
-            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
-            return null;
-        }
-        return newFile;
-    }
-
+    abstract public T2 createFile();
     abstract public void read ();
-    abstract public void write();
+
+    public void write() {
+        if (!isPopulated()) {
+            Flog.warn("Unable to write %s because it's not populated yet.", path);
+            return;
+        }
+        updateView();
+    }
+    public abstract void updateView();
     abstract public void set (String s, String md5);
     abstract public void patch (FlooPatch res);
-    abstract public void send_patch (VirtualFile virtualFile);
+    abstract public void send_patch (T2 f);
     abstract public String serialize();
-
-    static Document getDocumentForVirtualFile(VirtualFile virtualFile) {
-        if (virtualFile == null) {
-            return null;
-        }
-        return FileDocumentManager.getInstance().getDocument(virtualFile);
-    }
-    public static Buf createBuf(String path, Integer id, Encoding enc, String md5, FlooContext context, OutboundRequestHandler outbound) {
-        if (enc == Encoding.BASE64) {
-            return new BinaryBuf(path, id, null, md5, context, outbound);
-        }
-        return new TextBuf(path, id, null, md5, context, outbound);
-    }
-    public static Buf createBuf(VirtualFile virtualFile, FlooContext context, OutboundRequestHandler outbound) {
-        try {
-            byte[] originalBytes = virtualFile.contentsToByteArray();
-            String encodedContents = new String(originalBytes, "UTF-8");
-            byte[] decodedContents = encodedContents.getBytes();
-            String filePath = context.toProjectRelPath(virtualFile.getPath());
-            if (Arrays.equals(decodedContents, originalBytes)) {
-                Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
-                String contents = document == null ? encodedContents : document.getText();
-                String md5 = DigestUtils.md5Hex(contents);
-                return new TextBuf(filePath, null, contents, md5, context, outbound);
-            } else {
-                String md5 = DigestUtils.md5Hex(originalBytes);
-                return new BinaryBuf(filePath, null, originalBytes, md5, context, outbound);
-            }
-        } catch (IOException e) {
-            Flog.warn("Error getting virtual file contents in createBuf %s", virtualFile);
-        }
-        return null;
-    }
 }
 

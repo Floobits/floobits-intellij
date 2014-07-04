@@ -1,6 +1,7 @@
 package floobits.common;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.BufHelper;
 import floobits.FlooContext;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.receive.*;
@@ -47,7 +48,7 @@ public class OutboundRequestHandler {
     }
 
     void createBuf(VirtualFile virtualFile) {
-        Buf buf = Buf.createBuf(virtualFile, context, this);
+        Buf buf = BufHelper.createBuf(virtualFile, context, this);
         if (buf == null) {
             return;
         }
