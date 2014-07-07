@@ -1,7 +1,6 @@
 package floobits.common.handlers;
 
 import com.google.gson.JsonObject;
-import com.intellij.openapi.project.Project;
 import floobits.FlooContext;
 import floobits.common.Connection;
 import floobits.common.FlooUrl;
@@ -55,10 +54,6 @@ abstract public class BaseHandler {
     }
 
     public abstract void on_connect();
-
-    public Project getProject() {
-        return context.project;
-    }
 
     public FlooUrl getUrl() {
         return url;
