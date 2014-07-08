@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
+import dagger.ObjectGraph;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.utilities.Flog;
@@ -45,6 +46,8 @@ public class FloobitsApplication implements ApplicationComponent {
         if (Settings.canFloobits()) {
           createAccount = false;
         }
+
+        ObjectGraph objectGraph = ObjectGraph.create();
     }
 
     public void disposeComponent() {

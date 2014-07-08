@@ -106,7 +106,7 @@ public abstract class Buf <T> {
         }
         return new TextBuf(path, id, null, md5, context, outbound);
     }
-    public static Buf createBuf(VirtualFile virtualFile, FlooContext context, OutboundRequestHandler outbound) {
+    public static Buf createBuf(VFile virtualFile, FlooContext context, OutboundRequestHandler outbound) {
         try {
             byte[] originalBytes = virtualFile.contentsToByteArray();
             String encodedContents = new String(originalBytes, "UTF-8");

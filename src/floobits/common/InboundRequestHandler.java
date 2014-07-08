@@ -1,18 +1,18 @@
 package floobits.common;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.NumberFormat;
+import java.util.*;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.*;
-import com.intellij.openapi.editor.markup.*;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.ReadonlyStatusHandler;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBColor;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
 import floobits.FlooContext;
 import floobits.Listener;
 import floobits.common.protocol.FlooPatch;
@@ -27,19 +27,8 @@ import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.text.NumberFormat;
-import java.util.*;
 
-/**
- * Created by kans on 5/7/14.
- */
 public class InboundRequestHandler {
     private FlooContext context;
     private final FloobitsState state;
@@ -185,7 +174,7 @@ public class InboundRequestHandler {
 
         HashSet<String> paths = new HashSet<String>();
         for (Ignore ig : allIgnores) {
-            for (VirtualFile virtualFile : ig.files)
+            for (VFile virtualFile : ig.files)
                 paths.add(context.toProjectRelPath(virtualFile.getPath()));
         }
         for (Map.Entry entry : ri.bufs.entrySet()) {
@@ -210,7 +199,7 @@ public class InboundRequestHandler {
             outbound.setBuf(buf);
         }
 
-        LocalFileSystem instance = LocalFileSystem.getInstance();
+
         for (String path : paths) {
             VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
             if (fileByPath == null || !fileByPath.isValid()) {

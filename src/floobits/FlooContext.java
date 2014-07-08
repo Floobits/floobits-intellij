@@ -1,12 +1,10 @@
 package floobits;
 
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+
+import floobits.Virtual.IntellijVFactory;
 import floobits.common.*;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.CreateAccountHandler;
@@ -41,11 +39,13 @@ public class FlooContext {
     protected Ignore ignoreTree;
     public final EditorManager editor;
     public Date lastChatMessage;
+    public VFactory vFactory;
     protected volatile NioEventLoopGroup loopGroup;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public FlooContext(Project project) {
         this.project = project;
+        this.vFactory = new IntellijVFactory();
         editor = new EditorManager(this);
     }
 
@@ -74,15 +74,6 @@ public class FlooContext {
             lock.readLock().unlock();
         }
         return schedule;
-    }
-
-    public boolean openFile(File file) {
-        VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(file);
-        if (floorc == null) {
-            return false;
-        }
-        FileEditorManager.getInstance(this.project).openFile(floorc, true);
-        return true;
     }
 
     public void loadChatManager() {
@@ -278,7 +269,7 @@ public class FlooContext {
     }
 
     public void refreshIgnores() {
-        VirtualFile fileByIoFile = VfsUtil.findFileByIoFile(new File(colabDir), true);
+        VFile fileByIoFile = vFactory.findFileByIoFile(new File(colabDir));
         ignoreTree = Ignore.BuildIgnore(fileByIoFile);
     }
 
@@ -294,7 +285,7 @@ public class FlooContext {
         return Utils.toProjectRelPath(path, colabDir);
     }
 
-    public Boolean isIgnored(VirtualFile f) {
+    public Boolean isIgnored(VFile f) {
         String path = f.getPath();
 
         if (!isShared(path)) {
