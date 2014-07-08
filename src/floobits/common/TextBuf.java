@@ -1,24 +1,19 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.ScrollingModel;
-import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import floobits.FlooContext;
 import floobits.Listener;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.dmp.diff_match_patch;
+import floobits.common.interfaces.VDoc;
+import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.digest.DigestUtils;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+
 
 public class TextBuf extends Buf <String> {
     protected static FlooDmp dmp = new FlooDmp();
@@ -26,22 +21,14 @@ public class TextBuf extends Buf <String> {
     public TextBuf(String path, Integer id, String buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
         super(path, id, buf, md5, context, outbound);
         if (buf != null) {
-            this.buf = NEW_LINE.matcher(buf).replaceAll("\n");
+            this.buf = Constants.NEW_LINE.matcher(buf).replaceAll("\n");
         }
         this.encoding = Encoding.UTF8;
     }
 
+
     public void read () {
-        VirtualFile virtualFile = this.getVirtualFile();
-        if (virtualFile == null) {
-            Flog.warn("Can't get virtual file to read from disk %s", this);
-            return;
-        }
-        Document d = Buf.getDocumentForVirtualFile(virtualFile);
-        if (d == null) {
-            Flog.warn("Can't get document to read from disk %s", this);
-            return;
-        }
+        VDoc d = getVirtualDoc();
         this.buf = d.getText();
         this.md5 = DigestUtils.md5Hex(this.buf);
     }
@@ -51,15 +38,8 @@ public class TextBuf extends Buf <String> {
             Flog.warn("Unable to write %s because it's not populated yet.", path);
             return;
         }
-        VirtualFile virtualFile = getVirtualFile();
-        if (virtualFile == null) {
-            virtualFile = createFile();
-            if (virtualFile == null) {
-                context.errorMessage("The Floobits plugin was unable to write to a file.");
-                return;
-            }
-        }
-        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+
+        VDoc d = getVirtualDoc();
         if (d != null) {
             try {
                 Listener.flooDisable();
@@ -70,17 +50,20 @@ public class TextBuf extends Buf <String> {
             }
             return;
         }
+
         Flog.warn("Tried to write to null document: %s", path);
+
+        VFile virtualFile = getVirtualFile();
         try {
-            virtualFile.setBinaryContent(buf.getBytes());
-        } catch (IOException e) {
+            virtualFile.setBytes(buf.getBytes());
+        } catch (Throwable e) {
             Flog.warn(e);
             context.errorMessage("The Floobits plugin was unable to write to a file.");
         }
     }
 
     synchronized public void set(String s, String newMD5) {
-        buf = s == null ? null : NEW_LINE.matcher(s).replaceAll("\n");
+        buf = s == null ? null : Constants.NEW_LINE.matcher(s).replaceAll("\n");
         md5 = newMD5;
     }
 
@@ -88,8 +71,9 @@ public class TextBuf extends Buf <String> {
         return buf;
     }
 
-    public void send_patch(VirtualFile virtualFile) {
-        Document d = Buf.getDocumentForVirtualFile(virtualFile);
+    @Override
+    public void send_patch(VFile virtualFile) {
+        VDoc d = virtualFile.getDocument();
         if (d == null) {
             Flog.warn("Can't get document to read from disk for sending patch %s", path);
             return;
@@ -138,25 +122,23 @@ public class TextBuf extends Buf <String> {
         final TextBuf b = this;
         Flog.info("Got _on_patch");
 
-        String text;
-        String md5FromDoc;
-        final Document d;
-
         String oldText = buf;
-        VirtualFile virtualFile = b.getVirtualFile();
+        VFile virtualFile = b.getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("VirtualFile is null, no idea what do do. Aborting everything %s", this);
             getBuf();
             return;
         }
-        d = Buf.getDocumentForVirtualFile(virtualFile);
+        VDoc d = virtualFile.getDocument();
         if (d == null) {
             Flog.warn("Document not found for %s", virtualFile);
             getBuf();
             return;
         }
         String viewText;
-        if (virtualFile.exists()) {
+        if (!virtualFile.exists()) {
+            viewText = oldText;
+        } else {
             viewText = d.getText();
             if (viewText.equals(oldText)) {
                 b.forced_patch = false;
@@ -166,8 +148,6 @@ public class TextBuf extends Buf <String> {
                 b.send_patch(viewText);
                 Flog.warn("Sending force patch for %s. this is dangerous!", b.path);
             }
-        } else {
-            viewText = oldText;
         }
 
         b.cancelTimeout();
@@ -196,60 +176,24 @@ public class TextBuf extends Buf <String> {
             Flog.info("MD5 after mismatch (ours %s remote %s)", md5After, res.md5_after);
         }
 
-        if (!d.isWritable()) {
-            d.setReadOnly(false);
-        }
-        if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, d)) {
+        if (!d.makeWritable()) {
             Flog.info("Document: %s is not writable.", d);
             return;
         }
 
-        final Editor[] editors = EditorFactory.getInstance().getEditors(d, context.project);
-        final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
-        for (Editor editor : editors) {
-            if (editor.isDisposed()) {
-                continue;
-            }
-            ScrollingModel scrollingModel = editor.getScrollingModel();
-            original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
+        String text = d.patch(positions);
+        if (text == null) {
+            getBuf();
+            return;
         }
-        for (FlooPatchPosition flooPatchPosition : positions) {
-            int start = Math.max(0, flooPatchPosition.start);
-            int end_ld = Math.max(start + flooPatchPosition.end, start);
-            end_ld = Math.min(end_ld, d.getTextLength());
-            String contents = NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-            Throwable e = null;
-            try {
-                Listener.flooDisable();
-                d.replaceString(start, end_ld, contents);
-            } catch (Throwable exception) {
-                e = exception;
-            } finally {
-                Listener.flooEnable();
-            }
 
-            if (e != null) {
-                Flog.warn(e);
-                getBuf();
-                return;
-            }
-        }
-        text = d.getText();
-        md5FromDoc = DigestUtils.md5Hex(text);
+        String md5FromDoc = DigestUtils.md5Hex(text);
         if (!md5FromDoc.equals(res.md5_after)) {
             Flog.info("md5FromDoc mismatch (ours %s remote %s)", md5FromDoc, res.md5_after);
             b.setGetBufTimeout();
         }
 
-        for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
-            ScrollingModel model = entry.getKey();
-            Integer[] offsets = entry.getValue();
-            model.scrollHorizontally(offsets[0]);
-            model.scrollVertically(offsets[1]);
-        }
-
         b.set(text, md5FromDoc);
         Flog.log("Patched %s", res.path);
-
     }
 }

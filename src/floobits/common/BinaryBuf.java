@@ -1,16 +1,15 @@
 package floobits.common;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
+import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 
 public class BinaryBuf extends Buf <byte[]> {
@@ -21,18 +20,19 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     synchronized public void read () {
-        VirtualFile virtualFile = this.getVirtualFile();
+        VFile virtualFile = getVirtualFile();
         if (virtualFile == null) {
             Flog.warn("Couldn't get virtual file in readFromDisk %s", this);
             return;
         }
-        try {
-            this.buf = virtualFile.contentsToByteArray();
-        } catch (IOException e) {
+
+        final byte[] bytes = virtualFile.getBytes();
+        if (bytes == null) {
             Flog.warn("Could not get byte array contents for file %s", this);
             return;
         }
-        this.md5 = DigestUtils.md5Hex(this.buf);
+        buf = bytes;
+        md5 = DigestUtils.md5Hex(bytes);
     }
 
     public void write() {
@@ -43,7 +43,7 @@ public class BinaryBuf extends Buf <byte[]> {
                     Flog.warn("Unable to write %s because it's not populated yet.", path);
                     return;
                 }
-                VirtualFile virtualFile = getVirtualFile();
+                VFile virtualFile = getVirtualFile();
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
@@ -55,15 +55,12 @@ public class BinaryBuf extends Buf <byte[]> {
                 if (flooHandler == null) {
                     return;
                 }
-                try {
-                    Listener.flooDisable();
-                    virtualFile.setBinaryContent(buf);
-                } catch (IOException e) {
-                    Flog.warn("Writing binary content to disk failed. %s", path);
-                } finally {
-                    Listener.flooEnable();
-                }
 
+                Listener.flooDisable();
+                if (!virtualFile.setBytes(buf)) {
+                    Flog.warn("Writing binary content to disk failed. %s", path);
+                }
+                Listener.flooEnable();
             }
         });
     }
@@ -91,15 +88,13 @@ public class BinaryBuf extends Buf <byte[]> {
         set((byte[]) null, null);
     }
 
-    public void send_patch(VirtualFile virtualFile) {
+    public void send_patch(VFile virtualFile) {
         FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
-        byte[] contents;
-        try {
-            contents = virtualFile.contentsToByteArray();
-        } catch (IOException e) {
+        byte[] contents = virtualFile.getBytes();
+        if (contents == null) {
             Flog.warn("Couldn't read contents of binary file. %s", virtualFile);
             return;
         }

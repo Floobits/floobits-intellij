@@ -1,29 +1,15 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
-import com.intellij.openapi.editor.markup.MarkupModel;
-import com.intellij.openapi.editor.markup.RangeHighlighter;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EditorManager {
     public final ConcurrentLinkedQueue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
     private final FlooContext context;
     // buffer ids are not removed from readOnlyBufferIds
-    public HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
-    public HashSet<String> readOnlyBufferIds = new HashSet<String>();
     private final Runnable dequeueRunnable = new Runnable() {
         @Override
         public void run() {
@@ -65,19 +51,8 @@ public class EditorManager {
         this.context = context;
     }
 
-    public void clearReadOnlyState() {
-        for (String path : readOnlyBufferIds) {
-            Document document = get_document(path);
-            if (document != null) {
-                document.setReadOnly(false);
-            }
-        }
-        readOnlyBufferIds.clear();
-    }
-
     public void shutdown() {
         reset();
-        clearReadOnlyState();
     }
 
     public void queue(Buf buf, RunLater<Buf> runnable) {
@@ -97,75 +72,8 @@ public class EditorManager {
         ThreadSafe.write(context, dequeueRunnable);
     }
 
-    protected Document get_document(String path) {
-        String absPath = context.absPath(path);
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
-        if (virtualFile == null) {
-            Flog.info("no virtual file for %s", path);
-            return null;
-        }
-        return FileDocumentManager.getInstance().getDocument(virtualFile);
-    }
-
-    void remove_highlight(Integer userId, final String path) {
-        remove_highlight(userId, path, get_document(path));
-    }
-
-    void remove_highlight(Integer userId, final String path, final Document document) {
-        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
-        if (integerRangeHighlighterHashMap == null) {
-            return;
-        }
-        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(path);
-        if (rangeHighlighters == null) {
-            return;
-        }
-        if (document == null) {
-            return;
-        }
-        queue(new Runnable() {
-            @Override
-            public void run() {
-                Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-                for (Editor editor : editors) {
-                    if (editor.isDisposed()) {
-                        continue;
-                    }
-                    MarkupModel markupModel = editor.getMarkupModel();
-                    RangeHighlighter[] highlights = markupModel.getAllHighlighters();
-
-                    for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
-                        for (RangeHighlighter markupHighlighter : highlights) {
-                            if (rangeHighlighter == markupHighlighter) {
-                                markupModel.removeHighlighter(rangeHighlighter);
-                            }
-                        }
-                    }
-                }
-                rangeHighlighters.clear();
-            }
-        });
-    }
-
     public void reset() {
         queue.clear();
-        clearHighlights();
     }
 
-    public void clearHighlights() {
-        if (highlights.size() <= 0) {
-            return;
-        }
-        for (Map.Entry<Integer, HashMap<String, LinkedList<RangeHighlighter>>> entry : highlights.entrySet()) {
-            HashMap<String, LinkedList<RangeHighlighter>> highlightsForUser = entry.getValue();
-            if (highlightsForUser == null || highlightsForUser.size() <= 0) {
-                continue;
-            }
-            Integer user_id = entry.getKey();
-            for (Map.Entry<String, LinkedList<RangeHighlighter>> integerLinkedListEntry: highlightsForUser.entrySet()) {
-                remove_highlight(user_id, integerLinkedListEntry.getKey());
-            }
-        }
-    }
 }

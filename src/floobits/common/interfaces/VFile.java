@@ -1,4 +1,4 @@
-package floobits.common;
+package floobits.common.interfaces;
 
 import java.io.InputStream;
 
@@ -9,16 +9,21 @@ public abstract class VFile {
     public abstract String getPath();
     public abstract VDoc getDocument();
     public abstract boolean rename(Object obj, String name);
-    public abstract void createDirectories(String dir);
+    public abstract VFile makeFile(String name);
     public abstract boolean move(Object obj, VFile d);
     public abstract boolean delete(Object obj);
     public abstract VFile[] getChildren();
     public abstract String getName();
     public abstract long getLength();
-    public abstract InputStream getInputStream();
+    public abstract boolean exists();
     public abstract boolean isDirectory();
     public abstract boolean isSpecial();
     public abstract boolean isSymLink();
     public abstract boolean isValid();
-    protected abstract byte[] contentsToByteArray();
+    public abstract byte[] getBytes();
+    public abstract boolean setBytes(byte[] bytes);
+    public abstract void refresh();
+    public abstract void createDirectories(String dir);
+    public abstract InputStream getInputStream();
+
 }

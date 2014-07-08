@@ -1,6 +1,7 @@
 package floobits.common;
 
 import floobits.FlooContext;
+import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.receive.*;
 import floobits.common.protocol.send.*;

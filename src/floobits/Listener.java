@@ -19,6 +19,9 @@ import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
 import floobits.common.Utils;
+import floobits.common.interfaces.VDoc;
+import floobits.impl.IntellijDoc;
+import floobits.impl.IntellijFile;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import org.jetbrains.annotations.NotNull;
@@ -112,7 +115,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.change(virtualFile);
+        editorManager.change(new IntellijFile(virtualFile));
     }
 
     @Override
@@ -256,7 +259,9 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (file == null)
             return;
 
-        editorManager.beforeChange(file, event.getDocument());
+        Document document = event.getDocument();
+        VDoc vDoc = new IntellijDoc(context, document);
+        vDoc.beforeChange(editorManager.state);
     }
 
     @Override

@@ -1,20 +1,13 @@
 package floobits.common;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.text.NumberFormat;
-import java.util.*;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import floobits.FlooContext;
 import floobits.Listener;
+import floobits.common.interfaces.VDoc;
+import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.receive.*;
@@ -24,9 +17,18 @@ import floobits.dialogs.DisconnectNoticeDialog;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.HandleTooBigDialog;
 import floobits.dialogs.ResolveConflictsDialog;
-import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.NumberFormat;
+import java.util.*;
 
 
 public class InboundRequestHandler {
@@ -201,7 +203,7 @@ public class InboundRequestHandler {
 
 
         for (String path : paths) {
-            VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
+            VFile fileByPath = context.vFactory.findFileByPath(context.absPath(path));
             if (fileByPath == null || !fileByPath.isValid()) {
                 Flog.warn(String.format("path is no longer a valid virtual file"));
                 continue;
@@ -229,9 +231,9 @@ public class InboundRequestHandler {
             }
             Listener.flooDisable();
             FileUtils.writeLines(f, strings);
-            VirtualFile fileByIoFile = instance.findFileByIoFile(f);
+            VFile fileByIoFile = context.vFactory.findFileByIoFile(f);
             if (fileByIoFile != null) {
-                fileByIoFile.refresh(false, false);
+                fileByIoFile.refresh();
                 ignoreTree.addRules(fileByIoFile);
             }
         } catch (IOException e) {
@@ -259,7 +261,7 @@ public class InboundRequestHandler {
         editor.queue(buf, new RunLater<Buf>() {
                 @Override
                 public void run(Buf buf) {
-                    final VirtualFile foundFile = LocalFileSystem.getInstance().findFileByPath(oldPath);
+                    final VFile foundFile = context.vFactory.findFileByPath(oldPath);
                     if (foundFile == null) {
                         Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
                         return;
@@ -275,11 +277,11 @@ public class InboundRequestHandler {
                     File newFile = new File(newPath);
                     String newFileName = newFile.getName();
                     // Rename file
-                    try {
-                        foundFile.rename(null, newFileName);
-                    } catch (IOException e) {
-                        Flog.warn("Error renaming file %s %s %s", e, oldPath, newPath);
+
+                    if (foundFile.rename(null, newFileName)) {
+                        return;
                     }
+
                     // Move file
                     String newParentDirectoryPath = newFile.getParent();
                     String oldParentDirectoryPath = oldFile.getParent();
@@ -287,22 +289,12 @@ public class InboundRequestHandler {
                         Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
                         return;
                     }
-                    VirtualFile directory = null;
-                    try {
-                        directory = VfsUtil.createDirectories(newParentDirectoryPath);
-                    } catch (IOException e) {
-                        Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
-
-                    }
+                    VFile directory = context.vFactory.createDirectories(newParentDirectoryPath);
                     if (directory == null) {
-                        Flog.warn("Failed to create directories in time for moving file. %s %s", oldPath, newPath);
                         return;
                     }
-                    try {
-                        foundFile.move(null, directory);
-                    } catch (IOException e) {
-                        Flog.warn("Error moving file %s %s %s", e, oldPath, newPath);
-                    }
+
+                    foundFile.move(null, directory);
                 }
             }
         );
@@ -317,7 +309,7 @@ public class InboundRequestHandler {
             Flog.info("Unknown user for id %s. Not handling request_perms event. %d", userId);
             return;
         }
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        ThreadSafe.later(new Runnable() {
             @Override
             public void run() {
                 HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context.project, new RunLater<String>() {
@@ -345,13 +337,7 @@ public class InboundRequestHandler {
         }
         Integer userId = id.getAsInt();
         state.removeUser(userId);
-        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = editor.highlights.get(userId);
-        if (integerRangeHighlighterHashMap == null) {
-            return;
-        }
-        for (Map.Entry<String, LinkedList<RangeHighlighter>> entry : integerRangeHighlighterHashMap.entrySet()) {
-            editor.remove_highlight(userId, entry.getKey());
-        }
+
     }
 
     void _on_delete_buf(JsonObject obj) {
@@ -374,16 +360,13 @@ public class InboundRequestHandler {
                     return;
                 }
                 String absPath = context.absPath(buf.path);
-                final VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(absPath);
+                final VFile fileByPath = context.vFactory.findFileByPath(absPath);
 
                 if (fileByPath == null) {
                     return;
                 }
-                try {
-                    fileByPath.delete(this);
-                } catch (IOException e) {
-                    Flog.warn(e);
-                }
+
+                fileByPath.delete(this);
             }
         });
     }
@@ -418,102 +401,19 @@ public class InboundRequestHandler {
 
     public void _on_highlight(JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
-        final ArrayList<ArrayList<Integer>> ranges = res.ranges;
         final Boolean force = (state.stalking && !res.following) || res.ping || (res.summon == null ? Boolean.FALSE : res.summon);
         state.lastHighlight = obj;
         final Buf buf = this.state.bufs.get(res.id);
-        final EditorManager fleditor = this.editor;
-        RunLater<Buf> runLater = new RunLater<Buf>() {
+        editor.queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf arg) {
-                Document document = editor.get_document(buf.path);
-                if (document == null) {
+                VDoc vDoc = context.vFactory.getDocument(buf.path);
+                if (vDoc == null) {
                     return;
                 }
-                final FileEditorManager manager = FileEditorManager.getInstance(context.project);
-                VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
-                String username = state.getUsername(res.user_id);
-                if (virtualFile != null) {
-                    Boolean summon = false;
-                    if (res.summon != null) {
-                        summon = res.summon;
-                    }
-                    if ((res.ping || summon) && username != null) {
-                        context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
-                    }
-                    if (force && virtualFile.isValid()) {
-                        manager.openFile(virtualFile, true, true);
-                    }
-                }
-                editor.remove_highlight(res.user_id, buf.path, document);
-
-                int textLength = document.getTextLength();
-                if (textLength == 0) {
-                    return;
-                }
-                TextAttributes attributes = new TextAttributes();
-                JBColor color = Colors.getColorForUser(username);
-                attributes.setEffectColor(color);
-                attributes.setEffectType(EffectType.SEARCH_MATCH);
-                attributes.setBackgroundColor(color);
-                attributes.setForegroundColor(Colors.getFGColor());
-
-                boolean first = true;
-                Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-
-                for (Editor editor : editors) {
-                    if (editor.isDisposed()) {
-                        continue;
-                    }
-                    MarkupModel markupModel = editor.getMarkupModel();
-                    LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
-                    for (List<Integer> range : ranges) {
-                        int start = range.get(0);
-                        int end = range.get(1);
-                        if (start == end) {
-                            end += 1;
-                        }
-                        if (end > textLength) {
-                            end = textLength;
-                        }
-                        if (start >= textLength) {
-                            start = textLength - 1;
-                        }
-                        RangeHighlighter rangeHighlighter = null;
-                        try {
-                            Listener.flooDisable();
-                            rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
-                                    attributes, HighlighterTargetArea.EXACT_RANGE);
-                        } catch (Throwable e) {
-                            Flog.warn(e);
-                        } finally {
-                            Listener.flooEnable();
-                        }
-                        if (rangeHighlighter == null) {
-                            continue;
-                        }
-                        rangeHighlighters.add(rangeHighlighter);
-                        if (force && first) {
-                            CaretModel caretModel = editor.getCaretModel();
-                            caretModel.moveToOffset(start);
-                            LogicalPosition position = caretModel.getLogicalPosition();
-                            ScrollingModel scrollingModel = editor.getScrollingModel();
-                            scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
-                            first = false;
-                        }
-                    }
-                    HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = fleditor.highlights.get(res.user_id);
-
-                    if (integerRangeHighlighterHashMap == null) {
-                        integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
-                        fleditor.highlights.put(res.user_id, integerRangeHighlighterHashMap);
-                    }
-                    integerRangeHighlighterHashMap.put(buf.path, rangeHighlighters);
-                }
+                vDoc.applyHighlight(buf.path, res.user_id, state.getUsername(res.user_id), force, res.ranges);
             }
-        };
-        editor.queue(buf, runLater);
-
+        });
     }
 
     void _on_saved(JsonObject obj) {
@@ -521,15 +421,11 @@ public class InboundRequestHandler {
         final Buf buf = this.state.bufs.get(id);
         editor.queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
-                Document document = editor.get_document(buf.path);
-                if (document == null || context.project == null) {
+                VDoc document = context.vFactory.getDocument(buf.path);
+                if (document == null) {
                     return;
                 }
-                if (!ReadonlyStatusHandler.ensureDocumentWritable(context.project, document)) {
-                    Flog.info("Document: %s is not writable, can not save.", document);
-                    return;
-                }
-                FileDocumentManager.getInstance().saveDocument(document);
+                document.save();
             }
         });
     }
@@ -577,7 +473,7 @@ public class InboundRequestHandler {
         if (state.can("patch") != previousState) {
             if (state.can("patch")) {
                 Utils.statusMessage("You state.can now edit this workspace.", context.project);
-                editor.clearReadOnlyState();
+                context.vFactory.clearReadOnlyState();
             } else {
                 Utils.errorMessage("You state.can no longer edit this workspace.", context.project);
             }

@@ -1,18 +1,17 @@
-package floobits.Virtual;
+package floobits.impl;
 
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.common.VDoc;
-import floobits.common.VFile;
+import floobits.common.interfaces.VDoc;
+import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by kans on 7/7/14.
- */
+
 public class IntellijFile extends VFile {
     protected VirtualFile virtualFile;
 
@@ -27,7 +26,32 @@ public class IntellijFile extends VFile {
 
     @Override
     public VDoc getDocument() {
-       return new IntellijDoc(FileDocumentManager.getInstance().getDocument(virtualFile));
+        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+        if (document == null) {
+            return null;
+        }
+        return new IntellijDoc(document);
+    }
+
+    @Override
+    public byte[] getBytes() {
+        try {
+            return virtualFile.contentsToByteArray();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+
+    @Override
+    public boolean setBytes(byte[] bytes) {
+        try {
+            virtualFile.setBinaryContent(bytes);
+        } catch (IOException e) {
+            Flog.warn(e);
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -42,8 +66,26 @@ public class IntellijFile extends VFile {
     }
 
     @Override
-    public void createDirectories(String dir) {
+    public boolean createDirectories(String dir) {
+        try {
+            virtualFile.createChildDirectory(this, dir);
+        } catch (IOException e) {
+            Flog.warn(e);
+            return false;
+        }
+        return true;
+    }
 
+    @Override
+    public VFile makeFile(String name) {
+        VirtualFile childDirectory;
+        try {
+            childDirectory = virtualFile.createChildDirectory(this, name);
+        } catch (IOException e) {
+            Flog.warn(e);
+            return null;
+        }
+        return new IntellijFile(childDirectory);
     }
 
     @Override
@@ -119,11 +161,12 @@ public class IntellijFile extends VFile {
     }
 
     @Override
-    protected byte[] contentsToByteArray() {
-        try {
-            return virtualFile.contentsToByteArray();
-        } catch (IOException e) {
-            return null;
-        }
+    public void refresh() {
+        virtualFile.refresh(false, false);
+    }
+
+    @Override
+    public boolean exists() {
+        return virtualFile.exists();
     }
 }

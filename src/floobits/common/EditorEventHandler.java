@@ -1,11 +1,11 @@
 package floobits.common;
 
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.Listener;
+import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 
@@ -16,12 +16,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-/**
- * Created by kans on 5/7/14.
- */
 public class EditorEventHandler {
     private final FlooContext context;
-    private final FloobitsState state;
+    public final FloobitsState state;
     private Listener listener;
     private final OutboundRequestHandler outbound;
     private InboundRequestHandler inbound;
@@ -60,7 +57,7 @@ public class EditorEventHandler {
         outbound.renameBuf(buf, newRelativePath);
     }
 
-    public void change(VirtualFile file) {
+    public void change(VFile file) {
         String filePath = file.getPath();
         if (!state.can("patch")) {
             return;
@@ -99,7 +96,7 @@ public class EditorEventHandler {
         for (String path : files) {
             Buf buf = state.get_buf_by_path(path);
             if (buf == null) {
-                context.statusMessage(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
+                context.warnMessage(String.format("The file, %s, is not in the workspace.", path));
                 continue;
             }
             outbound.deleteBuf(buf, false);
@@ -136,7 +133,7 @@ public class EditorEventHandler {
         outbound.setPerms("set", userId, perms);
     }
 
-    public void upload(VirtualFile virtualFile) {
+    public void upload(VFile virtualFile) {
         if (state.readOnly) {
             return;
         }
@@ -150,50 +147,6 @@ public class EditorEventHandler {
             return;
         }
         outbound.createBuf(virtualFile);
-    }
-
-    public void beforeChange(final VirtualFile file, final Document document) {
-        final Buf bufByPath = state.get_buf_by_path(file.getPath());
-        if (bufByPath == null) {
-            return;
-        }
-        String msg;
-        if (state.readOnly) {
-            msg = "This document is readonly because you don't have edit permission in the workspace.";
-        } else if (!bufByPath.isPopulated()) {
-            msg = "This document is temporarily readonly while we fetch a fresh copy.";
-        } else {
-            return;
-        }
-        context.statusMessage(msg);
-        document.setReadOnly(true);
-        context.editor.readOnlyBufferIds.add(bufByPath.path);
-        final String text = document.getText();
-        context.setTimeout(0, new Runnable() {
-            @Override
-            public void run() {
-                ThreadSafe.write(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!state.readOnly && bufByPath.isPopulated()) {
-                            return;
-                        }
-                        Document d = FileDocumentManager.getInstance().getDocument(file);
-                        if (d == null) {
-                            return;
-                        }
-                        try {
-                            Listener.flooDisable();
-                            d.setReadOnly(false);
-                            d.setText(text);
-                            d.setReadOnly(true);
-                        } finally {
-                            Listener.flooEnable();
-                        }
-                    }
-                });
-            }
-        });
     }
 
     public boolean follow() {
@@ -215,7 +168,7 @@ public class EditorEventHandler {
     }
 
     public void clearHighlights (){
-        context.editor.clearHighlights();
+        context.vFactory.clearHighlights();
     }
 
     public void openChat() {
@@ -241,4 +194,46 @@ public class EditorEventHandler {
             listener = null;
         }
     }
+    public void beforeChange(String path, Document document, VirtualFile virtualFile) {
+        final Buf bufByPath = state.get_buf_by_path(path);
+        if (bufByPath == null) {
+            return;
+        }
+        String msg;
+        if (state.readOnly) {
+            msg = "This document is readonly because you don't have edit permission in the workspace.";
+        } else if (!bufByPath.isPopulated()) {
+            msg = "This document is temporarily readonly while we fetch a fresh copy.";
+        } else {
+            return;
+        }
+        context.statusMessage(msg);
+        document.setReadOnly(true);
+        context.editor.readOnlyBufferIds.add(bufByPath.path);
+        final String text = document.getText();
+        context.setTimeout(0, new Runnable() {
+            @Override
+            public void run() {
+                ThreadSafe.write(context, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!state.readOnly && bufByPath.isPopulated()) {
+                            return;
+                        }
+                        Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        if (d == null) {
+                            return;
+                        }
+                        try {
+                            Listener.flooDisable();
+                            d.setReadOnly(false);
+                            d.setText(text);
+                            d.setReadOnly(true);
+                        } finally {
+                            Listener.flooEnable();
+                        }
+                    }
+                });
+            }
+        });
 }

@@ -4,12 +4,14 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 
-import floobits.Virtual.IntellijVFactory;
+import floobits.impl.IntellijVFactory;
 import floobits.common.*;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
+import floobits.common.interfaces.VFactory;
+import floobits.common.interfaces.VFile;
 import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
@@ -45,7 +47,7 @@ public class FlooContext {
 
     public FlooContext(Project project) {
         this.project = project;
-        this.vFactory = new IntellijVFactory();
+        this.vFactory = new IntellijVFactory(this);
         editor = new EditorManager(this);
     }
 
@@ -308,6 +310,14 @@ public class FlooContext {
         Utils.statusMessage(message, notificationType, project);
     }
 
+    public void warnMessage(String message) {
+        Flog.log(message);
+        if (chatManager != null && chatManager.isOpen()) {
+            chatManager.statusMessage(message);
+        }
+        statusMessage(message, NotificationType.WARNING);
+    }
+
     public void statusMessage(String message) {
         Flog.log(message);
         if (chatManager != null && chatManager.isOpen()) {
@@ -333,7 +343,9 @@ public class FlooContext {
                 statusMessage("Disconnecting.");
                 handler = null;
             }
-
+            if (vFactory != null) {
+                vFactory.clearReadOnlyState();
+            }
             if (chatManager != null) {
                 chatManager.clearUsers();
             }

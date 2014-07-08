@@ -6,9 +6,13 @@ import floobits.FlooContext;
 import floobits.common.API;
 
 public class ThreadSafe {
+    public static void later(final Runnable runnable) {
+        ApplicationManager.getApplication().invokeLater(runnable);
+    }
+
     public static void write(final FlooContext context, final Runnable runnable) {
         final long l = System.currentTimeMillis();
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        later(new Runnable() {
             @Override
             public void run() {
                 CommandProcessor.getInstance().executeCommand(context.project, new Runnable() {
@@ -34,7 +38,7 @@ public class ThreadSafe {
         });
     }
     public static void read(final FlooContext context, final Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        later(new Runnable() {
             @Override
             public void run() {
                 try {
