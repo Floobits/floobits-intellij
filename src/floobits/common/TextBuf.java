@@ -73,7 +73,7 @@ public class TextBuf extends Buf <String> {
 
     @Override
     public void send_patch(VFile virtualFile) {
-        VDoc d = virtualFile.getDocument();
+        VDoc d = virtualFile.getDocument(context);
         if (d == null) {
             Flog.warn("Can't get document to read from disk for sending patch %s", path);
             return;
@@ -129,7 +129,7 @@ public class TextBuf extends Buf <String> {
             getBuf();
             return;
         }
-        VDoc d = virtualFile.getDocument();
+        VDoc d = virtualFile.getDocument(context);
         if (d == null) {
             Flog.warn("Document not found for %s", virtualFile);
             getBuf();

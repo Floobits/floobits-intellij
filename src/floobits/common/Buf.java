@@ -58,7 +58,7 @@ public abstract class Buf <T> {
             return null;
         }
 
-        return virtualFile.getDocument();
+        return virtualFile.getDocument(context);
     }
 
     public String toString() {
@@ -97,7 +97,7 @@ public abstract class Buf <T> {
             byte[] decodedContents = encodedContents.getBytes();
             String filePath = context.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
-                VDoc doc = virtualFile.getDocument();
+                VDoc doc = virtualFile.getDocument(context);
                 String contents = doc == null ? encodedContents : doc.getText();
                 String md5 = DigestUtils.md5Hex(contents);
                 return new TextBuf(filePath, null, contents, md5, context, outbound);

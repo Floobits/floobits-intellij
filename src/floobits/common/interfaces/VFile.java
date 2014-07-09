@@ -1,5 +1,7 @@
 package floobits.common.interfaces;
 
+import floobits.FlooContext;
+
 import java.io.InputStream;
 
 /**
@@ -7,7 +9,7 @@ import java.io.InputStream;
  */
 public abstract class VFile {
     public abstract String getPath();
-    public abstract VDoc getDocument();
+    public abstract VDoc getDocument(FlooContext context);
     public abstract boolean rename(Object obj, String name);
     public abstract VFile makeFile(String name);
     public abstract boolean move(Object obj, VFile d);
@@ -23,7 +25,7 @@ public abstract class VFile {
     public abstract byte[] getBytes();
     public abstract boolean setBytes(byte[] bytes);
     public abstract void refresh();
-    public abstract void createDirectories(String dir);
+    public abstract boolean createDirectories(String dir);
     public abstract InputStream getInputStream();
 
 }

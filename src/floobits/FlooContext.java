@@ -47,8 +47,8 @@ public class FlooContext {
 
     public FlooContext(Project project) {
         this.project = project;
-        this.vFactory = new IntellijVFactory(this);
         editor = new EditorManager(this);
+        this.vFactory = new IntellijVFactory(this, editor);
     }
 
     public boolean addGroup(Bootstrap b) {

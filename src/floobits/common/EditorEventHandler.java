@@ -1,10 +1,9 @@
 package floobits.common;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.Listener;
+import floobits.common.interfaces.VDoc;
+import floobits.common.interfaces.VFactory;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
@@ -194,7 +193,10 @@ public class EditorEventHandler {
             listener = null;
         }
     }
-    public void beforeChange(String path, Document document, VirtualFile virtualFile) {
+
+    public void beforeChange(VDoc doc) {
+        final VFile virtualFile = doc.getVirtualFile();
+        final String path = virtualFile.getPath();
         final Buf bufByPath = state.get_buf_by_path(path);
         if (bufByPath == null) {
             return;
@@ -208,9 +210,9 @@ public class EditorEventHandler {
             return;
         }
         context.statusMessage(msg);
-        document.setReadOnly(true);
-        context.editor.readOnlyBufferIds.add(bufByPath.path);
-        final String text = document.getText();
+        doc.setReadOnly(true);
+        VFactory.readOnlyBufferIds.add(bufByPath.path);
+        final String text = doc.getText();
         context.setTimeout(0, new Runnable() {
             @Override
             public void run() {
@@ -220,7 +222,7 @@ public class EditorEventHandler {
                         if (!state.readOnly && bufByPath.isPopulated()) {
                             return;
                         }
-                        Document d = FileDocumentManager.getInstance().getDocument(virtualFile);
+                        VDoc d = virtualFile.getDocument(context);
                         if (d == null) {
                             return;
                         }
@@ -236,4 +238,5 @@ public class EditorEventHandler {
                 });
             }
         });
+    }
 }

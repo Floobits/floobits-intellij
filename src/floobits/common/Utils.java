@@ -13,6 +13,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 import floobits.FlooContext;
+import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 import floobits.common.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
@@ -257,8 +258,8 @@ public class Utils {
         return filePaths;
     }
 
-    public static ArrayList<VirtualFile> getAllValidNestedFiles(final FlooContext context, VirtualFile vFile) {
-        final ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
+    public static ArrayList<VFile> getAllValidNestedFiles(final FlooContext context, VFile vFile) {
+        final ArrayList<VFile> virtualFiles = new ArrayList<VFile>();
         if (!vFile.isDirectory()) {
             if (vFile.isValid() && !context.isIgnored(vFile)) virtualFiles.add(vFile);
             return virtualFiles;

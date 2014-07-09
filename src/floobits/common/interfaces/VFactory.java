@@ -1,5 +1,7 @@
 package floobits.common.interfaces;
 
+import floobits.FlooContext;
+
 import java.io.File;
 import java.util.HashSet;
 
@@ -16,5 +18,6 @@ public interface VFactory {
     public void removeHighlight(Integer userId, final String path, final VDoc document);
     public void clearHighlights();
     public void clearReadOnlyState();
+    public boolean openFile(FlooContext context, File file)
     public HashSet<String> readOnlyBufferIds = new HashSet<String>();
 }

@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FlooContext;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
@@ -13,7 +14,7 @@ import java.io.InputStream;
 
 
 public class IntellijFile extends VFile {
-    protected VirtualFile virtualFile;
+    final protected VirtualFile virtualFile;
 
     public IntellijFile(VirtualFile virtualFile) {
         this.virtualFile = virtualFile;
@@ -25,12 +26,12 @@ public class IntellijFile extends VFile {
     }
 
     @Override
-    public VDoc getDocument() {
+    public VDoc getDocument(FlooContext context) {
         Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
         if (document == null) {
             return null;
         }
-        return new IntellijDoc(document);
+        return new IntellijDoc(context, document);
     }
 
     @Override

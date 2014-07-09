@@ -260,8 +260,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
 
         Document document = event.getDocument();
-        VDoc vDoc = new IntellijDoc(context, document);
-        vDoc.beforeChange(editorManager.state);
+        editorManager.beforeChange(new IntellijDoc(context, document));
     }
 
     @Override

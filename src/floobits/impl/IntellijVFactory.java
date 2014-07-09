@@ -1,5 +1,11 @@
 package floobits.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -7,25 +13,22 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+
 import floobits.FlooContext;
+import floobits.common.EditorManager;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFactory;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-
 public class IntellijVFactory implements VFactory {
 
-    private FlooContext context;
+    private final FlooContext context;
+    private final EditorManager editor;
 
-    public IntellijVFactory(FlooContext context) {
+    public IntellijVFactory(FlooContext context, EditorManager editor) {
         this.context = context;
+        this.editor = editor;
     }
 
     @Override
@@ -62,7 +65,7 @@ public class IntellijVFactory implements VFactory {
     }
 
     @Override
-    void removeHighlight(Integer userId, final String path) {
+    public void removeHighlight(Integer userId, final String path) {
         VDoc vDoc = context.vFactory.getDocument(path);
         removeHighlight(userId, path, vDoc);
     }
@@ -80,7 +83,7 @@ public class IntellijVFactory implements VFactory {
         if (rangeHighlighters == null) {
             return;
         }
-        queue(new Runnable() {
+        editor.queue(new Runnable() {
             @Override
             public void run() {
                 document.removeHighlight(rangeHighlighters);
