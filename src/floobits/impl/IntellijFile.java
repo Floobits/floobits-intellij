@@ -4,7 +4,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;

@@ -13,6 +13,7 @@ import com.intellij.projectImport.ProjectAttachProcessor;
 import dagger.ObjectGraph;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
+import floobits.impl.IntelliContext;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
@@ -54,7 +55,7 @@ public class FloobitsApplication implements ApplicationComponent {
         // TODO: insert component disposal logic here
     }
 
-    public synchronized void projectOpened(FlooContext context) {
+    public synchronized void projectOpened(IntelliContext context) {
         if (!createAccount) {
             return;
         }
@@ -90,7 +91,7 @@ public class FloobitsApplication implements ApplicationComponent {
                     Utils.errorMessage("The editor could not open the project :(", null);
                     return;
                 }
-                final FlooContext context = FloobitsPlugin.getInstance(projectForPath).context;
+                final IntelliContext context = FloobitsPlugin.getInstance(projectForPath).context;
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
@@ -107,7 +108,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
     }
 
-    public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
+    public void joinWorkspace(IntelliContext context, final FlooUrl flooUrl, final String location) {
 //        if (!API.workspaceExists(flooUrl, context)) {
 //            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
 //            return;
@@ -122,7 +123,7 @@ public class FloobitsApplication implements ApplicationComponent {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
-        final FlooContext finalContext = context;
+        final IntelliContext finalContext = context;
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
@@ -135,7 +136,7 @@ public class FloobitsApplication implements ApplicationComponent {
         });
     }
 
-    public void joinWorkspace(final FlooContext context, final String url) {
+    public void joinWorkspace(final IntelliContext context, final String url) {
         final FlooUrl f;
 
         try {

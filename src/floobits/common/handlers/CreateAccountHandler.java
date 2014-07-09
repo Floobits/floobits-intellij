@@ -2,7 +2,7 @@ package floobits.common.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.*;
 import floobits.common.protocol.send.NewAccount;
 import floobits.utilities.Flog;

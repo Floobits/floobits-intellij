@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.Listener;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;

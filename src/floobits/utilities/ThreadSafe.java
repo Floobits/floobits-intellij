@@ -2,7 +2,7 @@ package floobits.utilities;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.API;
 
 public class ThreadSafe {

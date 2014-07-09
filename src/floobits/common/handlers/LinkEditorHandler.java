@@ -2,7 +2,7 @@ package floobits.common.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.*;
 import floobits.common.protocol.send.FlooRequestCredentials;
 import floobits.utilities.Flog;
@@ -82,7 +82,7 @@ public class LinkEditorHandler extends BaseHandler {
 
     protected void openBrowser() {
         if(!Desktop.isDesktopSupported()) {
-            Utils.errorMessage("Floobits can't use a browser on this system.", context.project);
+            context.errorMessage("Floobits can't use a browser on this system.");
             context.shutdown();
             return;
         }

@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.interfaces.VDoc;

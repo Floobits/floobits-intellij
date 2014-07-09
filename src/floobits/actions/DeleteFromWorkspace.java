@@ -3,7 +3,7 @@ package floobits.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.IntelliUtils;
 import floobits.common.EditorEventHandler;

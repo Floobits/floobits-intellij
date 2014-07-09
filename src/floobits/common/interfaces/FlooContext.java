@@ -1,22 +1,12 @@
-package floobits;
+package floobits.common.interfaces;
 
-import com.intellij.notification.NotificationType;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
-
-import floobits.impl.IntellijVFactory;
 import floobits.common.*;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
-import floobits.common.interfaces.VFactory;
-import floobits.common.interfaces.VFile;
 import floobits.dialogs.DialogBuilder;
-import floobits.dialogs.SelectAccount;
-import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
-import floobits.windows.ChatManager;
 import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.util.concurrent.ScheduledFuture;
@@ -29,26 +19,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/**
- * I am the link between a project and floobits
- */
-public class FlooContext {
-
-    public String colabDir;
-    public Project project;
-    public volatile BaseHandler handler;
-    public ChatManager chatManager;
-    protected Ignore ignoreTree;
+public abstract class FlooContext {
     public final EditorScheduler editor;
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    public String colabDir;
+    public volatile BaseHandler handler;
     public Date lastChatMessage;
     public VFactory vFactory;
+    protected Ignore ignoreTree;
     protected volatile NioEventLoopGroup loopGroup;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public FlooContext(Project project) {
-        this.project = project;
+    public FlooContext() {
         editor = new EditorScheduler(this);
-        this.vFactory = new IntellijVFactory(this, editor);
     }
 
     public boolean addGroup(Bootstrap b) {
@@ -78,10 +60,6 @@ public class FlooContext {
         return schedule;
     }
 
-    public void loadChatManager() {
-        chatManager = new ChatManager(this);
-    }
-
     private boolean changePerms(FlooUrl flooUrl, String[] newPerms) {
         HTTPWorkspaceRequest workspace = API.getWorkspace(flooUrl, this);
         if (workspace == null) {
@@ -101,15 +79,15 @@ public class FlooContext {
         return true;
     }
 
-    public void shareProject(final boolean _private_) {
-        final String project_path = project.getBasePath();
+    public void shareProject(final boolean _private_, String projectPath) {
 
-        FlooUrl flooUrl = DotFloo.read(project_path);
+
+        FlooUrl flooUrl = DotFloo.read(projectPath);
 
         String[] newPerms = _private_ ? new String[]{} : new String[]{"view_room"};
 
         if (flooUrl != null && changePerms(flooUrl, newPerms)) {
-            joinWorkspace(flooUrl, project_path, true);
+            joinWorkspace(flooUrl, projectPath, true);
             return;
         }
 
@@ -118,7 +96,7 @@ public class FlooContext {
             Map<String, Workspace> workspaces = i.getValue();
             for (Map.Entry<String, Workspace> j : workspaces.entrySet()) {
                 Workspace w = j.getValue();
-                if (Utils.isSamePath(w.path, project_path)) {
+                if (Utils.isSamePath(w.path, projectPath)) {
                     try {
                         flooUrl = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
@@ -153,35 +131,21 @@ public class FlooContext {
         if (keys.length == 1) {
             host = keys[0];
         } else {
-            SelectAccount selectAccount = new SelectAccount(project, keys);
-            selectAccount.show();
-            int exitCode = selectAccount.getExitCode();
-            if (exitCode != DialogWrapper.OK_EXIT_CODE) {
-                return;
-            }
-            host = selectAccount.getAccount();
+            host = selectAccount(keys);
         }
 
+        if (host == null) {
+            return;
+        }
 
         String owner = floorcJson.auth.get(host).get("username");
-        final String name = new File(project_path).getName();
-        final FlooContext context = this;
-
+        final String name = new File(projectPath).getName();
         List<String> orgs = API.getOrgsCanAdmin(host, this);
         orgs.add(0, owner);
-        final String finalHost = host;
-        ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
-            @Override
-            public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                    joinWorkspace(new FlooUrl(finalHost, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), project_path, true);
-                }
-            }
-        });
-        shareProjectDialog.createCenterPanel();
-        shareProjectDialog.show();
-
+        shareProjectDialog(name, orgs, host, _private_, projectPath);
     }
+
+    protected abstract void shareProjectDialog(String name, List<String> orgs, String host, boolean _private_, String projectPath);
 
     public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
         FloorcJson floorcJson = null;
@@ -232,12 +196,11 @@ public class FlooContext {
         shutdown();
     }
 
-
     public void linkEditor() {
         if (setupHandler(new LinkEditorHandler(this, Constants.defaultHost))) {
             return;
         }
-        Utils.statusMessage("You already have an account and are connected with it.", project);
+        statusMessage("You already have an account and are connected with it.");
         shutdown();
     }
 
@@ -258,7 +221,8 @@ public class FlooContext {
         return handler != null && handler.isJoined;
     }
 
-    public @Nullable FlooHandler getFlooHandler(){
+    public @Nullable
+    FlooHandler getFlooHandler(){
         if (handler != null && handler instanceof FlooHandler)
             return (FlooHandler)handler;
         return null;
@@ -298,42 +262,6 @@ public class FlooContext {
         return ignoreTree.isIgnored(f, path, toProjectRelPath(path), f.isDirectory());
     }
 
-    public Ignore getIgnoreTree() {
-        return ignoreTree;
-    }
-
-    public void flashMessage(final String message) {
-        Utils.flashMessage(message, project);
-    }
-
-    public void statusMessage(String message, NotificationType notificationType) {
-        Utils.statusMessage(message, notificationType, project);
-    }
-
-    public void warnMessage(String message) {
-        Flog.log(message);
-        if (chatManager != null && chatManager.isOpen()) {
-            chatManager.statusMessage(message);
-        }
-        statusMessage(message, NotificationType.WARNING);
-    }
-
-    public void statusMessage(String message) {
-        Flog.log(message);
-        if (chatManager != null && chatManager.isOpen()) {
-            chatManager.statusMessage(message);
-        }
-        statusMessage(message, NotificationType.INFORMATION);
-    }
-
-    public void errorMessage(String message) {
-        Flog.warn(message);
-        statusMessage(message, NotificationType.ERROR);
-        if (chatManager != null && chatManager.isOpen()) {
-            chatManager.errorMessage(message);
-        }
-    }
-
     public void shutdown() {
         lock.writeLock().lock();
         try {
@@ -345,9 +273,6 @@ public class FlooContext {
             }
             if (vFactory != null) {
                 vFactory.clearReadOnlyState();
-            }
-            if (chatManager != null) {
-                chatManager.clearUsers();
             }
 
             if (loopGroup != null) {
@@ -364,4 +289,26 @@ public class FlooContext {
             lock.writeLock().unlock();
         }
     }
+
+    public Ignore getIgnoreTree() {
+        return ignoreTree;
+    }
+
+    public abstract void loadChatManager();
+
+    public abstract void flashMessage(String message);
+
+    public abstract void warnMessage(String message);
+
+    public abstract void statusMessage(String message);
+
+    public abstract void errorMessage(String message);
+
+    public abstract Object getActualContext();
+
+    protected abstract String selectAccount(String[] keys);
+
+    public abstract void chat(String username, String msg, Date messageDate);
+
+    public abstract void openChat();
 }

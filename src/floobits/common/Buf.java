@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
@@ -71,7 +71,7 @@ public abstract class Buf <T> {
         String parentPath = file.getParent();
         VFile vFile = context.vFactory.createDirectories(parentPath);
         if (vFile == null) {
-            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
+            context.errorMessage("The Floobits plugin was unable to create a file.");
             return null;
         }
         return vFile.makeFile(name);

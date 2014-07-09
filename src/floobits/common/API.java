@@ -8,7 +8,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.utilities.Flog;
@@ -308,13 +308,16 @@ public class API {
                     try {
                         apiRequest(method, context, Constants.floobitsDomain);
                     } catch (Throwable e) {
-                        Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+                        if (context != null) {
+                            context.errorMessage(String.format("Couldn't send crash report %s", e));
+                        }
+
                     }
                 }
             }, "Floobits Crash Reporter").run();
       } catch (Throwable e) {
             try {
-                Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+                context.errorMessage(String.format("Couldn't send crash report %s", e));
             } catch (Throwable ignored) {}
         }
     }

@@ -1,7 +1,7 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.send.RoomInfoResponse;
 import floobits.utilities.Flog;

@@ -9,7 +9,7 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.FlooUrl;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;

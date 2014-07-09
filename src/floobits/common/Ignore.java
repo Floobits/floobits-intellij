@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
 import floobits.common.jgit.ignore.IgnoreNode;
 import floobits.common.jgit.ignore.IgnoreRule;

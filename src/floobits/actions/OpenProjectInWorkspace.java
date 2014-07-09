@@ -1,10 +1,10 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.*;
+import floobits.impl.IntelliContext;
 import floobits.utilities.Flog;
 
 import java.net.MalformedURLException;
@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
-        FlooContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
+        IntelliContext context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
         FlooUrl flooUrl = DotFloo.read(context.project.getBasePath());
         if (flooUrl != null) {
             FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());

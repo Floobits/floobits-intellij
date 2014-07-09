@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.receive.*;
@@ -120,7 +120,7 @@ public class OutboundRequestHandler {
 
     public void requestEdit() {
         if (!state.can("request_perms")) {
-            Utils.errorMessage("You are not allowed to ask for edit permissions.", context.project);
+            context.errorMessage("You are not allowed to ask for edit permissions.");
             return;
         }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));

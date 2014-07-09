@@ -1,11 +1,5 @@
 package floobits.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -13,20 +7,24 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-
-import floobits.FlooContext;
 import floobits.common.EditorScheduler;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFactory;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 public class IntellijVFactory implements VFactory {
 
-    private final FlooContext context;
+    private final IntelliContext context;
     private final EditorScheduler editor;
 
-    public IntellijVFactory(FlooContext context, EditorScheduler editor) {
+    public IntellijVFactory(IntelliContext context, EditorScheduler editor) {
         this.context = context;
         this.editor = editor;
     }
@@ -55,7 +53,7 @@ public class IntellijVFactory implements VFactory {
     }
 
     @Override
-    public boolean openFile(FlooContext context, File file) {
+    public boolean openFile(File file) {
         VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(file);
         if (floorc == null) {
             return false;

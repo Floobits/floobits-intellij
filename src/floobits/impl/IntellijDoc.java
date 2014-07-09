@@ -7,7 +7,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import floobits.FlooContext;
 import floobits.Listener;
 import floobits.common.Constants;
 import floobits.common.dmp.FlooPatchPosition;
@@ -19,11 +18,11 @@ import java.util.*;
 
 
 public class IntellijDoc extends VDoc{
-    private FlooContext context;
+    private IntelliContext context;
     private Document document;
     public static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
 
-    public IntellijDoc(FlooContext context, Document document) {
+    public IntellijDoc(IntelliContext context, Document document) {
         this.context = context;
         this.document = document;
     }

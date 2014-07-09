@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
 import floobits.impl.IntellijFile;
 

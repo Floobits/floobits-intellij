@@ -1,7 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
 import floobits.common.EditorEventHandler;

@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.interfaces.VFile;
@@ -47,7 +47,7 @@ public class BinaryBuf extends Buf <byte[]> {
                 if (virtualFile == null) {
                     virtualFile = createFile();
                     if (virtualFile == null) {
-                        Utils.errorMessage("Unable to write file. virtualFile is null.", context.project);
+                        context.errorMessage("Unable to write file. virtualFile is null.");
                         return;
                     }
                 }

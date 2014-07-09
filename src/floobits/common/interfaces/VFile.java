@@ -1,7 +1,5 @@
 package floobits.common.interfaces;
 
-import floobits.FlooContext;
-
 import java.io.InputStream;
 
 /**

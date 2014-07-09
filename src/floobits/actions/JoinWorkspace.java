@@ -1,11 +1,11 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FlooContext;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
+import floobits.impl.IntelliContext;
 
 import javax.swing.*;
 
@@ -18,7 +18,7 @@ public class JoinWorkspace extends CanFloobits {
         if (floobitsPlugin == null) {
             return;
         }
-        FlooContext context = floobitsPlugin.context;
+        IntelliContext context = floobitsPlugin.context;
         FlooUrl floourl = DotFloo.read(context.project.getBasePath());
         if (floourl != null) {
             url = floourl.toString();

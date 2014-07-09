@@ -18,6 +18,7 @@ import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
 import floobits.impl.IntellijDoc;
 import floobits.impl.IntellijFile;

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.Listener;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
@@ -312,7 +312,7 @@ public class InboundRequestHandler {
         ThreadSafe.later(new Runnable() {
             @Override
             public void run() {
-                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context.project, new RunLater<String>() {
+                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context, new RunLater<String>() {
                     @Override
                     public void run(String action) {
                         String[] perms = new String[]{"edit_room"};
@@ -383,13 +383,8 @@ public class InboundRequestHandler {
             c.setTimeInMillis(time.longValue() * 1000);
             messageDate = c.getTime();
         }
-        if (context.chatManager == null) {
-            return;
-        }
-        if (!context.chatManager.isOpen()) {
-            context.statusMessage(String.format("%s: %s", username, msg));
-        }
-        context.chatManager.chatMessage(username, msg, messageDate);
+
+        context.chat(username, msg, messageDate);
     }
 
     void _on_term_stdout(JsonObject jsonObject) {}
@@ -472,10 +467,10 @@ public class InboundRequestHandler {
         state.readOnly = !state.can("patch");
         if (state.can("patch") != previousState) {
             if (state.can("patch")) {
-                Utils.statusMessage("You state.can now edit this workspace.", context.project);
+                context.statusMessage("You state.can now edit this workspace.");
                 context.vFactory.clearReadOnlyState();
             } else {
-                Utils.errorMessage("You state.can no longer edit this workspace.", context.project);
+                context.errorMessage("You state.can no longer edit this workspace.");
             }
         }
     }
@@ -509,7 +504,7 @@ public class InboundRequestHandler {
                     state.handleRoomInfo(ri);
 
                     context.statusMessage(String.format("You successfully joined %s ", state.url.toString()));
-                    context.chatManager.openChat();
+                    context.openChat();
 
                     DotFloo.write(context.colabDir, state.url.toString());
 

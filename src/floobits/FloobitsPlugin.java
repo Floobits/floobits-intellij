@@ -2,12 +2,13 @@ package floobits;
 
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import floobits.impl.IntelliContext;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.NotNull;
 
 public class FloobitsPlugin implements ProjectComponent {
     public final static String name = "Floobits-Plugin";
-    public final FlooContext context;
+    public final IntelliContext context;
 
     public static FloobitsPlugin getInstance(Project project) {
         if (project == null) {
@@ -16,7 +17,7 @@ public class FloobitsPlugin implements ProjectComponent {
         return project.getComponent(FloobitsPlugin.class);
     }
     public FloobitsPlugin(Project project) {
-        context = new FlooContext(project);
+        context = new IntelliContext(project);
         Flog.info("Floobits plugin");
     }
 
@@ -29,7 +30,6 @@ public class FloobitsPlugin implements ProjectComponent {
     @Override
     public void projectClosed() {
         context.shutdown();
-        context.project = null;
     }
 
     @Override

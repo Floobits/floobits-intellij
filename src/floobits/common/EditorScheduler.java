@@ -1,6 +1,6 @@
 package floobits.common;
 
-import floobits.FlooContext;
+import floobits.common.interfaces.FlooContext;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 
