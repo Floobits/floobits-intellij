@@ -64,7 +64,7 @@ public class EditorScheduler {
         queue(queuedAction);
     }
 
-    protected void queue(Runnable runnable) {
+    public void queue(Runnable runnable) {
         queue.add(runnable);
         if (queue.size() > 1) {
             return;

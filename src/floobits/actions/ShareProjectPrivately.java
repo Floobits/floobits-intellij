@@ -17,6 +17,5 @@ public class ShareProjectPrivately extends CanFloobits {
         }
         final String project_path = project.getBasePath();
         FloobitsPlugin.getInstance(project).context.shareProject(true, project_path);
-        FloobitsPlugin.getInstance(e.getProject()).context.project_path(true, project_path);
     }
 }

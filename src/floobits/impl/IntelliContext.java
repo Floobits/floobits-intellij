@@ -104,7 +104,6 @@ public class IntelliContext extends FlooContext {
     }
 
 
-
     @Override
     public void chat(String username, String msg, Date messageDate) {
         if (chatManager == null) {
