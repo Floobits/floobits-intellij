@@ -39,7 +39,7 @@ public class FlooContext {
     public volatile BaseHandler handler;
     public ChatManager chatManager;
     protected Ignore ignoreTree;
-    public final EditorManager editor;
+    public final EditorScheduler editor;
     public Date lastChatMessage;
     public VFactory vFactory;
     protected volatile NioEventLoopGroup loopGroup;
@@ -47,7 +47,7 @@ public class FlooContext {
 
     public FlooContext(Project project) {
         this.project = project;
-        editor = new EditorManager(this);
+        editor = new EditorScheduler(this);
         this.vFactory = new IntellijVFactory(this, editor);
     }
 

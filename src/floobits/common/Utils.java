@@ -5,17 +5,12 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VFileProperty;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
-import floobits.FlooContext;
-import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
-import floobits.common.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;
@@ -52,22 +47,6 @@ public class Utils {
         } catch (PathResolutionException e) {
             return null;
         }
-    }
-
-    public static void createFile(final FlooContext context, final VirtualFile virtualFile) {
-        if (context.isIgnored(virtualFile)) {
-            return;
-        }
-        context.setTimeout(100, new Runnable() {
-            @Override
-            public void run() {
-                FlooHandler flooHandler = context.getFlooHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                flooHandler.editorEventHandler.upload(virtualFile);
-            }
-        });
     }
 
     private static final String cert =
@@ -238,43 +217,6 @@ public class Utils {
         PathResolutionException (String msg) {
             super(msg);
         }
-    }
-
-    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, VirtualFile vFile) {
-        final ArrayList<String> filePaths = new ArrayList<String>();
-        if (!vFile.isDirectory()) {
-            filePaths.add(vFile.getPath());
-            return filePaths;
-        }
-        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile file) {
-                if (!file.isDirectory()) {
-                    filePaths.add(file.getPath());
-                }
-                return true;
-            }
-        });
-        return filePaths;
-    }
-
-    public static ArrayList<VFile> getAllValidNestedFiles(final FlooContext context, VFile vFile) {
-        final ArrayList<VFile> virtualFiles = new ArrayList<VFile>();
-        if (!vFile.isDirectory()) {
-            if (vFile.isValid() && !context.isIgnored(vFile)) virtualFiles.add(vFile);
-            return virtualFiles;
-        }
-
-        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile file) {
-                if (!context.isIgnored(file) && !file.isDirectory() && file.isValid()) {
-                    virtualFiles.add(file);
-                }
-                return true;
-            }
-        });
-        return virtualFiles;
     }
 
     static public SSLContext createSSLContext() {

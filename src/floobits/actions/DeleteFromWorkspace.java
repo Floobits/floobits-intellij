@@ -5,8 +5,8 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
+import floobits.IntelliUtils;
 import floobits.common.EditorEventHandler;
-import floobits.common.Utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ public class DeleteFromWorkspace extends IsJoinedAction {
             if (!context.isShared(virtualFile.getPath())) {
                 continue;
             }
-            ArrayList<String> allNestedFilePaths = Utils.getAllNestedFilePaths(context, virtualFile);
+            ArrayList<String> allNestedFilePaths = IntelliUtils.getAllNestedFilePaths(context, virtualFile);
             fileHashSet.addAll(allNestedFilePaths);
         }
 

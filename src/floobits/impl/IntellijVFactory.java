@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import floobits.FlooContext;
-import floobits.common.EditorManager;
+import floobits.common.EditorScheduler;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFactory;
 import floobits.common.interfaces.VFile;
@@ -24,9 +24,9 @@ import floobits.utilities.Flog;
 public class IntellijVFactory implements VFactory {
 
     private final FlooContext context;
-    private final EditorManager editor;
+    private final EditorScheduler editor;
 
-    public IntellijVFactory(FlooContext context, EditorManager editor) {
+    public IntellijVFactory(FlooContext context, EditorScheduler editor) {
         this.context = context;
         this.editor = editor;
     }
@@ -66,14 +66,14 @@ public class IntellijVFactory implements VFactory {
 
     @Override
     public void removeHighlight(Integer userId, final String path) {
-        VDoc vDoc = context.vFactory.getDocument(path);
-        removeHighlight(userId, path, vDoc);
+        VFile vFile = context.vFactory.findFileByPath(path);
+        removeHighlight(userId, path, vFile);
     }
 
     @Override
-    public void removeHighlight(Integer userId, final String path, final VDoc document) {
+    public void removeHighlight(Integer userId, final String path, final VFile file) {
         HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = IntellijDoc.highlights.get(userId);
-        if (document == null) {
+        if (file == null) {
             return;
         }
         if (integerRangeHighlighterHashMap == null) {
@@ -86,7 +86,10 @@ public class IntellijVFactory implements VFactory {
         editor.queue(new Runnable() {
             @Override
             public void run() {
-                document.removeHighlight(rangeHighlighters);
+                VDoc vDoc = file.getDocument(context);
+                if (vDoc != null) {
+                    vDoc.removeHighlight(rangeHighlighters);
+                }
             }
         });
     }

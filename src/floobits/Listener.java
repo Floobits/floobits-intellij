@@ -18,8 +18,7 @@ import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
-import floobits.common.Utils;
-import floobits.common.interfaces.VDoc;
+import floobits.common.interfaces.VFile;
 import floobits.impl.IntellijDoc;
 import floobits.impl.IntellijFile;
 import floobits.utilities.Flog;
@@ -156,7 +155,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         for (VFileEvent event : events) {
-            VirtualFile virtualFile = event.getFile();
+            VFile virtualFile = new IntellijFile(event.getFile());
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
                 context.refreshIgnores();
                 break;
@@ -175,9 +174,8 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String oldPath = oldParent.getPath();
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
-                ArrayList<VirtualFile> files;
-                files = Utils.getAllValidNestedFiles(context, virtualFile);
-                for (VirtualFile file: files) {
+                ArrayList<VFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
+                for (VFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
                     editorManager.rename(oldFilePath, newFilePath);
@@ -186,7 +184,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
             if (event instanceof VFileDeleteEvent) {
                 Flog.info("deleting a file %s", event.getPath());
-                editorManager.deleteDirectory(Utils.getAllNestedFilePaths(context, event.getFile()));
+                editorManager.deleteDirectory(IntelliUtils.getAllNestedFilePaths(event.getFile()));
                 continue;
             }
             if (event instanceof VFileCopyEvent) {
@@ -200,28 +198,27 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile child : children) {
                     if (child.getName().equals(newChildName)) {
                         copiedFile = child;
+                        break;
                     }
                 }
                 if (copiedFile == null) {
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                Utils.createFile(context, copiedFile);
+                editorManager.createFile(new IntellijFile(copiedFile));
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
-                ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllValidNestedFiles(context, event.getFile());
-                for (final VirtualFile createdFile : createdFiles) {
-                    Utils.createFile(context, createdFile);
+                ArrayList<VFile> createdFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (final VFile createdFile : createdFiles) {
+                    editorManager.createFile(createdFile);
                 }
                 continue;
             }
             if (event instanceof VFileContentChangeEvent) {
-                ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
-                for (VirtualFile file : changedFiles) {
+                ArrayList<VFile> changedFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (VFile file : changedFiles) {
                     editorManager.change(file);
                 }
             }

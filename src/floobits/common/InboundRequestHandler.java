@@ -36,7 +36,7 @@ public class InboundRequestHandler {
     private final FloobitsState state;
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
-    private EditorManager editor;
+    private EditorScheduler editor;
 
     enum Events {
         room_info, get_buf, patch, highlight, saved, join, part, create_buf, ack,
@@ -337,7 +337,7 @@ public class InboundRequestHandler {
         }
         Integer userId = id.getAsInt();
         state.removeUser(userId);
-
+        context.vFactory.removeHighlightsForUser(userId);
     }
 
     void _on_delete_buf(JsonObject obj) {

@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
 import floobits.FlooContext;
 import floobits.FloobitsPlugin;
+import floobits.IntelliUtils;
 import floobits.common.EditorEventHandler;
 import floobits.common.Utils;
 
@@ -37,7 +38,7 @@ public class AddToWorkspace extends IsJoinedAction {
                 continue;
             }
 
-        ArrayList<VirtualFile> allValidNestedFiles = Utils.getAllValidNestedFiles(context, virtualFile);
+        ArrayList<VirtualFile> allValidNestedFiles = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
             filesToAdd.addAll(allValidNestedFiles);
         }
 

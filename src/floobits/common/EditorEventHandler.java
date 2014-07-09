@@ -2,6 +2,7 @@ package floobits.common;
 
 import floobits.FlooContext;
 import floobits.Listener;
+import floobits.common.handlers.FlooHandler;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFactory;
 import floobits.common.interfaces.VFile;
@@ -28,6 +29,22 @@ public class EditorEventHandler {
         this.outbound = outbound;
         this.inbound = inbound;
         listener = new Listener(this, context);
+    }
+
+    public void createFile(final VFile virtualFile) {
+        if (context.isIgnored(virtualFile)) {
+            return;
+        }
+        context.setTimeout(100, new Runnable() {
+            @Override
+            public void run() {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.editorEventHandler.upload(virtualFile);
+            }
+        });
     }
 
     public void go() {

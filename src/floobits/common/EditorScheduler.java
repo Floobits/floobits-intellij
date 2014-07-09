@@ -6,7 +6,7 @@ import floobits.utilities.ThreadSafe;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class EditorManager {
+public class EditorScheduler {
     public final ConcurrentLinkedQueue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
     private final FlooContext context;
     // buffer ids are not removed from readOnlyBufferIds
@@ -47,7 +47,7 @@ public class EditorManager {
         }
     }
 
-    public EditorManager(FlooContext context) {
+    public EditorScheduler(FlooContext context) {
         this.context = context;
     }
 

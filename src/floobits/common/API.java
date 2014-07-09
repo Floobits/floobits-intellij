@@ -114,7 +114,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.openFile(new File(Settings.floorcJsonPath));
+                return context.vFactory.openFile(context, new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
