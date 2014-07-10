@@ -21,10 +21,6 @@ public class FlooHandler extends BaseHandler {
         super(context);
         this.auth = auth;
         this.shouldUpload = shouldUpload;
-        if (!API.workspaceExists(flooUrl, context)) {
-            context.errorMessage(String.format("The workspace %s does not exist.", flooUrl));
-            return;
-        }
         context.setColabDir(Utils.unFuckPath(path));
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);

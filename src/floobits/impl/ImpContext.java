@@ -35,7 +35,8 @@ public class ImpContext extends IContext {
         Flog.statusMessage(message, notificationType, project);
     }
 
-    @Override public void loadChatManager() {
+    @Override
+    public void loadChatManager() {
         chatManager = new ChatManager(this);
     }
 

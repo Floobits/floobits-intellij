@@ -12,6 +12,7 @@ public class FloorcJson implements Serializable {
     public HashMap<String, HashMap<String, String>> auth;
     public Boolean debug;
     public String share_dir;
+    public Integer MAX_ERROR_REPORTS;
 
     public static FloorcJson getFloorcJsonFromSettings () {
         FloorcJson floorcJson = null;

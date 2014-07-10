@@ -105,6 +105,9 @@ public class ImpFile extends IFile {
     @Override
     public IFile[] getChildren() {
         VirtualFile[] children = virtualFile.getChildren();
+        if (children == null) {
+            return new IFile[]{};
+        }
         IFile[] iFiles = new IFile[children.length];
         for (int i = 0; i < children.length; i++) {
             iFiles[i] = new ImpFile(children[i]);

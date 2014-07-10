@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class API {
+    public static  int maxErrorReports = 3;
+    private static int numSent = 0;
+
     public static boolean createWorkspace(String host, String owner, String workspace, IContext context, boolean notPublic) {
         PostMethod method;
 
@@ -238,6 +241,13 @@ public class API {
         return orgs;
     }
     static public void uploadCrash(BaseHandler baseHandler, final IContext context, Throwable throwable) {
+        numSent++;
+        if (numSent >= maxErrorReports) {
+            Flog.warn(String.format("Already sent %s errors this session. Not sending any more.", numSent));
+            if (throwable != null) Flog.warn(throwable);
+            return;
+        }
+
         try {
             Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
@@ -250,7 +260,7 @@ public class API {
                 owner = baseHandler.getUrl().owner;
                 workspace = baseHandler.getUrl().workspace;
                 colabDir = context != null ? context.colabDir : "???";
-                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).state.username : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler) baseHandler).state.username : "???";
             }
             method = new PostMethod("/api/log");
             Gson gson = new Gson();
@@ -270,10 +280,11 @@ public class API {
                     }
                 }
             }, "Floobits Crash Reporter").run();
-      } catch (Throwable e) {
+        } catch (Throwable e) {
             try {
                 context.errorMessage(String.format("Couldn't send crash report %s", e));
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
     }
     static public void uploadCrash(IContext context, Throwable throwable) {

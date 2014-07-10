@@ -95,9 +95,6 @@ public class Ignore implements Comparable<Ignore>{
     @SuppressWarnings("UnsafeVfsRecursion")
     public void recurse(Ignore root, String rootPath) {
         @SuppressWarnings("UnsafeVfsRecursion") IFile[] fileChildren = file.getChildren();
-        if (fileChildren == null) {
-            return;
-        }
         for (IFile file : fileChildren) {
             String absPath = file.getPath();
             if (isFlooIgnored(file, absPath))  {

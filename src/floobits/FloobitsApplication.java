@@ -50,6 +50,9 @@ public class FloobitsApplication implements ApplicationComponent {
         if (Settings.canFloobits()) {
           createAccount = false;
         }
+        if (floorcJson != null && floorcJson.MAX_ERROR_REPORTS != null) {
+            API.maxErrorReports = floorcJson.MAX_ERROR_REPORTS;
+        }
         ApplicationInfo instance = ApplicationInfo.getInstance();
         IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
         String version = plugin != null ? plugin.getVersion() : "???";
