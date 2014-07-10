@@ -20,7 +20,7 @@ public abstract class Buf <T> {
     public Encoding encoding;
     public ScheduledFuture timeout;
     public boolean forced_patch = false;
-    protected FlooContext context;
+    protected final FlooContext context;
     protected OutboundRequestHandler outbound;
 
     public Buf(String path, Integer id, T buf, String md5, FlooContext context, OutboundRequestHandler outbound) {
@@ -58,7 +58,7 @@ public abstract class Buf <T> {
             return null;
         }
 
-        return virtualFile.getDocument(context);
+        return context.vFactory.getDocument(virtualFile);
     }
 
     public String toString() {
@@ -97,7 +97,7 @@ public abstract class Buf <T> {
             byte[] decodedContents = encodedContents.getBytes();
             String filePath = context.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
-                VDoc doc = virtualFile.getDocument(context);
+                VDoc doc = context.vFactory.getDocument(virtualFile);
                 String contents = doc == null ? encodedContents : doc.getText();
                 String md5 = DigestUtils.md5Hex(contents);
                 return new TextBuf(filePath, null, contents, md5, context, outbound);

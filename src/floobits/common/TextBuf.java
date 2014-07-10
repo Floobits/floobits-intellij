@@ -1,10 +1,9 @@
 package floobits.common;
 
-import floobits.common.interfaces.FlooContext;
-import floobits.Listener;
 import floobits.common.dmp.FlooDmp;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.dmp.diff_match_patch;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
@@ -41,14 +40,16 @@ public class TextBuf extends Buf <String> {
 
         VDoc d = getVirtualDoc();
         if (d != null) {
-            try {
-                Listener.flooDisable();
-                d.setReadOnly(false);
-                d.setText(buf);
-            } finally {
-                Listener.flooEnable();
+            synchronized (context) {
+                try {
+                    context.setListener(false);
+                    d.setReadOnly(false);
+                    d.setText(buf);
+                } finally {
+                    context.setListener(true);
+                }
+                return;
             }
-            return;
         }
 
         Flog.warn("Tried to write to null document: %s", path);
@@ -73,7 +74,7 @@ public class TextBuf extends Buf <String> {
 
     @Override
     public void send_patch(VFile virtualFile) {
-        VDoc d = virtualFile.getDocument(context);
+        VDoc d = context.vFactory.getDocument(virtualFile);
         if (d == null) {
             Flog.warn("Can't get document to read from disk for sending patch %s", path);
             return;
@@ -129,7 +130,7 @@ public class TextBuf extends Buf <String> {
             getBuf();
             return;
         }
-        VDoc d = virtualFile.getDocument(context);
+        VDoc d = context.vFactory.getDocument(virtualFile);
         if (d == null) {
             Flog.warn("Document not found for %s", virtualFile);
             getBuf();

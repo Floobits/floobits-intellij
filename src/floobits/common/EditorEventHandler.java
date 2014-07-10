@@ -1,7 +1,6 @@
 package floobits.common;
 
 import floobits.common.interfaces.FlooContext;
-import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFactory;
@@ -19,16 +18,14 @@ import java.util.HashSet;
 public class EditorEventHandler {
     private final FlooContext context;
     public final FloobitsState state;
-    private Listener listener;
     private final OutboundRequestHandler outbound;
-    private InboundRequestHandler inbound;
+    private final InboundRequestHandler inbound;
 
     public EditorEventHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
         this.context = context;
         this.state = state;
         this.outbound = outbound;
         this.inbound = inbound;
-        listener = new Listener(this, context);
     }
 
     public void createFile(final VFile virtualFile) {
@@ -48,8 +45,9 @@ public class EditorEventHandler {
     }
 
     public void go() {
-        listener.start();
+        context.listenToEditor(this);
     }
+
     public void rename(String path, String newPath) {
         if (!state.can("patch")) {
             return;
@@ -189,7 +187,7 @@ public class EditorEventHandler {
 
     public void openChat() {
         Flog.info("Showing user window.");
-        context.chatManager.openChat();
+        context.openChat();
     }
     public void openInBrowser() {
         if(!Desktop.isDesktopSupported()) {
@@ -202,12 +200,6 @@ public class EditorEventHandler {
             Flog.warn(error);
         } catch (URISyntaxException error) {
             Flog.warn(error);
-        }
-    }
-    public void shutdown() {
-        if (listener != null) {
-            listener.shutdown();
-            listener = null;
         }
     }
 
@@ -239,17 +231,21 @@ public class EditorEventHandler {
                         if (!state.readOnly && bufByPath.isPopulated()) {
                             return;
                         }
-                        VDoc d = virtualFile.getDocument(context);
-                        if (d == null) {
-                            return;
-                        }
-                        try {
-                            Listener.flooDisable();
-                            d.setReadOnly(false);
-                            d.setText(text);
-                            d.setReadOnly(true);
-                        } finally {
-                            Listener.flooEnable();
+                        synchronized (context) {
+                            try {
+                                context.setListener(false);
+                                VDoc d = context.vFactory.getDocument(virtualFile);
+                                if (d == null) {
+                                    return;
+                                }
+                                d.setReadOnly(false);
+                                d.setText(text);
+                                d.setReadOnly(true);
+                            } catch (Throwable e) {
+                                Flog.warn(e);
+                            } finally {
+                                context.setListener(true);
+                            }
                         }
                     }
                 });

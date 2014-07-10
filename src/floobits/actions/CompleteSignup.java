@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import floobits.common.Constants;
 import floobits.common.PersistentJson;
 import floobits.common.Settings;
-import floobits.common.Utils;
 import floobits.utilities.Flog;
 
 import java.awt.*;
@@ -23,18 +22,18 @@ public class CompleteSignup extends AnAction {
             return;
         }
         if (!Settings.canFloobits()) {
-            Utils.errorMessage("Error, no account details detected. You will have to sign up manually.", project);
+            Flog.errorMessage("Error, no account details detected. You will have to sign up manually.", project);
             return;
         }
         if(!Desktop.isDesktopSupported()) {
-            Utils.errorMessage("Can't use a browser on this system.", project);
+            Flog.errorMessage("Can't use a browser on this system.", project);
             return;
         }
         HashMap<String, HashMap<String, String>> auth = null;
         try {
             auth = Settings.get().auth;
         } catch (Throwable e1) {
-            Utils.errorMessage("Invalid JSON in ~/.floorc.json", project);
+            Flog.errorMessage("Invalid JSON in ~/.floorc.json", project);
             return;
         }
 

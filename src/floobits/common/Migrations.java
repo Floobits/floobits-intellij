@@ -85,9 +85,9 @@ public class Migrations {
         try {
             writer = new PrintWriter(file, "UTF-8");
         } catch (FileNotFoundException e) {
-            Utils.errorMessage("Can't write new .floorc", null);
+            Flog.errorMessage("Can't write new .floorc", null);
         } catch (UnsupportedEncodingException e) {
-            Utils.errorMessage("Can't write new .floorc", null);
+            Flog.errorMessage("Can't write new .floorc", null);
         }
         if (writer == null) {
             return;

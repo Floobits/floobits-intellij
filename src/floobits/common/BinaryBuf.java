@@ -1,8 +1,7 @@
 package floobits.common;
 
-import floobits.common.interfaces.FlooContext;
-import floobits.Listener;
 import floobits.common.handlers.FlooHandler;
+import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
@@ -55,12 +54,16 @@ public class BinaryBuf extends Buf <byte[]> {
                 if (flooHandler == null) {
                     return;
                 }
-
-                Listener.flooDisable();
-                if (!virtualFile.setBytes(buf)) {
-                    Flog.warn("Writing binary content to disk failed. %s", path);
+                synchronized (context) {
+                    try {
+                        context.setListener(false);
+                        if (!virtualFile.setBytes(buf)) {
+                            Flog.warn("Writing binary content to disk failed. %s", path);
+                        }
+                    } finally {
+                        context.setListener(true);
+                    }
                 }
-                Listener.flooEnable();
             }
         });
     }

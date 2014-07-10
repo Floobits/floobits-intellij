@@ -8,7 +8,8 @@ import java.util.HashSet;
  */
 public interface VFactory {
     public VFile findFileByIoFile(File file);
-    public VDoc getDocument(String path);
+    public VDoc getDocument(VFile file);
+    public VDoc getDocument(String relPath);
     public VFile createDirectories(String path);
     public VFile findFileByPath(String path);
     public void removeHighlightsForUser(int userID);

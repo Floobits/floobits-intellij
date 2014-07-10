@@ -297,7 +297,7 @@ public class API {
                 try {
                     apiRequest(method, null, Constants.floobitsDomain);
                 } catch (Throwable e) {
-                    Utils.errorMessage(String.format("Couldn't send crash report %s", e), null);
+                    Flog.errorMessage(String.format("Couldn't send crash report %s", e), null);
                 }
             }
         }, "Floobits User Issue Submitter").run();

@@ -46,7 +46,7 @@ public class FloobitsState {
 
     public void handleRoomInfo(RoomInfoResponse ri) {
         users = ri.users;
-        context.chatManager.setUsers(users);
+        context.setUsers(users);
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
@@ -94,12 +94,12 @@ public class FloobitsState {
     public void addUser(FlooUser flooser) {
         users.put(flooser.user_id, flooser);
         context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client));
-        context.chatManager.setUsers(users);
+        context.setUsers(users);
     }
 
     public void removeUser(int userId) {
         if (users.remove(userId) != null) {
-            context.chatManager.setUsers(users);
+            context.setUsers(users);
         }
         FlooUser u = users.get(userId);
         if (u == null) {

@@ -14,7 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
-import dagger.ObjectGraph;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.impl.IntelliContext;
@@ -56,7 +55,6 @@ public class FloobitsApplication implements ApplicationComponent {
         String version = plugin != null ? plugin.getVersion() : "???";
         String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
         CrashDump.setUA(userAgent, instance.getVersionName());
-        ObjectGraph objectGraph = ObjectGraph.create();
     }
 
     public void disposeComponent() {
@@ -88,7 +86,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Exception e) {
-            Utils.errorMessage(String.format("Invalid url: %s", e), null);
+            Flog.errorMessage(String.format("Invalid url: %s", e), null);
             return;
         }
         SelectFolder.build(f.owner, f.workspace, new RunLater<String>() {
@@ -96,7 +94,7 @@ public class FloobitsApplication implements ApplicationComponent {
             public void run(final String location) {
                 Project projectForPath = getProject(location);
                 if (projectForPath == null) {
-                    Utils.errorMessage("The editor could not open the project :(", null);
+                    Flog.errorMessage("The editor could not open the project :(", null);
                     return;
                 }
                 final IntelliContext context = FloobitsPlugin.getInstance(projectForPath).context;
@@ -125,7 +123,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
         if (context == null || projectForPath != context.project) {
             if (projectForPath == null) {
-                Utils.errorMessage("The editor could not open the project :(", null);
+                Flog.errorMessage("The editor could not open the project :(", null);
                 return;
             }
             context = FloobitsPlugin.getInstance(projectForPath).context;
@@ -150,7 +148,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Throwable e) {
-            Utils.errorMessage(String.format("Invalid url: %s", e), context.project);
+            Flog.errorMessage(String.format("Invalid url: %s", e), context.project);
             return;
         }
 

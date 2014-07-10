@@ -7,7 +7,6 @@ import java.io.InputStream;
  */
 public abstract class VFile {
     public abstract String getPath();
-    public abstract VDoc getDocument(FlooContext context);
     public abstract boolean rename(Object obj, String name);
     public abstract VFile makeFile(String name);
     public abstract boolean move(Object obj, VFile d);

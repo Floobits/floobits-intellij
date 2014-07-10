@@ -5,6 +5,7 @@ import floobits.common.handlers.BaseHandler;
 import floobits.common.handlers.CreateAccountHandler;
 import floobits.common.handlers.FlooHandler;
 import floobits.common.handlers.LinkEditorHandler;
+import floobits.common.protocol.FlooUser;
 import floobits.dialogs.DialogBuilder;
 import floobits.utilities.Flog;
 import io.fletty.bootstrap.Bootstrap;
@@ -311,4 +312,10 @@ public abstract class FlooContext {
     public abstract void chat(String username, String msg, Date messageDate);
 
     public abstract void openChat();
+
+    public abstract void listenToEditor(EditorEventHandler editorEventHandler);
+
+    public abstract void setUsers(Map<Integer, FlooUser> users);
+
+    public abstract void setListener(boolean b);
 }

@@ -3,7 +3,6 @@ package floobits.dialogs;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.common.RunLater;
-import floobits.common.Utils;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
@@ -33,7 +32,7 @@ public class ShareProjectDialog extends DialogWrapper {
         super(project, true);
 
         if (orgs.size() < 1 && project != null) {
-            Utils.errorMessage("Unable to share project, do you have a Floobits account?", project);
+            Flog.errorMessage("Unable to share project, do you have a Floobits account?", project);
             return;
         }
         this.runLater = runLater;

@@ -3,8 +3,10 @@ package floobits.impl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.FlooContext;
+import floobits.common.protocol.FlooUser;
 import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
@@ -12,12 +14,14 @@ import floobits.windows.ChatManager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * I am the link between a project and floobits
  */
 public class IntelliContext extends FlooContext {
 
+    private final Listener listener = new Listener(this);
     public Project project;
     public ChatManager chatManager;
 
@@ -28,7 +32,7 @@ public class IntelliContext extends FlooContext {
     }
 
     public void statusMessage(String message, NotificationType notificationType) {
-        Utils.statusMessage(message, notificationType, project);
+        Flog.statusMessage(message, notificationType, project);
     }
 
     @Override public void loadChatManager() {
@@ -36,7 +40,7 @@ public class IntelliContext extends FlooContext {
     }
 
     @Override public void flashMessage(final String message) {
-        Utils.flashMessage(message, project);
+        Flog.flashMessage(message, project);
     }
 
 
@@ -90,6 +94,19 @@ public class IntelliContext extends FlooContext {
         if (chatManager != null) {
             chatManager.clearUsers();
         }
+        listener.shutdown();
+    }
+
+    @Override
+    public void setUsers(Map<Integer, FlooUser> users) {
+        if (chatManager == null) {
+            return;
+        }
+        chatManager.setUsers(users);
+    }
+
+    public void setListener(boolean b) {
+        listener.isListening.set(b);
     }
 
     @Override
@@ -120,5 +137,10 @@ public class IntelliContext extends FlooContext {
         if (chatManager != null && !chatManager.isOpen()) {
             chatManager.openChat();
         }
+    }
+
+    @Override
+    public void listenToEditor(EditorEventHandler editorEventHandler) {
+        listener.go(editorEventHandler);
     }
 }

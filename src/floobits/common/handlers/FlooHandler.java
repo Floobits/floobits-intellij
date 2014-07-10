@@ -67,7 +67,6 @@ public class FlooHandler extends BaseHandler {
     public void shutdown() {
         super.shutdown();
         context.statusMessage(String.format("Leaving workspace: %s.", url.toString()));
-        editorEventHandler.shutdown();
         state.shutdown();
     }
 }

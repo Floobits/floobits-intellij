@@ -1,11 +1,7 @@
 package floobits.impl;
 
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.common.interfaces.FlooContext;
-import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.utilities.Flog;
 
@@ -26,15 +22,6 @@ public class IntellijFile extends VFile {
     }
 
     @Override
-    public VDoc getDocument(FlooContext context) {
-        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
-        if (document == null) {
-            return null;
-        }
-        return new IntellijDoc(context, document);
-    }
-
-    @Override
     public byte[] getBytes() {
         try {
             return virtualFile.contentsToByteArray();
@@ -42,7 +29,6 @@ public class IntellijFile extends VFile {
             return null;
         }
     }
-
 
     @Override
     public boolean setBytes(byte[] bytes) {

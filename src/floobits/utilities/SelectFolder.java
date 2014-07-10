@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.Constants;
 import floobits.common.RunLater;
-import floobits.common.Utils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -33,7 +32,7 @@ public class SelectFolder {
             return;
         }
         if (vFiles.length > 1) {
-            Utils.errorMessage("You can only select one directory!", null);
+            Flog.errorMessage("You can only select one directory!", null);
             return;
         }
         final String selectedPath = vFiles[0].getPath();

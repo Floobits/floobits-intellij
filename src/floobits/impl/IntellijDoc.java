@@ -7,7 +7,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import floobits.Listener;
 import floobits.common.Constants;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.VDoc;
@@ -18,9 +17,9 @@ import java.util.*;
 
 
 public class IntellijDoc extends VDoc{
-    private IntelliContext context;
-    private Document document;
-    public static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
+    private final IntelliContext context;
+    private final Document document;
+    public final static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
 
     public IntellijDoc(IntelliContext context, Document document) {
         this.context = context;
@@ -45,7 +44,7 @@ public class IntellijDoc extends VDoc{
         if (textLength == 0) {
             return;
         }
-        TextAttributes attributes = new TextAttributes();
+        final TextAttributes attributes = new TextAttributes();
         JBColor color = Colors.getColorForUser(username);
         attributes.setEffectColor(color);
         attributes.setEffectType(EffectType.SEARCH_MATCH);
@@ -72,16 +71,18 @@ public class IntellijDoc extends VDoc{
                 if (editor.isDisposed()) {
                     continue;
                 }
-                MarkupModel markupModel = editor.getMarkupModel();
+                final MarkupModel markupModel = editor.getMarkupModel();
                 RangeHighlighter rangeHighlighter = null;
-                try {
-                    Listener.flooDisable();
-                    rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
-                            attributes, HighlighterTargetArea.EXACT_RANGE);
-                } catch (Throwable e) {
-                    Flog.warn(e);
-                } finally {
-                    Listener.flooEnable();
+                synchronized (context) {
+                    try {
+                        context.setListener(false);
+                        rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
+                                attributes, HighlighterTargetArea.EXACT_RANGE);
+                    } catch (Throwable e) {
+                        Flog.warn(e);
+                    } finally {
+                        context.setListener(true);
+                    }
                 }
                 if (rangeHighlighter == null) {
                     continue;
@@ -121,7 +122,7 @@ public class IntellijDoc extends VDoc{
 
     }
 
-    public void setText(String text) {
+    public void setText(final String text) {
         document.setText(text);
     }
 
@@ -186,23 +187,20 @@ public class IntellijDoc extends VDoc{
             original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
         }
         for (FlooPatchPosition flooPatchPosition : positions) {
-            int start = Math.max(0, flooPatchPosition.start);
+            final int start = Math.max(0, flooPatchPosition.start);
             int end_ld = Math.max(start + flooPatchPosition.end, start);
             end_ld = Math.min(end_ld, document.getTextLength());
-            String contents = Constants.NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
-            Throwable e = null;
-            try {
-                Listener.flooDisable();
-                document.replaceString(start, end_ld, contents);
-            } catch (Throwable exception) {
-                e = exception;
-            } finally {
-                Listener.flooEnable();
-            }
-
-            if (e != null) {
-                Flog.warn(e);
-                return null;
+            final String contents = Constants.NEW_LINE.matcher(flooPatchPosition.text).replaceAll("\n");
+            final int finalEnd_ld = end_ld;
+            synchronized (context) {
+                try {
+                    context.setListener(false);
+                    document.replaceString(start, finalEnd_ld, contents);
+                } catch (Throwable e) {
+                    Flog.warn(e);
+                } finally {
+                    context.setListener(true);
+                }
             }
         }
         String text = document.getText();

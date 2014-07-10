@@ -23,19 +23,41 @@ public class IntellijVFactory implements VFactory {
 
     private final IntelliContext context;
     private final EditorScheduler editor;
+    private final LocalFileSystem instance = LocalFileSystem.getInstance();
 
     public IntellijVFactory(IntelliContext context, EditorScheduler editor) {
         this.context = context;
         this.editor = editor;
     }
 
+    private VirtualFile getVirtualFile(String relPath) {
+        VirtualFile fileByPath = instance.findFileByPath(context.absPath(relPath));
+        if (fileByPath != null && fileByPath.isValid()) {
+            return fileByPath;
+        }
+        return null;
+    }
+
+    public VDoc makeVFile(IntellijFile vFile) {
+        Document document = FileDocumentManager.getInstance().getDocument(vFile.virtualFile);
+        if (document == null) {
+            return null;
+        }
+        return new IntellijDoc(context, document);
+    }
+
     @Override
     public void clearReadOnlyState() {
         for (String path : readOnlyBufferIds) {
-            VDoc document = context.vFactory.getDocument(path);
-            if (document != null) {
-                document.setReadOnly(false);
+            VirtualFile file = getVirtualFile(path);
+            if (file == null) {
+                continue;
             }
+            Document document = FileDocumentManager.getInstance().getDocument(file);
+            if (document == null) {
+                continue;
+            }
+            document.setReadOnly(false);
         }
         readOnlyBufferIds.clear();
     }
@@ -84,7 +106,7 @@ public class IntellijVFactory implements VFactory {
         editor.queue(new Runnable() {
             @Override
             public void run() {
-                VDoc vDoc = file.getDocument(context);
+                VDoc vDoc = getDocument(file);
                 if (vDoc != null) {
                     vDoc.removeHighlight(rangeHighlighters);
                 }
@@ -112,7 +134,6 @@ public class IntellijVFactory implements VFactory {
 
     @Override
     public VFile findFileByPath(String path) {
-        LocalFileSystem instance = LocalFileSystem.getInstance();
         VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
         if (fileByPath != null && fileByPath.isValid()) {
             return new IntellijFile(fileByPath);
@@ -130,19 +151,21 @@ public class IntellijVFactory implements VFactory {
     }
 
     @Override
-    public VDoc getDocument(String path) {
-        String absPath = context.absPath(path);
-
-        VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(absPath);
+    public VDoc getDocument(VFile virtualFile) {
         if (virtualFile == null) {
-            Flog.info("no virtual file for %s", path);
             return null;
         }
-        Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+        Document document = FileDocumentManager.getInstance().getDocument(((IntellijFile) virtualFile).virtualFile);
         if (document == null) {
             return null;
         }
         return new IntellijDoc(context, document);
+    }
+
+    @Override
+    public VDoc getDocument(String relPath) {
+        VFile fileByPath = findFileByPath(context.absPath(relPath));
+        return getDocument(fileByPath);
     }
 
     @Override

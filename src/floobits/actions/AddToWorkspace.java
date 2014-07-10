@@ -4,28 +4,30 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
-import floobits.common.interfaces.FlooContext;
 import floobits.FloobitsPlugin;
 import floobits.IntelliUtils;
 import floobits.common.EditorEventHandler;
-import floobits.common.Utils;
+import floobits.common.interfaces.VFile;
+import floobits.impl.IntelliContext;
+import floobits.impl.IntellijFile;
 
 import java.util.ArrayList;
 
 public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
-        final HashSet<VirtualFile> filesToAdd = new HashSet<VirtualFile>();
+        final HashSet<VFile> filesToAdd = new HashSet<VFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
         if (virtualFiles == null) {
             return;
         }
-        FlooContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        IntelliContext context = FloobitsPlugin.getInstance(e.getProject()).context;
         for (final VirtualFile virtualFile : virtualFiles) {
-            if (filesToAdd.contains(virtualFile)) {
+            IntellijFile intellijFile = new IntellijFile(virtualFile);
+            if (filesToAdd.contains(intellijFile)) {
                 continue;
             }
-            if (!Utils.isSharable(virtualFile)) {
+            if (!IntelliUtils.isSharable(virtualFile)) {
                 context.statusMessage(String.format("Skipped adding %s because it is a special file.", virtualFile.getPath()));
                 continue;
             }
@@ -33,16 +35,16 @@ public class AddToWorkspace extends IsJoinedAction {
                 context.statusMessage(String.format("Skipped adding %s because it is not in %s.", virtualFile.getPath(), context.colabDir));
                 continue;
             }
-            if (context.isIgnored(virtualFile)) {
+            if (context.isIgnored(intellijFile)) {
                 context.statusMessage(String.format("Skipped adding %s because it is ignored.", virtualFile.getPath()));
                 continue;
             }
 
-        ArrayList<VirtualFile> allValidNestedFiles = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
+            ArrayList<VFile> allValidNestedFiles = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
             filesToAdd.addAll(allValidNestedFiles);
         }
 
-        for (VirtualFile virtualFile : filesToAdd) {
+        for (VFile virtualFile : filesToAdd) {
             editorEventHandler.upload(virtualFile);
         }
     }

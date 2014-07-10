@@ -18,8 +18,8 @@ import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
-import floobits.common.interfaces.FlooContext;
 import floobits.common.interfaces.VFile;
+import floobits.impl.IntelliContext;
 import floobits.impl.IntellijDoc;
 import floobits.impl.IntellijFile;
 import floobits.utilities.Flog;
@@ -32,27 +32,20 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
-    private static final AtomicBoolean isListening = new AtomicBoolean(true);
-    private final FlooContext context;
-    private final EditorEventHandler editorManager;
+    public final AtomicBoolean isListening = new AtomicBoolean(false);
+    private final IntelliContext context;
+    private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
-
-    public synchronized static void flooEnable() {
-        isListening.set(true);
-    }
-    public synchronized static void flooDisable() {
-        isListening.set(false);
-    }
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(EditorEventHandler manager, FlooContext context) {
+    public Listener(IntelliContext context) {
         this.context = context;
-        this.editorManager = manager;
     }
 
-    public void start() {
+    public void go(EditorEventHandler manager) {
+        this.editorManager = manager;
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
         em.addDocumentListener(this);
@@ -116,11 +109,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
         }
         editorManager.change(new IntellijFile(virtualFile));
-    }
-
-    @Override
-    public void caretPositionChanged(final CaretEvent event) {
-        sendCaretPosition(event.getEditor());
     }
 
     public void caretAdded(CaretEvent caretEvent) {
@@ -245,6 +233,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     public void beforeAllDocumentsSaving() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
     @Override
     public void beforeDocumentChange(final DocumentEvent event) {
         if (!isListening.get()) {
@@ -259,6 +248,11 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
         Document document = event.getDocument();
         editorManager.beforeChange(new IntellijDoc(context, document));
+    }
+
+    @Override
+    public void caretPositionChanged(final CaretEvent event) {
+        sendCaretPosition(event.getEditor());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package floobits;
 
 import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.interfaces.FlooContext;
@@ -49,5 +50,9 @@ public class IntelliUtils {
             }
         });
         return virtualFiles;
+    }
+
+    public static Boolean isSharable(VirtualFile virtualFile) {
+        return (virtualFile != null  && virtualFile.isValid() && virtualFile.isInLocalFileSystem() && !virtualFile.is(VFileProperty.SPECIAL) && !virtualFile.is(VFileProperty.SYMLINK));
     }
 }

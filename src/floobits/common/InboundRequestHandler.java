@@ -3,9 +3,7 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import floobits.common.interfaces.FlooContext;
-import floobits.Listener;
 import floobits.common.interfaces.VDoc;
 import floobits.common.interfaces.VFile;
 import floobits.common.protocol.FlooPatch;
@@ -19,7 +17,6 @@ import floobits.dialogs.HandleTooBigDialog;
 import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -229,7 +226,7 @@ public class InboundRequestHandler {
                 rule += "*";
                 strings.add(rule);
             }
-            Listener.flooDisable();
+            context.setListener(false);
             FileUtils.writeLines(f, strings);
             VFile fileByIoFile = context.vFactory.findFileByIoFile(f);
             if (fileByIoFile != null) {
@@ -239,7 +236,7 @@ public class InboundRequestHandler {
         } catch (IOException e) {
             Flog.warn(e);
         } finally {
-            Listener.flooEnable();
+            context.setListener(true);
         }
         shouldUpload = false;
     }
