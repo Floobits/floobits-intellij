@@ -107,7 +107,7 @@ public class ImpFile extends IFile {
         VirtualFile[] children = virtualFile.getChildren();
         IFile[] iFiles = new IFile[children.length];
         for (int i = 0; i < children.length; i++) {
-            iFiles[i] = new ImpFile(virtualFile);
+            iFiles[i] = new ImpFile(children[i]);
         }
         return iFiles;
     }
