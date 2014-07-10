@@ -26,6 +26,10 @@ public class ImpDoc extends IDoc {
         this.document = document;
     }
 
+    public String toString() {
+        return document.toString();
+    }
+
     @Override
     public void applyHighlight(String path, int userID, String username, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);

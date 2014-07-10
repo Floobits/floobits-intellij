@@ -16,6 +16,10 @@ public class ImpFile extends IFile {
         this.virtualFile = virtualFile;
     }
 
+    public String toString() {
+        return virtualFile.toString();
+    }
+
     @Override
     public String getPath() {
         return virtualFile.getPath();
