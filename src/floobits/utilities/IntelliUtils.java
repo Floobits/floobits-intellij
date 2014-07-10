@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
-import floobits.impl.ImpFile;
+import floobits.impl.FileImpl;
 
 import java.util.ArrayList;
 
@@ -32,19 +32,19 @@ public class IntelliUtils {
 
     public static ArrayList<IFile> getAllValidNestedFiles(final IContext context, VirtualFile vFile) {
         final ArrayList<IFile> virtualFiles = new ArrayList<IFile>();
-        ImpFile impFile = new ImpFile(vFile);
+        FileImpl fileImpl = new FileImpl(vFile);
 
-        if (!impFile.isDirectory()) {
-            if (impFile.isValid() && !context.isIgnored(impFile)) virtualFiles.add(impFile);
+        if (!fileImpl.isDirectory()) {
+            if (fileImpl.isValid() && !context.isIgnored(fileImpl)) virtualFiles.add(fileImpl);
             return virtualFiles;
         }
 
         VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
             @Override
             public boolean processFile(VirtualFile file) {
-                ImpFile impFile = new ImpFile(file);
-                if (!context.isIgnored(impFile) && !impFile.isDirectory() && impFile.isValid()) {
-                    virtualFiles.add(impFile);
+                FileImpl fileImpl = new FileImpl(file);
+                if (!context.isIgnored(fileImpl) && !fileImpl.isDirectory() && fileImpl.isValid()) {
+                    virtualFiles.add(fileImpl);
                 }
                 return true;
             }

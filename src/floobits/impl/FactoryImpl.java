@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class ImpFactory implements IFactory {
+public class FactoryImpl implements IFactory {
 
-    private final ImpContext context;
+    private final ContextImpl context;
     private final EditorScheduler editor;
     private final LocalFileSystem instance = LocalFileSystem.getInstance();
 
-    public ImpFactory(ImpContext context, EditorScheduler editor) {
+    public FactoryImpl(ContextImpl context, EditorScheduler editor) {
         this.context = context;
         this.editor = editor;
     }
@@ -38,12 +38,12 @@ public class ImpFactory implements IFactory {
         return null;
     }
 
-    public IDoc makeVFile(ImpFile vFile) {
+    public IDoc makeVFile(FileImpl vFile) {
         Document document = FileDocumentManager.getInstance().getDocument(vFile.virtualFile);
         if (document == null) {
             return null;
         }
-        return new ImpDoc(context, document);
+        return new DocImpl(context, document);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ImpFactory implements IFactory {
 
     @Override
     public void removeHighlightsForUser(int userID) {
-        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = ImpDoc.highlights.get(userID);
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = DocImpl.highlights.get(userID);
         if (integerRangeHighlighterHashMap == null) {
             return;
         }
@@ -92,7 +92,7 @@ public class ImpFactory implements IFactory {
 
     @Override
     public void removeHighlight(Integer userId, final String path, final IFile file) {
-        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = ImpDoc.highlights.get(userId);
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = DocImpl.highlights.get(userId);
         if (file == null) {
             return;
         }
@@ -116,7 +116,7 @@ public class ImpFactory implements IFactory {
 
     @Override
     public void clearHighlights() {
-        HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = ImpDoc.highlights;
+        HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = DocImpl.highlights;
         if (highlights.size() <= 0) {
             return;
         }
@@ -136,7 +136,7 @@ public class ImpFactory implements IFactory {
     public IFile findFileByPath(String path) {
         VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
         if (fileByPath != null && fileByPath.isValid()) {
-            return new ImpFile(fileByPath);
+            return new FileImpl(fileByPath);
         }
         return null;
     }
@@ -147,7 +147,7 @@ public class ImpFactory implements IFactory {
         if (fileByIoFile == null) {
             return null;
         }
-        return new ImpFile(fileByIoFile);
+        return new FileImpl(fileByIoFile);
     }
 
     @Override
@@ -155,11 +155,11 @@ public class ImpFactory implements IFactory {
         if (virtualFile == null) {
             return null;
         }
-        Document document = FileDocumentManager.getInstance().getDocument(((ImpFile) virtualFile).virtualFile);
+        Document document = FileDocumentManager.getInstance().getDocument(((FileImpl) virtualFile).virtualFile);
         if (document == null) {
             return null;
         }
-        return new ImpDoc(context, document);
+        return new DocImpl(context, document);
     }
 
     @Override
@@ -181,6 +181,6 @@ public class ImpFactory implements IFactory {
             Flog.warn("Failed to create directories %s %s", path);
             return null;
         }
-        return new ImpFile(directory);
+        return new FileImpl(directory);
     }
 }

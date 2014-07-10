@@ -5,7 +5,7 @@ import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
-import floobits.impl.ImpContext;
+import floobits.impl.ContextImpl;
 
 import javax.swing.*;
 
@@ -18,7 +18,7 @@ public class JoinWorkspace extends CanFloobits {
         if (floobitsPlugin == null) {
             return;
         }
-        ImpContext context = floobitsPlugin.context;
+        ContextImpl context = floobitsPlugin.context;
         FlooUrl floourl = DotFloo.read(context.project.getBasePath());
         if (floourl != null) {
             url = floourl.toString();

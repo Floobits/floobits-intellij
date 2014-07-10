@@ -13,7 +13,7 @@ import floobits.common.interfaces.IContext;
 import floobits.common.FlooUrl;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
-import floobits.impl.ImpContext;
+import floobits.impl.ContextImpl;
 
 import java.util.*;
 
@@ -23,7 +23,7 @@ public class ChatManager {
     protected ToolWindow toolWindow;
     protected ChatForm chatForm;
 
-    public ChatManager (ImpContext context) {
+    public ChatManager (ContextImpl context) {
        this.context = context;
        chatForm = new ChatForm(context);
        this.createChatWindow(context.project);

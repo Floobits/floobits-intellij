@@ -4,7 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import floobits.common.interfaces.IContext;
 import floobits.common.API;
-import floobits.impl.ImpContext;
+import floobits.impl.ContextImpl;
 
 public class ThreadSafe {
     public static void later(final Runnable runnable) {
@@ -12,7 +12,7 @@ public class ThreadSafe {
     }
 
     public static void write(IContext context, final Runnable runnable) {
-        final ImpContext context1 = (ImpContext)context;
+        final ContextImpl context1 = (ContextImpl)context;
         final long l = System.currentTimeMillis();
         later(new Runnable() {
             @Override

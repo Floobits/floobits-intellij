@@ -5,11 +5,11 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.hash.HashSet;
 import floobits.FloobitsPlugin;
+import floobits.impl.ContextImpl;
 import floobits.utilities.IntelliUtils;
 import floobits.common.EditorEventHandler;
 import floobits.common.interfaces.IFile;
-import floobits.impl.ImpContext;
-import floobits.impl.ImpFile;
+import floobits.impl.FileImpl;
 
 import java.util.ArrayList;
 
@@ -21,10 +21,10 @@ public class AddToWorkspace extends IsJoinedAction {
         if (virtualFiles == null) {
             return;
         }
-        ImpContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        ContextImpl context = FloobitsPlugin.getInstance(e.getProject()).context;
         for (final VirtualFile virtualFile : virtualFiles) {
-            ImpFile impFile = new ImpFile(virtualFile);
-            if (filesToAdd.contains(impFile)) {
+            FileImpl fileImpl = new FileImpl(virtualFile);
+            if (filesToAdd.contains(fileImpl)) {
                 continue;
             }
             if (!IntelliUtils.isSharable(virtualFile)) {
@@ -35,7 +35,7 @@ public class AddToWorkspace extends IsJoinedAction {
                 context.statusMessage(String.format("Skipped adding %s because it is not in %s.", virtualFile.getPath(), context.colabDir));
                 continue;
             }
-            if (context.isIgnored(impFile)) {
+            if (context.isIgnored(fileImpl)) {
                 context.statusMessage(String.format("Skipped adding %s because it is ignored.", virtualFile.getPath()));
                 continue;
             }

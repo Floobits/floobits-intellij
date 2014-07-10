@@ -19,9 +19,9 @@ import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
 import floobits.common.interfaces.IFile;
-import floobits.impl.ImpContext;
-import floobits.impl.ImpDoc;
-import floobits.impl.ImpFile;
+import floobits.impl.ContextImpl;
+import floobits.impl.DocImpl;
+import floobits.impl.FileImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
 import floobits.utilities.IntelliUtils;
@@ -34,14 +34,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
     public final AtomicBoolean isListening = new AtomicBoolean(false);
-    private final ImpContext context;
+    private final ContextImpl context;
     private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(ImpContext context) {
+    public Listener(ContextImpl context) {
         this.context = context;
     }
 
@@ -109,7 +109,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.change(new ImpFile(virtualFile));
+        editorManager.change(new FileImpl(virtualFile));
     }
 
     public void caretAdded(CaretEvent caretEvent) {
@@ -145,7 +145,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         for (VFileEvent event : events) {
-            IFile virtualFile = new ImpFile(event.getFile());
+            IFile virtualFile = new FileImpl(event.getFile());
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
                 context.refreshIgnores();
                 break;
@@ -195,7 +195,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                editorManager.createFile(new ImpFile(copiedFile));
+                editorManager.createFile(new FileImpl(copiedFile));
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
@@ -248,7 +248,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
 
         Document document = event.getDocument();
-        editorManager.beforeChange(new ImpDoc(context, document));
+        editorManager.beforeChange(new DocImpl(context, document));
     }
 
     @Override

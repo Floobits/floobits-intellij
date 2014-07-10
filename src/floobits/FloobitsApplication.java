@@ -16,7 +16,7 @@ import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
-import floobits.impl.ImpContext;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
 import floobits.utilities.ThreadSafe;
@@ -64,7 +64,7 @@ public class FloobitsApplication implements ApplicationComponent {
         // TODO: insert component disposal logic here
     }
 
-    public synchronized void projectOpened(ImpContext context) {
+    public synchronized void projectOpened(ContextImpl context) {
         if (!createAccount) {
             return;
         }
@@ -100,7 +100,7 @@ public class FloobitsApplication implements ApplicationComponent {
                     Flog.errorMessage("The editor could not open the project :(", null);
                     return;
                 }
-                final ImpContext context = FloobitsPlugin.getInstance(projectForPath).context;
+                final ContextImpl context = FloobitsPlugin.getInstance(projectForPath).context;
                 ThreadSafe.write(context, new Runnable() {
                     @Override
                     public void run() {
@@ -117,7 +117,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
     }
 
-    public void joinWorkspace(ImpContext context, final FlooUrl flooUrl, final String location) {
+    public void joinWorkspace(ContextImpl context, final FlooUrl flooUrl, final String location) {
 //        if (!API.workspaceExists(flooUrl, context)) {
 //            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
 //            return;
@@ -132,7 +132,7 @@ public class FloobitsApplication implements ApplicationComponent {
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
-        final ImpContext finalContext = context;
+        final ContextImpl finalContext = context;
         ThreadSafe.write(context, new Runnable() {
             @Override
             public void run() {
@@ -145,7 +145,7 @@ public class FloobitsApplication implements ApplicationComponent {
         });
     }
 
-    public void joinWorkspace(final ImpContext context, final String url) {
+    public void joinWorkspace(final ContextImpl context, final String url) {
         final FlooUrl f;
 
         try {

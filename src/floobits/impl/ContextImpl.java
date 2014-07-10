@@ -19,16 +19,16 @@ import java.util.Map;
 /**
  * I am the link between a project and floobits
  */
-public class ImpContext extends IContext {
+public class ContextImpl extends IContext {
 
     private final Listener listener = new Listener(this);
     public Project project;
     public ChatManager chatManager;
 
-    public ImpContext(Project project) {
+    public ContextImpl(Project project) {
         super();
         this.project = project;
-        this.iFactory = new ImpFactory(this, editor);
+        this.iFactory = new FactoryImpl(this, editor);
     }
 
     public void statusMessage(String message, NotificationType notificationType) {
@@ -76,7 +76,7 @@ public class ImpContext extends IContext {
 
     @Override
     protected void shareProjectDialog(String name, List<String> orgs, final String host, final boolean _private_, final String projectPath) {
-        final ImpContext context = this;
+        final ContextImpl context = this;
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
             @Override
             public void run(ShareProjectDialog dialog) {

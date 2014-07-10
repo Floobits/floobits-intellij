@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.common.interfaces.IContext;
 import floobits.FloobitsPlugin;
-import floobits.impl.ImpContext;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,7 +72,7 @@ public class CreateAccount extends DialogWrapper {
         super.doCancelAction();
         IContext context;
         if (project == null) {
-            context = new ImpContext(null);
+            context = new ContextImpl(null);
         } else {
             context = FloobitsPlugin.getInstance(project).context;
         }
@@ -84,7 +84,7 @@ public class CreateAccount extends DialogWrapper {
         super.doOKAction();
         IContext context;
         if (project == null) {
-            context = new ImpContext(null);
+            context = new ContextImpl(null);
         } else {
             context = FloobitsPlugin.getInstance(project).context;
         }

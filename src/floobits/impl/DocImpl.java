@@ -16,12 +16,12 @@ import floobits.utilities.Flog;
 import java.util.*;
 
 
-public class ImpDoc extends IDoc {
-    private final ImpContext context;
+public class DocImpl extends IDoc {
+    private final ContextImpl context;
     private final Document document;
     public final static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
 
-    public ImpDoc(ImpContext context, Document document) {
+    public DocImpl(ContextImpl context, Document document) {
         this.context = context;
         this.document = document;
     }
@@ -171,12 +171,12 @@ public class ImpDoc extends IDoc {
     }
 
     @Override
-    public ImpFile getVirtualFile() {
+    public FileImpl getVirtualFile() {
         VirtualFile file = FileDocumentManager.getInstance().getFile(document);
         if (file == null) {
             return null;
         }
-        return new ImpFile(file);
+        return new FileImpl(file);
     }
 
     public String patch(FlooPatchPosition[] positions) {

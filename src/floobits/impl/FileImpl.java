@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class ImpFile extends IFile {
+public class FileImpl extends IFile {
     final protected VirtualFile virtualFile;
 
-    public ImpFile(VirtualFile virtualFile) {
+    public FileImpl(VirtualFile virtualFile) {
         this.virtualFile = virtualFile;
     }
 
@@ -76,13 +76,13 @@ public class ImpFile extends IFile {
             Flog.warn(e);
             return null;
         }
-        return new ImpFile(childDirectory);
+        return new FileImpl(childDirectory);
     }
 
     @Override
     public boolean move(Object obj, IFile d) {
         try {
-            virtualFile.move(obj, ((ImpFile)d).virtualFile);
+            virtualFile.move(obj, ((FileImpl)d).virtualFile);
         } catch (Throwable e) {
             Flog.warn(e);
             return false;
@@ -114,7 +114,7 @@ public class ImpFile extends IFile {
         }
         IFile[] iFiles = new IFile[children.length];
         for (int i = 0; i < children.length; i++) {
-            iFiles[i] = new ImpFile(children[i]);
+            iFiles[i] = new FileImpl(children[i]);
         }
         return iFiles;
     }
