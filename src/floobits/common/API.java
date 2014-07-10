@@ -25,51 +25,10 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class API {
-    public static class CrashDump implements Serializable {
-        public String owner;
-        public String workspace;
-        public String dir;
-        public String subject;
-        public String username;
-        public String useragent;
-        public HashMap<String, String> message = new HashMap<String, String>();
-
-        public CrashDump(Throwable e, String owner, String workspace, String dir, String username) {
-            this.owner = owner;
-            this.workspace = workspace;
-            this.dir = dir;
-            this.username = username;
-            message.put("sendingAt", String.format("%s", new Date().getTime()));
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            message.put("stack", sw.toString());
-            message.put("description", e.getMessage());
-            setContextInfo("%s died%s!");
-        }
-
-        public CrashDump(String description, String username) {
-            this.username = username;
-            message.put("sendingAt", String.format("%s", new Date().getTime()));
-            message.put("description", description);
-            setContextInfo("%s submitted an issues%s!");
-        }
-
-        protected void setContextInfo(String subjectText) {
-            ApplicationInfo instance = ApplicationInfo.getInstance();
-            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-            String version = plugin != null ? plugin.getVersion() : "???";
-            useragent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-            subject = String.format(subjectText, instance.getVersionName(), username != null ? " for " + username : "");
-        }
-    }
-
-
     public static boolean createWorkspace(String host, String owner, String workspace, FlooContext context, boolean notPublic) {
         PostMethod method;
 
@@ -110,7 +69,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.vFactory.openFile(context, new File(Settings.floorcJsonPath));
+                return context.vFactory.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));

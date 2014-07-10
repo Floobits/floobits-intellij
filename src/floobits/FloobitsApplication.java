@@ -1,7 +1,11 @@
 package floobits;
 
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileChooser.impl.FileChooserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -47,7 +51,11 @@ public class FloobitsApplication implements ApplicationComponent {
         if (Settings.canFloobits()) {
           createAccount = false;
         }
-
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+        String version = plugin != null ? plugin.getVersion() : "???";
+        String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
+        CrashDump.setUA(userAgent, instance.getVersionName());
         ObjectGraph objectGraph = ObjectGraph.create();
     }
 
