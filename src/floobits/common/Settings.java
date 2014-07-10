@@ -3,7 +3,7 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import floobits.common.interfaces.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -33,7 +33,7 @@ public class Settings {
        }
     }
 
-    public static void write(FlooContext context, FloorcJson floorcJson) {
+    public static void write(IContext context, FloorcJson floorcJson) {
         File file = new File(floorcJsonPath);
         if (!file.exists()) {
             boolean newFile;

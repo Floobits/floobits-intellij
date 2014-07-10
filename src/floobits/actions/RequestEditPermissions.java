@@ -3,7 +3,7 @@ package floobits.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 
 public class RequestEditPermissions extends IsJoinedAction {
     @Override

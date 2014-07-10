@@ -9,21 +9,21 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import floobits.common.interfaces.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.common.FlooUrl;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
-import floobits.impl.IntelliContext;
+import floobits.impl.ImpContext;
 
 import java.util.*;
 
 
 public class ChatManager {
-    protected FlooContext context;
+    protected IContext context;
     protected ToolWindow toolWindow;
     protected ChatForm chatForm;
 
-    public ChatManager (IntelliContext context) {
+    public ChatManager (ImpContext context) {
        this.context = context;
        chatForm = new ChatForm(context);
        this.createChatWindow(context.project);

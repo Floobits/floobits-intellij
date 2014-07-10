@@ -1,11 +1,11 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.common.interfaces.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
 import floobits.common.EditorEventHandler;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
 public abstract class IsJoinedAction extends RequiresAccountAction {
@@ -16,7 +16,7 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
     public void actionPerformedHasAccount(AnActionEvent e) {
         FloobitsPlugin floobitsPlugin;
         FlooHandler flooHandler;
-        FlooContext context = null;
+        IContext context = null;
         try {
             floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
             if (floobitsPlugin == null) {

@@ -1,10 +1,11 @@
 package floobits.common;
 
-import floobits.common.interfaces.FlooContext;
-import floobits.common.handlers.FlooHandler;
-import floobits.common.interfaces.VDoc;
-import floobits.common.interfaces.VFactory;
-import floobits.common.interfaces.VFile;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.interfaces.IContext;
+import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.interfaces.IDoc;
+import floobits.common.interfaces.IFactory;
+import floobits.common.interfaces.IFile;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 
@@ -16,19 +17,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class EditorEventHandler {
-    private final FlooContext context;
+    private final IContext context;
     public final FloobitsState state;
     private final OutboundRequestHandler outbound;
     private final InboundRequestHandler inbound;
 
-    public EditorEventHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
+    public EditorEventHandler(IContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
         this.context = context;
         this.state = state;
         this.outbound = outbound;
         this.inbound = inbound;
     }
 
-    public void createFile(final VFile virtualFile) {
+    public void createFile(final IFile virtualFile) {
         if (context.isIgnored(virtualFile)) {
             return;
         }
@@ -71,7 +72,7 @@ public class EditorEventHandler {
         outbound.renameBuf(buf, newRelativePath);
     }
 
-    public void change(VFile file) {
+    public void change(IFile file) {
         String filePath = file.getPath();
         if (!state.can("patch")) {
             return;
@@ -147,7 +148,7 @@ public class EditorEventHandler {
         outbound.setPerms("set", userId, perms);
     }
 
-    public void upload(VFile virtualFile) {
+    public void upload(IFile virtualFile) {
         if (state.readOnly) {
             return;
         }
@@ -182,7 +183,7 @@ public class EditorEventHandler {
     }
 
     public void clearHighlights (){
-        context.vFactory.clearHighlights();
+        context.iFactory.clearHighlights();
     }
 
     public void openChat() {
@@ -203,8 +204,8 @@ public class EditorEventHandler {
         }
     }
 
-    public void beforeChange(VDoc doc) {
-        final VFile virtualFile = doc.getVirtualFile();
+    public void beforeChange(IDoc doc) {
+        final IFile virtualFile = doc.getVirtualFile();
         final String path = virtualFile.getPath();
         final Buf bufByPath = state.get_buf_by_path(path);
         if (bufByPath == null) {
@@ -220,7 +221,7 @@ public class EditorEventHandler {
         }
         context.statusMessage(msg);
         doc.setReadOnly(true);
-        VFactory.readOnlyBufferIds.add(bufByPath.path);
+        IFactory.readOnlyBufferIds.add(bufByPath.path);
         final String text = doc.getText();
         context.setTimeout(0, new Runnable() {
             @Override
@@ -234,7 +235,7 @@ public class EditorEventHandler {
                         synchronized (context) {
                             try {
                                 context.setListener(false);
-                                VDoc d = context.vFactory.getDocument(virtualFile);
+                                IDoc d = context.iFactory.getDocument(virtualFile);
                                 if (d == null) {
                                     return;
                                 }

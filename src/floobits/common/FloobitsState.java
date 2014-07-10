@@ -1,9 +1,10 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import floobits.common.interfaces.FlooContext;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
-import floobits.common.protocol.send.RoomInfoResponse;
+import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
@@ -25,10 +26,10 @@ public class FloobitsState {
     public boolean readOnly = false;
     public String username = "";
     protected HashSet<Integer> requests = new HashSet<Integer>();
-    private FlooContext context;
+    private IContext context;
     public FlooUrl url;
 
-    public FloobitsState(FlooContext context, FlooUrl flooUrl) {
+    public FloobitsState(IContext context, FlooUrl flooUrl) {
         this.context = context;
         url = flooUrl;
     }

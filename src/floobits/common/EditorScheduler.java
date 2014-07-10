@@ -1,6 +1,7 @@
 package floobits.common;
 
-import floobits.common.interfaces.FlooContext;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import floobits.utilities.ThreadSafe;
 
@@ -8,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EditorScheduler {
     public final ConcurrentLinkedQueue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
-    private final FlooContext context;
+    private final IContext context;
     // buffer ids are not removed from readOnlyBufferIds
     private final Runnable dequeueRunnable = new Runnable() {
         @Override
@@ -47,7 +48,7 @@ public class EditorScheduler {
         }
     }
 
-    public EditorScheduler(FlooContext context) {
+    public EditorScheduler(IContext context) {
         this.context = context;
     }
 

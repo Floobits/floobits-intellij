@@ -1,22 +1,25 @@
 package floobits.common;
 
-import floobits.common.interfaces.FlooContext;
-import floobits.common.interfaces.VFile;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.buf.TextBuf;
+import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IFile;
+import floobits.common.protocol.Connection;
 import floobits.common.protocol.FlooPatch;
-import floobits.common.protocol.receive.*;
-import floobits.common.protocol.send.*;
+import floobits.common.protocol.json.receive.*;
+import floobits.common.protocol.json.send.*;
 import floobits.utilities.Flog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class OutboundRequestHandler {
-    private final FlooContext context;
+    private final IContext context;
     private final FloobitsState state;
     private final Connection conn;
     protected Integer requestId = 0;
 
-    public OutboundRequestHandler(FlooContext context, FloobitsState state, Connection conn) {
+    public OutboundRequestHandler(IContext context, FloobitsState state, Connection conn) {
         this.context = context;
         this.state = state;
         this.conn = conn;
@@ -46,7 +49,7 @@ public class OutboundRequestHandler {
         conn.write(req);
     }
 
-    void createBuf(VFile virtualFile) {
+    void createBuf(IFile virtualFile) {
         Buf buf = Buf.createBuf(virtualFile, context, this);
         if (buf == null) {
             return;

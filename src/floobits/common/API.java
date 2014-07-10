@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import floobits.common.interfaces.FlooContext;
-import floobits.common.handlers.BaseHandler;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.interfaces.IContext;
+import floobits.common.protocol.handlers.BaseHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class API {
-    public static boolean createWorkspace(String host, String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String host, String owner, String workspace, IContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -69,7 +69,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.vFactory.openFile(new File(Settings.floorcJsonPath));
+                return context.iFactory.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
@@ -79,7 +79,7 @@ public class API {
                 return false;
         }
     }
-    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
+    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, IContext context) {
 
         PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
         Gson gson = new Gson();
@@ -102,7 +102,7 @@ public class API {
         return method.getStatusCode() < 300;
     }
 
-    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
+    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, IContext context) {
 
         HttpMethod method;
         try {
@@ -124,7 +124,7 @@ public class API {
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 
-    public static boolean workspaceExists(final FlooUrl f, FlooContext context) {
+    public static boolean workspaceExists(final FlooUrl f, IContext context) {
         if (f == null) {
             return false;
         }
@@ -143,11 +143,11 @@ public class API {
         return true;
     }
 
-    static private HttpMethod getWorkspaceMethod(FlooUrl f, FlooContext context) throws IOException {
+    static private HttpMethod getWorkspaceMethod(FlooUrl f, IContext context) throws IOException {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace)), context, f.host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException {
+    static public HttpMethod apiRequest(HttpMethod method, IContext context, String host) throws IOException, IllegalArgumentException {
         Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
@@ -206,7 +206,7 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(String host, FlooContext context) {
+    static public List<String> getOrgsCanAdmin(String host, IContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
@@ -237,7 +237,7 @@ public class API {
 
         return orgs;
     }
-    static public void uploadCrash(BaseHandler baseHandler, final FlooContext context, Throwable throwable) {
+    static public void uploadCrash(BaseHandler baseHandler, final IContext context, Throwable throwable) {
         try {
             Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
@@ -276,7 +276,7 @@ public class API {
             } catch (Throwable ignored) {}
         }
     }
-    static public void uploadCrash(FlooContext context, Throwable throwable) {
+    static public void uploadCrash(IContext context, Throwable throwable) {
         uploadCrash(context.handler, context, throwable);
     }
     static public void sendUserIssue(String description, String username) {

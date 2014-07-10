@@ -3,14 +3,17 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.common.interfaces.FlooContext;
-import floobits.common.interfaces.VDoc;
-import floobits.common.interfaces.VFile;
+import floobits.common.protocol.buf.BinaryBuf;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.buf.TextBuf;
+import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IDoc;
+import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
-import floobits.common.protocol.receive.*;
-import floobits.common.protocol.send.CreateBufResponse;
-import floobits.common.protocol.send.RoomInfoResponse;
+import floobits.common.protocol.json.receive.*;
+import floobits.common.protocol.json.send.CreateBufResponse;
+import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.dialogs.DisconnectNoticeDialog;
 import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.HandleTooBigDialog;
@@ -29,7 +32,7 @@ import java.util.*;
 
 
 public class InboundRequestHandler {
-    private FlooContext context;
+    private IContext context;
     private final FloobitsState state;
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
@@ -39,7 +42,7 @@ public class InboundRequestHandler {
         room_info, get_buf, patch, highlight, saved, join, part, create_buf, ack,
         request_perms, msg, rename_buf, term_stdin, term_stdout, delete_buf, perms, ping
     }
-    public InboundRequestHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, boolean shouldUpload) {
+    public InboundRequestHandler(IContext context, FloobitsState state, OutboundRequestHandler outbound, boolean shouldUpload) {
         this.context = context;
         editor = context.editor;
         this.state = state;
@@ -173,7 +176,7 @@ public class InboundRequestHandler {
 
         HashSet<String> paths = new HashSet<String>();
         for (Ignore ig : allIgnores) {
-            for (VFile virtualFile : ig.files)
+            for (IFile virtualFile : ig.files)
                 paths.add(context.toProjectRelPath(virtualFile.getPath()));
         }
         for (Map.Entry entry : ri.bufs.entrySet()) {
@@ -200,7 +203,7 @@ public class InboundRequestHandler {
 
 
         for (String path : paths) {
-            VFile fileByPath = context.vFactory.findFileByPath(context.absPath(path));
+            IFile fileByPath = context.iFactory.findFileByPath(context.absPath(path));
             if (fileByPath == null || !fileByPath.isValid()) {
                 Flog.warn(String.format("path is no longer a valid virtual file"));
                 continue;
@@ -228,7 +231,7 @@ public class InboundRequestHandler {
             }
             context.setListener(false);
             FileUtils.writeLines(f, strings);
-            VFile fileByIoFile = context.vFactory.findFileByIoFile(f);
+            IFile fileByIoFile = context.iFactory.findFileByIoFile(f);
             if (fileByIoFile != null) {
                 fileByIoFile.refresh();
                 ignoreTree.addRules(fileByIoFile);
@@ -258,7 +261,7 @@ public class InboundRequestHandler {
         editor.queue(buf, new RunLater<Buf>() {
                 @Override
                 public void run(Buf buf) {
-                    final VFile foundFile = context.vFactory.findFileByPath(oldPath);
+                    final IFile foundFile = context.iFactory.findFileByPath(oldPath);
                     if (foundFile == null) {
                         Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
                         return;
@@ -286,7 +289,7 @@ public class InboundRequestHandler {
                         Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
                         return;
                     }
-                    VFile directory = context.vFactory.createDirectories(newParentDirectoryPath);
+                    IFile directory = context.iFactory.createDirectories(newParentDirectoryPath);
                     if (directory == null) {
                         return;
                     }
@@ -334,7 +337,7 @@ public class InboundRequestHandler {
         }
         Integer userId = id.getAsInt();
         state.removeUser(userId);
-        context.vFactory.removeHighlightsForUser(userId);
+        context.iFactory.removeHighlightsForUser(userId);
     }
 
     void _on_delete_buf(JsonObject obj) {
@@ -357,7 +360,7 @@ public class InboundRequestHandler {
                     return;
                 }
                 String absPath = context.absPath(buf.path);
-                final VFile fileByPath = context.vFactory.findFileByPath(absPath);
+                final IFile fileByPath = context.iFactory.findFileByPath(absPath);
 
                 if (fileByPath == null) {
                     return;
@@ -399,11 +402,11 @@ public class InboundRequestHandler {
         editor.queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf arg) {
-                VDoc vDoc = context.vFactory.getDocument(buf.path);
-                if (vDoc == null) {
+                IDoc iDoc = context.iFactory.getDocument(buf.path);
+                if (iDoc == null) {
                     return;
                 }
-                vDoc.applyHighlight(buf.path, res.user_id, state.getUsername(res.user_id), force, res.ranges);
+                iDoc.applyHighlight(buf.path, res.user_id, state.getUsername(res.user_id), force, res.ranges);
             }
         });
     }
@@ -413,7 +416,7 @@ public class InboundRequestHandler {
         final Buf buf = this.state.bufs.get(id);
         editor.queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
-                VDoc document = context.vFactory.getDocument(buf.path);
+                IDoc document = context.iFactory.getDocument(buf.path);
                 if (document == null) {
                     return;
                 }
@@ -465,7 +468,7 @@ public class InboundRequestHandler {
         if (state.can("patch") != previousState) {
             if (state.can("patch")) {
                 context.statusMessage("You state.can now edit this workspace.");
-                context.vFactory.clearReadOnlyState();
+                context.iFactory.clearReadOnlyState();
             } else {
                 context.errorMessage("You state.can no longer edit this workspace.");
             }

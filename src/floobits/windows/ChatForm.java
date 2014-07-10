@@ -1,9 +1,9 @@
 package floobits.windows;
 
 import com.intellij.ui.JBColor;
-import floobits.common.interfaces.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.common.RunLater;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 import floobits.dialogs.SetPermissionsDialog;
 import floobits.utilities.Colors;
@@ -71,10 +71,10 @@ public class ChatForm {
     private JTextPane messages;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
-    private FlooContext context;
+    private IContext context;
     private boolean shouldScrollToBottom;
 
-    public ChatForm (FlooContext context) {
+    public ChatForm (IContext context) {
         super();
         this.context = context;
         clients.setModel(clientModel);

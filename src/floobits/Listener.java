@@ -18,12 +18,13 @@ import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
-import floobits.common.interfaces.VFile;
-import floobits.impl.IntelliContext;
-import floobits.impl.IntellijDoc;
-import floobits.impl.IntellijFile;
+import floobits.common.interfaces.IFile;
+import floobits.impl.ImpContext;
+import floobits.impl.ImpDoc;
+import floobits.impl.ImpFile;
 import floobits.utilities.Flog;
 import floobits.utilities.GetPath;
+import floobits.utilities.IntelliUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -33,14 +34,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
     public final AtomicBoolean isListening = new AtomicBoolean(false);
-    private final IntelliContext context;
+    private final ImpContext context;
     private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
-    public Listener(IntelliContext context) {
+    public Listener(ImpContext context) {
         this.context = context;
     }
 
@@ -108,7 +109,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.change(new IntellijFile(virtualFile));
+        editorManager.change(new ImpFile(virtualFile));
     }
 
     public void caretAdded(CaretEvent caretEvent) {
@@ -144,7 +145,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         for (VFileEvent event : events) {
-            VFile virtualFile = new IntellijFile(event.getFile());
+            IFile virtualFile = new ImpFile(event.getFile());
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
                 context.refreshIgnores();
                 break;
@@ -163,8 +164,8 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 String oldPath = oldParent.getPath();
                 String newPath = newParent.getPath();
                 VirtualFile virtualFile = event.getFile();
-                ArrayList<VFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
-                for (VFile file: files) {
+                ArrayList<IFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
+                for (IFile file: files) {
                     String newFilePath = file.getPath();
                     String oldFilePath = newFilePath.replace(newPath, oldPath);
                     editorManager.rename(oldFilePath, newFilePath);
@@ -194,20 +195,20 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                editorManager.createFile(new IntellijFile(copiedFile));
+                editorManager.createFile(new ImpFile(copiedFile));
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
-                ArrayList<VFile> createdFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
-                for (final VFile createdFile : createdFiles) {
+                ArrayList<IFile> createdFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (final IFile createdFile : createdFiles) {
                     editorManager.createFile(createdFile);
                 }
                 continue;
             }
             if (event instanceof VFileContentChangeEvent) {
-                ArrayList<VFile> changedFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
-                for (VFile file : changedFiles) {
+                ArrayList<IFile> changedFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (IFile file : changedFiles) {
                     editorManager.change(file);
                 }
             }
@@ -247,7 +248,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             return;
 
         Document document = event.getDocument();
-        editorManager.beforeChange(new IntellijDoc(context, document));
+        editorManager.beforeChange(new ImpDoc(context, document));
     }
 
     @Override
