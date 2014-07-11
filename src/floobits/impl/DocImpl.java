@@ -30,6 +30,108 @@ public class DocImpl extends IDoc {
         return document.toString();
     }
 
+    protected LinkedList<RangeHighlighter> getHighlightsForUser(String path, int userID) {
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userID);
+        if (integerRangeHighlighterHashMap == null) {
+            return null;
+        }
+        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(path);
+        if (rangeHighlighters == null) {
+            return null;
+        }
+        return rangeHighlighters;
+    }
+
+    protected void removeHighlights(MarkupModel markupModel, LinkedList<RangeHighlighter> appliedHighlighters){
+        if (appliedHighlighters == null) {
+            return;
+        }
+        RangeHighlighter[] existingHighlighters = markupModel.getAllHighlighters();
+        for (RangeHighlighter rangeHighlighter: appliedHighlighters) {
+            for (RangeHighlighter markupHighlighter : existingHighlighters) {
+                if (rangeHighlighter == markupHighlighter) {
+                    markupModel.removeHighlighter(rangeHighlighter);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void removeHighlight(Integer userId, final String path) {
+        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userId);
+        if (integerRangeHighlighterHashMap == null) {
+            return;
+        }
+        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(path);
+        if (rangeHighlighters == null) {
+            return;
+        }
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
+        for (Editor editor : editors) {
+            if (editor.isDisposed()) {
+                continue;
+            }
+            removeHighlights(editor.getMarkupModel(), rangeHighlighters);
+        }
+        rangeHighlighters.clear();
+    }
+
+    protected void applyHighlight(ArrayList<ArrayList<Integer>> ranges, String username, String path, Boolean force, int textLength, int userID) {
+        final TextAttributes attributes = new TextAttributes();
+        JBColor color = Colors.getColorForUser(username);
+        attributes.setEffectColor(color);
+        attributes.setEffectType(EffectType.SEARCH_MATCH);
+        attributes.setBackgroundColor(color);
+        attributes.setForegroundColor(Colors.getFGColor());
+
+        LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(path, userID);
+        LinkedList<RangeHighlighter> newHighlighters = new LinkedList<RangeHighlighter>();
+
+        boolean first = true;
+        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
+
+        for (List<Integer> range : ranges) {
+            int start = range.get(0);
+            int end = range.get(1);
+            if (start == end) {
+                end += 1;
+            }
+            if (end > textLength) {
+                end = textLength;
+            }
+            if (start >= textLength) {
+                start = textLength - 1;
+            }
+            for (Editor editor : editors) {
+                if (editor.isDisposed()) {
+                    continue;
+                }
+                final MarkupModel markupModel = editor.getMarkupModel();
+                removeHighlights(markupModel, appliedHighlighters);
+
+                RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
+
+                newHighlighters.add(rangeHighlighter);
+                if (force && first) {
+                    CaretModel caretModel = editor.getCaretModel();
+                    caretModel.moveToOffset(start);
+                    LogicalPosition position = caretModel.getLogicalPosition();
+                    ScrollingModel scrollingModel = editor.getScrollingModel();
+                    scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
+                    first = false;
+                }
+            }
+
+            HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userID);
+
+            if (integerRangeHighlighterHashMap == null) {
+                integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
+                highlights.put(userID, integerRangeHighlighterHashMap);
+            }
+            integerRangeHighlighterHashMap.put(path, newHighlighters);
+        }
+    }
+
     @Override
     public void applyHighlight(String path, int userID, String username, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);
@@ -48,66 +150,15 @@ public class DocImpl extends IDoc {
         if (textLength == 0) {
             return;
         }
-        final TextAttributes attributes = new TextAttributes();
-        JBColor color = Colors.getColorForUser(username);
-        attributes.setEffectColor(color);
-        attributes.setEffectType(EffectType.SEARCH_MATCH);
-        attributes.setBackgroundColor(color);
-        attributes.setForegroundColor(Colors.getFGColor());
-
-        boolean first = true;
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-        LinkedList<RangeHighlighter> rangeHighlighters = new LinkedList<RangeHighlighter>();
-        for (List<Integer> range : ranges) {
-            int start = range.get(0);
-            int end = range.get(1);
-            if (start == end) {
-                end += 1;
+        synchronized (context) {
+            try {
+                context.setListener(false);
+                applyHighlight(ranges, username, path, force, textLength, userID);
+            } catch (Throwable e) {
+                Flog.warn(e);
+            } finally {
+                context.setListener(true);
             }
-            if (end > textLength) {
-                end = textLength;
-            }
-            if (start >= textLength) {
-                start = textLength - 1;
-            }
-
-            for (Editor editor : editors) {
-                if (editor.isDisposed()) {
-                    continue;
-                }
-                final MarkupModel markupModel = editor.getMarkupModel();
-                RangeHighlighter rangeHighlighter = null;
-                synchronized (context) {
-                    try {
-                        context.setListener(false);
-                        rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100,
-                                attributes, HighlighterTargetArea.EXACT_RANGE);
-                    } catch (Throwable e) {
-                        Flog.warn(e);
-                    } finally {
-                        context.setListener(true);
-                    }
-                }
-                if (rangeHighlighter == null) {
-                    continue;
-                }
-                rangeHighlighters.add(rangeHighlighter);
-                if (force && first) {
-                    CaretModel caretModel = editor.getCaretModel();
-                    caretModel.moveToOffset(start);
-                    LogicalPosition position = caretModel.getLogicalPosition();
-                    ScrollingModel scrollingModel = editor.getScrollingModel();
-                    scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
-                    first = false;
-                }
-            }
-            HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userID);
-
-            if (integerRangeHighlighterHashMap == null) {
-                integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
-                highlights.put(userID, integerRangeHighlighterHashMap);
-            }
-            integerRangeHighlighterHashMap.put(path, rangeHighlighters);
         }
     }
 
@@ -133,28 +184,6 @@ public class DocImpl extends IDoc {
     @Override
     public String getText() {
         return document.getText();
-    }
-
-    @Override
-    public void removeHighlight(Object obj) {
-        final LinkedList<RangeHighlighter> rangeHighlighters = (LinkedList<RangeHighlighter>) obj;
-        Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-        for (Editor editor : editors) {
-            if (editor.isDisposed()) {
-                continue;
-            }
-            MarkupModel markupModel = editor.getMarkupModel();
-            RangeHighlighter[] highlights = markupModel.getAllHighlighters();
-
-            for (RangeHighlighter rangeHighlighter: rangeHighlighters) {
-                for (RangeHighlighter markupHighlighter : highlights) {
-                    if (rangeHighlighter == markupHighlighter) {
-                        markupModel.removeHighlighter(rangeHighlighter);
-                    }
-                }
-            }
-        }
-        rangeHighlighters.clear();
     }
 
     @Override

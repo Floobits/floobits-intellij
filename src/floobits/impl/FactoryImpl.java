@@ -85,31 +85,19 @@ public class FactoryImpl implements IFactory {
     }
 
     @Override
-    public void removeHighlight(Integer userId, final String path) {
-        IFile iFile = context.iFactory.findFileByPath(path);
-        removeHighlight(userId, path, iFile);
-    }
-
-    @Override
-    public void removeHighlight(Integer userId, final String path, final IFile file) {
-        HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = DocImpl.highlights.get(userId);
-        if (file == null) {
-            return;
-        }
-        if (integerRangeHighlighterHashMap == null) {
-            return;
-        }
-        final LinkedList<RangeHighlighter> rangeHighlighters = integerRangeHighlighterHashMap.get(path);
-        if (rangeHighlighters == null) {
+    public void removeHighlight(final Integer userId, final String path) {
+        final IFile iFile = findFileByPath(path);
+        if (iFile == null) {
             return;
         }
         editor.queue(new Runnable() {
             @Override
             public void run() {
-                IDoc iDoc = getDocument(file);
-                if (iDoc != null) {
-                    iDoc.removeHighlight(rangeHighlighters);
+                IDoc iDoc = getDocument(iFile);
+                if (iDoc == null) {
+                    return;
                 }
+                iDoc.removeHighlight(userId, path);
             }
         });
     }

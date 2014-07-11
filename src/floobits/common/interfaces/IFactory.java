@@ -13,7 +13,6 @@ public interface IFactory {
     public IFile createDirectories(String path);
     public IFile findFileByPath(String path);
     public void removeHighlightsForUser(int userID);
-    public void removeHighlight(Integer userId, final String path, final IFile file);
     public void removeHighlight(Integer userId, final String path);
     boolean openFile(File file);
     public void clearHighlights();

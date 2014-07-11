@@ -55,6 +55,8 @@ public abstract class IContext {
             if (loopGroup != null) {
                 schedule = loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
             }
+        } catch(Throwable e) {
+            Flog.warn(e);
         } finally {
             lock.readLock().unlock();
         }

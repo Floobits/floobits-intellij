@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 
 abstract public class IDoc {
-    public abstract void removeHighlight(Object obj);
+    public abstract void removeHighlight(Integer userId, final String path);
     public abstract void applyHighlight(String path, int userID, String username, Boolean force, ArrayList<ArrayList<Integer>> ranges);
     public abstract void save();
     public abstract String getText();
