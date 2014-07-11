@@ -23,8 +23,15 @@ public class Migrations {
         FloorcJson floorcJson = new FloorcJson();
         String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
         HashMap<String, String> settings = new HashMap<String, String>();
+        FileReader fileReader;
+
         try {
-            br = new BufferedReader(new FileReader(floorcPath));
+            fileReader = new FileReader(floorcPath);
+        } catch (FileNotFoundException e) {
+            return;
+        }
+        try {
+            br = new BufferedReader(fileReader);
             String line = br.readLine();
 
             while (line != null) {

@@ -31,6 +31,9 @@ public class TextBuf extends Buf<String> {
 
     public void read () {
         IDoc d = getVirtualDoc();
+        if (d == null) {
+            return;
+        }
         this.buf = d.getText();
         this.md5 = DigestUtils.md5Hex(this.buf);
     }

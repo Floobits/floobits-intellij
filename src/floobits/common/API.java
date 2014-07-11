@@ -283,8 +283,7 @@ public class API {
         } catch (Throwable e) {
             try {
                 context.errorMessage(String.format("Couldn't send crash report %s", e));
-            } catch (Throwable ignored) {
-            }
+            } catch (Throwable ignored) {}
         }
     }
     static public void uploadCrash(IContext context, Throwable throwable) {

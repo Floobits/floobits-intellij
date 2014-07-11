@@ -68,6 +68,9 @@ public class Settings {
         } catch (Throwable e) {
             return false;
         }
+        if (auth == null) {
+            return false;
+        }
         for (String host : auth.keySet()) {
             if (isAuthComplete(auth.get(host))) {
                 return true;

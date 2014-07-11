@@ -142,6 +142,6 @@ public class ContextImpl extends IContext {
 
     @Override
     public void listenToEditor(EditorEventHandler editorEventHandler) {
-        listener.go(editorEventHandler);
+        listener.setEditorManager(editorEventHandler);
     }
 }

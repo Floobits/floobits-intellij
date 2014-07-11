@@ -39,14 +39,22 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private VirtualFileAdapter virtualFileAdapter;
     private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
+    private boolean started = false;
 
 
     public Listener(ContextImpl context) {
         this.context = context;
     }
 
-    public void go(EditorEventHandler manager) {
-        this.editorManager = manager;
+    public void setEditorManager(EditorEventHandler editorManager) {
+        this.editorManager = editorManager;
+        if (!started) {
+            start();
+            started = true;
+        }
+    }
+
+    public void start() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
         em.addDocumentListener(this);
