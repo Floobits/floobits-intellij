@@ -23,7 +23,6 @@ public class Settings {
         try {
             string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
-            Flog.warn(e);
             return new FloorcJson();
         }
         try {
