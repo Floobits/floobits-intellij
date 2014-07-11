@@ -81,6 +81,9 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     public void shutdown() {
+        if (!started) {
+            return;
+        }
         connection.disconnect();
         em.removeSelectionListener(this);
         em.removeDocumentListener(this);

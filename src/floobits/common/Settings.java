@@ -23,6 +23,7 @@ public class Settings {
         try {
             string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
+            Flog.log("No floorc.json found");
             return new FloorcJson();
         }
         try {
@@ -61,7 +62,7 @@ public class Settings {
     }
 
     public static Boolean canFloobits() {
-        HashMap<String, HashMap<String, String>> auth = null;
+        HashMap<String, HashMap<String, String>> auth;
         try {
             auth = get().auth;
         } catch (Throwable e) {

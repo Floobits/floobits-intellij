@@ -36,28 +36,38 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
-        Migrations.migrateFloorc();
-        FloorcJson floorcJson = null;
+//        avoid throwing at all costs because the plugin is disabled!
         try {
-            floorcJson = Settings.get();
+            Migrations.migrateFloorc();
+            FloorcJson floorcJson = null;
+            try {
+                floorcJson = Settings.get();
+            } catch (Throwable e) {
+                Flog.warn(e);
+            }
+            Set<String> strings = null;
+            if (floorcJson != null && floorcJson.auth != null) {
+                strings = floorcJson.auth.keySet();
+            }
+            if ((strings != null ? strings.size() : 0) == 1) {
+                Constants.defaultHost = (String) strings.toArray()[0];
+            }
+            if (Settings.canFloobits()) {
+                createAccount = false;
+            }
+            if (floorcJson != null && floorcJson.MAX_ERROR_REPORTS != null) {
+                API.maxErrorReports = floorcJson.MAX_ERROR_REPORTS;
+            }
+            ApplicationInfo instance = ApplicationInfo.getInstance();
+            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+            String version = plugin != null ? plugin.getVersion() : "???";
+            String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
+            CrashDump.setUA(userAgent, instance.getVersionName());
         } catch (Throwable e) {
             Flog.warn(e);
+            API.uploadCrash(null, null, e);
         }
-        Set<String> strings = floorcJson != null ? floorcJson.auth.keySet() : null;
-        if ((strings != null ? strings.size() : 0) == 1) {
-            Constants.defaultHost = (String) strings.toArray()[0];
-        }
-        if (Settings.canFloobits()) {
-          createAccount = false;
-        }
-        if (floorcJson != null && floorcJson.MAX_ERROR_REPORTS != null) {
-            API.maxErrorReports = floorcJson.MAX_ERROR_REPORTS;
-        }
-        ApplicationInfo instance = ApplicationInfo.getInstance();
-        IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-        String version = plugin != null ? plugin.getVersion() : "???";
-        String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-        CrashDump.setUA(userAgent, instance.getVersionName());
+
     }
 
     public void disposeComponent() {
