@@ -4,8 +4,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
-import floobits.utilities.GetPath;
+import floobits.impl.ContextImpl;
+import floobits.impl.FactoryImpl;
 
 
 public class Summon extends IsJoinedAction {
@@ -17,12 +19,13 @@ public class Summon extends IsJoinedAction {
             return;
         }
         Document document = editor.getDocument();
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                int offset = editor.getCaretModel().getOffset();
-                editorEventHandler.summon(path, offset);
-            }
-        });
+        ContextImpl context = FloobitsPlugin.getInstance(e.getProject()).context;
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(document);
+        if (path == null) {
+            return;
+        }
+        int offset = editor.getCaretModel().getOffset();
+        editorEventHandler.summon(path, offset);
     }
 }

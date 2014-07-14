@@ -265,7 +265,7 @@ public abstract class IContext {
         return ignoreTree.isIgnored(f, path, toProjectRelPath(path), f.isDirectory());
     }
 
-    public void shutdown() {
+    public synchronized void shutdown() {
         lock.writeLock().lock();
         try {
             if (handler != null) {

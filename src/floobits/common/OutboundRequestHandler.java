@@ -96,7 +96,7 @@ public class OutboundRequestHandler {
         conn.write(new RenameBuf(b.id, newRelativePath));
     }
 
-    public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon) {
+    public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon, boolean following) {
         if (!state.can("highlight")) {
             return;
         }
@@ -104,7 +104,7 @@ public class OutboundRequestHandler {
             Flog.info("Not sending highlight. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
-        conn.write(new FlooHighlight(b, textRanges, summon, state.stalking));
+        conn.write(new FlooHighlight(b, textRanges, summon, following));
     }
 
     public void summon(String current, Integer offset) {

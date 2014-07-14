@@ -21,9 +21,9 @@ import floobits.common.Ignore;
 import floobits.common.interfaces.IFile;
 import floobits.impl.ContextImpl;
 import floobits.impl.DocImpl;
+import floobits.impl.FactoryImpl;
 import floobits.impl.FileImpl;
 import floobits.utilities.Flog;
-import floobits.utilities.GetPath;
 import floobits.utilities.IntelliUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,24 +37,16 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private final ContextImpl context;
     private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
-    private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
-    private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
-    private boolean started = false;
+    private MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
+    private EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
 
 
     public Listener(ContextImpl context) {
         this.context = context;
     }
 
-    public void setEditorManager(EditorEventHandler editorManager) {
+    public synchronized void start(final EditorEventHandler editorManager) {
         this.editorManager = editorManager;
-        if (!started) {
-            start();
-            started = true;
-        }
-    }
-
-    public void start() {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
         em.addDocumentListener(this);
@@ -80,16 +72,23 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         VirtualFileManager.getInstance().addVirtualFileListener(virtualFileAdapter);
     }
 
-    public void shutdown() {
-        if (!started) {
-            return;
+    public synchronized void shutdown() {
+        if (connection != null) {
+            connection.disconnect();
+            connection = null;
         }
-        connection.disconnect();
-        em.removeSelectionListener(this);
-        em.removeDocumentListener(this);
-        em.removeCaretListener(this);
-        em.removeVisibleAreaListener(this);
-        VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
+        if (em != null) {
+            em.removeSelectionListener(this);
+            em.removeDocumentListener(this);
+            em.removeCaretListener(this);
+            em.removeVisibleAreaListener(this);
+            em = null;
+        }
+        if (virtualFileAdapter != null) {
+            VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
+            virtualFileAdapter = null;
+        }
+
     }
 
     @Override
@@ -99,12 +98,12 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                editorManager.save(path);
-            }
-        });
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(document);
+        if (path == null) {
+            return;
+        }
+        editorManager.save(path);
     }
 
 
@@ -129,25 +128,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     public void caretRemoved(CaretEvent caretEvent) {
         // Not in use.
-    }
-
-    @Override
-    public void selectionChanged(final SelectionEvent event) {
-        if (!isListening.get()) {
-            return;
-        }
-        Document document = event.getEditor().getDocument();
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                TextRange[] textRanges = event.getNewRanges();
-                ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
-                for(TextRange r : textRanges) {
-                    ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
-                }
-                editorManager.changeSelection(path, ranges);
-            }
-        });
     }
 
     @Override
@@ -273,23 +253,31 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     private void sendCaretPosition(Editor editor) {
-        if (!isListening.get()) {
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(editor.getDocument());
+        if (path == null) {
             return;
         }
-        Document document = editor.getDocument();
-        final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                if (editors.length <= 0) {
-                    return;
-                }
-                Editor editor = editors[0];
-                ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
-                Integer offset = editor.getCaretModel().getOffset();
-                range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                editorManager.changeSelection(path, range);
-            }
-        });
+        ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
+        Integer offset = editor.getCaretModel().getOffset();
+        range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
+        editorManager.changeSelection(path, range, isListening.get());
+    }
+
+    @Override
+    public void selectionChanged(final SelectionEvent event) {
+        Document document = event.getEditor().getDocument();
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(document);
+        if (path == null) {
+            return;
+        }
+
+        TextRange[] textRanges = event.getNewRanges();
+        ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
+        for(TextRange r : textRanges) {
+            ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
+        }
+        editorManager.changeSelection(path, ranges, isListening.get());
     }
 }

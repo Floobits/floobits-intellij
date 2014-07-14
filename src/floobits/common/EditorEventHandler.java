@@ -93,9 +93,9 @@ public class EditorEventHandler {
         }
     }
 
-    public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges) {
+    public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges, boolean following) {
         Buf buf = state.get_buf_by_path(path);
-        outbound.highlight(buf, textRanges, false);
+        outbound.highlight(buf, textRanges, false, following);
     }
 
     public void save(String path) {
