@@ -133,17 +133,23 @@ public class DocImpl extends IDoc {
     }
 
     @Override
-    public void applyHighlight(String path, int userID, String username, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
+    public void applyHighlight(String path, int userID, String username, Boolean stalking, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);
-        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+        final VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
 
-        if (force && virtualFile != null) {
-            if (username != null) {
-                context.statusMessage(String.format("%s has summoned you to %s", username, virtualFile.getPath()));
+        if ((force || stalking) && virtualFile != null && virtualFile.isValid()) {
+            boolean spam = false;
+            if (!manager.isFileOpen(virtualFile) || !Arrays.asList(manager.getSelectedFiles()).contains(virtualFile)) {
+                spam = true;
             }
-            if (virtualFile.isValid()) {
-                manager.openFile(virtualFile, true, true);
+            if (spam && username.length() > 0) {
+                if (force) {
+                    context.statusMessage(String.format("%s has summoned you!", username));
+                } else {
+                    context.statusMessage(String.format("You are following %s!", username));
+                }
             }
+            manager.openFile(virtualFile, true, true);
         }
 
         int textLength = document.getTextLength();
