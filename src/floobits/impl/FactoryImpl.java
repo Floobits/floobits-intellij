@@ -38,6 +38,28 @@ public class FactoryImpl implements IFactory {
         return null;
     }
 
+    public String getPathForDoc(Document document) {
+        if (document == null) {
+            return null;
+        }
+        VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
+        if (virtualFile == null) {
+            return null;
+        }
+
+        String path;
+        try {
+            path = virtualFile.getPath();
+        } catch (NullPointerException e) {
+            return null;
+        }
+        if (!context.isShared(path)) {
+            return null;
+        }
+
+        return path;
+    }
+
     public IDoc makeVFile(FileImpl vFile) {
         Document document = FileDocumentManager.getInstance().getDocument(vFile.virtualFile);
         if (document == null) {

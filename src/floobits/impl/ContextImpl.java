@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class ContextImpl extends IContext {
 
-    private final Listener listener = new Listener(this);
+    private Listener listener = new Listener(this);
     public Project project;
     public ChatManager chatManager;
 
@@ -90,12 +90,17 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         super.shutdown();
         if (chatManager != null) {
             chatManager.clearUsers();
         }
-        listener.shutdown();
+        try {
+            listener.shutdown();
+        } catch (Throwable e) {
+            Flog.warn(e);
+        }
+        listener = new Listener(this);
     }
 
     @Override
@@ -142,6 +147,6 @@ public class ContextImpl extends IContext {
 
     @Override
     public void listenToEditor(EditorEventHandler editorEventHandler) {
-        listener.setEditorManager(editorEventHandler);
+        listener.start(editorEventHandler);
     }
 }
