@@ -15,6 +15,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
+import floobits.common.protocol.json.send.InitialBase;
 import floobits.dialogs.CreateAccount;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
@@ -62,6 +63,7 @@ public class FloobitsApplication implements ApplicationComponent {
             String version = plugin != null ? plugin.getVersion() : "???";
             String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
             CrashDump.setUA(userAgent, instance.getVersionName());
+            InitialBase.client = instance.getVersionName();
         } catch (Throwable e) {
             Flog.warn(e);
             API.uploadCrash(null, null, e);

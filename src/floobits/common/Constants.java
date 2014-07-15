@@ -13,4 +13,5 @@ public class Constants {
     static public String defaultHost = "floobits.com";
     final static public int defaultPort = 3448;
     public static final Pattern NEW_LINE = Pattern.compile("\\r\\n?", Pattern.DOTALL);
+    final static public int TOO_MANY_BIG_DIRS = 50;
 }

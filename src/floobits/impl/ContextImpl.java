@@ -9,14 +9,13 @@ import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
-
-import floobits.dialogs.DialogBuilder;
-import floobits.dialogs.SelectAccount;
-import floobits.dialogs.ShareProjectDialog;
+import floobits.dialogs.*;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
 
+import java.text.NumberFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -172,6 +171,54 @@ public class ContextImpl extends IContext {
     @Override
     public void dialog(String title, String body, RunLater<Boolean> runLater) {
         DialogBuilder.build(title, body, runLater);
+    }
+
+    @Override
+    public void dialogDisconnect(int _tooMuch, int _howMany) {
+        NumberFormat numberFormat = NumberFormat.getNumberInstance();
+        String howMany = numberFormat.format(_howMany);
+        String tooMuch = numberFormat.format(_tooMuch);
+        String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
+        DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new Runnable() {
+            @Override
+            public void run() {
+                shutdown();
+            }
+        }, String.format("%s We limit it to %d and you have %s big directories.", notice, Constants.TOO_MANY_BIG_DIRS, howMany));
+        disconnectNoticeDialog.createCenterPanel();
+        disconnectNoticeDialog.show();
+    }
+
+    @Override
+    public void dialogPermsRequest(final String username, final RunLater<String> runLater) {
+        final ContextImpl context = this;
+        mainThread(new Runnable() {
+            @Override
+            public void run() {
+                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(username, context, runLater);
+                d.createCenterPanel();
+                d.show();
+            }
+        });
+    }
+
+    @Override
+    public boolean dialogTooBig(LinkedList<Ignore> tooBigIgnores) {
+        HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(tooBigIgnores);
+        handleTooBigDialog.createCenterPanel();
+        handleTooBigDialog.show();
+        return handleTooBigDialog.getExitCode() == 1;
+    }
+
+    @Override
+    public void dialogResolveConflicts(final Runnable stompLocal, final Runnable stompRemote, final boolean readOnly, final Runnable flee, final String[] conflictedPathsArray) {
+        mainThread(new Runnable() {
+            @Override
+            public void run() {
+                ResolveConflictsDialog dialog = new ResolveConflictsDialog(stompLocal, stompRemote, readOnly, flee, conflictedPathsArray);
+                dialog.createCenterPanel();
+                dialog.show();
+            }});
     }
 
     @Override

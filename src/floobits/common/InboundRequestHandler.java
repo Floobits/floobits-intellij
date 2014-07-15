@@ -14,10 +14,6 @@ import floobits.common.protocol.buf.TextBuf;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.CreateBufResponse;
 import floobits.common.protocol.json.send.RoomInfoResponse;
-import floobits.dialogs.DisconnectNoticeDialog;
-import floobits.dialogs.HandleRequestPermsRequestDialog;
-import floobits.dialogs.HandleTooBigDialog;
-import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -26,7 +22,6 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.text.NumberFormat;
 import java.util.*;
 
 
@@ -78,19 +73,20 @@ public class InboundRequestHandler {
         if (conflictedPaths.size() <= 0) {
             return;
         }
+
         String[] conflictedPathsArray = conflictedPaths.toArray(new String[conflictedPaths.size()]);
-        ResolveConflictsDialog dialog = new ResolveConflictsDialog(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        for (Buf buf : conflicts) {
-                            outbound.getBuf(buf.id);
-                        }
-                        for (Buf buf : missing) {
-                            outbound.getBuf(buf.id);
-                        }
-                    }
-                }, new Runnable() {
+        Runnable stompLocal = new Runnable() {
+            @Override
+            public void run() {
+                for (Buf buf : conflicts) {
+                    outbound.getBuf(buf.id);
+                }
+                for (Buf buf : missing) {
+                    outbound.getBuf(buf.id);
+                }
+            }
+        };
+        Runnable stompRemote = new Runnable() {
             @Override
             public void run() {
                 for (Buf buf : conflicts) {
@@ -100,17 +96,16 @@ public class InboundRequestHandler {
                     outbound.deleteBuf(buf, false);
                 }
             }
-        }, state.readOnly,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        context.shutdown();
-                    }
-                }, conflictedPathsArray
-        );
-        dialog.createCenterPanel();
-        dialog.show();
+        };
+        Runnable flee = new Runnable() {
+            @Override
+            public void run() {
+                context.shutdown();
+            }
+        };
+        context.dialogResolveConflicts(stompLocal, stompRemote, state.readOnly, flee, conflictedPathsArray);
     }
+
     private void initialUpload(RoomInfoResponse ri) {
         context.statusMessage("Overwriting remote files and uploading new ones.");
         context.flashMessage("Overwriting remote files and uploading new ones.");
@@ -138,36 +133,15 @@ public class InboundRequestHandler {
             tooBigIgnores.add(ig);
         }
         if (tooBigIgnores.size() > 0) {
-            int TOO_MANY_BIG_DIRS = 50;
-            if (tooBigIgnores.size() > TOO_MANY_BIG_DIRS) {
-                NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                String howMany = numberFormat.format(tooBigIgnores.size());
-                String tooMuch = numberFormat.format(ri.max_size/1000);
-                String notice = String.format("You have too many directories that are over %s MB to upload with Floobits.", tooMuch);
-                DisconnectNoticeDialog disconnectNoticeDialog = new DisconnectNoticeDialog(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.shutdown();
-                    }
-                }, String.format("%s We limit it to %d and you have %s big directories.", notice, TOO_MANY_BIG_DIRS, howMany));
-                disconnectNoticeDialog.createCenterPanel();
-                disconnectNoticeDialog.show();
+            if (tooBigIgnores.size() > Constants.TOO_MANY_BIG_DIRS) {
+                context.dialogDisconnect(ri.max_size/1000, tooBigIgnores.size());
                 return;
             }
-            final Boolean[] shouldContinue = new Boolean[1];
-            // shouldContinue[0] is null when user closes dialog instead of clicking a button:
-            shouldContinue[0] = false;
-            HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(new RunLater<Boolean>() {
-                @Override
-                public void run(Boolean arg) {
-                    shouldContinue[0] = arg;
-                }
-            }, tooBigIgnores);
+            boolean shouldContinue;
 
-            handleTooBigDialog.createCenterPanel();
-            handleTooBigDialog.show();
+            shouldContinue = context.dialogTooBig(tooBigIgnores);
 
-            if (!shouldContinue[0]) {
+            if (!shouldContinue) {
                 context.shutdown();
                 return;
             }
@@ -308,18 +282,10 @@ public class InboundRequestHandler {
             Flog.info("Unknown user for id %s. Not handling request_perms event. %d", userId);
             return;
         }
-        context.mainThread(new Runnable() {
+        context.dialogPermsRequest(u.username, new RunLater<String>() {
             @Override
-            public void run() {
-                HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context, new RunLater<String>() {
-                    @Override
-                    public void run(String action) {
-                        String[] perms = new String[]{"edit_room"};
-                        outbound.setPerms(action, userId, perms);
-                    }
-                });
-                d.createCenterPanel();
-                d.show();
+            public void run(String action) {
+                outbound.setPerms(action, userId, new String[]{"edit_room"});
             }
         });
     }

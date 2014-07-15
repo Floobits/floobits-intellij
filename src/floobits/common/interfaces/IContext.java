@@ -314,4 +314,8 @@ public abstract class IContext {
     public abstract void readThread(final Runnable runnable);
     public abstract void writeThread(final Runnable runnable);
     public abstract void dialog(String title, String body, RunLater<Boolean> runLater);
+    public abstract void dialogDisconnect(int tooMuch, int howMany);
+    public abstract void dialogPermsRequest(String username, RunLater<String> perms);
+    public abstract boolean dialogTooBig(LinkedList<Ignore> tooBigIgnores);
+    public abstract void dialogResolveConflicts(Runnable stompLocal, Runnable stompRemote, boolean readOnly, Runnable flee, String[] conflictedPathsArray);
 }
