@@ -9,6 +9,8 @@ import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+
+import floobits.dialogs.DialogBuilder;
 import floobits.dialogs.SelectAccount;
 import floobits.dialogs.ShareProjectDialog;
 import floobits.utilities.Flog;
@@ -165,6 +167,11 @@ public class ContextImpl extends IContext {
                 }, "Floobits", null);
             }
         });
+    }
+
+    @Override
+    public void dialog(String title, String body, RunLater<Boolean> runLater) {
+        DialogBuilder.build(title, body, runLater);
     }
 
     @Override
