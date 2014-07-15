@@ -7,7 +7,6 @@ import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -37,7 +36,7 @@ public class BinaryBuf extends Buf <byte[]> {
     }
 
     public void write() {
-        ThreadSafe.write(context, new Runnable() {
+        context.writeThread(new Runnable() {
             @Override
             public void run() {
                 if (!isPopulated()) {

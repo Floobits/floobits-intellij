@@ -6,8 +6,10 @@ import floobits.common.protocol.handlers.CreateAccountHandler;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.handlers.LinkEditorHandler;
 import floobits.common.protocol.FlooUser;
+
 import floobits.dialogs.DialogBuilder;
 import floobits.utilities.Flog;
+
 import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.util.concurrent.ScheduledFuture;
@@ -296,28 +298,19 @@ public abstract class IContext {
     public Ignore getIgnoreTree() {
         return ignoreTree;
     }
-
     public abstract void loadChatManager();
-
     public abstract void flashMessage(String message);
-
     public abstract void warnMessage(String message);
-
     public abstract void statusMessage(String message);
-
     public abstract void errorMessage(String message);
-
     public abstract Object getActualContext();
-
     protected abstract String selectAccount(String[] keys);
-
     public abstract void chat(String username, String msg, Date messageDate);
-
     public abstract void openChat();
-
     public abstract void listenToEditor(EditorEventHandler editorEventHandler);
-
     public abstract void setUsers(Map<Integer, FlooUser> users);
-
     public abstract void setListener(boolean b);
+    public abstract void mainThread(final Runnable runnable);
+    public abstract void readThread(final Runnable runnable);
+    public abstract void writeThread(final Runnable runnable);
 }

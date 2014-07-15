@@ -2,12 +2,14 @@ package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import floobits.common.Constants;
+import floobits.common.FlooUrl;
+import floobits.common.FloorcJson;
+import floobits.common.Settings;
 import floobits.common.interfaces.IContext;
-import floobits.common.*;
 import floobits.common.protocol.Connection;
 import floobits.common.protocol.json.send.FlooRequestCredentials;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 
 import java.awt.*;
 import java.io.IOException;
@@ -78,7 +80,7 @@ public class LinkEditorHandler extends BaseHandler {
         if (runnable == null) {
             return;
         }
-        ThreadSafe.read(context, runnable);
+        context.readThread(runnable);
     }
 
     protected void openBrowser() {

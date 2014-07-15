@@ -3,14 +3,14 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.common.protocol.buf.BinaryBuf;
-import floobits.common.protocol.buf.Buf;
-import floobits.common.protocol.buf.TextBuf;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooPatch;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.buf.BinaryBuf;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.buf.TextBuf;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.CreateBufResponse;
 import floobits.common.protocol.json.send.RoomInfoResponse;
@@ -19,7 +19,6 @@ import floobits.dialogs.HandleRequestPermsRequestDialog;
 import floobits.dialogs.HandleTooBigDialog;
 import floobits.dialogs.ResolveConflictsDialog;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -309,7 +308,7 @@ public class InboundRequestHandler {
             Flog.info("Unknown user for id %s. Not handling request_perms event. %d", userId);
             return;
         }
-        ThreadSafe.later(new Runnable() {
+        context.mainThread(new Runnable() {
             @Override
             public void run() {
                 HandleRequestPermsRequestDialog d = new HandleRequestPermsRequestDialog(u.username, context, new RunLater<String>() {
@@ -497,10 +496,10 @@ public class InboundRequestHandler {
         });
     }
     void _on_room_info(final JsonObject obj) {
-        ThreadSafe.read(context, new Runnable() {
+        context.readThread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                     state.handleRoomInfo(ri);
 

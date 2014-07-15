@@ -1,9 +1,8 @@
 package floobits.common;
 
-import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
+import floobits.common.protocol.buf.Buf;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -70,7 +69,7 @@ public class EditorScheduler {
         if (queue.size() > 1) {
             return;
         }
-        ThreadSafe.write(context, dequeueRunnable);
+        context.writeThread(dequeueRunnable);
     }
 
     public void reset() {

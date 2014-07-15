@@ -1,6 +1,8 @@
 package floobits.impl;
 
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.Listener;
@@ -113,6 +115,56 @@ public class ContextImpl extends IContext {
 
     public void setListener(boolean b) {
         listener.isListening.set(b);
+    }
+
+    @Override
+    public void mainThread(Runnable runnable) {
+        ApplicationManager.getApplication().invokeLater(runnable);
+    }
+
+    @Override
+    public void readThread(final Runnable runnable) {
+        final ContextImpl context = this;
+        mainThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ApplicationManager.getApplication().runReadAction(runnable);
+                } catch (Throwable throwable) {
+                    API.uploadCrash(context, throwable);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void writeThread(final Runnable runnable) {
+        final long l = System.currentTimeMillis();
+        final ContextImpl context = this;
+        mainThread(new Runnable() {
+            @Override
+            public void run() {
+                CommandProcessor.getInstance().executeCommand(context.project, new Runnable() {
+                    @Override
+                    public void run() {
+                        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                long time = System.currentTimeMillis() - l;
+                                if (time > 200) {
+                                    Flog.log("spent %s getting lock", time);
+                                }
+                                try {
+                                    runnable.run();
+                                } catch (Throwable throwable) {
+                                    API.uploadCrash(context, throwable);
+                                }
+                            }
+                        });
+                    }
+                }, "Floobits", null);
+            }
+        });
     }
 
     @Override

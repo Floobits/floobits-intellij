@@ -1,13 +1,12 @@
 package floobits.common;
 
-import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFactory;
 import floobits.common.interfaces.IFile;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 
 import java.awt.*;
 import java.io.IOException;
@@ -226,7 +225,7 @@ public class EditorEventHandler {
         context.setTimeout(0, new Runnable() {
             @Override
             public void run() {
-                ThreadSafe.write(context, new Runnable() {
+                context.writeThread(new Runnable() {
                     @Override
                     public void run() {
                         if (!state.readOnly && bufByPath.isPopulated()) {

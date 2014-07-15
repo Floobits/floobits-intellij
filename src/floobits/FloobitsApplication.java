@@ -19,7 +19,6 @@ import floobits.dialogs.CreateAccount;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
-import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -111,7 +110,7 @@ public class FloobitsApplication implements ApplicationComponent {
                     return;
                 }
                 final ContextImpl context = FloobitsPlugin.getInstance(projectForPath).context;
-                ThreadSafe.write(context, new Runnable() {
+                context.writeThread(new Runnable() {
                     @Override
                     public void run() {
                         context.project.save();
@@ -143,7 +142,7 @@ public class FloobitsApplication implements ApplicationComponent {
         }
         // not gonna work here
         final ContextImpl finalContext = context;
-        ThreadSafe.write(context, new Runnable() {
+        context.writeThread(new Runnable() {
             @Override
             public void run() {
                 Window window = WindowManager.getInstance().suggestParentWindow(finalContext.project);
