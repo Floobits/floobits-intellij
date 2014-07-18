@@ -15,7 +15,6 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
-import floobits.common.protocol.json.send.InitialBase;
 import floobits.dialogs.CreateAccount;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
@@ -25,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
-import java.util.Set;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
@@ -36,39 +34,9 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
-//        avoid throwing at all costs because the plugin is disabled!
-        try {
-            Migrations.migrateFloorc();
-            FloorcJson floorcJson = null;
-            try {
-                floorcJson = Settings.get();
-            } catch (Throwable e) {
-                Flog.warn(e);
-            }
-            Set<String> strings = null;
-            if (floorcJson != null && floorcJson.auth != null) {
-                strings = floorcJson.auth.keySet();
-            }
-            if ((strings != null ? strings.size() : 0) == 1) {
-                Constants.defaultHost = (String) strings.toArray()[0];
-            }
-            if (Settings.canFloobits()) {
-                createAccount = false;
-            }
-            if (floorcJson != null && floorcJson.MAX_ERROR_REPORTS != null) {
-                API.maxErrorReports = floorcJson.MAX_ERROR_REPORTS;
-            }
-            ApplicationInfo instance = ApplicationInfo.getInstance();
-            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-            String version = plugin != null ? plugin.getVersion() : "???";
-            String userAgent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-            CrashDump.setUA(userAgent, instance.getVersionName());
-            InitialBase.client = instance.getVersionName();
-        } catch (Throwable e) {
-            Flog.warn(e);
-            API.uploadCrash(null, null, e);
-        }
-
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+        createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), plugin != null ? plugin.getVersion() : "???");
     }
 
     public void disposeComponent() {
