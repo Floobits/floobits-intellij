@@ -1,6 +1,8 @@
-# Floobits plugin for IntelliJ
+# [Floobits](https://floobits.com/) plugin for IntelliJ
 
 ### (and RubyMine, PHPStorm, PyCharm (EAP Only), WebStorm)
+
+Real-time collaborative editing. Think Etherpad, but with native editors. This is the plugin for IntelliJ. We also have plugins for [Emacs](https://github.com/Floobits/floobits-emacs), [Vim](https://github.com/Floobits/floobits-vim), and [Sublime Text](https://github.com/Floobits/floobits-sublime).
 
 [Documentation](https://floobits.com/help/plugins/intellij)
 
@@ -10,8 +12,7 @@
 
 This plugin should be completely functional. If you encounter any errors please email [support@floobits.com](mailto:support@floobits.com).
 
-The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works with all IntelliJ IDEA forks, except the stable version of PyCharm.
-[EAP version of PyCharm](http://confluence.jetbrains.com/display/PYH/JetBrains+PyCharm+Preview+(EAP)) works fine.
+The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works with all IntelliJ IDEA forks, except the stable version of PyCharm. The [EAP version of PyCharm](http://confluence.jetbrains.com/display/PYH/JetBrains+PyCharm+Preview+(EAP)) works fine.
 
 ### Contributing
 
@@ -24,7 +25,7 @@ You'll need to setup your plugin environment.
 Questions? Join us on IRC on Freenode in #floobits.
 
 <a href="https://floobits.com/Floobits/intellij-plugin/redirect">
-  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
+  <img alt="Floobits status" width="100" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
 </a>
 
 
