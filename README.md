@@ -1,6 +1,6 @@
 # [Floobits](https://floobits.com/) plugin for IntelliJ
 
-### (it also works for IntelliJ forks like RubyMine, PHPStorm, PyCharm, WebStom, Android Studio, and AppCode)
+This plugin also works for IntelliJ forks like RubyMine, PHPStorm, PyCharm, WebStom, Android Studio, and AppCode.
 
 Real-time collaborative editing. Think Etherpad, but with native editors. This is the plugin for IntelliJ. We also have plugins for [Emacs](https://github.com/Floobits/floobits-emacs), [Vim](https://github.com/Floobits/floobits-vim), and [Sublime Text](https://github.com/Floobits/floobits-sublime).
 
