@@ -239,21 +239,21 @@ public class Utils {
         }
     }
 
-    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, VirtualFile vFile) {
+    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, final VirtualFile vFile) {
         final ArrayList<String> filePaths = new ArrayList<String>();
-        if (!vFile.isDirectory()) {
-            filePaths.add(vFile.getPath());
-            return filePaths;
-        }
-        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile file) {
-                if (!file.isDirectory()) {
-                    filePaths.add(file.getPath());
-                }
-                return true;
+        final ArrayList<VirtualFile> q = new ArrayList<VirtualFile>();
+        q.add(vFile);
+
+        VirtualFile file;
+        do {
+            file = q.remove(q.size()-1);
+            if (file.isDirectory()) {
+                q.addAll(Arrays.asList(file.getChildren()));
+            } else {
+                filePaths.add(file.getPath());
             }
-        });
+        } while (!q.isEmpty());
+
         return filePaths;
     }
 
