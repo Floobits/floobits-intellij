@@ -49,7 +49,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     private final BaseHandler handler;
     private final FlooContext context;
     protected Channel channel;
-    private Integer MAX_RETRIES = 20;
+    private Integer MAX_RETRIES = 22;
     private Integer INITIAL_RECONNECT_DELAY = 500;
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
@@ -75,8 +75,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         channel.writeAndFlush(data + "\n");
     }
 
-    protected void _connect() {
-        retries -= 1;
+    protected void _connect(String host, int port) {
         Bootstrap b = new Bootstrap();
 
         if (!context.addGroup(b)) {
@@ -88,9 +87,9 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         b.option(ChannelOption.TCP_NODELAY, true);
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15*1000);
         b.handler(new FlooChannelInitializer(this));
-        FlooUrl flooUrl = handler.getUrl();
+
         try {
-            ChannelFuture connect = b.connect(flooUrl.host, flooUrl.port);
+            ChannelFuture connect = b.connect(host, port);
             channel = connect.channel();
         }   catch (RejectedExecutionException e) {
             context.errorMessage("Can not connect to floobits!");
@@ -106,8 +105,21 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             Flog.warn("I give up connecting.");
             return;
         }
+        retries -= 1;
+        FlooUrl flooUrl = handler.getUrl();
+        final String host;
+        final int port;
+
+        if (flooUrl.host.equals(Constants.floobitsDomain) && retries % 4 == 0) {
+            host = Constants.OUTBOUND_FILTER_PROXY_HOST;
+            port = Constants.OUTBOUND_FILTER_PROXY_PORT;
+        } else {
+            host = flooUrl.host;
+            port = flooUrl.port;
+        }
+
         if (channel == null) {
-            _connect();
+            _connect(host, port);
             return;
         }
         try {
@@ -115,7 +127,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
                     channel = null;
-                    _connect();
+                    _connect(host, port);
                 }
             });
         } catch (Throwable e) {
