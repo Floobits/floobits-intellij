@@ -6,8 +6,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FlooContext;
-import floobits.utilities.Flog;
 import floobits.common.protocol.FlooPatch;
+import floobits.utilities.Flog;
 import io.fletty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -66,9 +66,9 @@ public abstract class Buf <T> {
         String parentPath = file.getParent();
         try {
             VfsUtil.createDirectories(parentPath);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             Flog.warn("createFile error %s", e);
-            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
+            context.errorMessage(String.format("The Floobits plugin was unable to create a file: %s.", path));
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
@@ -79,9 +79,9 @@ public abstract class Buf <T> {
         VirtualFile newFile;
         try {
             newFile = parent.findOrCreateChildData(context, name);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             Flog.warn("Create file error %s", e);
-            Utils.errorMessage("The Floobits plugin was unable to create a file.", context.project);
+            context.errorMessage(String.format("The Floobits plugin was unable to create a file: %s.", path));
             return null;
         }
         return newFile;
