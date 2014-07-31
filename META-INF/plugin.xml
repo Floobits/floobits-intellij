@@ -65,7 +65,7 @@
       </action>
       <action id="floobits.actions.Summon" class="floobits.actions.Summon" text="Summon" description="Summon everyone in the room to your location">
       </action>
-      <action id="floobits.actions.CompleteSignUp" class="floobits.actions.CompleteSignup" text="Complete Sign Up"
+      <action id="floobits.actions.CompleteSignUp" class="floobits.actions.CompleteSignup" text="Log In to Website"
               description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
       </action>
       <action id="floobits.actions.ClearHighlights" class="floobits.actions.ClearHighlights" text="Clear Highlights"/>
