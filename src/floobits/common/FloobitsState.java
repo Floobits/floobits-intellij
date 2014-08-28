@@ -99,10 +99,10 @@ public class FloobitsState {
     }
 
     public void removeUser(int userId) {
+        FlooUser u = users.get(userId);
         if (users.remove(userId) != null) {
             context.setUsers(users);
         }
-        FlooUser u = users.get(userId);
         if (u == null) {
             return;
         }
