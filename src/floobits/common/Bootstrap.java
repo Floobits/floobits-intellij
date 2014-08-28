@@ -32,7 +32,6 @@ public class Bootstrap {
             }
             String userAgent = String.format("%s-%s-%s %s (%s-%s)", editor, major, minor, pluginVersion, System.getProperty("os.name"), System.getProperty("os.version"));
             CrashDump.setUA(userAgent, editor);
-            InitialBase.client = editor;
         } catch (Throwable e) {
             Flog.warn(e);
             API.uploadCrash(null, null, e);
