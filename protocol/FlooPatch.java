@@ -1,10 +1,8 @@
 package floobits.common.protocol;
 
-import floobits.common.Buf;
+import floobits.common.protocol.buf.Buf;
 
-import java.io.Serializable;
-
-public class FlooPatch implements Base {
+public class FlooPatch implements Base  {
     public String name = "patch";
     public Integer id;
     public Integer user_id;

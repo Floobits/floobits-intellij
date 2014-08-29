@@ -27,14 +27,14 @@ public class DotFloo {
 
         try {
             floo = FileUtils.readFileToString(path(base_dir), "UTF-8");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.debug("no floo file %s", path(base_dir));
             return null;
         }
 
         try {
             return new Gson().fromJson(floo, (Type) DotFlooJson.class);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
         return null;
@@ -81,7 +81,7 @@ public class DotFloo {
         json += newline + "}";
         try {
             FileUtils.write(path(base_dir), json, "UTF-8");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
         }
     }

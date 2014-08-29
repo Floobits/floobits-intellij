@@ -1,73 +1,81 @@
 package floobits.common;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.intellij.openapi.project.Project;
-import floobits.FlooContext;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.HashMap;
 
 
 public class Settings {
-    protected HashMap<String, String> settings;
-    public static String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
-    private Project project;
+    public static String floorcJsonPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc.json");
 
-    public Settings(FlooContext context) {
-        project = context != null ? context .project : null;
-        BufferedReader br;
-        this.settings = new HashMap<String, String>();
+    public static FloorcJson get() throws Exception {
+        File f = new File(floorcJsonPath);
+        String string;
         try {
-            br = new BufferedReader(new FileReader(floorcPath));
-            String line = br.readLine();
-
-            while (line != null) {
-                if (line.length() < 1 || line.substring(0, 1).equals("#")){
-                    line = br.readLine();
-                    continue;
-                }
-                String[] shit = line.split(" ");
-                this.settings.put(shit[0], shit[1]);
-                line = br.readLine();
-            }
-        } catch (Exception e) {
-            Flog.info("Got an exception %s", e);
-        }
-    }
-
-    public String get(String k) {
-        return this.settings.get(k);
-    }
-    
-    public void set(String k, String v) {
-        this.settings.put(k, v);
-    }
-    
-    public void write() {
-        PrintWriter writer = null;
-        File file = new File(floorcPath);
-        try {
-            file.createNewFile();
+            string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
-            return;
+            Flog.log("No floorc.json found");
+            return new FloorcJson();
         }
         try {
-            writer = new PrintWriter(file, "UTF-8");
-        } catch (FileNotFoundException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
-        } catch (UnsupportedEncodingException e) {
-            Utils.errorMessage("Can't write new .floorc", project);
-        }
-        for (Map.Entry<String, String> setting : this.settings.entrySet()) {
-            writer.println(String.format("%s %s", setting.getKey(), setting.getValue()));
-        }
-        writer.close();
+            return new Gson().fromJson(string, (Type) FloorcJson.class);
+        } catch (JsonSyntaxException e) {
+           throw new Exception("Invalid JSON.");
+       }
     }
 
-    public Boolean isComplete() {
+    public static void write(IContext context, FloorcJson floorcJson) {
+        File file = new File(floorcJsonPath);
+        if (!file.exists()) {
+            boolean newFile;
+            try {
+                newFile = file.createNewFile();
+            } catch (IOException e) {
+                context.errorMessage("Can't write new ~/.floorc.json");
+                return;
+            }
+            if (!newFile) {
+                context.errorMessage("Can't write new ~/.floorc.json");
+                return;
+            }
+        }
+
+        try {
+            FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson));
+        } catch (IOException e) {
+            Flog.warn(e);
+            context.errorMessage("Can't write new ~/.floorc.json");
+        }
+    }
+
+    public static Boolean isAuthComplete(HashMap<String, String> settings) {
         return (settings.get("secret") != null && (settings.get("username") != null || settings.get("api_key") != null));
+    }
+
+    public static Boolean canFloobits() {
+        HashMap<String, HashMap<String, String>> auth;
+        try {
+            auth = get().auth;
+        } catch (Throwable e) {
+            return false;
+        }
+        if (auth == null) {
+            return false;
+        }
+        for (String host : auth.keySet()) {
+            if (isAuthComplete(auth.get(host))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

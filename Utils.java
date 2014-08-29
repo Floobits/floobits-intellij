@@ -1,25 +1,10 @@
 package floobits.common;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.vfs.VFileProperty;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
-import com.intellij.ui.JBColor;
-import floobits.FlooContext;
 import floobits.utilities.Flog;
-import floobits.common.handlers.FlooHandler;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import javax.swing.*;
 import java.io.*;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
@@ -51,22 +36,6 @@ public class Utils {
         } catch (PathResolutionException e) {
             return null;
         }
-    }
-
-    public static void createFile(final FlooContext context, final VirtualFile virtualFile) {
-        if (context.isIgnored(virtualFile)) {
-            return;
-        }
-        context.setTimeout(100, new Runnable() {
-            @Override
-            public void run() {
-                FlooHandler flooHandler = context.getFlooHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                flooHandler.upload(virtualFile);
-            }
-        });
     }
 
     private static final String cert =
@@ -114,10 +83,6 @@ public class Utils {
         "um0ABj6y6koQOdjQK/W/7HW/lwLFCRsI3FU34oH7N4RDYiDK51ZLZer+bMEkkySh\n" +
         "NOsF/5oirpt9P/FlUQqmMGqz9IgcgA38corog14=\n" +
         "-----END CERTIFICATE-----";
-
-    public static Boolean isSharable(VirtualFile virtualFile) {
-        return (virtualFile != null  && virtualFile.isValid() && virtualFile.isInLocalFileSystem() && !virtualFile.is(VFileProperty.SPECIAL) && !virtualFile.is(VFileProperty.SYMLINK));
-    }
 
     public static Boolean isSamePath (String p1, String p2) {
         p1 = FilenameUtils.normalizeNoEndSeparator(p1);
@@ -234,46 +199,14 @@ public class Utils {
     }
 
     static class PathResolutionException extends RuntimeException {
-        PathResolutionException (String msg) {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 7336143689208470125L;
+
+		PathResolutionException (String msg) {
             super(msg);
         }
-    }
-
-    public static ArrayList<String> getAllNestedFilePaths(final FlooContext context, VirtualFile vFile) {
-        final ArrayList<String> filePaths = new ArrayList<String>();
-        if (!vFile.isDirectory()) {
-            filePaths.add(vFile.getPath());
-            return filePaths;
-        }
-        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile file) {
-                if (!file.isDirectory()) {
-                    filePaths.add(file.getPath());
-                }
-                return true;
-            }
-        });
-        return filePaths;
-    }
-
-    public static ArrayList<VirtualFile> getAllValidNestedFiles(final FlooContext context, VirtualFile vFile) {
-        final ArrayList<VirtualFile> virtualFiles = new ArrayList<VirtualFile>();
-        if (!vFile.isDirectory()) {
-            if (vFile.isValid() && !context.isIgnored(vFile)) virtualFiles.add(vFile);
-            return virtualFiles;
-        }
-
-        VfsUtil.iterateChildrenRecursively(vFile, null, new ContentIterator() {
-            @Override
-            public boolean processFile(VirtualFile file) {
-                if (!context.isIgnored(file) && !file.isDirectory() && file.isValid()) {
-                    virtualFiles.add(file);
-                }
-                return true;
-            }
-        });
-        return virtualFiles;
     }
 
     static public SSLContext createSSLContext() {
@@ -317,42 +250,4 @@ public class Utils {
         return sc;
     }
 
-    public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
-                    }
-                });
-            }
-        });
-    }
-
-    public static void statusMessage(String message, Project project) {
-        statusMessage(message, NotificationType.INFORMATION, project);
-    }
-
-    public static void errorMessage(String message, Project project) {
-        statusMessage(message, NotificationType.ERROR, project);
-    }
-
-    public static void flashMessage(final String message, final Project project) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    public void run() {
-                        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-                        if (statusBar == null) {
-                            return;
-                        }
-                        JLabel jLabel = new JLabel(message);
-                        statusBar.fireNotificationPopup(jLabel, JBColor.WHITE);
-                    }
-                });
-            }
-        });
-    }
 }

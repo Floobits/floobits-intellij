@@ -4,10 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.common.interfaces.IContext;
+import floobits.common.protocol.handlers.BaseHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -17,20 +16,23 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.List; 
 
 public class API {
+    public static  int maxErrorReports = 3;
+    private static int numSent = 0;
 
-    public static boolean createWorkspace(String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String host, String owner, String workspace, IContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -38,7 +40,7 @@ public class API {
         String json = gson.toJson(new HTTPWorkspaceRequest(owner, workspace, notPublic));
         try {
             method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
-            apiRequest(method, context, Constants.defaultHost);
+            apiRequest(method, context, host);
         } catch (IOException e) {
             context.errorMessage(String.format("Could not create workspace %s/%s: %s", owner, workspace, e.toString()));
             return false;
@@ -47,7 +49,7 @@ public class API {
         int code = method.getStatusCode();
         switch (code) {
             case 400:
-                // Todo: pick a new name or something                                                                                                                                                                                               )
+                // Todo: pick a new name or something
                 context.errorMessage("Invalid workspace name (a-zA-Z0-9).");
                 return false;
             case 402:
@@ -63,19 +65,14 @@ public class API {
                 context.errorMessage(details);
                 return false;
             case 409:
-                context.statusMessage("The workspace already exists so I am joining it.", false);
+                context.statusMessage("The workspace already exists so I am joining it.");
             case 201:
-                context.statusMessage("Workspace created.", false);
+                context.statusMessage("Workspace created.");
                 return true;
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                VirtualFile floorc = LocalFileSystem.getInstance().findFileByIoFile(new File(Settings.floorcPath));
-                if (floorc == null) {
-                    return false;
-                }
-                FileEditorManager.getInstance(context.project).openFile(floorc, true);
-                return false;
+                return context.iFactory.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
@@ -85,7 +82,7 @@ public class API {
                 return false;
         }
     }
-    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
+    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, IContext context) {
 
         PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
         Gson gson = new Gson();
@@ -108,11 +105,11 @@ public class API {
         return method.getStatusCode() < 300;
     }
 
-    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
+    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, IContext context) {
 
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
+            method = getWorkspaceMethod(f, context);
         } catch (IOException e) {
             return null;
         }
@@ -130,14 +127,14 @@ public class API {
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 
-    public static boolean workspaceExists(final FlooUrl f, FlooContext context) {
+    public static boolean workspaceExists(final FlooUrl f, IContext context) {
         if (f == null) {
             return false;
         }
         HttpMethod method;
         try {
-            method = getWorkspace(f.owner, f.workspace, context, f.host);
-        } catch (IOException e) {
+            method = getWorkspaceMethod(f, context);
+        } catch (Throwable e) {
             Flog.warn(e);
             return false;
         }
@@ -149,25 +146,45 @@ public class API {
         return true;
     }
 
-    static public HttpMethod getWorkspace(String owner, String workspace, FlooContext context, String host) throws IOException {
-        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", owner, workspace)), context, host);
+    static private HttpMethod getWorkspaceMethod(FlooUrl f, IContext context) throws IOException {
+        return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace)), context, f.host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException{
+    @SuppressWarnings("deprecation")
+	static public HttpMethod apiRequest(HttpMethod method, IContext context, String host) throws IOException, IllegalArgumentException {
+        Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
-//        NOTE: we cant tell java to follow redirects because they can fail.
+        // NOTE: we cant tell java to follow redirects because they can fail.
         HttpConnectionManager connectionManager = client.getHttpConnectionManager();
         HttpConnectionParams connectionParams = connectionManager.getParams();
         connectionParams.setParameter("http.protocol.handle-redirects", true);
-        connectionParams.setSoTimeout(3000);
+        connectionParams.setSoTimeout(5000);
         connectionParams.setConnectionTimeout(3000);
-        Settings settings = new Settings(context);
+        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
+        FloorcJson floorcJson = null;
+        try {
+            floorcJson = Settings.get();
+        } catch (Throwable e) {
+            Flog.warn(e);
+        }
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(host) : null;
+        String username = null, secret = null;
+        if (auth != null) {
+            username = auth.get("username");
+            secret = auth.get("secret");
+        }
+        if (username == null) {
+            username = "";
+        }
+        if (secret == null) {
+            secret = "";
+        }
         HttpClientParams params = client.getParams();
         params.setAuthenticationPreemptive(true);
         client.setParams(params);
-        Credentials credentials = new UsernamePasswordCredentials(settings.get("username"), settings.get("secret"));
+        Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SecureProtocolSocketFactory() {
+        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SSLProtocolSocketFactory() {
             @Override
             public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
@@ -193,13 +210,13 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(FlooContext context) {
+    static public List<String> getOrgsCanAdmin(String host, IContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
         try {
-            apiRequest(method, context, Constants.defaultHost);
-        } catch (Exception e) {
+            apiRequest(method, context, host);
+        } catch (Throwable e) {
             Flog.warn(e);
             return orgs;
         }
@@ -217,11 +234,83 @@ public class API {
                 String orgName = org.get("name").getAsString();
                 orgs.add(orgName);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Flog.warn(e);
             context.errorMessage("Error getting Floobits organizations. Try again later or please contact support.");
         }
 
         return orgs;
+    }
+    static public void uploadCrash(BaseHandler baseHandler, final IContext context, Throwable throwable) {
+        numSent++;
+        if (numSent >= maxErrorReports) {
+            Flog.warn(String.format("Already sent %s errors this session. Not sending any more.", numSent));
+            if (throwable != null) Flog.warn(throwable);
+            return;
+        }
+
+        try {
+            Flog.warn("Uploading crash report: %s", throwable);
+            final PostMethod method;
+            String owner = "";
+            String workspace = "";
+            String colabDir = "";
+            String username = "";
+
+            if (baseHandler != null) {
+                owner = baseHandler.getUrl().owner;
+                workspace = baseHandler.getUrl().workspace;
+                colabDir = context != null ? context.colabDir : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler) baseHandler).state.username : "???";
+            }
+            method = new PostMethod("/api/log");
+            Gson gson = new Gson();
+            CrashDump crashDump = new CrashDump(throwable, owner, workspace, colabDir, username);
+            String json = gson.toJson(crashDump);
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        apiRequest(method, context, Constants.floobitsDomain);
+                    } catch (Throwable e) {
+                        if (context != null) {
+                            context.errorMessage(String.format("Couldn't send crash report %s", e));
+                        }
+
+                    }
+                }
+            }, "Floobits Crash Reporter").run();
+        } catch (Throwable e) {
+            try {
+                context.errorMessage(String.format("Couldn't send crash report %s", e));
+            } catch (Throwable ignored) {}
+        }
+    }
+    static public void uploadCrash(IContext context, Throwable throwable) {
+        uploadCrash(context.handler, context, throwable);
+    }
+    static public void sendUserIssue(String description, String username) {
+        final PostMethod method;
+        method = new PostMethod("/api/log");
+        Gson gson = new Gson();
+        CrashDump crashDump = new CrashDump(String.format("User submitted an issue: %s", description), username);
+        String json = gson.toJson(crashDump);
+        try {
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            Flog.warn("Couldn't send a user issue.");
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    apiRequest(method, null, Constants.floobitsDomain);
+                } catch (Throwable e) {
+                    Flog.errorMessage(String.format("Couldn't send crash report %s", e), null);
+                }
+            }
+        }, "Floobits User Issue Submitter").run();
     }
 }
