@@ -8,7 +8,6 @@ import java.io.InputStream;
 public abstract class IFile {
     public abstract String getPath();
     public abstract boolean rename(Object obj, String name);
-    public abstract IFile makeFile(String name);
     public abstract boolean move(Object obj, IFile d);
     public abstract boolean delete(Object obj);
     public abstract IFile[] getChildren();

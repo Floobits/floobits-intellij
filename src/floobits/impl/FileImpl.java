@@ -67,17 +67,6 @@ public class FileImpl extends IFile {
         return true;
     }
 
-    @Override
-    public IFile makeFile(String name) {
-        VirtualFile childDirectory;
-        try {
-            childDirectory = virtualFile.createChildDirectory(this, name);
-        } catch (IOException e) {
-            Flog.warn(e);
-            return null;
-        }
-        return new FileImpl(childDirectory);
-    }
 
     @Override
     public boolean move(Object obj, IFile d) {

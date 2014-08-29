@@ -53,6 +53,12 @@ public abstract class Buf <T> {
         return context.iFactory.findFileByPath(context.absPath(this.path));
     }
 
+
+    protected IFile getOrCreateFile() {
+        return context.iFactory.getOrCreateFile(context.absPath(this.path));
+    }
+
+
     protected IDoc getVirtualDoc() {
         IFile virtualFile = getVirtualFile();
         if (virtualFile == null) {
@@ -67,17 +73,6 @@ public abstract class Buf <T> {
         return String.format("id: %s file: %s", id, path);
     }
 
-    public IFile createFile() {
-        File file = new File(context.absPath(path));
-        String name = file.getName();
-        String parentPath = file.getParent();
-        IFile iFile = context.iFactory.createDirectories(parentPath);
-        if (iFile == null) {
-            context.errorMessage("The Floobits plugin was unable to create a file.");
-            return null;
-        }
-        return iFile.makeFile(name);
-    }
 
     abstract public void read ();
     abstract public void write();

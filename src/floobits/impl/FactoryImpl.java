@@ -144,12 +144,50 @@ public class FactoryImpl implements IFactory {
 
     @Override
     public IFile findFileByPath(String path) {
-        VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
+            VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
         if (fileByPath != null && fileByPath.isValid()) {
             return new FileImpl(fileByPath);
         }
         return null;
     }
+    
+    @Override
+    public IFile getOrCreateFile(String path) {
+        IFile fileByPath = findFileByPath(path);
+        if (fileByPath != null) {
+            return fileByPath;
+        }
+        return createFile(path);
+    }
+
+    @Override
+    public IFile createFile(String path) {
+        File file = new File(context.absPath(path));
+        String name = file.getName();
+        String parentPath = file.getParent();
+        try {
+            VfsUtil.createDirectories(parentPath);
+        } catch (IOException e) {
+            Flog.warn("Create directories error %s", e);
+            context.errorMessage("The Floobits plugin was unable to create directories for file.");
+            return null;
+        }
+        VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
+        if (parent == null) {
+            Flog.warn("Virtual file is null? %s", parentPath);
+            return null;
+        }
+        VirtualFile newFile;
+        try {
+            newFile = parent.findOrCreateChildData(context, name);
+        } catch (Throwable e) {
+            Flog.warn("Create file error %s", e);
+            context.errorMessage(String.format("The Floobits plugin was unable to create a file: %s.", path));
+            return null;
+        }
+        return new FileImpl(newFile);
+    }
+
 
     @Override
     public IFile findFileByIoFile(File file) {

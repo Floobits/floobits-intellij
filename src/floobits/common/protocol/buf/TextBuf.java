@@ -60,7 +60,7 @@ public class TextBuf extends Buf<String> {
 
         Flog.warn("Tried to write to null document: %s", path);
 
-        IFile virtualFile = getVirtualFile();
+        IFile virtualFile = getOrCreateFile();
         try {
             virtualFile.setBytes(buf.getBytes());
         } catch (Throwable e) {

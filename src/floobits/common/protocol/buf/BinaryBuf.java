@@ -43,13 +43,10 @@ public class BinaryBuf extends Buf <byte[]> {
                     Flog.warn("Unable to write %s because it's not populated yet.", path);
                     return;
                 }
-                IFile virtualFile = getVirtualFile();
+                IFile virtualFile = getOrCreateFile();
                 if (virtualFile == null) {
-                    virtualFile = createFile();
-                    if (virtualFile == null) {
-                        context.errorMessage("Unable to write file. virtualFile is null.");
-                        return;
-                    }
+                    context.errorMessage("Unable to write file. virtualFile is null.");
+                    return;
                 }
                 FlooHandler flooHandler = context.getFlooHandler();
                 if (flooHandler == null) {
