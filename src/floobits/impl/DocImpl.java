@@ -142,12 +142,8 @@ public class DocImpl extends IDoc {
             if (!manager.isFileOpen(virtualFile) || !Arrays.asList(manager.getSelectedFiles()).contains(virtualFile)) {
                 spam = true;
             }
-            if (spam && username.length() > 0) {
-                if (force) {
-                    context.statusMessage(String.format("%s has summoned you!", username));
-                } else {
-                    context.statusMessage(String.format("You are following %s!", username));
-                }
+            if (spam && username.length() > 0 && force) {
+                context.statusMessage(String.format("%s has summoned you!", username));
             }
             manager.openFile(virtualFile, true, true);
         }
