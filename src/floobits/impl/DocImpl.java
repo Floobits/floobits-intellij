@@ -155,7 +155,7 @@ public class DocImpl extends IDoc {
         synchronized (context) {
             try {
                 context.setListener(false);
-                applyHighlight(ranges, username, path, force, textLength, userID);
+                applyHighlight(ranges, username, path, force || stalking, textLength, userID);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {

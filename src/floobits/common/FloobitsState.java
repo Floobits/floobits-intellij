@@ -11,9 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Created by kans on 5/7/14.
- */
+
 public class FloobitsState {
     public JsonObject lastHighlight;
     public Boolean stalking = false;
