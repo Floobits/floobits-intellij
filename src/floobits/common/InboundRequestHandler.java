@@ -30,6 +30,7 @@ public class InboundRequestHandler {
     private final FloobitsState state;
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
+    private StatusMessageThrottler fileAddedMessageThrottler;
     private EditorScheduler editor;
 
     enum Events {
@@ -42,6 +43,8 @@ public class InboundRequestHandler {
         this.state = state;
         this.outbound = outbound;
         this.shouldUpload = shouldUpload;
+        fileAddedMessageThrottler = new StatusMessageThrottler(context,
+                "%d files were added to the workspace.");
     }
 
     private void initialManageConflicts(RoomInfoResponse ri) {
@@ -409,7 +412,7 @@ public class InboundRequestHandler {
                 state.bufs.put(buf.id, buf);
                 state.paths_to_ids.put(buf.path, buf.id);
                 buf.write();
-                context.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
+                fileAddedMessageThrottler.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
             }
         });
     }

@@ -50,24 +50,33 @@ public class ContextImpl extends IContext {
 
     @Override public void warnMessage(String message) {
         Flog.log(message);
-        if (chatManager != null && chatManager.isOpen()) {
-            chatManager.statusMessage(message);
-        }
         statusMessage(message, NotificationType.WARNING);
+        chatStatusMessage(message);
     }
 
     @Override public void statusMessage(String message) {
         Flog.log(message);
-        if (chatManager != null && chatManager.isOpen()) {
-            chatManager.statusMessage(message);
+        if (!chatManager.isOpen()) {
+            //Only show a status message when chat is not open.
+            statusMessage(message, NotificationType.INFORMATION);
         }
-        statusMessage(message, NotificationType.INFORMATION);
+        chatStatusMessage(message);
     }
 
     @Override public void errorMessage(String message) {
         Flog.warn(message);
         statusMessage(message, NotificationType.ERROR);
-        if (chatManager != null && chatManager.isOpen()) {
+        chatErrorMessage(message);
+    }
+
+    @Override public void chatStatusMessage(String message) {
+        if (chatManager != null) {
+            chatManager.statusMessage(message);
+        }
+    }
+
+    @Override public void chatErrorMessage(String message) {
+        if (chatManager != null) {
             chatManager.errorMessage(message);
         }
     }
