@@ -255,4 +255,8 @@ public class ContextImpl extends IContext {
     public void listenToEditor(EditorEventHandler editorEventHandler) {
         listener.start(editorEventHandler);
     }
+
+    public void setForcedCursorMove() {
+        listener.forcedCursorChange.set(true);
+    }
 }

@@ -113,6 +113,7 @@ public class DocImpl extends IDoc {
 
                 newHighlighters.add(rangeHighlighter);
                 if (force && first) {
+                    context.setForcedCursorMove();
                     CaretModel caretModel = editor.getCaretModel();
                     caretModel.moveToOffset(start);
                     LogicalPosition position = caretModel.getLogicalPosition();

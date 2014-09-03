@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
     public final AtomicBoolean isListening = new AtomicBoolean(false);
+    public final AtomicBoolean forcedCursorChange = new AtomicBoolean(false);
     private final ContextImpl context;
     private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
@@ -266,6 +267,10 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void selectionChanged(final SelectionEvent event) {
+        if (forcedCursorChange.get()) {
+            forcedCursorChange.set(false);
+            return;
+        }
         Document document = event.getEditor().getDocument();
         FactoryImpl iFactory = (FactoryImpl) context.iFactory;
         String path = iFactory.getPathForDoc(document);
