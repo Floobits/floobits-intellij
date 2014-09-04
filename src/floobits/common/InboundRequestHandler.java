@@ -285,7 +285,7 @@ public class InboundRequestHandler {
         final int userId = requestPerms.user_id;
         final FlooUser u = state.getUser(userId);
         if (u == null) {
-            Flog.info("Unknown user for id %s. Not handling request_perms event. %d", userId);
+            Flog.info("Unknown user for id %s. Not handling request_perms event.", userId);
             return;
         }
         context.dialogPermsRequest(u.username, new RunLater<String>() {
@@ -315,7 +315,7 @@ public class InboundRequestHandler {
         final DeleteBuf deleteBuf = new Gson().fromJson(obj, (Type)DeleteBuf.class);
         Buf buf = state.bufs.get(deleteBuf.id);
         if (buf == null) {
-            Flog.warn(String.format("Tried to delete a buf that doesn't exist: %s", deleteBuf.id));
+            Flog.warn(String.format("Tried to delete a buf that doesn't exist: %d", deleteBuf.id));
             return;
         }
         editor.queue(buf, new RunLater<Buf>() {

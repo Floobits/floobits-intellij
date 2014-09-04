@@ -1,6 +1,8 @@
-# Floobits plugin for IntelliJ
+# [Floobits](https://floobits.com/) plugin for IntelliJ
 
-### (and RubyMine, PHPStorm, PyCharm (EAP Only), WebStorm)
+Real-time collaborative editing. Think Etherpad, but with native editors. This is the plugin for IntelliJ. We also have plugins for [Emacs](https://github.com/Floobits/floobits-emacs), [Vim](https://github.com/Floobits/floobits-vim), and [Sublime Text](https://github.com/Floobits/floobits-sublime).
+
+This plugin also works with IntelliJ forks like RubyMine, PHPStorm, PyCharm, WebStom, Android Studio, and AppCode.
 
 [Documentation](https://floobits.com/help/plugins/intellij)
 
@@ -10,8 +12,15 @@
 
 This plugin should be completely functional. If you encounter any errors please email [support@floobits.com](mailto:support@floobits.com).
 
-The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works with all IntelliJ IDEA forks, except the stable version of PyCharm.
-[EAP version of PyCharm](http://confluence.jetbrains.com/display/PYH/JetBrains+PyCharm+Preview+(EAP)) works fine.
+The Intellij IDEA plugin for Floobits is our most stable plugin so far. It works with all IntelliJ IDEA forks, except the stable version of PyCharm. The [EAP version of PyCharm](http://confluence.jetbrains.com/display/PYH/JetBrains+PyCharm+Preview+(EAP)) works fine.
+
+# Installation Instructions
+
+* [Create a Floobits account](https://floobits.com/signup/) or [sign in with GitHub](https://floobits.com/login/github/?next=/dash/).
+* Go to your IntelliJ IDEA settings and choose "Plugins" from the sidebar.
+* Click the "Browse repositories" button.
+* Using the search box at the top of the dialog that appears, search for "Floobits".
+* Double-click the Floobits plugin search result. You may have to restart your IDE.
 
 ### Contributing
 
@@ -21,10 +30,10 @@ You'll need to setup your plugin environment.
 
 [A helpful guide](http://bjorn.tipling.com/how-to-make-an-intellij-idea-plugin-in-30-minutes)
 
-Questions? Join us on IRC on Freenode in #floobits.
+Questions? Join us on IRC: [#Floobits on Freenode](irc://irc.freenode.net:6667/#floobits)
 
 <a href="https://floobits.com/Floobits/intellij-plugin/redirect">
-  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
+  <img alt="Floobits status" width="100" height="40" src="https://floobits.com/Floobits/intellij-plugin.png" />
 </a>
 
 
