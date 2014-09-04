@@ -132,7 +132,15 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     @Override
-    public void before(@NotNull List<? extends VFileEvent> events) {}
+    public void before(@NotNull List<? extends VFileEvent> events) {
+        for (VFileEvent event : events) {
+            if (event instanceof VFileDeleteEvent) {
+                Flog.info("deleting a file %s", event.getPath());
+                editorManager.deleteDirectory(IntelliUtils.getAllNestedFilePaths(event.getFile()));
+                continue;
+            }
+        }
+    }
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
@@ -143,7 +151,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 break;
             }
         }
-
         if (!isListening.get()) {
             return;
         }
@@ -164,11 +171,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 }
                 continue;
             }
-            if (event instanceof VFileDeleteEvent) {
-                Flog.info("deleting a file %s", event.getPath());
-                editorManager.deleteDirectory(IntelliUtils.getAllNestedFilePaths(event.getFile()));
-                continue;
-            }
+
             if (event instanceof VFileCopyEvent) {
                 // We get one copy event per file copied for copied directories, which makes this easy.
                 Flog.info("Copying a file %s", event);
