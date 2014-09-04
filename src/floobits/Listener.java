@@ -40,6 +40,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private VirtualFileAdapter virtualFileAdapter;
     private MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
+    private String oldRenamePath;
 
 
     public Listener(ContextImpl context) {
@@ -139,6 +140,14 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 editorManager.deleteDirectory(IntelliUtils.getAllNestedFilePaths(event.getFile()));
                 continue;
             }
+            if (event instanceof VFilePropertyChangeEvent) {
+                VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
+                if (propertyEvent.getPropertyName() != "name") {
+                    continue;
+                }
+                oldRenamePath = propertyEvent.getFile().getPath();
+                continue;
+            }
         }
     }
 
@@ -156,19 +165,21 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
         for (VFileEvent event : events) {
             Flog.debug(" after event type %s", event.getClass().getSimpleName());
+            if (event instanceof VFilePropertyChangeEvent) {
+                VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
+                if (propertyEvent.getPropertyName() != "name") {
+                    continue;
+                }
+                VirtualFile virtualFile = propertyEvent.getFile();
+                renameAllNestedFiles(virtualFile,  oldRenamePath, virtualFile.getPath());
+                oldRenamePath = null;
+                continue;
+            }
             if (event instanceof VFileMoveEvent) {
                 Flog.info("move event %s", event);
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
-                String oldPath = oldParent.getPath();
-                String newPath = newParent.getPath();
-                VirtualFile virtualFile = event.getFile();
-                ArrayList<IFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
-                for (IFile file: files) {
-                    String newFilePath = file.getPath();
-                    String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    editorManager.rename(oldFilePath, newFilePath);
-                }
+                renameAllNestedFiles(event.getFile(), oldParent.getPath(), newParent.getPath());
                 continue;
             }
 
@@ -209,6 +220,16 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
         }
     }
+
+    private void renameAllNestedFiles(VirtualFile virtualFile, String oldPath, String newPath) {
+        ArrayList<IFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
+        for (IFile file: files) {
+            String newFilePath = file.getPath();
+            String oldFilePath = newFilePath.replace(newPath, oldPath);
+            editorManager.rename(oldFilePath, newFilePath);
+        }
+    }
+
     @Override
     public void unsavedDocumentsDropped() {
     }

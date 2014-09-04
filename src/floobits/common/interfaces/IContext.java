@@ -176,6 +176,7 @@ public abstract class IContext {
         }
 
         if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth))) {
+            setListener(true);
             return;
         }
 
