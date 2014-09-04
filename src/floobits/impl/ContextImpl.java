@@ -56,7 +56,7 @@ public class ContextImpl extends IContext {
 
     @Override public void statusMessage(String message) {
         Flog.log(message);
-        if (!chatManager.isOpen()) {
+        if (chatManager != null && !chatManager.isOpen()) {
             //Only show a status message when chat is not open.
             statusMessage(message, NotificationType.INFORMATION);
         }
