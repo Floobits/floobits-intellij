@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.3.5</version>
+  <version>1.3.6</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,10 +16,9 @@
       ]]></description>
 
   <change-notes><![CDATA[
-          Reduced the supported versions of IntelliJ to build 131 (IntelliJ 13 & and forks).
-          Fixed using QuickStart menu items with new Floorc.
-          Changed how we open new projects again.
-          Stopped pinging our server, this was creating connection instability.
+         Fixed deleting directories not removing directories from workspace.
+         Fixed renaming a directory not renaming on workspace.
+         Fixed multiple file added and removed status messages from being too spammy.
     ]]>
   </change-notes>
 
