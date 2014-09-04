@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledFuture;
 public class StatusMessageThrottler {
     private String throttleMessage;
     private int maxMessages = 10;
-    private int throttleWait = 5;
+    private int throttleWait = 2000;
     private List<String> messages = new ArrayList<String>();
     private ScheduledFuture schedule = null;
     private IContext context;
@@ -24,6 +24,7 @@ public class StatusMessageThrottler {
      */
     public StatusMessageThrottler (IContext context, String throttleMessage) {
         this.throttleMessage = throttleMessage;
+        this.context = context;
     }
 
     public void statusMessage(String message) {
@@ -33,7 +34,7 @@ public class StatusMessageThrottler {
 
     private void queueUpMessages() {
         if (schedule != null) {
-            schedule.cancel(false);
+            return;
         }
         schedule = context.setTimeout(throttleWait, new Runnable() {
             @Override
@@ -45,20 +46,24 @@ public class StatusMessageThrottler {
 
     private void clearMessages() {
         int numMessages = messages.size();
-        if (numMessages > maxMessages) {
-            if (throttleMessage.contains("%d")) {
-                context.statusMessage(String.format(throttleMessage, numMessages));
-            } else {
-                context.statusMessage(throttleMessage);
-            }
+
+        if (numMessages <= maxMessages) {
             for (String message : messages) {
-                context.chatStatusMessage(message);
+                context.statusMessage(message);
             }
+            messages.clear();
             return;
         }
+
+        if (throttleMessage.contains("%d")) {
+            context.statusMessage(String.format(throttleMessage, numMessages));
+        } else {
+            context.statusMessage(throttleMessage);
+        }
         for (String message : messages) {
-            context.statusMessage(message);
+            context.chatStatusMessage(message);
         }
         messages.clear();
+        schedule = null;
     }
 }

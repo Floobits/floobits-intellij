@@ -31,6 +31,7 @@ public class InboundRequestHandler {
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
     private StatusMessageThrottler fileAddedMessageThrottler;
+    private StatusMessageThrottler fileRemovedMessageThrottler;
     private EditorScheduler editor;
 
     enum Events {
@@ -45,6 +46,8 @@ public class InboundRequestHandler {
         this.shouldUpload = shouldUpload;
         fileAddedMessageThrottler = new StatusMessageThrottler(context,
                 "%d files were added to the workspace.");
+        fileRemovedMessageThrottler = new StatusMessageThrottler(context,
+                "%d files were removed from the workspace.");
     }
 
     private void initialManageConflicts(RoomInfoResponse ri) {
@@ -324,7 +327,7 @@ public class InboundRequestHandler {
                     state.paths_to_ids.remove(buf.path);
                 }
                 if (!deleteBuf.unlink) {
-                    context.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
+                    fileRemovedMessageThrottler.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
                     return;
                 }
                 String absPath = context.absPath(buf.path);

@@ -43,7 +43,10 @@ public class AddToWorkspace extends IsJoinedAction {
             ArrayList<IFile> allValidNestedFiles = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
             filesToAdd.addAll(allValidNestedFiles);
         }
-
+        // Let's show a status message when we're uploading lots because it can lag before we get create bufs back.
+        if (filesToAdd.size() > 10 ) {
+            context.statusMessage(String.format("Uploading %d files.", filesToAdd.size()));
+        }
         for (IFile virtualFile : filesToAdd) {
             editorEventHandler.upload(virtualFile);
         }
