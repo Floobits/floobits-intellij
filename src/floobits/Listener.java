@@ -18,9 +18,13 @@ import com.intellij.openapi.vfs.newvfs.events.*;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
-import floobits.common.Utils;
+import floobits.common.interfaces.IFile;
+import floobits.impl.ContextImpl;
+import floobits.impl.DocImpl;
+import floobits.impl.FactoryImpl;
+import floobits.impl.FileImpl;
 import floobits.utilities.Flog;
-import floobits.utilities.GetPath;
+import floobits.utilities.IntelliUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -29,27 +33,22 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
-    private static final AtomicBoolean isListening = new AtomicBoolean(true);
-    private final FlooContext context;
-    private final EditorEventHandler editorManager;
+    public final AtomicBoolean isListening = new AtomicBoolean(false);
+    public final AtomicBoolean forcedCursorChange = new AtomicBoolean(false);
+    private final ContextImpl context;
+    private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
-
-    public synchronized static void flooEnable() {
-        isListening.set(true);
-    }
-    public synchronized static void flooDisable() {
-        isListening.set(false);
-    }
-    private final MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
-    private final EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
+    private MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
+    private EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
+    private String oldRenamePath;
 
 
-    public Listener(EditorEventHandler manager, FlooContext context) {
+    public Listener(ContextImpl context) {
         this.context = context;
-        this.editorManager = manager;
     }
 
-    public void start() {
+    public synchronized void start(final EditorEventHandler editorManager) {
+        this.editorManager = editorManager;
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
         connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
         em.addDocumentListener(this);
@@ -75,13 +74,23 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         VirtualFileManager.getInstance().addVirtualFileListener(virtualFileAdapter);
     }
 
-    public void shutdown() {
-        connection.disconnect();
-        em.removeSelectionListener(this);
-        em.removeDocumentListener(this);
-        em.removeCaretListener(this);
-        em.removeVisibleAreaListener(this);
-        VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
+    public synchronized void shutdown() {
+        if (connection != null) {
+            connection.disconnect();
+            connection = null;
+        }
+        if (em != null) {
+            em.removeSelectionListener(this);
+            em.removeDocumentListener(this);
+            em.removeCaretListener(this);
+            em.removeVisibleAreaListener(this);
+            em = null;
+        }
+        if (virtualFileAdapter != null) {
+            VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
+            virtualFileAdapter = null;
+        }
+
     }
 
     @Override
@@ -91,12 +100,12 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void beforeDocumentSaving(@NotNull Document document) {
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                editorManager.save(path);
-            }
-        });
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(document);
+        if (path == null) {
+            return;
+        }
+        editorManager.save(path);
     }
 
 
@@ -112,12 +121,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.info("No virtual file for document %s", document);
             return;
         }
-        editorManager.change(virtualFile);
-    }
-
-    @Override
-    public void caretPositionChanged(final CaretEvent event) {
-        sendCaretPosition(event.getEditor());
+        editorManager.change(new FileImpl(virtualFile));
     }
 
     public void caretAdded(CaretEvent caretEvent) {
@@ -129,63 +133,56 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     @Override
-    public void selectionChanged(final SelectionEvent event) {
-        if (!isListening.get()) {
-            return;
-        }
-        Document document = event.getEditor().getDocument();
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                TextRange[] textRanges = event.getNewRanges();
-                ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
-                for(TextRange r : textRanges) {
-                    ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
-                }
-                editorManager.changeSelection(path, ranges);
+    public void before(@NotNull List<? extends VFileEvent> events) {
+        for (VFileEvent event : events) {
+            if (event instanceof VFileDeleteEvent) {
+                Flog.info("deleting a file %s", event.getPath());
+                editorManager.deleteDirectory(IntelliUtils.getAllNestedFilePaths(event.getFile()));
+                continue;
             }
-        });
+            if (event instanceof VFilePropertyChangeEvent) {
+                VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
+                if (propertyEvent.getPropertyName() != "name") {
+                    continue;
+                }
+                oldRenamePath = propertyEvent.getFile().getPath();
+                continue;
+            }
+        }
     }
-
-    @Override
-    public void before(@NotNull List<? extends VFileEvent> events) {}
 
     @Override
     public void after(@NotNull List<? extends VFileEvent> events) {
         for (VFileEvent event : events) {
-            VirtualFile virtualFile = event.getFile();
+            IFile virtualFile = new FileImpl(event.getFile());
             if (Ignore.isIgnoreFile(virtualFile) && !context.isIgnored(virtualFile)) {
                 context.refreshIgnores();
                 break;
             }
         }
-
         if (!isListening.get()) {
             return;
         }
         for (VFileEvent event : events) {
             Flog.debug(" after event type %s", event.getClass().getSimpleName());
+            if (event instanceof VFilePropertyChangeEvent) {
+                VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
+                if (propertyEvent.getPropertyName() != "name") {
+                    continue;
+                }
+                VirtualFile virtualFile = propertyEvent.getFile();
+                renameAllNestedFiles(virtualFile,  oldRenamePath, virtualFile.getPath());
+                oldRenamePath = null;
+                continue;
+            }
             if (event instanceof VFileMoveEvent) {
                 Flog.info("move event %s", event);
                 VirtualFile oldParent = ((VFileMoveEvent) event).getOldParent();
                 VirtualFile newParent = ((VFileMoveEvent) event).getNewParent();
-                String oldPath = oldParent.getPath();
-                String newPath = newParent.getPath();
-                VirtualFile virtualFile = event.getFile();
-                ArrayList<VirtualFile> files;
-                files = Utils.getAllValidNestedFiles(context, virtualFile);
-                for (VirtualFile file: files) {
-                    String newFilePath = file.getPath();
-                    String oldFilePath = newFilePath.replace(newPath, oldPath);
-                    editorManager.rename(oldFilePath, newFilePath);
-                }
+                renameAllNestedFiles(event.getFile(), oldParent.getPath(), newParent.getPath());
                 continue;
             }
-            if (event instanceof VFileDeleteEvent) {
-                Flog.info("deleting a file %s", event.getPath());
-                editorManager.deleteDirectory(Utils.getAllNestedFilePaths(context, event.getFile()));
-                continue;
-            }
+
             if (event instanceof VFileCopyEvent) {
                 // We get one copy event per file copied for copied directories, which makes this easy.
                 Flog.info("Copying a file %s", event);
@@ -197,33 +194,42 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                 for (VirtualFile child : children) {
                     if (child.getName().equals(newChildName)) {
                         copiedFile = child;
+                        break;
                     }
                 }
                 if (copiedFile == null) {
                     Flog.warn("Couldn't find copied virtual file %s", path);
                     continue;
                 }
-                Utils.createFile(context, copiedFile);
+                editorManager.createFile(new FileImpl(copiedFile));
                 continue;
             }
             if (event instanceof VFileCreateEvent) {
                 Flog.info("creating a file %s", event);
-                ArrayList<VirtualFile> createdFiles;
-                createdFiles = Utils.getAllValidNestedFiles(context, event.getFile());
-                for (final VirtualFile createdFile : createdFiles) {
-                    Utils.createFile(context, createdFile);
+                ArrayList<IFile> createdFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (final IFile createdFile : createdFiles) {
+                    editorManager.createFile(createdFile);
                 }
                 continue;
             }
             if (event instanceof VFileContentChangeEvent) {
-                ArrayList<VirtualFile> changedFiles;
-                changedFiles = Utils.getAllValidNestedFiles(context, event.getFile());
-                for (VirtualFile file : changedFiles) {
+                ArrayList<IFile> changedFiles = IntelliUtils.getAllValidNestedFiles(context, event.getFile());
+                for (IFile file : changedFiles) {
                     editorManager.change(file);
                 }
             }
         }
     }
+
+    private void renameAllNestedFiles(VirtualFile virtualFile, String oldPath, String newPath) {
+        ArrayList<IFile> files = IntelliUtils.getAllValidNestedFiles(context, virtualFile);
+        for (IFile file: files) {
+            String newFilePath = file.getPath();
+            String oldFilePath = newFilePath.replace(newPath, oldPath);
+            editorManager.rename(oldFilePath, newFilePath);
+        }
+    }
+
     @Override
     public void unsavedDocumentsDropped() {
     }
@@ -244,6 +250,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     public void beforeAllDocumentsSaving() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
     @Override
     public void beforeDocumentChange(final DocumentEvent event) {
         if (!isListening.get()) {
@@ -256,7 +263,13 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         if (file == null)
             return;
 
-        editorManager.beforeChange(file, event.getDocument());
+        Document document = event.getDocument();
+        editorManager.beforeChange(new DocImpl(context, document));
+    }
+
+    @Override
+    public void caretPositionChanged(final CaretEvent event) {
+        sendCaretPosition(event.getEditor());
     }
 
     @Override
@@ -265,23 +278,35 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     private void sendCaretPosition(Editor editor) {
-        if (!isListening.get()) {
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(editor.getDocument());
+        if (path == null) {
             return;
         }
-        Document document = editor.getDocument();
-        final Editor[] editors = EditorFactory.getInstance().getEditors(document);
-        GetPath.getPath(new GetPath(document) {
-            @Override
-            public void if_path(String path) {
-                if (editors.length <= 0) {
-                    return;
-                }
-                Editor editor = editors[0];
-                ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
-                Integer offset = editor.getCaretModel().getOffset();
-                range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-                editorManager.changeSelection(path, range);
-            }
-        });
+        ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
+        Integer offset = editor.getCaretModel().getOffset();
+        range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
+        editorManager.changeSelection(path, range, isListening.get());
+    }
+
+    @Override
+    public void selectionChanged(final SelectionEvent event) {
+        if (forcedCursorChange.get()) {
+            forcedCursorChange.set(false);
+            return;
+        }
+        Document document = event.getEditor().getDocument();
+        FactoryImpl iFactory = (FactoryImpl) context.iFactory;
+        String path = iFactory.getPathForDoc(document);
+        if (path == null) {
+            return;
+        }
+
+        TextRange[] textRanges = event.getNewRanges();
+        ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
+        for(TextRange r : textRanges) {
+            ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
+        }
+        editorManager.changeSelection(path, ranges, isListening.get());
     }
 }

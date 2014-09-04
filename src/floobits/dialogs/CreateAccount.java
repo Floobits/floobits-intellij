@@ -2,8 +2,9 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.FloobitsPlugin;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,9 +70,9 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        FlooContext context;
+        IContext context;
         if (project == null) {
-            context = new FlooContext(null);
+            context = new ContextImpl(null);
         } else {
             context = FloobitsPlugin.getInstance(project).context;
         }
@@ -81,9 +82,9 @@ public class CreateAccount extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        FlooContext context;
+        IContext context;
         if (project == null) {
-            context = new FlooContext(null);
+            context = new ContextImpl(null);
         } else {
             context = FloobitsPlugin.getInstance(project).context;
         }

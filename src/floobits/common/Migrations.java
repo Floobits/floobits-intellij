@@ -23,8 +23,15 @@ public class Migrations {
         FloorcJson floorcJson = new FloorcJson();
         String floorcPath = FilenameUtils.concat(System.getProperty("user.home"), ".floorc");
         HashMap<String, String> settings = new HashMap<String, String>();
+        FileReader fileReader;
+
         try {
-            br = new BufferedReader(new FileReader(floorcPath));
+            fileReader = new FileReader(floorcPath);
+        } catch (FileNotFoundException e) {
+            return;
+        }
+        try {
+            br = new BufferedReader(fileReader);
             String line = br.readLine();
 
             while (line != null) {
@@ -85,9 +92,9 @@ public class Migrations {
         try {
             writer = new PrintWriter(file, "UTF-8");
         } catch (FileNotFoundException e) {
-            Utils.errorMessage("Can't write new .floorc", null);
+            Flog.errorMessage("Can't write new .floorc", null);
         } catch (UnsupportedEncodingException e) {
-            Utils.errorMessage("Can't write new .floorc", null);
+            Flog.errorMessage("Can't write new .floorc", null);
         }
         if (writer == null) {
             return;

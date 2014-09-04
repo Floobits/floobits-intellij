@@ -1,22 +1,25 @@
 package floobits.common;
 
-import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.buf.TextBuf;
+import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IFile;
+import floobits.common.protocol.Connection;
 import floobits.common.protocol.FlooPatch;
-import floobits.common.protocol.receive.*;
-import floobits.common.protocol.send.*;
+import floobits.common.protocol.json.receive.*;
+import floobits.common.protocol.json.send.*;
 import floobits.utilities.Flog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class OutboundRequestHandler {
-    private final FlooContext context;
+    private final IContext context;
     private final FloobitsState state;
     private final Connection conn;
     protected Integer requestId = 0;
 
-    public OutboundRequestHandler(FlooContext context, FloobitsState state, Connection conn) {
+    public OutboundRequestHandler(IContext context, FloobitsState state, Connection conn) {
         this.context = context;
         this.state = state;
         this.conn = conn;
@@ -46,7 +49,7 @@ public class OutboundRequestHandler {
         conn.write(req);
     }
 
-    void createBuf(VirtualFile virtualFile) {
+    void createBuf(IFile virtualFile) {
         Buf buf = Buf.createBuf(virtualFile, context, this);
         if (buf == null) {
             return;
@@ -93,7 +96,7 @@ public class OutboundRequestHandler {
         conn.write(new RenameBuf(b.id, newRelativePath));
     }
 
-    public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon) {
+    public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon, boolean following) {
         if (!state.can("highlight")) {
             return;
         }
@@ -101,7 +104,7 @@ public class OutboundRequestHandler {
             Flog.info("Not sending highlight. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
-        conn.write(new FlooHighlight(b, textRanges, summon, state.stalking));
+        conn.write(new FlooHighlight(b, textRanges, summon, following));
     }
 
     public void summon(String current, Integer offset) {
@@ -120,7 +123,7 @@ public class OutboundRequestHandler {
 
     public void requestEdit() {
         if (!state.can("request_perms")) {
-            Utils.errorMessage("You are not allowed to ask for edit permissions.", context.project);
+            context.errorMessage("You are not allowed to ask for edit permissions.");
             return;
         }
         conn.write(new EditRequest(new ArrayList<String>(Arrays.asList("edit_room"))));

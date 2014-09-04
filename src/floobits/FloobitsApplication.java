@@ -1,7 +1,11 @@
 package floobits;
 
 import com.intellij.ide.impl.ProjectUtil;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileChooser.impl.FileChooserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -12,15 +16,14 @@ import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
 import floobits.dialogs.CreateAccount;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.SelectFolder;
-import floobits.utilities.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
-import java.util.Set;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
@@ -31,27 +34,16 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
-        Migrations.migrateFloorc();
-        FloorcJson floorcJson = null;
-        try {
-            floorcJson = Settings.get();
-        } catch (Throwable e) {
-            Flog.warn(e);
-        }
-        Set<String> strings = floorcJson != null ? floorcJson.auth.keySet() : null;
-        if ((strings != null ? strings.size() : 0) == 1) {
-            Constants.defaultHost = (String) strings.toArray()[0];
-        }
-        if (Settings.canFloobits()) {
-          createAccount = false;
-        }
+        ApplicationInfo instance = ApplicationInfo.getInstance();
+        IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+        createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), plugin != null ? plugin.getVersion() : "???");
     }
 
     public void disposeComponent() {
         // TODO: insert component disposal logic here
     }
 
-    public synchronized void projectOpened(FlooContext context) {
+    public synchronized void projectOpened(ContextImpl context) {
         if (!createAccount) {
             return;
         }
@@ -76,7 +68,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Exception e) {
-            Utils.errorMessage(String.format("Invalid url: %s", e), null);
+            Flog.errorMessage(String.format("Invalid url: %s", e), null);
             return;
         }
         SelectFolder.build(f.owner, f.workspace, new RunLater<String>() {
@@ -84,11 +76,11 @@ public class FloobitsApplication implements ApplicationComponent {
             public void run(final String location) {
                 Project projectForPath = getProject(location);
                 if (projectForPath == null) {
-                    Utils.errorMessage("The editor could not open the project :(", null);
+                    Flog.errorMessage("The editor could not open the project :(", null);
                     return;
                 }
-                final FlooContext context = FloobitsPlugin.getInstance(projectForPath).context;
-                ThreadSafe.write(context, new Runnable() {
+                final ContextImpl context = FloobitsPlugin.getInstance(projectForPath).context;
+                context.writeThread(new Runnable() {
                     @Override
                     public void run() {
                         context.project.save();
@@ -104,7 +96,7 @@ public class FloobitsApplication implements ApplicationComponent {
 
     }
 
-    public void joinWorkspace(FlooContext context, final FlooUrl flooUrl, final String location) {
+    public void joinWorkspace(ContextImpl context, final FlooUrl flooUrl, final String location) {
 //        if (!API.workspaceExists(flooUrl, context)) {
 //            context.errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
 //            return;
@@ -113,14 +105,14 @@ public class FloobitsApplication implements ApplicationComponent {
 
         if (context == null || projectForPath != context.project) {
             if (projectForPath == null) {
-                Utils.errorMessage("The editor could not open the project :(", null);
+                Flog.errorMessage("The editor could not open the project :(", null);
                 return;
             }
             context = FloobitsPlugin.getInstance(projectForPath).context;
         }
         // not gonna work here
-        final FlooContext finalContext = context;
-        ThreadSafe.write(context, new Runnable() {
+        final ContextImpl finalContext = context;
+        context.writeThread(new Runnable() {
             @Override
             public void run() {
                 Window window = WindowManager.getInstance().suggestParentWindow(finalContext.project);
@@ -132,13 +124,13 @@ public class FloobitsApplication implements ApplicationComponent {
         });
     }
 
-    public void joinWorkspace(final FlooContext context, final String url) {
+    public void joinWorkspace(final ContextImpl context, final String url) {
         final FlooUrl f;
 
         try {
             f = new FlooUrl(url);
         } catch (Throwable e) {
-            Utils.errorMessage(String.format("Invalid url: %s", e), context.project);
+            Flog.errorMessage(String.format("Invalid url: %s", e), context.project);
             return;
         }
 

@@ -1,7 +1,6 @@
 package floobits.dialogs;
 
 import floobits.common.Ignore;
-import floobits.common.RunLater;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -13,7 +12,7 @@ import java.util.LinkedList;
 public class HandleTooBigDialog extends CustomButtonDialogWrapper {
     protected FileListPromptForm form;
 
-    public HandleTooBigDialog(final RunLater<Boolean> runLater, final LinkedList<Ignore> bigStuff) {
+    public HandleTooBigDialog(final LinkedList<Ignore> bigStuff) {
         super(true);
         setTitle("Your Project Is Too Large");
         form = new FileListPromptForm(String.format("Ignore the following (%d) directories and continue?", bigStuff.size()));
@@ -26,13 +25,13 @@ public class HandleTooBigDialog extends CustomButtonDialogWrapper {
         CustomButtonAction cancelAction = new CustomButtonAction("Quit", new Runnable() {
             @Override
             public void run() {
-                runLater.run(false);
+
             }
         });
         CustomButtonAction okAction = new CustomButtonAction("Ignore and Continue", new Runnable() {
             @Override
             public void run() {
-                runLater.run(true);
+
             }
         });
         actions = new Action[]{cancelAction, okAction};

@@ -3,7 +3,7 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import floobits.FlooContext;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -23,7 +23,7 @@ public class Settings {
         try {
             string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.log("No floorc.json found");
             return new FloorcJson();
         }
         try {
@@ -33,7 +33,7 @@ public class Settings {
        }
     }
 
-    public static void write(FlooContext context, FloorcJson floorcJson) {
+    public static void write(IContext context, FloorcJson floorcJson) {
         File file = new File(floorcJsonPath);
         if (!file.exists()) {
             boolean newFile;
@@ -62,10 +62,13 @@ public class Settings {
     }
 
     public static Boolean canFloobits() {
-        HashMap<String, HashMap<String, String>> auth = null;
+        HashMap<String, HashMap<String, String>> auth;
         try {
             auth = get().auth;
         } catch (Throwable e) {
+            return false;
+        }
+        if (auth == null) {
             return false;
         }
         for (String host : auth.keySet()) {

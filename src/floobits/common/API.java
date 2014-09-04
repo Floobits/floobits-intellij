@@ -4,13 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.extensions.PluginId;
-import floobits.FlooContext;
-import floobits.common.handlers.BaseHandler;
-import floobits.common.handlers.FlooHandler;
+import floobits.common.interfaces.IContext;
+import floobits.common.protocol.handlers.BaseHandler;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -29,52 +25,14 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class API {
-    public static class CrashDump implements Serializable {
-        public String owner;
-        public String workspace;
-        public String dir;
-        public String subject;
-        public String username;
-        public String useragent;
-        public HashMap<String, String> message = new HashMap<String, String>();
+    public static  int maxErrorReports = 3;
+    private static int numSent = 0;
 
-        public CrashDump(Throwable e, String owner, String workspace, String dir, String username) {
-            this.owner = owner;
-            this.workspace = workspace;
-            this.dir = dir;
-            this.username = username;
-            message.put("sendingAt", String.format("%s", new Date().getTime()));
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            message.put("stack", sw.toString());
-            message.put("description", e.getMessage());
-            setContextInfo("%s died%s!");
-        }
-
-        public CrashDump(String description, String username) {
-            this.username = username;
-            message.put("sendingAt", String.format("%s", new Date().getTime()));
-            message.put("description", description);
-            setContextInfo("%s submitted an issues%s!");
-        }
-
-        protected void setContextInfo(String subjectText) {
-            ApplicationInfo instance = ApplicationInfo.getInstance();
-            IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-            String version = plugin != null ? plugin.getVersion() : "???";
-            useragent = String.format("%s-%s-%s %s (%s-%s)", instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version, System.getProperty("os.name"), System.getProperty("os.version"));
-            subject = String.format(subjectText, instance.getVersionName(), username != null ? " for " + username : "");
-        }
-    }
-
-
-    public static boolean createWorkspace(String host, String owner, String workspace, FlooContext context, boolean notPublic) {
+    public static boolean createWorkspace(String host, String owner, String workspace, IContext context, boolean notPublic) {
         PostMethod method;
 
         method = new PostMethod("/api/workspace");
@@ -114,7 +72,7 @@ public class API {
             case 401:
                 Flog.log("Auth failed");
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
-                return context.openFile(new File(Settings.floorcJsonPath));
+                return context.iFactory.openFile(new File(Settings.floorcJsonPath));
             default:
                 try {
                     Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
@@ -124,7 +82,7 @@ public class API {
                 return false;
         }
     }
-    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, FlooContext context) {
+    public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, IContext context) {
 
         PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
         Gson gson = new Gson();
@@ -147,7 +105,7 @@ public class API {
         return method.getStatusCode() < 300;
     }
 
-    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, FlooContext context) {
+    public static HTTPWorkspaceRequest getWorkspace(final FlooUrl f, IContext context) {
 
         HttpMethod method;
         try {
@@ -169,7 +127,7 @@ public class API {
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 
-    public static boolean workspaceExists(final FlooUrl f, FlooContext context) {
+    public static boolean workspaceExists(final FlooUrl f, IContext context) {
         if (f == null) {
             return false;
         }
@@ -188,11 +146,11 @@ public class API {
         return true;
     }
 
-    static private HttpMethod getWorkspaceMethod(FlooUrl f, FlooContext context) throws IOException {
+    static private HttpMethod getWorkspaceMethod(FlooUrl f, IContext context) throws IOException {
         return apiRequest(new GetMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace)), context, f.host);
     }
 
-    static public HttpMethod apiRequest(HttpMethod method, FlooContext context, String host) throws IOException, IllegalArgumentException {
+    static public HttpMethod apiRequest(HttpMethod method, IContext context, String host) throws IOException, IllegalArgumentException {
         Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
         // NOTE: we cant tell java to follow redirects because they can fail.
@@ -251,7 +209,7 @@ public class API {
         return method;
     }
 
-    static public List<String> getOrgsCanAdmin(String host, FlooContext context) {
+    static public List<String> getOrgsCanAdmin(String host, IContext context) {
         final GetMethod method = new GetMethod("/api/orgs/can/admin");
         List<String> orgs = new ArrayList<String>();
 
@@ -282,7 +240,14 @@ public class API {
 
         return orgs;
     }
-    static public void uploadCrash(BaseHandler baseHandler, final FlooContext context, Throwable throwable) {
+    static public void uploadCrash(BaseHandler baseHandler, final IContext context, Throwable throwable) {
+        numSent++;
+        if (numSent >= maxErrorReports) {
+            Flog.warn(String.format("Already sent %s errors this session. Not sending any more.", numSent));
+            if (throwable != null) Flog.warn(throwable);
+            return;
+        }
+
         try {
             Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
@@ -295,7 +260,7 @@ public class API {
                 owner = baseHandler.getUrl().owner;
                 workspace = baseHandler.getUrl().workspace;
                 colabDir = context != null ? context.colabDir : "???";
-                username = baseHandler instanceof FlooHandler ? ((FlooHandler)baseHandler).state.username : "???";
+                username = baseHandler instanceof FlooHandler ? ((FlooHandler) baseHandler).state.username : "???";
             }
             method = new PostMethod("/api/log");
             Gson gson = new Gson();
@@ -308,17 +273,20 @@ public class API {
                     try {
                         apiRequest(method, context, Constants.floobitsDomain);
                     } catch (Throwable e) {
-                        Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+                        if (context != null) {
+                            context.errorMessage(String.format("Couldn't send crash report %s", e));
+                        }
+
                     }
                 }
             }, "Floobits Crash Reporter").run();
-      } catch (Throwable e) {
+        } catch (Throwable e) {
             try {
-                Utils.errorMessage(String.format("Couldn't send crash report %s", e), context != null ? context.project : null);
+                context.errorMessage(String.format("Couldn't send crash report %s", e));
             } catch (Throwable ignored) {}
         }
     }
-    static public void uploadCrash(FlooContext context, Throwable throwable) {
+    static public void uploadCrash(IContext context, Throwable throwable) {
         uploadCrash(context.handler, context, throwable);
     }
     static public void sendUserIssue(String description, String username) {
@@ -339,7 +307,7 @@ public class API {
                 try {
                     apiRequest(method, null, Constants.floobitsDomain);
                 } catch (Throwable e) {
-                    Utils.errorMessage(String.format("Couldn't send crash report %s", e), null);
+                    Flog.errorMessage(String.format("Couldn't send crash report %s", e), null);
                 }
             }
         }, "Floobits User Issue Submitter").run();

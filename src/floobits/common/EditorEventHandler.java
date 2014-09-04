@@ -1,13 +1,12 @@
 package floobits.common;
 
-import com.intellij.notification.NotificationType;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.vfs.VirtualFile;
-import floobits.FlooContext;
-import floobits.Listener;
+import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IDoc;
+import floobits.common.interfaces.IFactory;
+import floobits.common.interfaces.IFile;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
-import floobits.utilities.ThreadSafe;
 
 import java.awt.*;
 import java.io.IOException;
@@ -16,27 +15,39 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-/**
- * Created by kans on 5/7/14.
- */
 public class EditorEventHandler {
-    private final FlooContext context;
-    private final FloobitsState state;
-    private Listener listener;
+    private final IContext context;
+    public final FloobitsState state;
     private final OutboundRequestHandler outbound;
-    private InboundRequestHandler inbound;
+    private final InboundRequestHandler inbound;
 
-    public EditorEventHandler(FlooContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
+    public EditorEventHandler(IContext context, FloobitsState state, OutboundRequestHandler outbound, InboundRequestHandler inbound) {
         this.context = context;
         this.state = state;
         this.outbound = outbound;
         this.inbound = inbound;
-        listener = new Listener(this, context);
+    }
+
+    public void createFile(final IFile virtualFile) {
+        if (context.isIgnored(virtualFile)) {
+            return;
+        }
+        context.setTimeout(100, new Runnable() {
+            @Override
+            public void run() {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.editorEventHandler.upload(virtualFile);
+            }
+        });
     }
 
     public void go() {
-        listener.start();
+        context.listenToEditor(this);
     }
+
     public void rename(String path, String newPath) {
         if (!state.can("patch")) {
             return;
@@ -60,7 +71,7 @@ public class EditorEventHandler {
         outbound.renameBuf(buf, newRelativePath);
     }
 
-    public void change(VirtualFile file) {
+    public void change(IFile file) {
         String filePath = file.getPath();
         if (!state.can("patch")) {
             return;
@@ -81,9 +92,9 @@ public class EditorEventHandler {
         }
     }
 
-    public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges) {
+    public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges, boolean following) {
         Buf buf = state.get_buf_by_path(path);
-        outbound.highlight(buf, textRanges, false);
+        outbound.highlight(buf, textRanges, false, following);
     }
 
     public void save(String path) {
@@ -99,7 +110,7 @@ public class EditorEventHandler {
         for (String path : files) {
             Buf buf = state.get_buf_by_path(path);
             if (buf == null) {
-                context.statusMessage(String.format("The file, %s, is not in the workspace.", path), NotificationType.WARNING);
+                context.warnMessage(String.format("The file, %s, is not in the workspace.", path));
                 continue;
             }
             outbound.deleteBuf(buf, false);
@@ -136,7 +147,7 @@ public class EditorEventHandler {
         outbound.setPerms("set", userId, perms);
     }
 
-    public void upload(VirtualFile virtualFile) {
+    public void upload(IFile virtualFile) {
         if (state.readOnly) {
             return;
         }
@@ -150,50 +161,6 @@ public class EditorEventHandler {
             return;
         }
         outbound.createBuf(virtualFile);
-    }
-
-    public void beforeChange(final VirtualFile file, final Document document) {
-        final Buf bufByPath = state.get_buf_by_path(file.getPath());
-        if (bufByPath == null) {
-            return;
-        }
-        String msg;
-        if (state.readOnly) {
-            msg = "This document is readonly because you don't have edit permission in the workspace.";
-        } else if (!bufByPath.isPopulated()) {
-            msg = "This document is temporarily readonly while we fetch a fresh copy.";
-        } else {
-            return;
-        }
-        context.statusMessage(msg);
-        document.setReadOnly(true);
-        context.editor.readOnlyBufferIds.add(bufByPath.path);
-        final String text = document.getText();
-        context.setTimeout(0, new Runnable() {
-            @Override
-            public void run() {
-                ThreadSafe.write(context, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!state.readOnly && bufByPath.isPopulated()) {
-                            return;
-                        }
-                        Document d = FileDocumentManager.getInstance().getDocument(file);
-                        if (d == null) {
-                            return;
-                        }
-                        try {
-                            Listener.flooDisable();
-                            d.setReadOnly(false);
-                            d.setText(text);
-                            d.setReadOnly(true);
-                        } finally {
-                            Listener.flooEnable();
-                        }
-                    }
-                });
-            }
-        });
     }
 
     public boolean follow() {
@@ -215,12 +182,12 @@ public class EditorEventHandler {
     }
 
     public void clearHighlights (){
-        context.editor.clearHighlights();
+        context.iFactory.clearHighlights();
     }
 
     public void openChat() {
         Flog.info("Showing user window.");
-        context.chatManager.openChat();
+        context.openChat();
     }
     public void openInBrowser() {
         if(!Desktop.isDesktopSupported()) {
@@ -235,10 +202,54 @@ public class EditorEventHandler {
             Flog.warn(error);
         }
     }
-    public void shutdown() {
-        if (listener != null) {
-            listener.shutdown();
-            listener = null;
+
+    public void beforeChange(IDoc doc) {
+        final IFile virtualFile = doc.getVirtualFile();
+        final String path = virtualFile.getPath();
+        final Buf bufByPath = state.get_buf_by_path(path);
+        if (bufByPath == null) {
+            return;
         }
+        String msg;
+        if (state.readOnly) {
+            msg = "This document is readonly because you don't have edit permission in the workspace.";
+        } else if (!bufByPath.isPopulated()) {
+            msg = "This document is temporarily readonly while we fetch a fresh copy.";
+        } else {
+            return;
+        }
+        context.statusMessage(msg);
+        doc.setReadOnly(true);
+        IFactory.readOnlyBufferIds.add(bufByPath.path);
+        final String text = doc.getText();
+        context.setTimeout(0, new Runnable() {
+            @Override
+            public void run() {
+                context.writeThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!state.readOnly && bufByPath.isPopulated()) {
+                            return;
+                        }
+                        synchronized (context) {
+                            try {
+                                context.setListener(false);
+                                IDoc d = context.iFactory.getDocument(virtualFile);
+                                if (d == null) {
+                                    return;
+                                }
+                                d.setReadOnly(false);
+                                d.setText(text);
+                                d.setReadOnly(true);
+                            } catch (Throwable e) {
+                                Flog.warn(e);
+                            } finally {
+                                context.setListener(true);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 }

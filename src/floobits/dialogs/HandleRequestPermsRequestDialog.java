@@ -1,7 +1,7 @@
 package floobits.dialogs;
 
-import com.intellij.openapi.project.Project;
 import floobits.common.RunLater;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,8 +10,8 @@ import javax.swing.*;
 public class HandleRequestPermsRequestDialog extends CustomButtonDialogWrapper {
     HandlePermissionRequestForm form = new HandlePermissionRequestForm();
 
-    public HandleRequestPermsRequestDialog(String username, Project project, final RunLater<String> runLater) {
-        super(project, true);
+    public HandleRequestPermsRequestDialog(String username, IContext context, final RunLater<String> runLater) {
+        super((com.intellij.openapi.project.Project) context.getActualContext(), true);
         actions = new Action[]{
             new CustomButtonAction("Reject Request", new Runnable() {
                 @Override

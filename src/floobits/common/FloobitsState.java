@@ -1,18 +1,17 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import floobits.FlooContext;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
-import floobits.common.protocol.send.RoomInfoResponse;
+import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-/**
- * Created by kans on 5/7/14.
- */
+
 public class FloobitsState {
     public JsonObject lastHighlight;
     public Boolean stalking = false;
@@ -25,10 +24,10 @@ public class FloobitsState {
     public boolean readOnly = false;
     public String username = "";
     protected HashSet<Integer> requests = new HashSet<Integer>();
-    private FlooContext context;
+    private IContext context;
     public FlooUrl url;
 
-    public FloobitsState(FlooContext context, FlooUrl flooUrl) {
+    public FloobitsState(IContext context, FlooUrl flooUrl) {
         this.context = context;
         url = flooUrl;
     }
@@ -46,7 +45,7 @@ public class FloobitsState {
 
     public void handleRoomInfo(RoomInfoResponse ri) {
         users = ri.users;
-        context.chatManager.setUsers(users);
+        context.setUsers(users);
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
@@ -94,14 +93,14 @@ public class FloobitsState {
     public void addUser(FlooUser flooser) {
         users.put(flooser.user_id, flooser);
         context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client));
-        context.chatManager.setUsers(users);
+        context.setUsers(users);
     }
 
     public void removeUser(int userId) {
-        if (users.remove(userId) != null) {
-            context.chatManager.setUsers(users);
-        }
         FlooUser u = users.get(userId);
+        if (users.remove(userId) != null) {
+            context.setUsers(users);
+        }
         if (u == null) {
             return;
         }

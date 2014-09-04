@@ -1,6 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 
 /**
@@ -10,6 +11,11 @@ import floobits.FloobitsPlugin;
  */
 public class ShareProjectPrivately extends CanFloobits {
     public void actionPerformed(AnActionEvent e) {
-        FloobitsPlugin.getInstance(e.getProject()).context.shareProject(true);
+        Project project = e.getProject();
+        if (project == null ) {
+            return;
+        }
+        final String project_path = project.getBasePath();
+        FloobitsPlugin.getInstance(project).context.shareProject(true, project_path);
     }
 }
