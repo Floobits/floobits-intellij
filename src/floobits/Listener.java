@@ -286,15 +286,11 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
         Integer offset = editor.getCaretModel().getOffset();
         range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        editorManager.changeSelection(path, range, isListening.get());
+        editorManager.changeSelection(path, range, forcedCursorChange.get());
     }
 
     @Override
     public void selectionChanged(final SelectionEvent event) {
-        if (forcedCursorChange.get()) {
-            forcedCursorChange.set(false);
-            return;
-        }
         Document document = event.getEditor().getDocument();
         FactoryImpl iFactory = (FactoryImpl) context.iFactory;
         String path = iFactory.getPathForDoc(document);
@@ -307,6 +303,6 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         for(TextRange r : textRanges) {
             ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
         }
-        editorManager.changeSelection(path, ranges, isListening.get());
+        editorManager.changeSelection(path, ranges, forcedCursorChange.get());
     }
 }

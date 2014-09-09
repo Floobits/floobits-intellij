@@ -113,7 +113,6 @@ public class DocImpl extends IDoc {
 
                 newHighlighters.add(rangeHighlighter);
                 if (force && first) {
-                    context.setForcedCursorMove();
                     CaretModel caretModel = editor.getCaretModel();
                     caretModel.moveToOffset(start);
                     LogicalPosition position = caretModel.getLogicalPosition();
@@ -155,12 +154,12 @@ public class DocImpl extends IDoc {
         }
         synchronized (context) {
             try {
-                context.setListener(false);
+                context.setForcedCursorMove(true);
                 applyHighlight(ranges, username, path, force || stalking, textLength, userID);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {
-                context.setListener(true);
+                context.setForcedCursorMove(false);
             }
         }
     }

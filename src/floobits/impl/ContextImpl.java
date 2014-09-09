@@ -265,7 +265,7 @@ public class ContextImpl extends IContext {
         listener.start(editorEventHandler);
     }
 
-    public void setForcedCursorMove() {
-        listener.forcedCursorChange.set(true);
+    public void setForcedCursorMove(boolean b) {
+        listener.forcedCursorChange.set(b);
     }
 }

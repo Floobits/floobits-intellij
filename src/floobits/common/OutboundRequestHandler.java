@@ -118,7 +118,7 @@ public class OutboundRequestHandler {
         }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        conn.write(new FlooHighlight(buf, ranges, true, state.stalking));
+        conn.write(new FlooHighlight(buf, ranges, true, false));
     }
 
     public void requestEdit() {
