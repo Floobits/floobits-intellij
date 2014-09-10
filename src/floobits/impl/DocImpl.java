@@ -145,7 +145,7 @@ public class DocImpl extends IDoc {
             if (spam && username.length() > 0 && force) {
                 context.statusMessage(String.format("%s has summoned you!", username));
             }
-            manager.openFile(virtualFile, true, true);
+            manager.openFile(virtualFile, false, true);
         }
 
         int textLength = document.getTextLength();
@@ -154,12 +154,12 @@ public class DocImpl extends IDoc {
         }
         synchronized (context) {
             try {
-                context.setForcedCursorMove(true);
+                context.setListener(false);
                 applyHighlight(ranges, username, path, force || stalking, textLength, userID);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {
-                context.setForcedCursorMove(false);
+                context.setListener(true);
             }
         }
     }

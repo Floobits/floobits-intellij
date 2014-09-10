@@ -3,6 +3,7 @@ package floobits.impl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.Listener;
@@ -263,9 +264,5 @@ public class ContextImpl extends IContext {
     @Override
     public void listenToEditor(EditorEventHandler editorEventHandler) {
         listener.start(editorEventHandler);
-    }
-
-    public void setForcedCursorMove(boolean b) {
-        listener.forcedCursorChange.set(b);
     }
 }

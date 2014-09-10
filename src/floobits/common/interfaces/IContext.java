@@ -1,5 +1,6 @@
 package floobits.common.interfaces;
 
+import com.intellij.openapi.editor.Editor;
 import floobits.common.*;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.BaseHandler;

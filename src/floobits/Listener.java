@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Listener implements BulkFileListener, DocumentListener, SelectionListener, FileDocumentManagerListener, VisibleAreaListener, CaretListener {
     public final AtomicBoolean isListening = new AtomicBoolean(false);
-    public final AtomicBoolean forcedCursorChange = new AtomicBoolean(false);
     private final ContextImpl context;
     private EditorEventHandler editorManager;
     private VirtualFileAdapter virtualFileAdapter;
@@ -55,6 +54,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addSelectionListener(this);
         em.addCaretListener(this);
         em.addVisibleAreaListener(this);
+
 
         virtualFileAdapter = new VirtualFileAdapter() {
             public void beforePropertyChange(@NotNull final VirtualFilePropertyEvent event) {
@@ -286,7 +286,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
         Integer offset = editor.getCaretModel().getOffset();
         range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        editorManager.changeSelection(path, range, forcedCursorChange.get());
+        editorManager.changeSelection(path, range, !isListening.get());
     }
 
     @Override
@@ -303,6 +303,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         for(TextRange r : textRanges) {
             ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
         }
-        editorManager.changeSelection(path, ranges, forcedCursorChange.get());
+        editorManager.changeSelection(path, ranges, !isListening.get());
     }
+
 }
