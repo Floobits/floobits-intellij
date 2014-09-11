@@ -20,6 +20,8 @@
          Fixed renaming a directory not renaming on workspace.
          Fixed multiple file added and removed status messages from being too spammy.
          Upgraded highlighting events to notify on forced follow cursor movements.
+         Pausing follow mode when user edits.
+         Follow mode no longer pulls the user out of open prompts.
     ]]>
   </change-notes>
 
