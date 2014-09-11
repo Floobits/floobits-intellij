@@ -10,11 +10,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 
 
 public class FloobitsState {
     public JsonObject lastHighlight;
-    public Boolean stalking = false;
+    private Boolean following = false;
+    private ScheduledFuture pausedFollowing;
     public HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
@@ -135,5 +137,47 @@ public class FloobitsState {
 
     public void shutdown() {
         bufs = null;
+    }
+
+    public Boolean getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(Boolean following) {
+        this.pauseFollowing(false);
+        this.following = following;
+    }
+
+    public Boolean getPausedFollowing() {
+        return pausedFollowing != null;
+    }
+
+    public void pauseFollowing(Boolean pauseFollowing) {
+        /*
+        Possible states:
+            Not following, not paused.
+            Following, not paused.
+            Following, paused.
+
+        Impossible state:
+            Not following, paused. Paused means following, just not active. Anytime we set follow, we must cancel any pause.
+         */
+        if (this.pausedFollowing != null) {
+            following = true;
+            this.pausedFollowing.cancel(true);
+        }
+        this.pausedFollowing = null;
+        if (pauseFollowing) {
+            if (!following) {
+                return;
+            }
+            following = false;
+            this.pausedFollowing = context.setTimeout(2000, new Runnable() {
+                @Override
+                public void run() {
+                    pauseFollowing(false);
+                }
+            });
+        }
     }
 }

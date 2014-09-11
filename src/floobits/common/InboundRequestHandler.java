@@ -378,7 +378,7 @@ public class InboundRequestHandler {
                     return;
                 }
                 String username = state.getUsername(res.user_id);
-                iDoc.applyHighlight(buf.path, res.user_id, username, state.stalking, force, res.ranges);
+                iDoc.applyHighlight(buf.path, res.user_id, username, state.getFollowing(), force, res.ranges);
             }
         });
     }

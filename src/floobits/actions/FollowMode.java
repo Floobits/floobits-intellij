@@ -28,7 +28,7 @@ public class FollowMode extends IsJoinedAction {
         if (flooHandler == null) {
             return;
         }
-        boolean mode = flooHandler.editorEventHandler.state.stalking;
+        boolean mode = flooHandler.editorEventHandler.state.getFollowing();
         e.getPresentation().setText(String.format("%s follow mode", mode ? "Disable" : "Enable"));
     }
 }

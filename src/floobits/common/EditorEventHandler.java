@@ -79,6 +79,7 @@ public class EditorEventHandler {
         if (!context.isShared(filePath)) {
             return;
         }
+        state.pauseFollowing(true);
         final Buf buf = state.get_buf_by_path(filePath);
         if (buf == null) {
             return;
@@ -164,8 +165,8 @@ public class EditorEventHandler {
     }
 
     public boolean follow() {
-        boolean mode = !state.stalking;
-        state.stalking = mode;
+        boolean mode = !state.getFollowing();
+        state.setFollowing(mode);
         context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));;
         if (mode && state.lastHighlight != null) {
             inbound._on_highlight(state.lastHighlight);

@@ -133,11 +133,11 @@ public class DocImpl extends IDoc {
     }
 
     @Override
-    public void applyHighlight(String path, int userID, String username, Boolean stalking, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
+    public void applyHighlight(String path, int userID, String username, Boolean following, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);
         final VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
 
-        if ((force || stalking) && virtualFile != null && virtualFile.isValid()) {
+        if ((force || following) && virtualFile != null && virtualFile.isValid()) {
             boolean spam = false;
             if (!manager.isFileOpen(virtualFile) || !Arrays.asList(manager.getSelectedFiles()).contains(virtualFile)) {
                 spam = true;
@@ -155,7 +155,7 @@ public class DocImpl extends IDoc {
         synchronized (context) {
             try {
                 context.setListener(false);
-                applyHighlight(ranges, username, path, force || stalking, textLength, userID);
+                applyHighlight(ranges, username, path, force || following, textLength, userID);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {
