@@ -203,7 +203,14 @@ public class FactoryImpl implements IFactory {
         if (virtualFile == null) {
             return null;
         }
-        Document document = FileDocumentManager.getInstance().getDocument(((FileImpl) virtualFile).virtualFile);
+        Document document;
+        try {
+            document = FileDocumentManager.getInstance().getDocument(((FileImpl) virtualFile).virtualFile);
+        } catch (RuntimeException e) {
+            // We've seen an java.io.EOFException here before.
+            Flog.warn(e);
+            return null;
+        }
         if (document == null) {
             return null;
         }
