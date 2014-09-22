@@ -1,6 +1,7 @@
 package floobits.common.protocol.json.receive;
 
 import floobits.common.protocol.Base;
+import org.apache.commons.io.FilenameUtils;
 
 public class RenameBuf implements Base {
     public Integer id;
@@ -9,6 +10,6 @@ public class RenameBuf implements Base {
 
     public RenameBuf(Integer id, String path) {
         this.id = id;
-        this.path = path;
+        this.path = FilenameUtils.separatorsToUnix(path);
     }
 }
