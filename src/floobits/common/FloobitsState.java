@@ -20,7 +20,7 @@ public class FloobitsState {
     public HashSet<String> perms = new HashSet<String>();
     private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
-    final HashMap<String, Integer> paths_to_ids = new HashMap<String, Integer>();
+    final HashMap<String, Integer> pathsToIds = new HashMap<String, Integer>();
     private int connectionId;
 
     public boolean readOnly = false;
@@ -57,19 +57,19 @@ public class FloobitsState {
         Flog.info("Got roominfo with userId %d", connectionId);
 
     }
-    public void set_buf_path(Buf buf, String newPath) {
-        paths_to_ids.remove(buf.path);
+    public void setBufPath(Buf buf, String newPath) {
+        pathsToIds.remove(buf.path);
         buf.path = newPath;
-        paths_to_ids.put(buf.path, buf.id);
+        pathsToIds.put(buf.path, buf.id);
     }
 
     public @Nullable
-    Buf get_buf_by_path(String absPath) {
+    Buf getBufByPath(String absPath) {
         String relPath = context.toProjectRelPath(absPath);
         if (relPath == null) {
             return null;
         }
-        Integer id = paths_to_ids.get(FilenameUtils.separatorsToUnix(relPath));
+        Integer id = pathsToIds.get(FilenameUtils.separatorsToUnix(relPath));
         if (id == null) {
             return null;
         }

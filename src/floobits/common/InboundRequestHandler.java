@@ -59,7 +59,7 @@ public class InboundRequestHandler {
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
             state.bufs.put(buf_id, buf);
-            state.paths_to_ids.put(b.path, b.id);
+            state.pathsToIds.put(b.path, b.id);
             buf.read();
             if (buf.buf == null) {
                 if (buf.path.equals("FLOOBITS_README.md") && buf.id == 1) {
@@ -163,7 +163,7 @@ public class InboundRequestHandler {
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
             state.bufs.put(buf_id, buf);
-            state.paths_to_ids.put(b.path, b.id);
+            state.pathsToIds.put(b.path, b.id);
             if (!paths.contains(buf.path)) {
                 outbound.deleteBuf(buf, false);
                 continue;
@@ -227,9 +227,9 @@ public class InboundRequestHandler {
         final String oldPath = context.absPath(name);
         final String newPath = context.absPath(jsonObject.get("path").getAsString());
 
-        Buf buf = state.get_buf_by_path(oldPath);
+        Buf buf = state.getBufByPath(oldPath);
         if (buf == null) {
-            if (state.get_buf_by_path(newPath) == null) {
+            if (state.getBufByPath(newPath) == null) {
                 Flog.warn("Rename oldPath and newPath don't exist. %s %s", oldPath, newPath);
             } else {
                 Flog.info("We probably rename this, nothing to rename.");
@@ -250,7 +250,7 @@ public class InboundRequestHandler {
                         context.errorMessage("A file is now outside the workspace.");
                         return;
                     }
-                    state.set_buf_path(buf, newRelativePath);
+                    state.setBufPath(buf, newRelativePath);
 
                     File oldFile = new File(oldPath);
                     File newFile = new File(newPath);
@@ -324,7 +324,7 @@ public class InboundRequestHandler {
                 buf.cancelTimeout();
                 if (state.bufs != null) {
                     state.bufs.remove(deleteBuf.id);
-                    state.paths_to_ids.remove(buf.path);
+                    state.pathsToIds.remove(buf.path);
                 }
                 if (!deleteBuf.unlink) {
                     fileRemovedMessageThrottler.statusMessage(String.format("Removed the file, %s, from the workspace.", buf.path));
@@ -413,7 +413,7 @@ public class InboundRequestHandler {
                     return;
                 }
                 state.bufs.put(buf.id, buf);
-                state.paths_to_ids.put(buf.path, buf.id);
+                state.pathsToIds.put(buf.path, buf.id);
                 buf.write();
                 fileAddedMessageThrottler.statusMessage(String.format("Added the file, %s, to the workspace.", buf.path));
             }

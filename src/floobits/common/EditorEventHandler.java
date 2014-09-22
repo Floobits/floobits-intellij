@@ -53,7 +53,7 @@ public class EditorEventHandler {
             return;
         }
         Flog.log("Renamed buf: %s - %s", path, newPath);
-        Buf buf = state.get_buf_by_path(path);
+        Buf buf = state.getBufByPath(path);
         if (buf == null) {
             Flog.info("buf does not exist.");
             return;
@@ -80,7 +80,7 @@ public class EditorEventHandler {
             return;
         }
         state.pauseFollowing(true);
-        final Buf buf = state.get_buf_by_path(filePath);
+        final Buf buf = state.getBufByPath(filePath);
         if (buf == null) {
             return;
         }
@@ -94,12 +94,12 @@ public class EditorEventHandler {
     }
 
     public void changeSelection(String path, ArrayList<ArrayList<Integer>> textRanges, boolean following) {
-        Buf buf = state.get_buf_by_path(path);
+        Buf buf = state.getBufByPath(path);
         outbound.highlight(buf, textRanges, false, following);
     }
 
     public void save(String path) {
-        Buf buf = state.get_buf_by_path(path);
+        Buf buf = state.getBufByPath(path);
         outbound.saveBuf(buf);
     }
 
@@ -109,7 +109,7 @@ public class EditorEventHandler {
         }
 
         for (String path : files) {
-            Buf buf = state.get_buf_by_path(path);
+            Buf buf = state.getBufByPath(path);
             if (buf == null) {
                 context.warnMessage(String.format("The file, %s, is not in the workspace.", path));
                 continue;
@@ -119,7 +119,7 @@ public class EditorEventHandler {
     }
 
     void delete(String path) {
-        Buf buf = state.get_buf_by_path(path);
+        Buf buf = state.getBufByPath(path);
         if (buf == null) {
             return;
         }
@@ -156,7 +156,7 @@ public class EditorEventHandler {
             return;
         }
         String path = virtualFile.getPath();
-        Buf b = state.get_buf_by_path(path);
+        Buf b = state.getBufByPath(path);
         if (b != null) {
             Flog.info("Already in workspace: %s", path);
             return;
@@ -207,7 +207,7 @@ public class EditorEventHandler {
     public void beforeChange(IDoc doc) {
         final IFile virtualFile = doc.getVirtualFile();
         final String path = virtualFile.getPath();
-        final Buf bufByPath = state.get_buf_by_path(path);
+        final Buf bufByPath = state.getBufByPath(path);
         if (bufByPath == null) {
             return;
         }

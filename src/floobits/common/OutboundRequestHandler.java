@@ -92,8 +92,8 @@ public class OutboundRequestHandler {
             return;
         }
         b.cancelTimeout();
-        state.set_buf_path(b, newRelativePath);
-        conn.write(new RenameBuf(b.id, newRelativePath));
+        state.setBufPath(b, newRelativePath);
+        conn.write(new RenameBuf(b.id, b.path));
     }
 
     public void highlight(Buf b, ArrayList<ArrayList<Integer>> textRanges, boolean summon, boolean following) {
@@ -111,7 +111,7 @@ public class OutboundRequestHandler {
         if (!state.can("patch")) {
             return;
         }
-        Buf buf = state.get_buf_by_path(current);
+        Buf buf = state.getBufByPath(current);
         if (Buf.isBad(buf)) {
             context.errorMessage(String.format("The file %s is not shared!", current));
             return;
