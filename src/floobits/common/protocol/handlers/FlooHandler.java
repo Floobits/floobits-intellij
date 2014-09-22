@@ -34,9 +34,6 @@ public class FlooHandler extends BaseHandler {
         outbound = new OutboundRequestHandler(context, state, conn);
         inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
         editorEventHandler = new EditorEventHandler(context, state, outbound, inbound);
-//        if (ProjectRootManager.getInstance(context.project).getProjectSdk() == null) {
-//            Flog.warn("No SDK detected.");
-//        }
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(url, context.colabDir);
         persistentJson.save();

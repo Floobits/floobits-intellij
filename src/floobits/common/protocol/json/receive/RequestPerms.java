@@ -6,6 +6,4 @@ public class RequestPerms implements Base {
     public String name = "request_perms";
     public int user_id;
     public String[] perms;
-
-
 }
