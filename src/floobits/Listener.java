@@ -66,6 +66,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     return;
                 }
                 String parentPath = parent.getPath();
+                // XXX: pretty sure is this wrong.
                 String newValue = parentPath + "/" + event.getNewValue().toString();
                 String oldValue = parentPath + "/" + event.getOldValue().toString();
                 editorManager.rename(oldValue, newValue);
