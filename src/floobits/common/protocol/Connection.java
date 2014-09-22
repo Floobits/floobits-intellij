@@ -71,11 +71,16 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     }
 
     public void write(Serializable obj) {
+        // TODO: threading issue. lock channel
         if (channel == null) {
             Flog.warn("not writing because no channel");
             return;
         }
         String data = new Gson().toJson(obj);
+        if (channel == null) {
+            Flog.warn("Lost connection? Not writing because no channel. Also, race condition!");
+            return;
+        }
         channel.writeAndFlush(data + "\n");
     }
 

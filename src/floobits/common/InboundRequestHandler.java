@@ -58,6 +58,10 @@ public class InboundRequestHandler {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
+            if (state.bufs == null) {
+                Flog.warn("Buffer list became null. Probably disconnected. Bailing.");
+                return;
+            }
             state.bufs.put(buf_id, buf);
             state.pathsToIds.put(b.path, b.id);
             buf.read();
