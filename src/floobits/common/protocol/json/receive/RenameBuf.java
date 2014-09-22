@@ -10,6 +10,7 @@ public class RenameBuf implements Base {
 
     public RenameBuf(Integer id, String path) {
         this.id = id;
+        // This should already have unix separators but just to make sure
         this.path = FilenameUtils.separatorsToUnix(path);
     }
 }

@@ -59,7 +59,7 @@ public class FloobitsState {
     }
     public void setBufPath(Buf buf, String newPath) {
         pathsToIds.remove(buf.path);
-        buf.path = newPath;
+        buf.path = FilenameUtils.separatorsToUnix(newPath);
         pathsToIds.put(buf.path, buf.id);
     }
 
