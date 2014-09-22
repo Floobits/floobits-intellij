@@ -19,20 +19,27 @@ import javax.swing.*;
  */
 public class Flog {
     public static Logger Log = Logger.getInstance(Flog.class);
+    private static String maybeFormat(String s, Object... args) {
+        if (args.length == 0) {
+            return s;
+        } else {
+            return String.format(s, args);
+        }
+    }
     public static void log (String s, Object... args) {
-        Log.info(String.format(s, args));
+        Log.info(maybeFormat(s, args));
     }
     public static void debug (String s, Object... args) {
-        Log.debug(String.format(s, args));
+        Log.debug(maybeFormat(s, args));
     }
     public static void warn (Throwable e) {
         Log.warn(e);
     }
     public static void warn (String s, Object... args) {
-        Log.warn(String.format(s, args));
+        Log.warn(maybeFormat(s, args));
     }
     public static void info (String s, Object... args) {
-        Log.info(String.format(s, args));
+        Log.info(maybeFormat(s, args));
     }
 
     public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
