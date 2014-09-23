@@ -371,7 +371,6 @@ public class InboundRequestHandler {
 
     public void _on_highlight(JsonObject obj) {
         final FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
-        final Boolean force = !res.following && (res.ping || (res.summon == null ? Boolean.FALSE : res.summon));
         state.lastHighlight = obj;
         final Buf buf = this.state.bufs.get(res.id);
         editor.queue(buf, new RunLater<Buf>() {
@@ -382,7 +381,7 @@ public class InboundRequestHandler {
                     return;
                 }
                 String username = state.getUsername(res.user_id);
-                iDoc.applyHighlight(buf.path, res.user_id, username, state.getFollowing(), force, res.ranges);
+                iDoc.applyHighlight(buf.path, res.user_id, username, state.getFollowing() && !res.following, res.summon, res.ranges);
             }
         });
     }
