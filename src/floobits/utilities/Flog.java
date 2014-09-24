@@ -48,7 +48,12 @@ public class Flog {
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
-                        Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
+                        try {
+                            Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
+                        } catch (Throwable e) {
+                            Flog.warn(e);
+                            Flog.log(message);
+                        }
                     }
                 });
             }
