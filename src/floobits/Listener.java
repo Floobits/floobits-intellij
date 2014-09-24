@@ -270,15 +270,15 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     @Override
     public void caretPositionChanged(final CaretEvent event) {
-        sendCaretPosition(event.getEditor());
+        sendCaretPosition(event.getEditor(), false);
     }
 
     @Override
     public void visibleAreaChanged(final VisibleAreaEvent event) {
-        sendCaretPosition(event.getEditor());
+        sendCaretPosition(event.getEditor(), true);
     }
 
-    private void sendCaretPosition(Editor editor) {
+    private void sendCaretPosition(Editor editor, boolean following) {
         FactoryImpl iFactory = (FactoryImpl) context.iFactory;
         String path = iFactory.getPathForDoc(editor.getDocument());
         if (path == null) {
@@ -287,7 +287,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
         Integer offset = editor.getCaretModel().getOffset();
         range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        editorManager.changeSelection(path, range, !isListening.get());
+        editorManager.changeSelection(path, range, !isListening.get() || following);
     }
 
     @Override
