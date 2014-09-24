@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.3.9</version>
+  <version>1.4.0</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -25,6 +25,8 @@
          Fixed path problems in Windows.
          Fixed issue with % signs in chat.
          Fixed follow mode with multiple people.
+         Fixed changing tabs in follow mode sending highlights.
+         Fixed percent signs in status messages causing crashes.
     ]]>
   </change-notes>
 
