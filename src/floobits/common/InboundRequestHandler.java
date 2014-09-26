@@ -101,6 +101,7 @@ public class InboundRequestHandler {
             public void run() {
                 for (Buf buf : conflicts) {
                     outbound.setBuf(buf);
+                    outbound.saveBuf(buf);
                 }
                 for (Buf buf : missing) {
                     outbound.deleteBuf(buf, false);
@@ -175,6 +176,7 @@ public class InboundRequestHandler {
             paths.remove(buf.path);
             buf.read();
             if (buf.buf == null) {
+                Flog.warn("%s is null but we want to upload it?", b.path);
                 outbound.getBuf(buf.id);
                 continue;
             }
@@ -182,6 +184,7 @@ public class InboundRequestHandler {
                 continue;
             }
             outbound.setBuf(buf);
+            outbound.saveBuf(buf);
         }
 
 
