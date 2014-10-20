@@ -11,6 +11,7 @@ import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.buf.BinaryBuf;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.buf.TextBuf;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.CreateBufResponse;
 import floobits.common.protocol.json.send.RoomInfoResponse;
@@ -167,7 +168,12 @@ public class InboundRequestHandler {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
             Buf buf = Buf.createBuf(b.path, b.id, Encoding.from(b.encoding), b.md5, context, outbound);
-            state.bufs.put(buf_id, buf);
+            try {
+                state.bufs.put(buf_id, buf);
+            } catch (NullPointerException e) {
+                Flog.warn("state.buffs is null, tried to upload after disconnecting. This is a race condition.");
+                return;
+            }
             state.pathsToIds.put(b.path, b.id);
             if (!paths.contains(buf.path)) {
                 outbound.deleteBuf(buf, false);
