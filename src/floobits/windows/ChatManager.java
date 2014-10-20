@@ -14,6 +14,7 @@ import floobits.common.FlooUrl;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 import floobits.impl.ContextImpl;
+import floobits.utilities.Flog;
 
 import java.util.*;
 
@@ -38,9 +39,14 @@ public class ChatManager {
     }
 
     public void openChat() {
-        toolWindow.show(null);
         FlooHandler flooHandler = context.getFlooHandler();
         if (flooHandler == null) {
+            return;
+        }
+        try {
+            toolWindow.show(null);
+        } catch (NullPointerException e) {
+            Flog.warn("Could not open chat window.");
             return;
         }
         FlooUrl url = flooHandler.getUrl();
