@@ -60,7 +60,9 @@
             <children>
               <component id="38af5" class="javax.swing.JList" binding="connectionsList">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <enabled value="false"/>
+                </properties>
               </component>
             </children>
           </scrollpane>
