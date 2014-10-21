@@ -1,6 +1,7 @@
 package floobits.dialogs;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class FileListPromptForm {
     private JLabel promptText;
@@ -19,6 +20,7 @@ public class FileListPromptForm {
         connectionsList.setVisible(false);
         connectionsText.setVisible(false);
         connectionsPanel.setVisible(false);
+        connectionsPanel.setPreferredSize(new Dimension(-1, -1));
         connectionsScroller.setVisible(false);
     }
 
@@ -40,6 +42,7 @@ public class FileListPromptForm {
             connectionsText.setText("There is no one else currently connected to the workspace.");
             return;
         }
+        connectionsPanel.setPreferredSize(new Dimension(-1, 70));
         connectionsText.setText(String.format("There are %s connections to the workspace.", connections.length));
         connectionsScroller.setVisible(true);
         connectionsList.setVisible(true);
