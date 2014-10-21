@@ -18,7 +18,7 @@ public class FloobitsState {
     private Boolean following = false;
     private ScheduledFuture pausedFollowing;
     public HashSet<String> perms = new HashSet<String>();
-    private Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
+    public Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
     HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     final HashMap<String, Integer> pathsToIds = new HashMap<String, Integer>();
     private int connectionId;

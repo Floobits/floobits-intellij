@@ -321,5 +321,7 @@ public abstract class IContext {
     public abstract void dialogDisconnect(int tooMuch, int howMany);
     public abstract void dialogPermsRequest(String username, RunLater<String> perms);
     public abstract boolean dialogTooBig(LinkedList<Ignore> tooBigIgnores);
-    public abstract void dialogResolveConflicts(Runnable stompLocal, Runnable stompRemote, boolean readOnly, Runnable flee, String[] conflictedPathsArray);
+    public abstract void dialogResolveConflicts(Runnable stompLocal, Runnable stompRemote, boolean readOnly,
+                                                Runnable flee, String[] conflictedPathsArray,
+                                                String [] connections);
 }

@@ -221,11 +221,14 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public void dialogResolveConflicts(final Runnable stompLocal, final Runnable stompRemote, final boolean readOnly, final Runnable flee, final String[] conflictedPathsArray) {
+    public void dialogResolveConflicts(final Runnable stompLocal, final Runnable stompRemote, final boolean readOnly,
+                                       final Runnable flee, final String[] conflictedPathsArray,
+                                       final String[] connections) {
         mainThread(new Runnable() {
             @Override
             public void run() {
-                ResolveConflictsDialog dialog = new ResolveConflictsDialog(stompLocal, stompRemote, readOnly, flee, conflictedPathsArray);
+                ResolveConflictsDialog dialog = new ResolveConflictsDialog(stompLocal, stompRemote, readOnly, flee,
+                        conflictedPathsArray, connections);
                 dialog.createCenterPanel();
                 dialog.show();
             }});

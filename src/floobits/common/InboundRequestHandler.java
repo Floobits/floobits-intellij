@@ -115,7 +115,13 @@ public class InboundRequestHandler {
                 context.shutdown();
             }
         };
-        context.dialogResolveConflicts(stompLocal, stompRemote, state.readOnly, flee, conflictedPathsArray);
+        LinkedList<String> connectedUsersList = new LinkedList<String>();
+        for (Map.Entry<Integer, FlooUser> userEntry : state.users.entrySet()) {
+            FlooUser user = userEntry.getValue();
+            connectedUsersList.add(String.format("%s, %s", user.username, user.client));
+        }
+        context.dialogResolveConflicts(stompLocal, stompRemote, state.readOnly, flee, conflictedPathsArray,
+                connectedUsersList.toArray(new String[connectedUsersList.size()]));
     }
 
     private void initialUpload(RoomInfoResponse ri) {
