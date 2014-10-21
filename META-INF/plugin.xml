@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,17 +16,8 @@
       ]]></description>
 
   <change-notes><![CDATA[
-         Fixed deleting directories not removing directories from workspace.
-         Fixed renaming a directory not renaming on workspace.
-         Fixed multiple file added and removed status messages from being too spammy.
-         Upgraded highlighting events to notify on forced follow cursor movements.
-         Pausing follow mode when user edits.
-         Follow mode no longer pulls the user out of open prompts.
-         Fixed path problems in Windows.
-         Fixed issue with % signs in chat.
-         Fixed follow mode with multiple people.
-         Fixed changing tabs in follow mode sending highlights.
-         Fixed percent signs in status messages causing crashes.
+         Fixed some stability issues with disconnecting after joining.
+         Now showing who is connected to the workspace when prompted with local and remote file differences.
     ]]>
   </change-notes>
 
