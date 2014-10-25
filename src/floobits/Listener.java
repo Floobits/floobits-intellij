@@ -15,6 +15,8 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFilePropertyEvent;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.*;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.messages.MessageBusConnection;
 import floobits.common.EditorEventHandler;
 import floobits.common.Ignore;
@@ -40,6 +42,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     private MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
     private EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
     private String oldRenamePath;
+    private ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
 
 
     public Listener(ContextImpl context) {
@@ -280,14 +283,19 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
 
     private void sendCaretPosition(Editor editor, boolean following) {
         FactoryImpl iFactory = (FactoryImpl) context.iFactory;
-        String path = iFactory.getPathForDoc(editor.getDocument());
+        Document document = editor.getDocument();
+        String path = iFactory.getPathForDoc(document);
         if (path == null) {
             return;
         }
-        ArrayList<ArrayList<Integer>> range = new ArrayList<ArrayList<Integer>>();
+
+        ArrayList<ArrayList<Integer>> rangesWithCaret = new ArrayList<ArrayList<Integer>>(ranges.size() + 1);
+        for(ArrayList<Integer> item: ranges) {
+            rangesWithCaret.add(item);
+        }
         Integer offset = editor.getCaretModel().getOffset();
-        range.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        editorManager.changeSelection(path, range, !isListening.get() || following);
+        rangesWithCaret.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
+        editorManager.changeSelection(path, rangesWithCaret, !isListening.get() || following);
     }
 
     @Override
@@ -300,7 +308,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
 
         TextRange[] textRanges = event.getNewRanges();
-        ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
+        ranges = new ArrayList<ArrayList<Integer>>();
         for(TextRange r : textRanges) {
             ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
         }
