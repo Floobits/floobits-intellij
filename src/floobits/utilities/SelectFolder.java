@@ -30,18 +30,13 @@ public class SelectFolder {
         File file = null;
         String shareDir = floorcJson.share_dir;
         if (shareDir != null) {
-            Character c = shareDir.charAt(0);
-            if (c == '/' || c == '~') {
-                if (shareDir.substring(0, 2).equals("~/")) {
-                    shareDir = shareDir.replaceFirst("~/", System.getProperty("user.home") + "/");
-                }
-                file = createDir(shareDir, owner, workspace);
-                if (file == null) {
-                    Flog.errorMessage(String.format("Your floorc.json share_dir setting %s did not work, using default ~/floobits",
-                            floorcJson.share_dir), null);
-                }
-            } else {
-                Flog.errorMessage(String.format("floorc.json share_dir paths must be absolute paths, you had %s", shareDir), null);
+            if (shareDir.substring(0, 2).equals("~/")) {
+                shareDir = shareDir.replaceFirst("~/", System.getProperty("user.home") + "/");
+            }
+            file = createDir(shareDir, owner, workspace);
+            if (file == null) {
+                Flog.errorMessage(String.format("Your floorc.json share_dir setting %s did not work, using default ~/floobits",
+                        floorcJson.share_dir), null);
             }
         }
         if (file == null) {
