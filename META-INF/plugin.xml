@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.3</version>
+  <version>1.4.4</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -19,6 +19,7 @@
          Fixed some stability issues with disconnecting after joining.
          Now showing who is connected to the workspace when prompted with local and remote file differences.
          Fixed double clicking to highlight not sending correct range.
+         Respect share_dir settings in .floorc.json
     ]]>
   </change-notes>
 
