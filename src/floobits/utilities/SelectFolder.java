@@ -5,7 +5,9 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.Constants;
+import floobits.common.FloorcJson;
 import floobits.common.RunLater;
+import floobits.common.Settings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -18,13 +20,36 @@ public class SelectFolder {
         FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, false, false, false, false);
         descriptor.setTitle("Select Folder For Workspace");
         descriptor.setDescription("NOTE: Floobits will NOT make a new, root directory inside the folder you choose. If you have cloned the project already, select that folder.");
-        String path = FilenameUtils.concat(Constants.shareDir, owner);
-        path = FilenameUtils.concat(path, workspace);
-        File file = new File(path);
+        FloorcJson floorcJson;
         try {
-            FileUtils.forceMkdir(file);
-        } catch (IOException e) {
-            Flog.warn(e);
+            floorcJson =  Settings.get();
+        } catch (Exception e) {
+            Flog.errorMessage("Your floorc.json has invalid json.", null);
+            return;
+        }
+        File file = null;
+        String shareDir = floorcJson.share_dir;
+        if (shareDir != null) {
+            Character c = shareDir.charAt(0);
+            if (c == '/' || c == '~') {
+                if (shareDir.substring(0, 2).equals("~/")) {
+                    shareDir = shareDir.replaceFirst("~/", System.getProperty("user.home") + "/");
+                }
+                file = createDir(shareDir, owner, workspace);
+                if (file == null) {
+                    Flog.errorMessage(String.format("Your floorc.json share_dir setting %s did not work, using default ~/floobits",
+                            floorcJson.share_dir), null);
+                }
+            } else {
+                Flog.errorMessage(String.format("floorc.json share_dir paths must be absolute paths, you had %s", shareDir), null);
+            }
+        }
+        if (file == null) {
+            file = createDir(Constants.shareDir, owner, workspace);
+        }
+        if (file == null) {
+            Flog.errorMessage(String.format("Could not create a directory for this workspace, tried %s", Constants.shareDir), null);
+            return;
         }
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
         VirtualFile[] vFiles = FileChooser.chooseFiles(descriptor, null, virtualFile);
@@ -37,5 +62,19 @@ public class SelectFolder {
         }
         final String selectedPath = vFiles[0].getPath();
         runLater.run(selectedPath);
+    }
+
+
+    private static File createDir(String path, String owner, String workspace) {
+        path = FilenameUtils.concat(path, owner);
+        path = FilenameUtils.concat(path, workspace);
+        File file = new File(path);
+        try {
+            FileUtils.forceMkdir(file);
+        } catch (IOException e) {
+            Flog.warn(e);
+            return null;
+        }
+        return file;
     }
 }
