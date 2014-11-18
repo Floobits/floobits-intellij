@@ -1,13 +1,10 @@
 package floobits.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
-import floobits.common.interfaces.IContext;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
-import org.jdesktop.swingx.action.ActionManager;
 
 public class FollowMode extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {

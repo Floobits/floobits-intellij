@@ -3,7 +3,6 @@ package floobits.impl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.Listener;
@@ -100,6 +99,18 @@ public class ContextImpl extends IContext {
         });
         shareProjectDialog.createCenterPanel();
         shareProjectDialog.show();
+    }
+
+    @Override
+    public void followUser() {
+        final ContextImpl context = this;
+        FollowUserDialog followUserDialog = new FollowUserDialog(project, new RunLater<FollowUserDialog>() {
+            @Override
+            public void run(FollowUserDialog dialog) {
+            }
+        });
+        followUserDialog.createCenterPanel();
+        followUserDialog.show();
     }
 
     @Override

@@ -63,6 +63,9 @@
       <action id="floobits.actions.FollowMode" class="floobits.actions.FollowMode" text="Toggle Follow Mode"
               description="Follow mode will cause your editor to follow the cursor of others in the workspace.">
       </action>
+      <action id="floobits.actions.FollowUser" class="floobits.actions.FollowUser" text="Follow User"
+              description="Follow a user's changes in the workspace.">
+      </action>
       <action id="floobits.actions.Summon" class="floobits.actions.Summon" text="Summon" description="Summon everyone in the room to your location">
       </action>
       <action id="floobits.actions.CompleteSignUp" class="floobits.actions.CompleteSignup" text="Log In to Website"

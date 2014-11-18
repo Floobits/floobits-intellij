@@ -324,4 +324,5 @@ public abstract class IContext {
     public abstract void dialogResolveConflicts(Runnable stompLocal, Runnable stompRemote, boolean readOnly,
                                                 Runnable flee, String[] conflictedPathsArray,
                                                 String [] connections);
+    public abstract void followUser();
 }
