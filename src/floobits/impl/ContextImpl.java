@@ -105,7 +105,7 @@ public class ContextImpl extends IContext {
         if (flooHandler == null) {
             return;
         }
-        List<String> usersToChoose = new ArrayList<String>();
+        HashMap<String, Boolean> usersToChoose = new HashMap<String, Boolean>();
         String me = flooHandler.state.username;
         for (FlooUser user : flooHandler.state.users.values()) {
             if (user.username.equals(me)) {
@@ -117,7 +117,7 @@ public class ContextImpl extends IContext {
             if (Arrays.asList(user.perms).indexOf("highlight") == -1) {
                 continue;
             }
-            usersToChoose.add(user.username);
+            usersToChoose.put(user.username, false);
         }
         FollowUserDialog followUserDialog = new FollowUserDialog(usersToChoose, project, new RunLater<FollowUserDialog>() {
             @Override
