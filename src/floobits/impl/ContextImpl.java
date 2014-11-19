@@ -9,15 +9,13 @@ import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.dialogs.*;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
 
 import java.text.NumberFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * I am the link between a project and floobits
@@ -103,8 +101,25 @@ public class ContextImpl extends IContext {
 
     @Override
     public void followUser() {
-        final ContextImpl context = this;
-        FollowUserDialog followUserDialog = new FollowUserDialog(project, new RunLater<FollowUserDialog>() {
+        FlooHandler flooHandler = this.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
+        List<String> usersToChoose = new ArrayList<String>();
+        String me = flooHandler.state.username;
+        for (FlooUser user : flooHandler.state.users.values()) {
+            if (user.username.equals(me)) {
+                continue;
+            }
+            if (user.client.equals("flooty")) {
+                continue;
+            }
+            if (Arrays.asList(user.perms).indexOf("highlight") == -1) {
+                continue;
+            }
+            usersToChoose.add(user.username);
+        }
+        FollowUserDialog followUserDialog = new FollowUserDialog(usersToChoose, project, new RunLater<FollowUserDialog>() {
             @Override
             public void run(FollowUserDialog dialog) {
             }
