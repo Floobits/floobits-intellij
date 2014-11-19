@@ -2,8 +2,6 @@ package floobits.dialogs;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,9 +26,30 @@ public class FollowUserForm {
             return data.size();
         }
 
+        public String getColumnName(int col) {
+            if (col == 1) {
+                return "User with edit permissions";
+            }
+            return "Follow changes";
+        }
+
+
         @Override
         public int getColumnCount() {
-            return 1;
+            return 2;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            String username = order.get(rowIndex);
+            if (columnIndex == 0) {
+                return data.get(username);
+            }
+            return username;
+        }
+
+        public boolean isCellEditable(int row, int col) {
+            return true;
         }
 
         public Class getColumnClass(int c) {
@@ -38,35 +57,15 @@ public class FollowUserForm {
         }
 
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            String username = order.get(rowIndex);
-            return new FollowUserData(username, data.get(username));
-        }
-    }
-
-    public class FollowUserData {
-        public String username;
-        public Boolean following;
-        public FollowUserData(String username, Boolean following) {
-            this.username = username;
-            this.following = following;
-        }
-    }
-
-    private class CheckboxRenderer extends JCheckBox implements TableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            FollowUserData data = (FollowUserData) value;
-            this.setText(data.username);
-            this.setSelected(data.following);
-            return this;
+        public void setValueAt(Object value, int row, int col) {
+            String username = order.get(row);
+            data.put(username, (Boolean) value);
+            fireTableCellUpdated(row, col);
         }
     }
 
     public void setUsers(HashMap<String, Boolean> usersToChoose) {
         UserListModel tableModel = new UserListModel();
-        userTable.setDefaultRenderer(FollowUserData.class, new CheckboxRenderer());
         tableModel.setData(usersToChoose);
         userTable.setModel(tableModel);
     }
