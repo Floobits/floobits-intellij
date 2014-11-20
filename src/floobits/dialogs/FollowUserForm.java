@@ -30,9 +30,9 @@ public class FollowUserForm {
 
         public String getColumnName(int col) {
             if (col == 1) {
-                return "User with edit permissions";
+                return "Users with edit permissions";
             }
-            return "Follow changes";
+            return "Following changes";
         }
 
 
