@@ -101,7 +101,7 @@ public class ContextImpl extends IContext {
 
     @Override
     public void followUser() {
-        FlooHandler flooHandler = this.getFlooHandler();
+        final FlooHandler flooHandler = this.getFlooHandler();
         if (flooHandler == null) {
             return;
         }
@@ -117,11 +117,12 @@ public class ContextImpl extends IContext {
             if (Arrays.asList(user.perms).indexOf("highlight") == -1) {
                 continue;
             }
-            usersToChoose.put(user.username, false);
+            usersToChoose.put(user.username, flooHandler.state.followedUsers.contains(user.username));
         }
         FollowUserDialog followUserDialog = new FollowUserDialog(usersToChoose, project, new RunLater<FollowUserDialog>() {
             @Override
             public void run(FollowUserDialog dialog) {
+                getFlooHandler().state.setFollowedUsers(dialog.getFollowedUsers());
             }
         });
         followUserDialog.createCenterPanel();

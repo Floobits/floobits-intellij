@@ -7,13 +7,13 @@ import floobits.utilities.Flog;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class FollowUserDialog extends DialogWrapper {
     private RunLater<FollowUserDialog> runLater;
     protected FollowUserForm form = new FollowUserForm();
-
-
 
     private class CreateWorkspaceAction extends DialogWrapperAction {
 
@@ -54,5 +54,9 @@ public class FollowUserDialog extends DialogWrapper {
             return;
         }
         runLater.run(this);
+    }
+
+    public List<String> getFollowedUsers() {
+        return form.getUserModel().toList();
     }
 }

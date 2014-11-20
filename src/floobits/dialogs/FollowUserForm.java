@@ -5,13 +5,15 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class FollowUserForm {
     private JPanel contentPanel;
     private JTable userTable;
+    private UserListModel tableModel;
 
-    private class UserListModel extends AbstractTableModel {
+    public class UserListModel extends AbstractTableModel {
 
         private HashMap<String, Boolean> data;
         private List<String> order = new ArrayList<String>();
@@ -62,12 +64,26 @@ public class FollowUserForm {
             data.put(username, (Boolean) value);
             fireTableCellUpdated(row, col);
         }
+
+        public List<String> toList() {
+            List<String> userList = new ArrayList<String>();
+            for (Map.Entry<String, Boolean> entry : data.entrySet()) {
+                if (entry.getValue()) {
+                    userList.add(entry.getKey());
+                }
+            }
+            return userList;
+        }
     }
 
     public void setUsers(HashMap<String, Boolean> usersToChoose) {
-        UserListModel tableModel = new UserListModel();
+        tableModel = new UserListModel();
         tableModel.setData(usersToChoose);
         userTable.setModel(tableModel);
+    }
+
+    public UserListModel getUserModel () {
+        return tableModel;
     }
 
 

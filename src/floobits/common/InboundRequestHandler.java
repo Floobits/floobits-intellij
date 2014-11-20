@@ -396,7 +396,11 @@ public class InboundRequestHandler {
                     return;
                 }
                 String username = state.getUsername(res.user_id);
-                iDoc.applyHighlight(buf.path, res.user_id, username, state.getFollowing() && !res.following, res.summon, res.ranges);
+                boolean following = state.getFollowing() && !res.following;
+                if (following && state.followedUsers.size() > 0) {
+                    following = state.followedUsers.contains(username);
+                }
+                iDoc.applyHighlight(buf.path, res.user_id, username, following, res.summon, res.ranges);
             }
         });
     }
