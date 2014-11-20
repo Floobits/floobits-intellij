@@ -111,7 +111,7 @@ public class ContextImpl extends IContext {
             if (user.username.equals(me)) {
                 continue;
             }
-            if (user.client.equals("flooty")) {
+            if (user.client.equals("flootty")) {
                 continue;
             }
             if (Arrays.asList(user.perms).indexOf("highlight") == -1) {
