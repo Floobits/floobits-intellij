@@ -28,6 +28,7 @@ public class FloobitsState {
     protected HashSet<Integer> requests = new HashSet<Integer>();
     private IContext context;
     public FlooUrl url;
+    public List<String> followedUsers = new ArrayList<String>();
 
     public FloobitsState(IContext context, FlooUrl flooUrl) {
         this.context = context;
@@ -146,6 +147,9 @@ public class FloobitsState {
     public void setFollowing(Boolean following) {
         this.pauseFollowing(false);
         this.following = following;
+        if (!following) {
+            this.followedUsers.clear();
+        }
     }
 
     public Boolean getPausedFollowing() {
@@ -179,5 +183,10 @@ public class FloobitsState {
                 }
             });
         }
+    }
+
+    public void setFollowedUsers(List<String> followedUsers) {
+        this.followedUsers = followedUsers;
+        setFollowing(followedUsers.size() > 0);
     }
 }

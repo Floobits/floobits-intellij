@@ -3,22 +3,19 @@ package floobits.impl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.dialogs.*;
 import floobits.utilities.Flog;
 import floobits.windows.ChatManager;
 
 import java.text.NumberFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * I am the link between a project and floobits
@@ -100,6 +97,36 @@ public class ContextImpl extends IContext {
         });
         shareProjectDialog.createCenterPanel();
         shareProjectDialog.show();
+    }
+
+    @Override
+    public void followUser() {
+        final FlooHandler flooHandler = this.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
+        HashMap<String, Boolean> usersToChoose = new HashMap<String, Boolean>();
+        String me = flooHandler.state.username;
+        for (FlooUser user : flooHandler.state.users.values()) {
+            if (user.username.equals(me)) {
+                continue;
+            }
+            if (user.client.equals("flootty")) {
+                continue;
+            }
+            if (Arrays.asList(user.perms).indexOf("highlight") == -1) {
+                continue;
+            }
+            usersToChoose.put(user.username, flooHandler.state.followedUsers.contains(user.username));
+        }
+        FollowUserDialog followUserDialog = new FollowUserDialog(usersToChoose, project, new RunLater<FollowUserDialog>() {
+            @Override
+            public void run(FollowUserDialog dialog) {
+                getFlooHandler().state.setFollowedUsers(dialog.getFollowedUsers());
+            }
+        });
+        followUserDialog.createCenterPanel();
+        followUserDialog.show();
     }
 
     @Override

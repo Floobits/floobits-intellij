@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.4</version>
+  <version>1.4.5</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -16,10 +16,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-         Fixed some stability issues with disconnecting after joining.
-         Now showing who is connected to the workspace when prompted with local and remote file differences.
-         Fixed double clicking to highlight not sending correct range.
-         Respect share_dir settings in .floorc.json
+         Added the ability to follow changes and cursor movements of just selected users.
     ]]>
   </change-notes>
 
@@ -61,7 +58,10 @@
               description="Share your current project">
       </action>
       <action id="floobits.actions.FollowMode" class="floobits.actions.FollowMode" text="Toggle Follow Mode"
-              description="Follow mode will cause your editor to follow the cursor of others in the workspace.">
+              description="Follow mode will cause your editor to follow the cursor of everyone in the workspace.">
+      </action>
+      <action id="floobits.actions.FollowUser" class="floobits.actions.FollowUser" text="Follow Selected Users"
+              description="Follow only the cursors and changes of specific users in the workspace.">
       </action>
       <action id="floobits.actions.Summon" class="floobits.actions.Summon" text="Summon" description="Summon everyone in the room to your location">
       </action>
@@ -106,6 +106,7 @@
           <reference ref="floobits.actions.LeaveWorkspace"/>
           <separator/>
           <reference ref="floobits.actions.FollowMode"/>
+          <reference ref="floobits.actions.FollowUser"/>
           <reference ref="floobits.actions.Summon"/>
           <reference ref="floobits.actions.ClearHighlights"/>
           <reference ref="floobits.actions.OpenWorkspaceInBrowser"/>
