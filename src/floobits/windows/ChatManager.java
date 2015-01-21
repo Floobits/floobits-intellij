@@ -140,7 +140,3 @@ public class ChatManager {
         }, ModalityState.NON_MODAL);
     }
 }
-
-
-
-
