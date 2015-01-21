@@ -10,16 +10,21 @@ import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -84,6 +89,20 @@ public class ChatForm {
         messages.setEditorKit(kit);
         messages.setDocument(doc);
         messages.setEditable(false);
+        messages.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    try {
+                        URI uri = e.getURL().toURI();
+                        Desktop.getDesktop().browse(uri);
+                    } catch (IOException error) {
+                        Flog.warn(error);
+                    } catch (URISyntaxException error) {
+                        Flog.warn(error);
+                    }
+                }
+            }
+        });
         try {
             kit.insertHTML(doc, doc.getLength(), "<style>body { color: #7f7f7f;}</style>", 0, 0, null);
         } catch (Throwable e) {
@@ -107,7 +126,7 @@ public class ChatForm {
         chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-               Flog.log("Gog action from chat button");
+               Flog.log("Got action from chat button");
                sendChatContents();
             }
         });
