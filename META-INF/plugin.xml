@@ -1,22 +1,20 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.5</version>
+  <version>1.4.6</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
       Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
-      You need a floobits account. Create one at https://floobits.com
+      You need a Floobits account. Create one at https://floobits.com
 
       Features include being able to see other people's cursor and highlights, being able to summon, and also follow edits
       automatically.
-
-      Important note about PyCharm: This plugin only works in the EAP version of PyCharm. Our plugin has compatibility issues with stable version of PyCharm.
-      The early access version of PyCharm should be just fine.
       ]]></description>
 
   <change-notes><![CDATA[
-         Added the ability to follow changes and cursor movements of just selected users.
+      UI improvements. Workspace URLs are now clickable in chat.
+      Fixed a bug where some locales can incorrectly upload files marked as binary.
     ]]>
   </change-notes>
 
