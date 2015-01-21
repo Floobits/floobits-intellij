@@ -96,7 +96,7 @@ public abstract class Buf <T> {
             } else {
                 Flog.warn("Got null bytes (I/O error) for %s", virtualFile);
             }
-            byte[] decodedContents = encodedContents.getBytes();
+            byte[] decodedContents = encodedContents.getBytes("UTF-8");
             String filePath = context.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
                 IDoc doc = context.iFactory.getDocument(virtualFile);
@@ -104,6 +104,7 @@ public abstract class Buf <T> {
                 String md5 = DigestUtils.md5Hex(contents);
                 return new TextBuf(filePath, null, contents, md5, context, outbound);
             } else {
+                Flog.info("Creating binary buffer for %s", virtualFile);
                 String md5 = DigestUtils.md5Hex(originalBytes);
                 return new BinaryBuf(filePath, null, originalBytes, md5, context, outbound);
             }
