@@ -17,7 +17,6 @@ public class OutboundRequestHandler {
     private final IContext context;
     private final FloobitsState state;
     private final Connection conn;
-    protected Integer requestId = 0;
 
     public OutboundRequestHandler(IContext context, FloobitsState state, Connection conn) {
         this.context = context;

@@ -29,6 +29,11 @@ public class FlooHandler extends BaseHandler {
 
     public void go() {
         super.go();
+        if (context == null) {
+            Flog.warn("Attempted to join a workspace with no context.");
+            isJoined = false;
+            return;
+        }
         Flog.log("joining workspace %s", url);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
