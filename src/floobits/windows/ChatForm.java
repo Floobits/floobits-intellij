@@ -18,10 +18,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -143,6 +140,36 @@ public class ChatForm {
             }
         });
         popupMenu.add(kickMenuItem);
+        final JMenuItem followMenuItem = new JMenuItem("Follow");
+        followMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
+                Flog.info("Following %s with user id %d.", client.username, client.userId);
+                if (flooHandler.state.followedUsers.contains(client.username)) {
+                    flooHandler.context.errorMessage(String.format("You are already following %s", client.username));
+                    return;
+                }
+                flooHandler.state.followedUsers.add(client.username);
+                flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
+                flooHandler.context.statusMessage(String.format("You are now following %s", client.username));
+            }
+        });
+        popupMenu.add(followMenuItem);
+        final JMenuItem unFollowMenuItem = new JMenuItem("Stop following");
+        unFollowMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
+                Flog.info("Will stop following %s with user id %d.", client.username, client.userId);
+                if (!flooHandler.state.followedUsers.contains(client.username)) {
+                    flooHandler.context.errorMessage(String.format("You are not following %s", client.username));
+                    return;
+                }
+                flooHandler.state.followedUsers.remove(client.username);
+                flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
+                flooHandler.context.statusMessage(String.format("You have stopped following %s", client.username));
+            }
+        });
+        popupMenu.add(unFollowMenuItem);
         final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
         adminMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
@@ -186,6 +213,10 @@ public class ChatForm {
                 }
                 kickMenuItem.setEnabled(floohandler.state.can("kick"));
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
+                ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
+                boolean following = floohandler.state.followedUsers.contains(client.username);
+                followMenuItem.setEnabled(!following);
+                unFollowMenuItem.setEnabled(following);
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
