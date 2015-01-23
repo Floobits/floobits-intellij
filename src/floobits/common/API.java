@@ -252,6 +252,10 @@ public class API {
             Flog.warn("Process canceled.");
             return;
         }
+        if (throwable instanceof java.lang.OutOfMemoryError) {
+            Flog.warn("Out of memory.");
+            return;
+        }
         try {
             Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
