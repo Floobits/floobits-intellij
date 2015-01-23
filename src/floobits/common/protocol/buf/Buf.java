@@ -90,12 +90,11 @@ public abstract class Buf <T> {
     public static Buf createBuf(IFile virtualFile, IContext context, OutboundRequestHandler outbound) {
         try {
             byte[] originalBytes = virtualFile.getBytes();
-            String encodedContents = "";
-            if (originalBytes != null) {
-                encodedContents = new String(originalBytes, "UTF-8");
-            } else {
-                Flog.warn("Got null bytes (I/O error) for %s", virtualFile);
+            if (originalBytes == null) {
+                Flog.warn("Got null bytes (I/O error) for %s, cannot digest a null", virtualFile);
+                originalBytes = new byte[]{};
             }
+            String encodedContents = new String(originalBytes, "UTF-8");
             byte[] decodedContents = encodedContents.getBytes("UTF-8");
             String filePath = context.toProjectRelPath(virtualFile.getPath());
             if (Arrays.equals(decodedContents, originalBytes)) {
