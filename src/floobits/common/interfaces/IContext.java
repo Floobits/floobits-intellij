@@ -1,6 +1,5 @@
 package floobits.common.interfaces;
 
-import com.intellij.openapi.editor.Editor;
 import floobits.common.*;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.BaseHandler;
@@ -10,7 +9,6 @@ import floobits.common.protocol.handlers.LinkEditorHandler;
 
 import floobits.utilities.Flog;
 
-import floobits.utilities.IntelliUtils;
 import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.util.concurrent.ScheduledFuture;

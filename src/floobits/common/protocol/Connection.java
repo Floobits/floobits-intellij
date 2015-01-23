@@ -20,9 +20,11 @@ import io.fletty.handler.codec.string.StringDecoder;
 import io.fletty.handler.codec.string.StringEncoder;
 import io.fletty.handler.ssl.SslHandler;
 import io.fletty.util.CharsetUtil;
+import io.netty.handler.codec.TooLongFrameException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.ConnectException;
@@ -222,6 +224,14 @@ public class Connection extends SimpleChannelInboundHandler<String> {
         }
         if (cause instanceof IOException){
             Flog.warn(cause);
+            return;
+        }
+        if (cause instanceof TooLongFrameException) {
+            Flog.warn(String.format("Took too long: %s", cause.getMessage()));
+            return;
+        }
+        if (cause instanceof SSLHandshakeException) {
+            Flog.warn(String.format("SSL Handshake failed: %s", cause.getMessage()));
             return;
         }
         API.uploadCrash(handler, context, cause);
