@@ -24,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
@@ -179,6 +181,11 @@ public class FloobitsApplication implements ApplicationComponent {
         }
         if (openedProject == null) {
             try {
+                String projectFilePath = ".idea/misc.xml";
+                if (path.endsWith(projectFilePath)) {
+                    Flog.warn("Attempted to open the project misc.xml file instead of the directory.");
+                    path = path.replace(projectFilePath, "");
+                }
                 openedProject = ProjectManager.getInstance().loadAndOpenProject(path);
             } catch (Throwable e) {
                 Flog.warn(e);
