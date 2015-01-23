@@ -24,8 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class FloobitsApplication implements ApplicationComponent {
     public static FloobitsApplication self;
