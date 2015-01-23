@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.handlers.BaseHandler;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -247,7 +248,10 @@ public class API {
             if (throwable != null) Flog.warn(throwable);
             return;
         }
-
+        if (throwable instanceof ProcessCanceledException) {
+            Flog.warn("Process canceled.");
+            return;
+        }
         try {
             Flog.warn("Uploading crash report: %s", throwable);
             final PostMethod method;
