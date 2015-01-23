@@ -144,7 +144,11 @@ public class FactoryImpl implements IFactory {
 
     @Override
     public IFile findFileByPath(String path) {
-            VirtualFile fileByPath = instance.findFileByPath(context.absPath(path));
+        String absPath = context.absPath(path);
+        if (absPath == null) {
+            return null;
+        }
+        VirtualFile fileByPath = instance.findFileByPath(absPath);
         if (fileByPath != null && fileByPath.isValid()) {
             return new FileImpl(fileByPath);
         }
