@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.6</version>
+  <version>1.4.7</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -13,8 +13,10 @@
       ]]></description>
 
   <change-notes><![CDATA[
-      UI improvements. Workspace URLs are now clickable in chat.
-      Fixed a bug where some locales can incorrectly upload files marked as binary.
+    Improved the popup menu behavior when right clicking on users in the user list inside the chat window.
+    Fix various exceptions.
+    UI improvements. Workspace URLs are now clickable in chat.
+    Fixed a bug where some locales can incorrectly upload files marked as binary.
     ]]>
   </change-notes>
 
