@@ -130,7 +130,7 @@ public class ChatForm {
     }
 
     private void setupPopupMenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
+        final JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem kickMenuItem = new JMenuItem("Kick");
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
@@ -151,7 +151,7 @@ public class ChatForm {
                 }
                 flooHandler.state.followedUsers.add(client.username);
                 flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
-                flooHandler.context.statusMessage(String.format("You are now following %s", client.username));
+                flooHandler.context.statusMessage(String.format("You are now following %s", client.username))   ;
             }
         });
         popupMenu.add(followMenuItem);
@@ -214,16 +214,31 @@ public class ChatForm {
                 kickMenuItem.setEnabled(floohandler.state.can("kick"));
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
                 ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
-                boolean following = floohandler.state.followedUsers.contains(client.username);
-                followMenuItem.setEnabled(!following);
-                unFollowMenuItem.setEnabled(following);
+                boolean canUnfollow = floohandler.state.followedUsers.contains(client.username);
+                boolean canFollow = !canUnfollow;
+                if (client.username.equals(floohandler.state.username)) {
+                    canUnfollow = false;
+                    canFollow = false;
+                }
+                followMenuItem.setVisible(canFollow);
+                unFollowMenuItem.setVisible(canUnfollow);
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
         });
-        clients.setComponentPopupMenu(popupMenu);
+        clients.addMouseListener(new MouseAdapter()
+        {
+            public void mousePressed(MouseEvent e)
+            {
+                JList list = (JList)e.getSource();
+                int row = list.locationToIndex(e.getPoint());
+                list.setSelectedIndex(row);
+                popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
+
+        });
     }
 
     private void sendChatContents() {

@@ -27,7 +27,6 @@ public class JoinWorkspace extends CanFloobits {
         if (inputValue == null) {
             return;
         }
-
         FloobitsApplication.self.joinWorkspace(context, inputValue);
     }
 }
