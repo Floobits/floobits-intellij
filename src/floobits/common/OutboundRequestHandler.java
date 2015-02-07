@@ -67,7 +67,7 @@ public class OutboundRequestHandler {
         conn.write(new DeleteBuf(buf.id, unlink));
     }
 
-    public void saveBuf(Buf b) {
+    public void saveBuf(final Buf b) {
         if (Buf.isBad(b)) {
             Flog.info("Not sending save. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
@@ -75,7 +75,15 @@ public class OutboundRequestHandler {
         if (!state.can("patch")) {
             return;
         }
-        conn.write(new SaveBuf(b.id));
+        Flog.info("Scheduling save");
+        context.setTimeout(100, new Runnable() {
+            @Override
+            public void run() {
+                Flog.info("Saving");
+                conn.write(new SaveBuf(b.id));
+            }
+        });
+
     }
 
     public void setBuf(Buf b) {
