@@ -1,5 +1,9 @@
 package floobits.common;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.extensions.PluginId;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -20,15 +24,20 @@ public class CrashDump implements Serializable {
         CrashDump.userAgent = userAgent;
         CrashDump.editor = editor;
     }
+
+    private IdeaPluginDescriptor getPlugin() {
+        return PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+    }
+
     public CrashDump(Throwable e, String owner, String workspace, String dir, String username) {
         this.owner = owner;
         this.workspace = workspace;
         this.dir = dir;
         this.username = username;
-        message.put("sendingAt", String.format("%s", new Date().getTime()));
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
+        addVersionInfo(message);
         message.put("stack", sw.toString());
         message.put("description", e.getMessage());
         setContextInfo("%s died%s!");
@@ -36,12 +45,22 @@ public class CrashDump implements Serializable {
 
     public CrashDump(String description, String username) {
         this.username = username;
-        message.put("sendingAt", String.format("%s", new Date().getTime()));
+        addVersionInfo(message);
         message.put("description", description);
         setContextInfo("%s submitted an issues%s!");
     }
 
     protected void setContextInfo(String subjectText) {
         subject = String.format(subjectText, editor, username != null ? " for " + username : "");
+    }
+
+    private void addVersionInfo(HashMap<String, String> message) {
+        IdeaPluginDescriptor p = getPlugin();
+        if (p != null) {
+            message.put("floobits_plugin_version", p.getVersion());
+        } else {
+            message.put("floobits_plugin_version", "No version information.");
+        }
+        message.put("sendingAt", String.format("%s", new Date().getTime()));
     }
 }
