@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.8</version>
+  <version>1.4.9</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -14,6 +14,8 @@
 
   <change-notes><![CDATA[
     Delay save events a bit to handle on save change patches first.
+    Fixed checking edge case on seeing if files are in project directory.
+    Added more information to crash dumps.
     ]]>
   </change-notes>
 
