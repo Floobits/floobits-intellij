@@ -90,14 +90,13 @@ public class Utils {
         return FilenameUtils.equalsNormalizedOnSystem(p1, p2);
     }
 
-    public static String unFuckPath (String path) {
+    public static String fixPath(String path) {
     	return FilenameUtils.normalize(new File(path).getAbsolutePath());
     }
 
     public static boolean isChild (String path, String parent) {
         try {
-            String unFuckedPath = unFuckPath(path);
-            String relativePath = getRelativePath(unFuckedPath, parent);
+            String relativePath = getRelativePath(fixPath(path), fixPath(parent));
             return !relativePath.contains("..");
         } catch (PathResolutionException e) {
             return false;

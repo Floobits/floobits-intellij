@@ -21,7 +21,7 @@ public class FlooHandler extends BaseHandler {
         super(context);
         this.auth = auth;
         this.shouldUpload = shouldUpload;
-        context.setColabDir(Utils.unFuckPath(path));
+        context.setColabDir(Utils.fixPath(path));
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
         state.username = auth.get("username");
