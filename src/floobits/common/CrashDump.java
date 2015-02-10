@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class CrashDump implements Serializable {
     public String owner;
@@ -37,7 +38,7 @@ public class CrashDump implements Serializable {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
-        addVersionInfo(message);
+        addContextInfo(message);
         message.put("stack", sw.toString());
         message.put("description", e.getMessage());
         setContextInfo("%s died%s!");
@@ -45,7 +46,7 @@ public class CrashDump implements Serializable {
 
     public CrashDump(String description, String username) {
         this.username = username;
-        addVersionInfo(message);
+        addContextInfo(message);
         message.put("description", description);
         setContextInfo("%s submitted an issues%s!");
     }
@@ -54,7 +55,7 @@ public class CrashDump implements Serializable {
         subject = String.format(subjectText, editor, username != null ? " for " + username : "");
     }
 
-    private void addVersionInfo(HashMap<String, String> message) {
+    private void addContextInfo(HashMap<String, String> message) {
         IdeaPluginDescriptor p = getPlugin();
         if (p != null) {
             message.put("floobits_plugin_version", p.getVersion());
@@ -62,5 +63,14 @@ public class CrashDump implements Serializable {
             message.put("floobits_plugin_version", "No version information.");
         }
         message.put("sendingAt", String.format("%s", new Date().getTime()));
+        Properties props = System.getProperties();
+        message.put("OS", String.format("name: %s arch: %s version: %s", props.getProperty("os.name"),
+                props.getProperty("os.arch"), props.getProperty("os.version")));
+        message.put("cwd", props.getProperty("user.dir"));
+        message.put("file_separator", props.getProperty("file.separator"));
+        message.put("path_separator", props.getProperty("path.separator"));
+        message.put("line_separator", props.getProperty("line.separator"));
+        message.put("java_version", props.getProperty("java.version"));
+        message.put("java_vendor", props.getProperty("java.vendor"));
     }
 }
