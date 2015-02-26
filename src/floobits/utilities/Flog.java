@@ -1,16 +1,20 @@
 package floobits.utilities;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
+import com.intellij.notification.*;
+import com.intellij.notification.impl.NotificationsConfigurationImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.BalloonBuilder;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.LightColors;
 
 import javax.swing.*;
+import java.util.TimerTask;
 
 /**
  * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
@@ -18,6 +22,7 @@ import javax.swing.*;
  * disturb the user.
  */
 public class Flog {
+    public static String ID = "Floobits notifications";
     public static Logger Log = Logger.getInstance(Flog.class);
     private static String maybeFormat(String s, Object... args) {
         if (args.length == 0) {
@@ -41,7 +46,11 @@ public class Flog {
     public static void info (String s, Object... args) {
         Log.info(maybeFormat(s, args));
     }
-
+    private static void ensureRegistered() {
+        if (!(NotificationsConfigurationImpl.getNotificationsConfigurationImpl().isRegistered(ID))) {
+            NotificationsConfiguration.getNotificationsConfiguration().register(ID, NotificationDisplayType.BALLOON, false);
+        }
+    }
     public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -49,7 +58,19 @@ public class Flog {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     public void run() {
                         try {
-                            Notifications.Bus.notify(new Notification("Floobits", "Floobits", message, notificationType), project);
+                            ensureRegistered();
+                            final Notification statusMessage = new Notification("Floobits", "Floobits", message, notificationType);
+                            Notifications.Bus.notify(statusMessage, project);
+                            boolean sticky = NotificationsConfigurationImpl.getSettings(ID).getDisplayType() == NotificationDisplayType.STICKY_BALLOON;
+                            if (!sticky) {
+                                java.util.Timer timer = new java.util.Timer();
+                                timer.schedule(new java.util.TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        statusMessage.expire();
+                                    }
+                                }, 3000);
+                            }
                         } catch (Throwable e) {
                             Flog.warn(e);
                             Flog.log(message);
