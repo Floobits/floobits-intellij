@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
@@ -149,6 +150,11 @@ public class FloobitsState {
         this.following = following;
         if (!following) {
             this.followedUsers.clear();
+            FlooHandler flooHandler = context.getFlooHandler();
+            if (flooHandler == null) {
+                return;
+            }
+            flooHandler.context.setUsers(users);
         }
     }
 

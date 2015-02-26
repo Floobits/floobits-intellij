@@ -4,6 +4,8 @@
       <root url="jar://$PROJECT_DIR$/lib/commons-io-2.4.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ideaLibSources/commons-io-2.4-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

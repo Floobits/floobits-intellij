@@ -51,16 +51,22 @@ public class ChatForm {
         public String client;
         public String platform;
         public int userId;
+        public Boolean following;
 
-        public ClientModelItem(String username, String client, String platform, Integer userId) {
+        public ClientModelItem(String username, String client, String platform, Integer userId, Boolean following) {
             this.username = username;
             this.client = client;
             this.platform = platform;
             this.userId = userId;
+            this.following = following;
         }
 
         public String toString() {
-            return String.format("<html><b>%s</b> <small><i>%s (%s)</html></i></small>", username, client, platform);
+            String formattedUsername = username;
+            if (following) {
+                formattedUsername += "*";
+            }
+            return String.format("<html><b>%s</b> <small><i>%s (%s)</html></i></small>", formattedUsername, client, platform);
         }
     }
 
@@ -129,6 +135,12 @@ public class ChatForm {
         });
     }
 
+    private void setFollowState(FlooHandler flooHandler, String msg) {
+        flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
+        flooHandler.context.setUsers(flooHandler.state.users);
+        flooHandler.context.statusMessage(msg);
+    }
+
     private void setupPopupMenu() {
         final JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem kickMenuItem = new JMenuItem("Kick");
@@ -150,8 +162,7 @@ public class ChatForm {
                     return;
                 }
                 flooHandler.state.followedUsers.add(client.username);
-                flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
-                flooHandler.context.statusMessage(String.format("You are now following %s", client.username))   ;
+                setFollowState(flooHandler, String.format("You are now following %s", client.username));
             }
         });
         popupMenu.add(followMenuItem);
@@ -165,8 +176,7 @@ public class ChatForm {
                     return;
                 }
                 flooHandler.state.followedUsers.remove(client.username);
-                flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
-                flooHandler.context.statusMessage(String.format("You have stopped following %s", client.username));
+                setFollowState(flooHandler, String.format("You have stopped following %s", client.username));
             }
         });
         popupMenu.add(unFollowMenuItem);
@@ -263,8 +273,8 @@ public class ChatForm {
         clientModel.clear();
     }
 
-    public void addClient(String username, String client, String platform, Integer user_id) {
-        clientModel.addElement(new ClientModelItem(username, client, platform, user_id));
+    public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
+        clientModel.addElement(new ClientModelItem(username, client, platform, user_id, following));
         clients.setSelectedIndex(clientModel.size() - 1);
     }
 

@@ -124,6 +124,8 @@ public class ContextImpl extends IContext {
             @Override
             public void run(FollowUserDialog dialog) {
                 getFlooHandler().state.setFollowedUsers(dialog.getFollowedUsers());
+                setUsers(flooHandler.state.users);
+
             }
         });
         followUserDialog.createCenterPanel();
