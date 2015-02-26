@@ -5,16 +5,11 @@ import com.intellij.notification.impl.NotificationsConfigurationImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.ui.popup.BalloonBuilder;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.LightColors;
 
 import javax.swing.*;
-import java.util.TimerTask;
 
 /**
  * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
