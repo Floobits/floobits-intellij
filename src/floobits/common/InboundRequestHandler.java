@@ -396,11 +396,12 @@ public class InboundRequestHandler {
                     return;
                 }
                 String username = state.getUsername(res.user_id);
+                String gravatar = state.getGravatar(res.user_id);
                 boolean following = state.getFollowing() && !res.following;
                 if (following && state.followedUsers.size() > 0) {
                     following = state.followedUsers.contains(username);
                 }
-                iDoc.applyHighlight(buf.path, res.user_id, username, following, res.summon, res.ranges);
+                iDoc.applyHighlight(buf.path, res.user_id, username, following, res.summon, res.ranges, gravatar);
             }
         });
     }

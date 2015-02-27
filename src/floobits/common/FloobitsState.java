@@ -85,6 +85,14 @@ public class FloobitsState {
         return user.username;
     }
 
+    public String getGravatar(int userId) {
+        FlooUser user = users.get(userId);
+        if (user == null) {
+            return "";
+        }
+        return user.gravatar;
+    }
+
     /**
      * Get a user by their connection id (userId).
      * @param userId
