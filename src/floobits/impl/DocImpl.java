@@ -4,7 +4,6 @@ import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
@@ -12,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import floobits.common.Constants;
+import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.IDoc;
 import floobits.utilities.Colors;
@@ -88,22 +88,23 @@ public class DocImpl extends IDoc {
         rangeHighlighters.clear();
     }
 
-    protected void applyHighlight(ArrayList<ArrayList<Integer>> ranges, String username, String path, Boolean force, int textLength, int userID,
-                                  String gravatar) {
+    protected void applyHighlight_(HighlightContext highlight) {
         final TextAttributes attributes = new TextAttributes();
-        JBColor color = Colors.getColorForUser(username);
+        JBColor color = Colors.getColorForUser(highlight.username);
         attributes.setEffectColor(color);
         attributes.setEffectType(EffectType.SEARCH_MATCH);
         attributes.setBackgroundColor(color);
         attributes.setForegroundColor(Colors.getFGColor());
 
-        LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(path, userID);
+        int textLength = highlight.textLength;
+        int userID = highlight.userid;
+        LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(highlight.path, userID);
         LinkedList<RangeHighlighter> newHighlighters = new LinkedList<RangeHighlighter>();
 
         boolean first = true;
         Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
 
-        for (List<Integer> range : ranges) {
+        for (List<Integer> range : highlight.ranges) {
             int start = range.get(0);
             int end = range.get(1);
             if (start == end) {
@@ -128,11 +129,11 @@ public class DocImpl extends IDoc {
                 CaretModel caretModel = editor.getCaretModel();
                 LogicalPosition position = editor.offsetToLogicalPosition(start);
                 Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
-                Flog.info("gravatar %s", gravatar);
-                String htmlText = String.format("<p>%s</p>", username);
+                Flog.info("gravatar %s", highlight.gravatar);
+                String htmlText = String.format("<p>%s</p>", highlight.username);
                 URL gravatarURL = null;
                 try {
-                    gravatarURL = new URL(gravatar);
+                    gravatarURL = new URL(highlight.gravatar);
                 } catch (MalformedURLException e) {
                     Flog.info("Bad gravatar URL");
                 }
@@ -143,18 +144,19 @@ public class DocImpl extends IDoc {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    Color newColor = new Color(color.getRGB());
                     if (img != null) {
-                        img = img.getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-                        JBPopupFactory.getInstance()
-                                .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(img), Color.GRAY, null)
-                                .setFadeoutTime(3000)
-                                .createBalloon()
-                                .show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
+                        img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+                        Balloon balloon = JBPopupFactory.getInstance()
+                                .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(img), newColor, null)
+                                .setFadeoutTime(7500)
+                                .createBalloon();
+                        balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
                     }
                 }
                 if (first) {
                     first = false;
-                    if (force) {
+                    if (highlight.force) {
                         caretModel.moveToOffset(start);
                         position = caretModel.getLogicalPosition();
                         ScrollingModel scrollingModel = editor.getScrollingModel();
@@ -162,42 +164,41 @@ public class DocImpl extends IDoc {
                     }
                 }
             }
-
             HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userID);
 
             if (integerRangeHighlighterHashMap == null) {
                 integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
                 highlights.put(userID, integerRangeHighlighterHashMap);
             }
-            integerRangeHighlighterHashMap.put(path, newHighlighters);
+            integerRangeHighlighterHashMap.put(highlight.path, newHighlighters);
         }
     }
 
     @Override
-    public void applyHighlight(String path, int userID, String username, Boolean following, Boolean force, ArrayList<ArrayList<Integer>> ranges,
-                               String gravatar) {
+    public void applyHighlight(HighlightContext highlight) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);
         final VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
 
-        if ((force || following) && virtualFile != null && virtualFile.isValid()) {
+        if ((highlight.force || highlight.following) && virtualFile != null && virtualFile.isValid()) {
             boolean spam = false;
             if (!manager.isFileOpen(virtualFile) || !Arrays.asList(manager.getSelectedFiles()).contains(virtualFile)) {
                 spam = true;
             }
-            if (spam && username.length() > 0 && force) {
-                context.statusMessage(String.format("%s has summoned you!", username));
+            if (spam && highlight.username.length() > 0 && highlight.force) {
+                context.statusMessage(String.format("%s has summoned you!", highlight.username));
             }
             manager.openFile(virtualFile, false, true);
         }
 
-        int textLength = document.getTextLength();
-        if (textLength == 0) {
+        highlight.textLength = document.getTextLength();
+        if (highlight.textLength == 0) {
             return;
         }
         synchronized (context) {
             try {
                 context.setListener(false);
-                applyHighlight(ranges, username, path, force || following, textLength, userID, gravatar);
+                highlight.force = highlight.force || highlight.following;
+                applyHighlight_(highlight);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {

@@ -11,7 +11,6 @@ import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.buf.BinaryBuf;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.buf.TextBuf;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.CreateBufResponse;
 import floobits.common.protocol.json.send.RoomInfoResponse;
@@ -395,13 +394,17 @@ public class InboundRequestHandler {
                 if (iDoc == null) {
                     return;
                 }
-                String username = state.getUsername(res.user_id);
-                String gravatar = state.getGravatar(res.user_id);
-                boolean following = state.getFollowing() && !res.following;
-                if (following && state.followedUsers.size() > 0) {
-                    following = state.followedUsers.contains(username);
+                HighlightContext highlight = new HighlightContext();
+                highlight.username = state.getUsername(res.user_id);
+                highlight.gravatar = state.getGravatar(res.user_id);
+                highlight.following = state.getFollowing() && !res.following;
+                if (highlight.following && state.followedUsers.size() > 0) {
+                    highlight.following = state.followedUsers.contains(highlight.username);
                 }
-                iDoc.applyHighlight(buf.path, res.user_id, username, following, res.summon, res.ranges, gravatar);
+                highlight.path = buf.path;
+                highlight.userid = res.user_id;
+                highlight.force = res.summon;
+                iDoc.applyHighlight(highlight);
             }
         });
     }
