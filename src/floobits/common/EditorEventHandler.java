@@ -35,11 +35,16 @@ public class EditorEventHandler {
         context.setTimeout(100, new Runnable() {
             @Override
             public void run() {
-                FlooHandler flooHandler = context.getFlooHandler();
-                if (flooHandler == null) {
-                    return;
-                }
-                flooHandler.editorEventHandler.upload(virtualFile);
+                context.readThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        if (flooHandler == null) {
+                            return;
+                        }
+                        flooHandler.editorEventHandler.upload(virtualFile);
+                    }
+                });
             }
         });
     }
@@ -223,6 +228,7 @@ public class EditorEventHandler {
         doc.setReadOnly(true);
         IFactory.readOnlyBufferIds.add(bufByPath.path);
         final String text = doc.getText();
+        // This setTimeout is important, don't remove. Might have something to do with re-entrant threads.
         context.setTimeout(0, new Runnable() {
             @Override
             public void run() {
