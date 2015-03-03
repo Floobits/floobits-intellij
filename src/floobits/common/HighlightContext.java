@@ -1,5 +1,7 @@
 package floobits.common;
 
+import floobits.common.interfaces.IContext;
+
 import java.util.ArrayList;
 
 public class HighlightContext {
@@ -11,4 +13,5 @@ public class HighlightContext {
     public String path;
     public Boolean following;
     public Boolean force;
+    public IContext context;
 }

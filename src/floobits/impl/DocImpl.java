@@ -1,5 +1,6 @@
 package floobits.impl;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -14,6 +15,7 @@ import floobits.common.Constants;
 import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.IDoc;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
@@ -90,11 +92,21 @@ public class DocImpl extends IDoc {
 
     protected void applyHighlight_(HighlightContext highlight) {
         final TextAttributes attributes = new TextAttributes();
-        JBColor color = Colors.getColorForUser(highlight.username);
+        final JBColor color = Colors.getColorForUser(highlight.username);
+        final ContextImpl context = (ContextImpl) highlight.context;
+        FlooHandler handler = highlight.context.getFlooHandler();
+        if (handler == null) {
+            return;
+        }
         attributes.setEffectColor(color);
         attributes.setEffectType(EffectType.SEARCH_MATCH);
         attributes.setBackgroundColor(color);
         attributes.setForegroundColor(Colors.getFGColor());
+        for (Balloon balloon : context.balloons) {
+            balloon.setAnimationEnabled(false);
+            balloon.dispose();
+        }
+        context.balloons.clear();
 
         int textLength = highlight.textLength;
         int userID = highlight.userid;
@@ -116,7 +128,7 @@ public class DocImpl extends IDoc {
             if (start >= textLength) {
                 start = textLength - 1;
             }
-            for (Editor editor : editors) {
+            for (final Editor editor : editors) {
                 if (editor.isDisposed()) {
                     continue;
                 }
@@ -128,31 +140,54 @@ public class DocImpl extends IDoc {
                 newHighlighters.add(rangeHighlighter);
                 CaretModel caretModel = editor.getCaretModel();
                 LogicalPosition position = editor.offsetToLogicalPosition(start);
-                Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
-                Flog.info("gravatar %s", highlight.gravatar);
-                String htmlText = String.format("<p>%s</p>", highlight.username);
-                URL gravatarURL = null;
-                try {
-                    gravatarURL = new URL(highlight.gravatar);
-                } catch (MalformedURLException e) {
-                    Flog.info("Bad gravatar URL");
-                }
-                if (gravatarURL != null) {
-                    Image img = null;
+                final Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
+                final String htmlText = String.format("<p>%s</p>", highlight.username);
+                ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
+                int previousLine = -1;
+                Image img = null;
+                if (balloonState == null || balloonState.gravatar == null) {
+                    Flog.info("generating gravatar %s", highlight.gravatar);
+                    URL gravatarURL = null;
                     try {
-                        img = ImageIO.read(gravatarURL);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        gravatarURL = new URL(highlight.gravatar);
+                    } catch (MalformedURLException e) {
+                        Flog.info("Bad gravatar URL");
                     }
-                    Color newColor = new Color(color.getRGB());
-                    if (img != null) {
-                        img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-                        Balloon balloon = JBPopupFactory.getInstance()
-                                .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(img), newColor, null)
-                                .setFadeoutTime(7500)
-                                .createBalloon();
-                        balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
+                    if (gravatarURL != null) {
+                        try {
+                            img = ImageIO.read(gravatarURL);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (img != null) {
+                            img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+                            balloonState = new ContextImpl.BalloonState();
+                            balloonState.gravatar = img;
+                            context.gravatars.put(highlight.gravatar, balloonState);
+                        }
                     }
+                } else {
+                    img = balloonState.gravatar;
+                    previousLine = balloonState.lineNumber;
+                }
+                if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {
+                    final Image gravatarImg = img;
+                    if (balloonState != null) {
+                        balloonState.lineNumber = position.line;
+                    }
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Balloon balloon = JBPopupFactory.getInstance()
+                                    .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), color, null)
+                                    .setFadeoutTime(1000)
+                                    .createBalloon();
+                            balloon.setAnimationEnabled(false);
+                            balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
+                            balloon.setAnimationEnabled(true);
+                            context.balloons.add(balloon);
+                        }
+                    });
                 }
                 if (first) {
                     first = false;
@@ -198,6 +233,7 @@ public class DocImpl extends IDoc {
             try {
                 context.setListener(false);
                 highlight.force = highlight.force || highlight.following;
+                highlight.context = context;
                 applyHighlight_(highlight);
             } catch (Throwable e) {
                 Flog.warn(e);

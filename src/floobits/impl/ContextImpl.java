@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.popup.Balloon;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
@@ -15,15 +16,24 @@ import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
 import floobits.windows.ChatManager;
 
+import java.awt.*;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * I am the link between a project and floobits
  */
 public class ContextImpl extends IContext {
 
+    static public class BalloonState {
+        public Image gravatar;
+        public int lineNumber;
+    }
+
     private Listener listener = new Listener(this);
+    public List<Balloon> balloons = new ArrayList<Balloon>();
+    public HashMap<String, BalloonState> gravatars = new HashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;
 
