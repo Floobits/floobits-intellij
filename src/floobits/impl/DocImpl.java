@@ -19,12 +19,8 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -143,51 +139,29 @@ public class DocImpl extends IDoc {
                 final Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
                 final String htmlText = String.format("<p>%s</p>", highlight.username);
                 ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
-                int previousLine = -1;
-                Image img = null;
-                if (balloonState == null || balloonState.gravatar == null) {
-                    Flog.info("generating gravatar %s", highlight.gravatar);
-                    URL gravatarURL = null;
-                    try {
-                        gravatarURL = new URL(highlight.gravatar);
-                    } catch (MalformedURLException e) {
-                        Flog.info("Bad gravatar URL");
-                    }
-                    if (gravatarURL != null) {
-                        try {
-                            img = ImageIO.read(gravatarURL);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        if (img != null) {
-                            img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-                            balloonState = new ContextImpl.BalloonState();
-                            balloonState.gravatar = img;
-                            context.gravatars.put(highlight.gravatar, balloonState);
-                        }
-                    }
-                } else {
+                if (balloonState != null) {
+                    int previousLine;
+                    Image img;
                     img = balloonState.gravatar;
                     previousLine = balloonState.lineNumber;
-                }
-                if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {
-                    final Image gravatarImg = img;
-                    if (balloonState != null) {
+                    final Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+                    if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {
+                        final Image gravatarImg = img;
                         balloonState.lineNumber = position.line;
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                Balloon balloon = JBPopupFactory.getInstance()
+                                        .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), newColor, null)
+                                        .setFadeoutTime(1000)
+                                        .createBalloon();
+                                balloon.setAnimationEnabled(false);
+                                balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
+                                balloon.setAnimationEnabled(true);
+                                context.balloons.add(balloon);
+                            }
+                        });
                     }
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            Balloon balloon = JBPopupFactory.getInstance()
-                                    .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), color, null)
-                                    .setFadeoutTime(1000)
-                                    .createBalloon();
-                            balloon.setAnimationEnabled(false);
-                            balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
-                            balloon.setAnimationEnabled(true);
-                            context.balloons.add(balloon);
-                        }
-                    });
                 }
                 if (first) {
                     first = false;

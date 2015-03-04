@@ -10,7 +10,6 @@ import floobits.utilities.Flog;
 import io.fletty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 

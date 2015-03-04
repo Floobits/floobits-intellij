@@ -398,14 +398,14 @@ public class InboundRequestHandler {
                 highlight.username = state.getUsername(res.user_id);
                 highlight.gravatar = state.getGravatar(res.user_id);
                 highlight.following = state.getFollowing() && !res.following;
-                highlight.ranges = res.ranges;
+
                 if (highlight.following && state.followedUsers.size() > 0) {
                     highlight.following = state.followedUsers.contains(highlight.username);
                 }
                 highlight.path = buf.path;
                 highlight.userid = res.user_id;
                 highlight.force = res.summon;
-                highlight.context = context;
+                highlight.ranges = res.ranges;
                 iDoc.applyHighlight(highlight);
             }
         });

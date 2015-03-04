@@ -16,7 +16,13 @@ import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
 import floobits.windows.ChatManager;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
@@ -162,6 +168,9 @@ public class ContextImpl extends IContext {
             return;
         }
         chatManager.setUsers(users);
+        for (FlooUser user : users.values()) {
+            addUser(user);
+        }
     }
 
     public void setListener(boolean b) {
@@ -323,5 +332,40 @@ public class ContextImpl extends IContext {
         }
         Flog.info("Complete signup url is:", url);
         chatStatusMessage(String.format("Your account was auto-created. Please <a style=\"color:blue; text-decoration: underline;\" href=\"%s\">click here to complete sign up</a>.", url));
+    }
+
+    @Override
+    public void addUser(final FlooUser user) {
+        if (gravatars.get(user.gravatar) != null) {
+            return;
+        }
+        Flog.info("Adding gravatar for user %s.", user);
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                Image img;
+                URL url;
+                try {
+                    url = new URL(user.gravatar);
+                } catch (MalformedURLException e) {
+                    Flog.info("Could not create url for gravatar %s.", user.gravatar);
+                    return;
+                }
+                try {
+                    URLConnection con = url.openConnection();
+                    con.setConnectTimeout(10000);
+                    con.setReadTimeout(10000);
+                    InputStream in = con.getInputStream();
+                    img = ImageIO.read(in);
+                } catch (IOException e) {
+                    Flog.info("Could not load gravatar from network.");
+                    return;
+                }
+                img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+                ContextImpl.BalloonState balloonState = new ContextImpl.BalloonState();
+                balloonState.gravatar = img;
+                gravatars.put(user.gravatar, balloonState);
+            }
+        }).start();
     }
 }
