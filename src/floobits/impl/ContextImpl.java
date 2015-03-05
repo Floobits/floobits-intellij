@@ -26,11 +26,16 @@ import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * I am the link between a project and floobits
  */
 public class ContextImpl extends IContext {
+
+
+
 
     static public class BalloonState {
         public Image gravatar;
@@ -42,11 +47,13 @@ public class ContextImpl extends IContext {
     public HashMap<String, BalloonState> gravatars = new HashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;
+    private final ExecutorService pool;
 
     public ContextImpl(Project project) {
         super();
         this.project = project;
         this.iFactory = new FactoryImpl(this, editor);
+        pool = Executors.newFixedThreadPool(5);
     }
 
     public void statusMessage(String message, NotificationType notificationType) {
@@ -160,6 +167,7 @@ public class ContextImpl extends IContext {
             Flog.warn(e);
         }
         listener = new Listener(this);
+        pool.shutdownNow();
     }
 
     @Override
@@ -340,7 +348,7 @@ public class ContextImpl extends IContext {
             return;
         }
         Flog.info("Adding gravatar for user %s.", user);
-        new Thread( new Runnable() {
+        pool.execute(new Runnable() {
             @Override
             public void run() {
                 Image img;
@@ -366,6 +374,7 @@ public class ContextImpl extends IContext {
                 balloonState.gravatar = img;
                 gravatars.put(user.gravatar, balloonState);
             }
-        }).start();
+        });
+
     }
 }
