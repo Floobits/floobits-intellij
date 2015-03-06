@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
  * I am the link between a project and floobits
  */
 public class ContextImpl extends IContext {
-    
+
     static public class BalloonState {
         public Image gravatar;
         public int lineNumber;
@@ -45,7 +45,7 @@ public class ContextImpl extends IContext {
     public ConcurrentHashMap<String, BalloonState> gravatars = new ConcurrentHashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;
-    private final ExecutorService pool;
+    private ExecutorService pool;
 
     public ContextImpl(Project project) {
         super();
@@ -165,7 +165,10 @@ public class ContextImpl extends IContext {
             Flog.warn(e);
         }
         listener = new Listener(this);
-        pool.shutdownNow();
+        if (pool != null) {
+            pool.shutdownNow();
+            pool = null;
+        }
     }
 
     @Override
@@ -342,7 +345,7 @@ public class ContextImpl extends IContext {
 
     @Override
     public void addUser(final FlooUser user) {
-        if (gravatars.get(user.gravatar) != null) {
+        if (pool == null || gravatars.get(user.gravatar) != null) {
             return;
         }
         Flog.info("Adding gravatar for user %s.", user);
