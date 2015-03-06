@@ -26,6 +26,7 @@ import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,10 +34,7 @@ import java.util.concurrent.Executors;
  * I am the link between a project and floobits
  */
 public class ContextImpl extends IContext {
-
-
-
-
+    
     static public class BalloonState {
         public Image gravatar;
         public int lineNumber;
@@ -44,7 +42,7 @@ public class ContextImpl extends IContext {
 
     private Listener listener = new Listener(this);
     public List<Balloon> balloons = new ArrayList<Balloon>();
-    public HashMap<String, BalloonState> gravatars = new HashMap<String, BalloonState>();
+    public ConcurrentHashMap<String, BalloonState> gravatars = new ConcurrentHashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;
     private final ExecutorService pool;
