@@ -345,7 +345,7 @@ public class ContextImpl extends IContext {
 
     @Override
     public void addUser(final FlooUser user) {
-        if (pool == null || gravatars.get(user.gravatar) != null) {
+        if (pool == null || user.gravatar == null || gravatars.get(user.gravatar) != null) {
             return;
         }
         Flog.info("Adding gravatar for user %s.", user);
