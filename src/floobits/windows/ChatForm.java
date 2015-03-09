@@ -70,6 +70,7 @@ public class ChatForm {
     private JButton chatButton;
     private JTextField chatInput;
     private JTextPane messages;
+    private JScrollPane clients;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
     private IContext context;
@@ -217,10 +218,14 @@ public class ChatForm {
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
 
             }
+
             @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            }
+
             @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
+            public void popupMenuCanceled(PopupMenuEvent e) {
+            }
         });
     }
 
