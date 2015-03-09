@@ -36,11 +36,6 @@ public class ChatForm {
             if (flooHandler == null) {
                 return;
             }
-            ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
-            if (client == null) {
-                return;
-            }
-            clientActionPerformed(flooHandler, client);
         }
 
         protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {}
@@ -71,8 +66,6 @@ public class ChatForm {
     }
 
     private JPanel chatPanel;
-    private DefaultListModel clientModel = new DefaultListModel();
-    private JList clients;
     private JScrollPane messagesScrollPane;
     private JButton chatButton;
     private JTextField chatInput;
@@ -85,7 +78,6 @@ public class ChatForm {
     public ChatForm (IContext context) {
         super();
         this.context = context;
-        clients.setModel(clientModel);
         setupPopupMenu();
         kit = new HTMLEditorKit();
         doc = new HTMLDocument();
@@ -223,31 +215,12 @@ public class ChatForm {
                 }
                 kickMenuItem.setEnabled(floohandler.state.can("kick"));
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
-                ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
-                boolean canUnfollow = floohandler.state.followedUsers.contains(client.username);
-                boolean canFollow = !canUnfollow;
-                if (client.username.equals(floohandler.state.username)) {
-                    canUnfollow = false;
-                    canFollow = false;
-                }
-                followMenuItem.setVisible(canFollow);
-                unFollowMenuItem.setVisible(canUnfollow);
+
             }
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) {}
-        });
-        clients.addMouseListener(new MouseAdapter()
-        {
-            public void mousePressed(MouseEvent e)
-            {
-                JList list = (JList)e.getSource();
-                int row = list.locationToIndex(e.getPoint());
-                list.setSelectedIndex(row);
-                popupMenu.show(e.getComponent(), e.getX(), e.getY());
-            }
-
         });
     }
 
@@ -270,12 +243,9 @@ public class ChatForm {
     }
 
     public void clearClients() {
-        clientModel.clear();
     }
 
     public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
-        clientModel.addElement(new ClientModelItem(username, client, platform, user_id, following));
-        clients.setSelectedIndex(clientModel.size() - 1);
     }
 
     public void statusMessage(String message) {
