@@ -1,6 +1,7 @@
 package floobits.windows;
 
 import com.intellij.ui.JBColor;
+import com.intellij.uiDesigner.core.GridConstraints;
 import floobits.common.interfaces.IContext;
 import floobits.common.RunLater;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -70,7 +71,8 @@ public class ChatForm {
     private JButton chatButton;
     private JTextField chatInput;
     private JTextPane messages;
-    private JScrollPane clients;
+    private JPanel foobar;
+    private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
     private IContext context;
@@ -251,6 +253,9 @@ public class ChatForm {
     }
 
     public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
+        ChatUserForm user = new ChatUserForm();
+        user.setUsername(username);
+        foobar.add(user.getContainerPanel(), new GridConstraints());
     }
 
     public void statusMessage(String message) {
