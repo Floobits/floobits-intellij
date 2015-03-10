@@ -103,7 +103,7 @@ public class ChatManager {
                 // Add the list to the model.
                 FlooHandler handler = context.getFlooHandler();
                 for (FlooUser user : userList) {
-                    chatForm.addClient(user.username, user.client, user.platform, user.user_id,
+                    chatForm.addClient(user.username, user.gravatar, user.client, user.platform, user.user_id,
                             handler.state.followedUsers.contains(user.username));
                 }
             }

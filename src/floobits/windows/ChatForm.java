@@ -1,6 +1,10 @@
 package floobits.windows;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.ui.GridBag;
@@ -9,6 +13,7 @@ import floobits.common.RunLater;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 import floobits.dialogs.SetPermissionsDialog;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
@@ -77,12 +82,12 @@ public class ChatForm {
     private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
-    private IContext context;
+    private ContextImpl context;
     private boolean shouldScrollToBottom;
 
     public ChatForm (IContext context) {
         super();
-        this.context = context;
+        this.context = (ContextImpl) context;
         setupPopupMenu();
         kit = new HTMLEditorKit();
         doc = new HTMLDocument();
@@ -138,6 +143,23 @@ public class ChatForm {
         clientsPane = new JPanel();
         clientsScrollPane.setViewportView(clientsPane);
         clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
+    }
+
+    public void clearClients() {
+    }
+
+    public void addClient(String username, String gravatar, String client, String platform, Integer user_id, Boolean following) {
+        ChatUserForm user = new ChatUserForm();
+        user.setUsername(username);
+        ChatUserForm userForm = new ChatUserForm();
+        userForm.setUsername(username);
+        if (gravatar != null) {
+            ContextImpl.BalloonState balloonState = context.gravatars.get(gravatar);
+            if (balloonState != null) {
+                userForm.addGravatar(balloonState.gravatar);
+            }
+        }
+        clientsPane.add(userForm.getContainerPanel());
     }
 
     private void setFollowState(FlooHandler flooHandler, String msg) {
@@ -257,17 +279,6 @@ public class ChatForm {
 
     public JPanel getChatPanel() {
         return chatPanel;
-    }
-
-    public void clearClients() {
-    }
-
-    public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
-        ChatUserForm user = new ChatUserForm();
-        user.setUsername(username);
-        ChatUserForm userForm = new ChatUserForm();
-        userForm.setUsername(username);
-        clientsPane.add(userForm.getContainerPanel());
     }
 
     public void statusMessage(String message) {

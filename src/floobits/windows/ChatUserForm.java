@@ -1,6 +1,9 @@
 package floobits.windows;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by bjorn on 3/6/15.
@@ -15,7 +18,14 @@ public class ChatUserForm {
         usernameLabel.setText(username);
     }
 
+    public void addGravatar(Image gravatar) {
+        JLabel iconlabel = new JLabel(new ImageIcon(gravatar));
+        gravatarContainer.add(iconlabel, new GridConstraints());
+
+    }
+
     public JPanel getContainerPanel() {
         return containerPanel;
     }
+
 }
