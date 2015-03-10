@@ -1,7 +1,9 @@
 package floobits.windows;
 
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.util.ui.GridBag;
 import floobits.common.interfaces.IContext;
 import floobits.common.RunLater;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -71,7 +73,7 @@ public class ChatForm {
     private JButton chatButton;
     private JTextField chatInput;
     private JTextPane messages;
-    private JPanel foobar;
+    private JScrollPane clientsScrollPane;
     private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
@@ -128,6 +130,14 @@ public class ChatForm {
                sendChatContents();
             }
         });
+    }
+
+
+    private void createUIComponents() {
+        clientsScrollPane = new JBScrollPane();
+        clientsPane = new JPanel();
+        clientsScrollPane.setViewportView(clientsPane);
+        clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
     }
 
     private void setFollowState(FlooHandler flooHandler, String msg) {
@@ -255,7 +265,9 @@ public class ChatForm {
     public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
         ChatUserForm user = new ChatUserForm();
         user.setUsername(username);
-        foobar.add(user.getContainerPanel(), new GridConstraints());
+        ChatUserForm userForm = new ChatUserForm();
+        userForm.setUsername(username);
+        clientsPane.add(userForm.getContainerPanel());
     }
 
     public void statusMessage(String message) {
