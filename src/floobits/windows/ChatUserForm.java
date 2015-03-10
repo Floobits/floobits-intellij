@@ -5,16 +5,18 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Created by bjorn on 3/6/15.
- */
 public class ChatUserForm {
     private JList clientList;
     private JLabel usernameLabel;
     private JPanel gravatarContainer;
     private JPanel containerPanel;
+    private DefaultListModel clientModel = new DefaultListModel();
 
-    public void setUsername(String username) {
+    public ChatUserForm() {
+        clientList.setModel(clientModel);
+    }
+
+        public void setUsername(String username) {
         usernameLabel.setText(username);
     }
 
@@ -22,6 +24,10 @@ public class ChatUserForm {
         JLabel iconlabel = new JLabel(new ImageIcon(gravatar));
         gravatarContainer.add(iconlabel, new GridConstraints());
 
+    }
+
+    public void addClient(String client, String platform) {
+        clientModel.addElement(String.format("%s %s", client, platform));
     }
 
     public JPanel getContainerPanel() {

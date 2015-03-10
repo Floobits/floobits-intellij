@@ -102,9 +102,24 @@ public class ChatManager {
 
                 // Add the list to the model.
                 FlooHandler handler = context.getFlooHandler();
+                HashMap<String, List<ChatForm.ClientModelItem>> clientMap = new HashMap<String, List<ChatForm.ClientModelItem>>(users.size());
                 for (FlooUser user : userList) {
-                    chatForm.addClient(user.username, user.gravatar, user.client, user.platform, user.user_id,
+                    ChatForm.ClientModelItem client = new ChatForm.ClientModelItem(
+                            user.username,
+                            user.gravatar,
+                            user.client,
+                            user.platform,
+                            user.user_id,
                             handler.state.followedUsers.contains(user.username));
+                    List<ChatForm.ClientModelItem> clients = clientMap.get(user.username);
+                    if (clients == null) {
+                        clients = new ArrayList<ChatForm.ClientModelItem>(1);
+                        clientMap.put(user.username, clients);
+                    }
+                    clients.add(client);
+                }
+                for (String username : clientMap.keySet()) {
+                    chatForm.addUser(clientMap.get(username));
                 }
             }
         }, ModalityState.NON_MODAL);

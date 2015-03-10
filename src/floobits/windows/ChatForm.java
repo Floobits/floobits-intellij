@@ -32,6 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class ChatForm {
@@ -46,22 +47,26 @@ public class ChatForm {
             }
         }
 
-        protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {}
+        protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
+
+        }
     }
 
-    protected class ClientModelItem {
+    static public class ClientModelItem {
         public String username;
         public String client;
         public String platform;
+        public String gravatar;
         public int userId;
         public Boolean following;
 
-        public ClientModelItem(String username, String client, String platform, Integer userId, Boolean following) {
+        public ClientModelItem(String username, String gravatar, String client, String platform, Integer userId, Boolean following) {
             this.username = username;
             this.client = client;
             this.platform = platform;
             this.userId = userId;
             this.following = following;
+            this.gravatar = gravatar;
         }
 
         public String toString() {
@@ -149,16 +154,23 @@ public class ChatForm {
         clientsPane.removeAll();
     }
 
-    public void addClient(String username, String gravatar, String client, String platform, Integer user_id, Boolean following) {
+    public void addUser(List<ClientModelItem> clients) {
+        ClientModelItem firstClient = clients.get(0);
+        if (firstClient == null) {
+            return;
+        }
         ChatUserForm user = new ChatUserForm();
-        user.setUsername(username);
+        user.setUsername(firstClient.username);
         ChatUserForm userForm = new ChatUserForm();
-        userForm.setUsername(username);
-        if (gravatar != null) {
-            ContextImpl.BalloonState balloonState = context.gravatars.get(gravatar);
+        userForm.setUsername(firstClient.username);
+        if (firstClient.gravatar != null) {
+            ContextImpl.BalloonState balloonState = context.gravatars.get(firstClient.gravatar);
             if (balloonState != null) {
                 userForm.addGravatar(balloonState.gravatar);
             }
+        }
+        for (ClientModelItem client : clients) {
+            userForm.addClient(client.client, client.platform);
         }
         clientsPane.add(userForm.getContainerPanel());
     }
