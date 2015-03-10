@@ -33,7 +33,7 @@ public class ChatManager {
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
-        toolWindow.setIcon(IconLoader.getIcon("/icons/floo.png"));
+        toolWindow.setIcon(IconLoader.getIcon("/icons/floo13.png"));
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
     }
