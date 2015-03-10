@@ -15,6 +15,7 @@ import floobits.common.Constants;
 import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.IDoc;
+import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
@@ -151,6 +152,9 @@ public class DocImpl extends IDoc {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
+                                if (context.getFlooHandler() == null) {
+                                    return;
+                                }
                                 Balloon balloon = JBPopupFactory.getInstance()
                                         .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), newColor, null)
                                         .setFadeoutTime(1000)

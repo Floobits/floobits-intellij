@@ -374,6 +374,11 @@ public class ContextImpl extends IContext {
                 ContextImpl.BalloonState balloonState = new ContextImpl.BalloonState();
                 balloonState.gravatar = img;
                 gravatars.put(user.gravatar, balloonState);
+                FlooHandler handler = getFlooHandler();
+                if (handler == null) {
+                    return;
+                }
+                handler.state.updateUsers();
             }
         });
 

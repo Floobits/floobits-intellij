@@ -146,6 +146,7 @@ public class ChatForm {
     }
 
     public void clearClients() {
+        clientsPane.removeAll();
     }
 
     public void addClient(String username, String gravatar, String client, String platform, Integer user_id, Boolean following) {
