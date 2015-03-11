@@ -165,7 +165,7 @@ public class ChatForm {
         if (firstClient.gravatar != null) {
             ContextImpl.BalloonState balloonState = context.gravatars.get(firstClient.gravatar);
             if (balloonState != null) {
-                userForm.addGravatar(balloonState.largeGravatar);
+                userForm.addGravatar(balloonState.largeGravatar, firstClient.username);
             }
         }
         for (ClientModelItem client : clients) {

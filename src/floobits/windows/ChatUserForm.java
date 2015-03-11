@@ -2,6 +2,7 @@ package floobits.windows;
 
 import com.intellij.ui.components.JBList;
 import com.intellij.uiDesigner.core.GridConstraints;
+import floobits.utilities.Colors;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -39,14 +40,15 @@ public class ChatUserForm {
         border.setTitle(username);
     }
 
-    public void addGravatar(Image gravatar) {
+    public void addGravatar(Image gravatar, String username) {
         JLabel iconlabel = new JLabel(new ImageIcon(gravatar));
+        iconlabel.setBorder(BorderFactory.createLineBorder(Colors.getColorForUser(username), 2));
         gravatarContainer.add(iconlabel, new GridConstraints());
 
     }
 
     public void addClient(String client, String platform) {
-        clientModel.addElement(String.format("%s %s", client, platform));
+        clientModel.addElement(String.format("<html>&middot; %s  <small><i>(%s)</html></i></small>", client, platform));
     }
 
     public JPanel getContainerPanel() {
