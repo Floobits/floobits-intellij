@@ -15,6 +15,7 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
+import floobits.windows.ChatUserForm.ClientModelItem;
 
 import java.util.*;
 
@@ -102,18 +103,18 @@ public class ChatManager {
 
                 // Add the list to the model.
                 FlooHandler handler = context.getFlooHandler();
-                HashMap<String, List<ChatForm.ClientModelItem>> clientMap = new HashMap<String, List<ChatForm.ClientModelItem>>(users.size());
+                HashMap<String, List<ClientModelItem>> clientMap = new HashMap<String, List<ClientModelItem>>(users.size());
                 for (FlooUser user : userList) {
-                    ChatForm.ClientModelItem client = new ChatForm.ClientModelItem(
+                    ClientModelItem client = new ClientModelItem(
                             user.username,
                             user.gravatar,
                             user.client,
                             user.platform,
                             user.user_id,
                             handler.state.followedUsers.contains(user.username));
-                    List<ChatForm.ClientModelItem> clients = clientMap.get(user.username);
+                    List<ClientModelItem> clients = clientMap.get(user.username);
                     if (clients == null) {
-                        clients = new ArrayList<ChatForm.ClientModelItem>(1);
+                        clients = new ArrayList<ClientModelItem>(1);
                         clientMap.put(user.username, clients);
                     }
                     clients.add(client);
