@@ -32,7 +32,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class ChatForm {
@@ -166,7 +165,7 @@ public class ChatForm {
         if (firstClient.gravatar != null) {
             ContextImpl.BalloonState balloonState = context.gravatars.get(firstClient.gravatar);
             if (balloonState != null) {
-                userForm.addGravatar(balloonState.gravatar);
+                userForm.addGravatar(balloonState.largeGravatar);
             }
         }
         for (ClientModelItem client : clients) {

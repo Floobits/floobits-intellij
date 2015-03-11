@@ -36,7 +36,8 @@ import java.util.concurrent.Executors;
 public class ContextImpl extends IContext {
 
     static public class BalloonState {
-        public Image gravatar;
+        public Image smallGravatar;
+        public Image largeGravatar;
         public int lineNumber;
     }
 
@@ -370,9 +371,9 @@ public class ContextImpl extends IContext {
                     Flog.info("Could not load gravatar from network.");
                     return;
                 }
-                img = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
                 ContextImpl.BalloonState balloonState = new ContextImpl.BalloonState();
-                balloonState.gravatar = img;
+                balloonState.largeGravatar = img.getScaledInstance(75, 75, Image.SCALE_SMOOTH);
+                balloonState.smallGravatar = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
                 gravatars.put(user.gravatar, balloonState);
                 FlooHandler handler = getFlooHandler();
                 if (handler == null) {

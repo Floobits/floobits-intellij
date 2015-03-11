@@ -143,7 +143,7 @@ public class DocImpl extends IDoc {
                 if (balloonState != null) {
                     int previousLine;
                     Image img;
-                    img = balloonState.gravatar;
+                    img = balloonState.smallGravatar;
                     previousLine = balloonState.lineNumber;
                     final Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
                     if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {

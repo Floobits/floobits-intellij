@@ -1,23 +1,42 @@
 package floobits.windows;
 
+import com.intellij.ui.components.JBList;
 import com.intellij.uiDesigner.core.GridConstraints;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class ChatUserForm {
     private JList clientList;
-    private JLabel usernameLabel;
     private JPanel gravatarContainer;
     private JPanel containerPanel;
-    private DefaultListModel clientModel = new DefaultListModel();
+    private DefaultListModel clientModel;
 
-    public ChatUserForm() {
-        clientList.setModel(clientModel);
+
+    private static class ClientCellRenderer extends JLabel implements ListCellRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setText((String) value);
+            setOpaque(false);
+            return this;
+        }
     }
 
-        public void setUsername(String username) {
-        usernameLabel.setText(username);
+    private void createUIComponents() {
+        clientModel = new DefaultListModel();
+        clientList = new JBList();
+        clientList.setOpaque(false);
+        clientList.setModel(clientModel);
+        clientList.setCellRenderer(new ClientCellRenderer());
+    }
+
+    public void setUsername(String username) {
+        TitledBorder border = (TitledBorder) containerPanel.getBorder();
+        border.setTitle(username);
     }
 
     public void addGravatar(Image gravatar) {
