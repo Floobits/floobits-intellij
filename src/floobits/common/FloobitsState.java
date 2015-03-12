@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
@@ -26,7 +25,6 @@ public class FloobitsState {
 
     public boolean readOnly = false;
     public String username = "";
-    protected HashSet<Integer> requests = new HashSet<Integer>();
     private IContext context;
     public FlooUrl url;
     public List<String> followedUsers = new ArrayList<String>();
@@ -48,16 +46,17 @@ public class FloobitsState {
     }
 
     public void handleRoomInfo(RoomInfoResponse ri) {
-        for (FlooUser user : ri.users.values()) {
-            context.addUser(user);
-        }
+        Flog.info("Got roominfo with userId %d", connectionId);
+        users = ri.users;
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
             context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
         }
         connectionId = Integer.parseInt(ri.user_id);
-        Flog.info("Got roominfo with userId %d", connectionId);
+        for (FlooUser user : ri.users.values()) {
+            context.addUser(user);
+        }
 
     }
     public void setBufPath(Buf buf, String newPath) {

@@ -345,7 +345,8 @@ public class ContextImpl extends IContext {
 
     @Override
     public void addUser(final FlooUser user) {
-        if (pool == null || user.gravatar == null || gravatars.get(user.gravatar) != null) {
+        if (pool == null) {
+            Flog.info("Pool is null cannot add user.");
             return;
         }
         statusMessage(String.format("%s joined the workspace on %s (%s).", user.username, user.platform, user.client));
