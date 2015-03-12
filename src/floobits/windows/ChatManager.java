@@ -75,53 +75,11 @@ public class ChatManager {
         }, ModalityState.NON_MODAL);
     }
 
-    public void setUsers(final Map<Integer,FlooUser> originalUsers) {
+    public void addUser(final FlooUser user) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                // Copy users so we don't modify the flooHandler user list:
-                HashMap<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
-                users.putAll(originalUsers);
-
-                // Clear existing stuff:
-                chatForm.clearClients();
-
-                // Created a sorted list by username.
-                Iterator usersIterator = users.entrySet().iterator();
-                ArrayList<FlooUser> userList = new ArrayList<FlooUser>();
-                while (usersIterator.hasNext()) {
-                    Map.Entry user = (Map.Entry) usersIterator.next();
-                    userList.add((FlooUser) user.getValue());
-                    usersIterator.remove();
-                }
-                Collections.sort(userList, new Comparator<FlooUser>() {
-                   @Override
-                   public int compare(FlooUser a, FlooUser b) {
-                        return a.username.compareTo(b.username);
-                    }
-                });
-
-                // Add the list to the model.
-                FlooHandler handler = context.getFlooHandler();
-                HashMap<String, List<ClientModelItem>> clientMap = new HashMap<String, List<ClientModelItem>>(users.size());
-                for (FlooUser user : userList) {
-                    ClientModelItem client = new ClientModelItem(
-                            user.username,
-                            user.gravatar,
-                            user.client,
-                            user.platform,
-                            user.user_id,
-                            handler.state.followedUsers.contains(user.username));
-                    List<ClientModelItem> clients = clientMap.get(user.username);
-                    if (clients == null) {
-                        clients = new ArrayList<ClientModelItem>(1);
-                        clientMap.put(user.username, clients);
-                    }
-                    clients.add(client);
-                }
-                for (String username : clientMap.keySet()) {
-                    chatForm.addUser(clientMap.get(username));
-                }
+                chatForm.addUser(user);
             }
         }, ModalityState.NON_MODAL);
     }
@@ -158,8 +116,8 @@ public class ChatManager {
         }, ModalityState.NON_MODAL);
     }
 
-    public void removeUser(Integer userId, String username) {
-        chatForm.removeUser(userId, username);
+    public void removeUser(FlooUser user) {
+        chatForm.removeUser(user);
     }
 
     public void updateUserList() {

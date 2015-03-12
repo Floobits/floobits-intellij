@@ -146,8 +146,6 @@ public class ContextImpl extends IContext {
             @Override
             public void run(FollowUserDialog dialog) {
                 getFlooHandler().state.setFollowedUsers(dialog.getFollowedUsers());
-                setUsers(flooHandler.state.users);
-
             }
         });
         followUserDialog.createCenterPanel();
@@ -160,10 +158,10 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public void removeUser(Integer userId, String username) {
-        statusMessage(String.format("%s left the workspace.", username));
-        chatManager.removeUser(userId, username);
-        iFactory.removeHighlightsForUser(userId);
+    public void removeUser(FlooUser user) {
+        statusMessage(String.format("%s left the workspace.", user.username));
+        chatManager.removeUser(user);
+        iFactory.removeHighlightsForUser(user.user_id);
     }
 
     @Override
@@ -181,13 +179,6 @@ public class ContextImpl extends IContext {
         if (pool != null) {
             pool.shutdownNow();
             pool = null;
-        }
-    }
-
-    @Override
-    public void setUsers(Map<Integer, FlooUser> users) {
-        for (FlooUser user : users.values()) {
-            addUser(user);
         }
     }
 
@@ -391,6 +382,6 @@ public class ContextImpl extends IContext {
                 chatManager.updateUserList();
             }
         });
-
+        chatManager.addUser(user);
     }
 }

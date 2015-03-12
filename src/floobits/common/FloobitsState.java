@@ -48,8 +48,9 @@ public class FloobitsState {
     }
 
     public void handleRoomInfo(RoomInfoResponse ri) {
-        users = ri.users;
-        context.setUsers(users);
+        for (FlooUser user : ri.users.values()) {
+            context.addUser(user);
+        }
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
@@ -112,7 +113,7 @@ public class FloobitsState {
         if (u == null) {
             return;
         }
-        context.removeUser(userId, u.username);
+        context.removeUser(u);
     }
 
     public int getMyConnectionId() {

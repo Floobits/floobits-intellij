@@ -102,7 +102,6 @@ public class ChatUserForm {
 
     private void setFollowState(FlooHandler flooHandler, String msg) {
         flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
-        flooHandler.context.setUsers(flooHandler.state.users);
         flooHandler.context.statusMessage(msg);
     }
 

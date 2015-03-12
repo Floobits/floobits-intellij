@@ -3,6 +3,7 @@ package floobits.windows;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import floobits.common.interfaces.IContext;
+import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Colors;
@@ -22,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Date;
 
 public class ChatForm {
@@ -104,17 +104,15 @@ public class ChatForm {
         clientsPane.removeAll();
     }
 
-    public void addUser(List<ClientModelItem> clients) {
-        ChatUserForm.ClientModelItem firstClient = clients.get(0);
-        if (firstClient == null) {
-            return;
+    public void addUser(FlooUser user) {
+        ChatUserForm userForm;
+        userForm = userForms.get(user.username);
+        if (userForm == null) {
+            userForm = new ChatUserForm(context, user.username, user.gravatar);
+            userForms.put(user.username, userForm);
         }
-        ChatUserForm userForm = new ChatUserForm(context, firstClient.username, firstClient.gravatar);
-        for (ChatUserForm.ClientModelItem client : clients) {
-            userForm.addClient(client.client, client.platform, client.userId);
-        }
+        userForm.addClient(user.client, user.platform, user.user_id);
         clientsPane.add(userForm.getContainerPanel());
-        userForms.put(firstClient.username, userForm);
     }
 
     private void sendChatContents() {
@@ -177,16 +175,16 @@ public class ChatForm {
         return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), displayNick);
     }
 
-    public void removeUser(Integer userId, String username) {
-        ChatUserForm userForm = userForms.get(username);
+    public void removeUser(FlooUser user) {
+        ChatUserForm userForm = userForms.get(user.username);
         if (userForm == null) {
-            Flog.info("Could not find userForm for %d %s when trying to remove a user.", userId, username);
+            Flog.info("Could not find userForm for %d %s when trying to remove a user.", user.user_id, user.username);
             return;
         }
-        userForm.removeClient(userId);
+        userForm.removeClient(user.user_id);
         if (userForm.getNumClients() < 1) {
             clientsPane.remove(userForm.getContainerPanel());
-            userForms.remove(username);
+            userForms.remove(user.username);
         }
     }
 
