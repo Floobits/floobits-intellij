@@ -101,6 +101,7 @@ public class ChatForm {
 
     public void clearClients() {
         clientsPane.removeAll();
+        userForms.clear();
     }
 
     public void addUser(FlooUser user) {
@@ -112,6 +113,7 @@ public class ChatForm {
         }
         userForm.addClient(user.client, user.platform, user.user_id);
         clientsPane.add(userForm.getContainerPanel());
+        chatPanel.validate();
     }
 
     private void sendChatContents() {
@@ -185,11 +187,13 @@ public class ChatForm {
             clientsPane.remove(userForm.getContainerPanel());
             userForms.remove(user.username);
         }
+        chatPanel.validate();
     }
 
     public void updateGravatars() {
         for (ChatUserForm userForm : userForms.values()) {
             userForm.updateGravatar();
         }
+        chatPanel.validate();
     }
 }

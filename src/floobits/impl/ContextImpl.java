@@ -52,7 +52,6 @@ public class ContextImpl extends IContext {
         super();
         this.project = project;
         this.iFactory = new FactoryImpl(this, editor);
-        pool = Executors.newFixedThreadPool(5);
     }
 
     public void statusMessage(String message, NotificationType notificationType) {
@@ -155,6 +154,15 @@ public class ContextImpl extends IContext {
     @Override
     public void updateFollowing(List<String> followedUsers) {
 
+    }
+
+    @Override
+    public void connected() {
+        editor.reset();
+        if (pool != null) {
+            Flog.info("Pool wasn't null when creating a new one.");
+        }
+        pool = Executors.newFixedThreadPool(5);
     }
 
     @Override

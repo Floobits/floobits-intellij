@@ -329,4 +329,6 @@ public abstract class IContext {
 
 
     public abstract void updateFollowing(List<String> followedUsers);
+
+    public abstract void connected();
 }
