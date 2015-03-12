@@ -15,7 +15,6 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
-import floobits.windows.ChatUserForm.ClientModelItem;
 
 import java.util.*;
 

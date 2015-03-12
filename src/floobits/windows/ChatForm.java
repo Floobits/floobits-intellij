@@ -8,7 +8,6 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
-import floobits.windows.ChatUserForm.ClientModelItem;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;

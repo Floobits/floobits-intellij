@@ -46,25 +46,6 @@ public class ChatUserForm {
         protected void clientActionPerformed(FlooHandler flooHandler) {}
     }
 
-
-    static public class ClientModelItem {
-        public String username;
-        public String client;
-        public String platform;
-        public String gravatar;
-        public int userId;
-        public Boolean following;
-
-        public ClientModelItem(String username, String gravatar, String client, String platform, Integer userId, Boolean following) {
-            this.username = username;
-            this.client = client;
-            this.platform = platform;
-            this.userId = userId;
-            this.following = following;
-            this.gravatar = gravatar;
-        }
-    }
-
     static private class ClientState {
         public JMenuItem mi;
         public String label;
