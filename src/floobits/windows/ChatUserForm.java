@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ChatUserForm {
+    private final String gravatar;
     private JList clientList;
     private JPanel gravatarContainer;
     private JPanel containerPanel;
@@ -88,11 +89,14 @@ public class ChatUserForm {
         }
     }
 
-    public ChatUserForm (ContextImpl context, String username) {
+    public ChatUserForm(ContextImpl context, String username, String gravatar) {
         this.context = context;
         this.username = username;
+        this.gravatar = gravatar;
         setupPopupMenu();
         containerPanel.setComponentPopupMenu(menuPopup);
+        updateBorder();
+        updateGravatar();
     }
 
 
@@ -221,7 +225,7 @@ public class ChatUserForm {
 
     private void createUIComponents() {
         subContainer = new JPanel();
-        clientModel = new DefaultListModel();
+        clientModel = new DefaultListModel<String>();
         clientList = new JBList();
         clientList.setOpaque(false);
         clientList.setModel(clientModel);
@@ -231,13 +235,20 @@ public class ChatUserForm {
         clientList.setComponentPopupMenu(menuPopup);
     }
 
-    public void setUsername(String username) {
+    public void updateBorder() {
         TitledBorder border = (TitledBorder) containerPanel.getBorder();
         border.setTitle(username);
     }
 
-    public void addGravatar(Image gravatar, String username) {
-        JLabel iconlabel = new JLabel(new ImageIcon(gravatar));
+    public void updateGravatar() {
+        if (gravatar == null) {
+            return;
+        }
+        ContextImpl.BalloonState balloonState = context.gravatars.get(gravatar);
+        if (balloonState == null) {
+            return;
+        }
+        JLabel iconlabel = new JLabel(new ImageIcon(balloonState.largeGravatar));
         iconlabel.setBorder(BorderFactory.createLineBorder(Colors.getColorForUser(username), 2));
         gravatarContainer.add(iconlabel, new GridConstraints());
 

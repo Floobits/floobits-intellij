@@ -155,7 +155,13 @@ public class ContextImpl extends IContext {
     }
 
     @Override
+    public void updateFollowing(List<String> followedUsers) {
+
+    }
+
+    @Override
     public void removeUser(Integer userId, String username) {
+        statusMessage(String.format("%s left the workspace.", username));
         chatManager.removeUser(userId, username);
         iFactory.removeHighlightsForUser(userId);
     }
@@ -351,6 +357,7 @@ public class ContextImpl extends IContext {
         if (pool == null || user.gravatar == null || gravatars.get(user.gravatar) != null) {
             return;
         }
+        statusMessage(String.format("%s joined the workspace on %s (%s).", user.username, user.platform, user.client));
         Flog.info("Adding gravatar for user %s.", user);
         pool.execute(new Runnable() {
             @Override
@@ -381,7 +388,7 @@ public class ContextImpl extends IContext {
                 if (handler == null) {
                     return;
                 }
-                handler.state.updateUsers();
+                chatManager.updateUserList();
             }
         });
 

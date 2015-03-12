@@ -102,25 +102,17 @@ public class FloobitsState {
         return users.get(userId);
     }
 
-    public void addUser(FlooUser flooser) {
-        users.put(flooser.user_id, flooser);
-        context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client));
-        updateUsers();
+    public void addUser(FlooUser user) {
+        users.put(user.user_id, user);
+        context.addUser(user);
     }
 
     public void removeUser(int userId) {
         FlooUser u = users.get(userId);
-        if (users.remove(userId) != null) {
-            updateUsers();
-        }
         if (u == null) {
             return;
         }
-        context.statusMessage(String.format("%s left the workspace.", u.username));
-    }
-
-    public void updateUsers() {
-        context.setUsers(users);
+        context.removeUser(userId, u.username);
     }
 
     public int getMyConnectionId() {
@@ -166,7 +158,7 @@ public class FloobitsState {
             if (context.getFlooHandler() == null) {
                 return;
             }
-            updateUsers();
+            context.updateFollowing(this.followedUsers);
         }
     }
 

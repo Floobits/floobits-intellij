@@ -161,4 +161,8 @@ public class ChatManager {
     public void removeUser(Integer userId, String username) {
         chatForm.removeUser(userId, username);
     }
+
+    public void updateUserList() {
+        chatForm.updateGravatars();
+    }
 }

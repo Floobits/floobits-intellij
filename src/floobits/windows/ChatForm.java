@@ -109,14 +109,7 @@ public class ChatForm {
         if (firstClient == null) {
             return;
         }
-        ChatUserForm userForm = new ChatUserForm(context, firstClient.username);
-        userForm.setUsername(firstClient.username);
-        if (firstClient.gravatar != null) {
-            ContextImpl.BalloonState balloonState = context.gravatars.get(firstClient.gravatar);
-            if (balloonState != null) {
-                userForm.addGravatar(balloonState.largeGravatar, firstClient.username);
-            }
-        }
+        ChatUserForm userForm = new ChatUserForm(context, firstClient.username, firstClient.gravatar);
         for (ChatUserForm.ClientModelItem client : clients) {
             userForm.addClient(client.client, client.platform, client.userId);
         }
@@ -194,6 +187,12 @@ public class ChatForm {
         if (userForm.getNumClients() < 1) {
             clientsPane.remove(userForm.getContainerPanel());
             userForms.remove(username);
+        }
+    }
+
+    public void updateGravatars() {
+        for (ChatUserForm userForm : userForms.values()) {
+            userForm.updateGravatar();
         }
     }
 }
