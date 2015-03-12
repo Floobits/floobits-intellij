@@ -107,7 +107,7 @@ public class ChatForm {
         if (firstClient == null) {
             return;
         }
-        ChatUserForm userForm = new ChatUserForm(context);
+        ChatUserForm userForm = new ChatUserForm(context, firstClient.username);
         userForm.setUsername(firstClient.username);
         if (firstClient.gravatar != null) {
             ContextImpl.BalloonState balloonState = context.gravatars.get(firstClient.gravatar);
@@ -116,7 +116,7 @@ public class ChatForm {
             }
         }
         for (ChatUserForm.ClientModelItem client : clients) {
-            userForm.addClient(client.client, client.platform);
+            userForm.addClient(client.client, client.platform, client.userId);
         }
         clientsPane.add(userForm.getContainerPanel());
     }

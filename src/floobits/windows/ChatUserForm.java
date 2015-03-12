@@ -10,15 +10,15 @@ import floobits.impl.ContextImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
-import javax.naming.Context;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
 
 public class ChatUserForm {
     private JList clientList;
@@ -26,9 +26,10 @@ public class ChatUserForm {
     private JPanel containerPanel;
     private JPanel subContainer;
     private DefaultListModel clientModel;
-    private JMenuItem testMenuItem;
     private JPopupMenu menuPopup;
     private ContextImpl context;
+    private String username;
+    private List<Integer> userIds = new ArrayList<Integer>();
 
 
     protected class ClientChatActionListener implements ActionListener {
@@ -39,11 +40,10 @@ public class ChatUserForm {
             if (flooHandler == null) {
                 return;
             }
+            clientActionPerformed(flooHandler);
         }
 
-        protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-
-        }
+        protected void clientActionPerformed(FlooHandler flooHandler) {}
     }
 
 
@@ -77,8 +77,9 @@ public class ChatUserForm {
         }
     }
 
-    public ChatUserForm (ContextImpl context) {
+    public ChatUserForm (ContextImpl context, String username) {
         this.context = context;
+        this.username = username;
         setupPopupMenu();
         containerPanel.setComponentPopupMenu(menuPopup);
     }
@@ -90,52 +91,73 @@ public class ChatUserForm {
         flooHandler.context.statusMessage(msg);
     }
 
-    private void setupPopupMenu() {
-        final JPopupMenu popupMenu = new JPopupMenu();
-        final JMenuItem kickMenuItem = new JMenuItem("Kick");
+    private void kickClient(int userId) {
+        Flog.info("Kicking %s with user id %d.", username, userId);
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            return;
+        }
+        flooHandler.editorEventHandler.kick(userId);
+    }
+
+    private void addKickMenuItem(final int userId, String label) {
+        final JMenuItem kickMenuItem = new JMenuItem(label);
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Kicking %s with user id %d.", client.username, client.userId);
-                flooHandler.editorEventHandler.kick(client.userId);
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                kickClient(userId);
+            }
+        });
+        menuPopup.add(kickMenuItem);
+    }
+
+    private void setupPopupMenu() {
+        final JPopupMenu popupMenu = menuPopup;
+        final JMenuItem kickMenuItem = new JMenuItem("Kick all clients");
+        kickMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                for (int userId: userIds) {
+                    kickClient(userId);
+                }
             }
         });
         popupMenu.add(kickMenuItem);
         final JMenuItem followMenuItem = new JMenuItem("Follow");
         followMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Following %s with user id %d.", client.username, client.userId);
-                if (flooHandler.state.followedUsers.contains(client.username)) {
-                    flooHandler.context.errorMessage(String.format("You are already following %s", client.username));
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                Flog.info("Following %s.", username);
+                if (flooHandler.state.followedUsers.contains(username)) {
+                    flooHandler.context.errorMessage(String.format("You are already following %s", username));
                     return;
                 }
-                flooHandler.state.followedUsers.add(client.username);
-                setFollowState(flooHandler, String.format("You are now following %s", client.username));
+                flooHandler.state.followedUsers.add(username);
+                setFollowState(flooHandler, String.format("You are now following %s", username));
             }
         });
         popupMenu.add(followMenuItem);
         final JMenuItem unFollowMenuItem = new JMenuItem("Stop following");
         unFollowMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Will stop following %s with user id %d.", client.username, client.userId);
-                if (!flooHandler.state.followedUsers.contains(client.username)) {
-                    flooHandler.context.errorMessage(String.format("You are not following %s", client.username));
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                Flog.info("Will stop following %s", username);
+                if (!flooHandler.state.followedUsers.contains(username)) {
+                    flooHandler.context.errorMessage(String.format("You are not following %s", username));
                     return;
                 }
-                flooHandler.state.followedUsers.remove(client.username);
-                setFollowState(flooHandler, String.format("You have stopped following %s", client.username));
+                flooHandler.state.followedUsers.remove(username);
+                setFollowState(flooHandler, String.format("You have stopped following %s", username));
             }
         });
         popupMenu.add(unFollowMenuItem);
         final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
         adminMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                final int userId = client.userId;
-                Flog.info("Opening up permission dialog for %s", client.username);
-                FlooUser user = flooHandler.state.getUser(client.userId);
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                final int userId = userIds.get(0);
+                Flog.info("Opening up permission dialog for %s", username);
+                FlooUser user = flooHandler.state.getUser(userId);
                 if (user == null) {
                     return;
                 }
@@ -157,7 +179,7 @@ public class ChatUserForm {
                         permissions.contains("patch"),
                         permissions.contains("kick")
                 );
-                setPermissionsDialog.setUsername(client.username);
+                setPermissionsDialog.setUsername(username);
                 setPermissionsDialog.createCenterPanel();
                 setPermissionsDialog.show();
             }
@@ -192,9 +214,7 @@ public class ChatUserForm {
         clientList.setOpaque(false);
         clientList.setModel(clientModel);
         clientList.setCellRenderer(new ClientCellRenderer());
-        testMenuItem = new JMenuItem("test");
         menuPopup = new JPopupMenu();
-        menuPopup.add(testMenuItem);
         subContainer.setComponentPopupMenu(menuPopup);
         clientList.setComponentPopupMenu(menuPopup);
     }
@@ -211,8 +231,11 @@ public class ChatUserForm {
 
     }
 
-    public void addClient(String client, String platform) {
+    public void addClient(String client, String platform, int userId) {
         clientModel.addElement(String.format("<html>&middot; %s  <small><i>(%s)</html></i></small>", client, platform));
+        userIds.add(userId);
+        addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
+
     }
 
     public JPanel getContainerPanel() {
