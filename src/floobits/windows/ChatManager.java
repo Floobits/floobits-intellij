@@ -157,4 +157,8 @@ public class ChatManager {
             }
         }, ModalityState.NON_MODAL);
     }
+
+    public void removeUser(Integer userId, String username) {
+        chatForm.removeUser(userId, username);
+    }
 }

@@ -326,4 +326,6 @@ public abstract class IContext {
     public abstract void notifyCompleteSignUp();
     public abstract void addUser(FlooUser user);
     public abstract void followUser();
+
+    public abstract void removeUser(Integer userId, String username);
 }

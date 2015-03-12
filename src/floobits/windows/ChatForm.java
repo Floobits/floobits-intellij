@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Date;
 
@@ -38,6 +39,7 @@ public class ChatForm {
     private HTMLDocument doc;
     private ContextImpl context;
     private boolean shouldScrollToBottom;
+    private HashMap<String, ChatUserForm> userForms = new HashMap<String, ChatUserForm>();
 
     public ChatForm (IContext context) {
         super();
@@ -119,6 +121,7 @@ public class ChatForm {
             userForm.addClient(client.client, client.platform, client.userId);
         }
         clientsPane.add(userForm.getContainerPanel());
+        userForms.put(firstClient.username, userForm);
     }
 
     private void sendChatContents() {
@@ -179,5 +182,18 @@ public class ChatForm {
             displayNick = String.format(" <span style=\"background-color:%s;color:white;\">&nbsp;</span> %s ", rgba, nick);
         }
         return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), displayNick);
+    }
+
+    public void removeUser(Integer userId, String username) {
+        ChatUserForm userForm = userForms.get(username);
+        if (userForm == null) {
+            Flog.info("Could not find userForm for %d %s when trying to remove a user.", userId, username);
+            return;
+        }
+        userForm.removeClient(userId);
+        if (userForm.getNumClients() < 1) {
+            clientsPane.remove(userForm.getContainerPanel());
+            userForms.remove(username);
+        }
     }
 }

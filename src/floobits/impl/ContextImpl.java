@@ -155,6 +155,12 @@ public class ContextImpl extends IContext {
     }
 
     @Override
+    public void removeUser(Integer userId, String username) {
+        chatManager.removeUser(userId, username);
+        iFactory.removeHighlightsForUser(userId);
+    }
+
+    @Override
     public synchronized void shutdown() {
         super.shutdown();
         if (chatManager != null) {
@@ -174,10 +180,6 @@ public class ContextImpl extends IContext {
 
     @Override
     public void setUsers(Map<Integer, FlooUser> users) {
-        if (chatManager == null) {
-            return;
-        }
-        chatManager.setUsers(users);
         for (FlooUser user : users.values()) {
             addUser(user);
         }

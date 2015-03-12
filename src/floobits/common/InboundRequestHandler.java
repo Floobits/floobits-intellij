@@ -321,12 +321,14 @@ public class InboundRequestHandler {
 
     void _on_part(JsonObject obj) {
         JsonElement id = obj.get("user_id");
+        JsonElement username = obj.get("username");
+
         if (id == null){
             return;
         }
         Integer userId = id.getAsInt();
         state.removeUser(userId);
-        context.iFactory.removeHighlightsForUser(userId);
+        context.removeUser(userId, username.getAsString());
     }
 
     void _on_delete_buf(JsonObject obj) {

@@ -24,7 +24,7 @@ public class ChatUserForm {
     private JPanel gravatarContainer;
     private JPanel containerPanel;
     private JPanel subContainer;
-    private DefaultListModel clientModel;
+    private DefaultListModel<String> clientModel;
     private JPopupMenu menuPopup;
     private ContextImpl context;
     private String username;
@@ -248,7 +248,6 @@ public class ChatUserForm {
         clientModel.addElement(label);
         JMenuItem mi = addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
         clients.put(userId, new ClientState(userId, mi, label));
-
     }
 
     private void refreshClientList() {
