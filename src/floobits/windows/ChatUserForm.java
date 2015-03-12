@@ -15,8 +15,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -29,7 +28,7 @@ public class ChatUserForm {
     private JPopupMenu menuPopup;
     private ContextImpl context;
     private String username;
-    private List<Integer> userIds = new ArrayList<Integer>();
+    private HashMap<Integer, ClientState> clients = new HashMap<Integer, ClientState>();
 
 
     protected class ClientChatActionListener implements ActionListener {
@@ -62,6 +61,18 @@ public class ChatUserForm {
             this.userId = userId;
             this.following = following;
             this.gravatar = gravatar;
+        }
+    }
+
+    static private class ClientState {
+        public JMenuItem mi;
+        public String label;
+        public int userId;
+
+        public ClientState(int userId, JMenuItem mi, String label) {
+            this.userId = userId;
+            this.mi = mi;
+            this.label = label;
         }
     }
 
@@ -100,7 +111,7 @@ public class ChatUserForm {
         flooHandler.editorEventHandler.kick(userId);
     }
 
-    private void addKickMenuItem(final int userId, String label) {
+    private JMenuItem addKickMenuItem(final int userId, String label) {
         final JMenuItem kickMenuItem = new JMenuItem(label);
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
@@ -109,6 +120,7 @@ public class ChatUserForm {
             }
         });
         menuPopup.add(kickMenuItem);
+        return kickMenuItem;
     }
 
     private void setupPopupMenu() {
@@ -117,8 +129,8 @@ public class ChatUserForm {
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler) {
-                for (int userId: userIds) {
-                    kickClient(userId);
+                for (ClientState client: clients.values()) {
+                    kickClient(client.userId);
                 }
             }
         });
@@ -155,7 +167,7 @@ public class ChatUserForm {
         adminMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler) {
-                final int userId = userIds.get(0);
+                final int userId = clients.entrySet().iterator().next().getKey();
                 Flog.info("Opening up permission dialog for %s", username);
                 FlooUser user = flooHandler.state.getUser(userId);
                 if (user == null) {
@@ -232,10 +244,36 @@ public class ChatUserForm {
     }
 
     public void addClient(String client, String platform, int userId) {
-        clientModel.addElement(String.format("<html>&middot; %s  <small><i>(%s)</html></i></small>", client, platform));
-        userIds.add(userId);
-        addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
+        String label = String.format("<html>&middot; %s  <small><i>(%s)</html></i></small>", client, platform);
+        clientModel.addElement(label);
+        JMenuItem mi = addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
+        clients.put(userId, new ClientState(userId, mi, label));
 
+    }
+
+    private void refreshClientList() {
+        clientModel.clear();
+        for (ClientState client : clients.values()) {
+            clientModel.addElement(client.label);
+        }
+    }
+
+    public void removeClient(int userId){
+        ClientState client = clients.get(userId);
+        if (client == null) {
+            return;
+        }
+        clients.remove(userId);
+        menuPopup.remove(client.mi);
+        refreshClientList();
+    }
+
+    public void toggleFollowIndicator(Boolean show) {
+
+    }
+
+    public int getNumClients() {
+        return clients.size();
     }
 
     public JPanel getContainerPanel() {
