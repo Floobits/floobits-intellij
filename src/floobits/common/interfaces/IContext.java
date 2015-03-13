@@ -326,9 +326,6 @@ public abstract class IContext {
     public abstract void addUser(FlooUser user);
     public abstract void removeUser(FlooUser user);
     public abstract void followUser();
-
-
     public abstract void updateFollowing(List<String> followedUsers);
-
     public abstract void connected();
 }

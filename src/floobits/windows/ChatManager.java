@@ -120,6 +120,11 @@ public class ChatManager {
     }
 
     public void updateUserList() {
-        chatForm.updateGravatars();
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.updateGravatars();
+            }
+        }, ModalityState.NON_MODAL);
     }
 }

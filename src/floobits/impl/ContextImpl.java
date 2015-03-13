@@ -39,10 +39,10 @@ public class ContextImpl extends IContext {
         public Image smallGravatar;
         public Image largeGravatar;
         public int lineNumber;
+        public Balloon balloon;
     }
 
     private Listener listener = new Listener(this);
-    public List<Balloon> balloons = new ArrayList<Balloon>();
     public ConcurrentHashMap<String, BalloonState> gravatars = new ConcurrentHashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;

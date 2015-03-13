@@ -15,7 +15,6 @@ import floobits.common.Constants;
 import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.IDoc;
-import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
@@ -99,12 +98,6 @@ public class DocImpl extends IDoc {
         attributes.setEffectType(EffectType.SEARCH_MATCH);
         attributes.setBackgroundColor(color);
         attributes.setForegroundColor(Colors.getFGColor());
-        for (Balloon balloon : context.balloons) {
-            balloon.setAnimationEnabled(false);
-            balloon.dispose();
-        }
-        context.balloons.clear();
-
         int textLength = highlight.textLength;
         int userID = highlight.userid;
         LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(highlight.path, userID);
@@ -136,44 +129,50 @@ public class DocImpl extends IDoc {
 
                 newHighlighters.add(rangeHighlighter);
                 CaretModel caretModel = editor.getCaretModel();
-                LogicalPosition position = editor.offsetToLogicalPosition(start);
-                final Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
+                final LogicalPosition position = editor.offsetToLogicalPosition(start);
                 final String htmlText = String.format("<p>%s</p>", highlight.username);
-                ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
+                final ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
                 if (balloonState != null) {
                     int previousLine;
                     Image img;
                     img = balloonState.smallGravatar;
                     previousLine = balloonState.lineNumber;
                     final Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+                    if (first) {
+                        first = false;
+                        if (highlight.force) {
+                            caretModel.moveToOffset(start);
+                            LogicalPosition newPosition = caretModel.getLogicalPosition();
+                            ScrollingModel scrollingModel = editor.getScrollingModel();
+                            scrollingModel.scrollTo(newPosition, ScrollType.MAKE_VISIBLE);
+                        }
+                    }
                     if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {
                         final Image gravatarImg = img;
-                        balloonState.lineNumber = position.line;
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 if (context.getFlooHandler() == null) {
                                     return;
                                 }
-                                Balloon balloon = JBPopupFactory.getInstance()
+                                Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
+                                Balloon balloon;
+                                if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
+                                    balloonState.balloon.setAnimationEnabled(false);
+                                    balloonState.balloon.dispose();
+                                }
+                                balloon = JBPopupFactory.getInstance()
                                         .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), newColor, null)
                                         .setFadeoutTime(1000)
                                         .createBalloon();
+                                balloonState.lineNumber = position.line;
                                 balloon.setAnimationEnabled(false);
                                 balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
                                 balloon.setAnimationEnabled(true);
-                                context.balloons.add(balloon);
+                                balloonState.balloon = balloon;
+
                             }
                         });
-                    }
-                }
-                if (first) {
-                    first = false;
-                    if (highlight.force) {
-                        caretModel.moveToOffset(start);
-                        position = caretModel.getLogicalPosition();
-                        ScrollingModel scrollingModel = editor.getScrollingModel();
-                        scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
                     }
                 }
             }
