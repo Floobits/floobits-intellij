@@ -118,6 +118,7 @@ public class DocImpl extends IDoc {
             if (start >= textLength) {
                 start = textLength - 1;
             }
+            final int balloonOffset = start;
             for (final Editor editor : editors) {
                 if (editor.isDisposed()) {
                     continue;
@@ -130,8 +131,7 @@ public class DocImpl extends IDoc {
                 newHighlighters.add(rangeHighlighter);
                 CaretModel caretModel = editor.getCaretModel();
                 final LogicalPosition logPos = editor.offsetToLogicalPosition(start);
-                final VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(start).line, 0);
-                final String htmlText = String.format("<p>%s</p>", highlight.username);
+                final String htmlText = String.format("<p style=\"background-color:;\">%s</p>", highlight.username);
                 final ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
                 if (balloonState != null) {
                     int previousLine;
@@ -157,6 +157,7 @@ public class DocImpl extends IDoc {
                                 if (context.getFlooHandler() == null) {
                                     return;
                                 }
+                                VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, 0);
                                 Point p = editor.visualPositionToXY(visPos);
                                 Balloon balloon;
                                 if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
@@ -164,8 +165,9 @@ public class DocImpl extends IDoc {
                                     balloonState.balloon.dispose();
                                 }
                                 balloon = JBPopupFactory.getInstance()
-                                        .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), newColor, null)
+                                        .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), Color.LIGHT_GRAY, null)
                                         .setFadeoutTime(1000)
+                                        .setBorderColor(newColor)
                                         .createBalloon();
                                 balloonState.lineNumber = logPos.line;
                                 balloon.setAnimationEnabled(false);
