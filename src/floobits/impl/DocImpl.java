@@ -129,7 +129,8 @@ public class DocImpl extends IDoc {
 
                 newHighlighters.add(rangeHighlighter);
                 CaretModel caretModel = editor.getCaretModel();
-                final LogicalPosition position = editor.offsetToLogicalPosition(start);
+                final LogicalPosition logPos = editor.offsetToLogicalPosition(start);
+                final VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(start).line, 0);
                 final String htmlText = String.format("<p>%s</p>", highlight.username);
                 final ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
                 if (balloonState != null) {
@@ -144,10 +145,11 @@ public class DocImpl extends IDoc {
                             caretModel.moveToOffset(start);
                             LogicalPosition newPosition = caretModel.getLogicalPosition();
                             ScrollingModel scrollingModel = editor.getScrollingModel();
+                            scrollingModel.disableAnimation();
                             scrollingModel.scrollTo(newPosition, ScrollType.MAKE_VISIBLE);
                         }
                     }
-                    if (previousLine != position.line && !handler.state.username.equals(highlight.username) && img != null) {
+                    if (previousLine != logPos.line && !handler.state.username.equals(highlight.username) && img != null) {
                         final Image gravatarImg = img;
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
@@ -155,7 +157,7 @@ public class DocImpl extends IDoc {
                                 if (context.getFlooHandler() == null) {
                                     return;
                                 }
-                                Point p = editor.visualPositionToXY(new VisualPosition(position.line, 0));
+                                Point p = editor.visualPositionToXY(visPos);
                                 Balloon balloon;
                                 if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
                                     balloonState.balloon.setAnimationEnabled(false);
@@ -165,7 +167,7 @@ public class DocImpl extends IDoc {
                                         .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), newColor, null)
                                         .setFadeoutTime(1000)
                                         .createBalloon();
-                                balloonState.lineNumber = position.line;
+                                balloonState.lineNumber = logPos.line;
                                 balloon.setAnimationEnabled(false);
                                 balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
                                 balloon.setAnimationEnabled(true);
