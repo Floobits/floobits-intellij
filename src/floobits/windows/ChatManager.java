@@ -115,8 +115,13 @@ public class ChatManager {
         }, ModalityState.NON_MODAL);
     }
 
-    public void removeUser(FlooUser user) {
-        chatForm.removeUser(user);
+    public void removeUser(final FlooUser user) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.removeUser(user);
+            }
+        }, ModalityState.NON_MODAL);
     }
 
     public void updateUserList() {
