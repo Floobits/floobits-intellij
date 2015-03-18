@@ -1,5 +1,6 @@
 package floobits.impl;
 
+import com.intellij.lang.Language;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
@@ -9,6 +10,8 @@ import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.psi.codeStyle.CodeStyleSettingsManager;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import floobits.common.Constants;
@@ -29,11 +32,14 @@ public class DocImpl extends IDoc {
 
     private final ContextImpl context;
     private final Document document;
+    private int editorWidth = 0;
     public final static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
 
     public DocImpl(ContextImpl context, Document document) {
         this.context = context;
         this.document = document;
+        CodeStyleSettings settings = CodeStyleSettingsManager.getSettings(context.project);
+        editorWidth = settings.getRightMargin(null);
     }
 
     public String toString() {
@@ -149,6 +155,7 @@ public class DocImpl extends IDoc {
                             scrollingModel.scrollTo(newPosition, ScrollType.MAKE_VISIBLE);
                         }
                     }
+                    final int bubblePos = editorWidth;
                     if (previousLine != logPos.line && !handler.state.username.equals(highlight.username) && img != null) {
                         final Image gravatarImg = img;
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -157,7 +164,7 @@ public class DocImpl extends IDoc {
                                 if (context.getFlooHandler() == null) {
                                     return;
                                 }
-                                VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, 0);
+                                VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, bubblePos);
                                 Point p = editor.visualPositionToXY(visPos);
                                 Balloon balloon;
                                 if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
@@ -171,7 +178,7 @@ public class DocImpl extends IDoc {
                                         .createBalloon();
                                 balloonState.lineNumber = logPos.line;
                                 balloon.setAnimationEnabled(false);
-                                balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atLeft);
+                                balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atRight);
                                 balloon.setAnimationEnabled(true);
                                 balloonState.balloon = balloon;
 
