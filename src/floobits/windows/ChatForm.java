@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Date;
+import java.util.*;
+import java.util.List;
 
 public class ChatForm {
 
@@ -195,5 +195,11 @@ public class ChatForm {
             userForm.updateGravatar();
         }
         chatPanel.validate();
+    }
+
+    public void updateFollowing(List<String> followedUsers) {
+        for (Map.Entry<String, ChatUserForm> userFormSet: userForms.entrySet()) {
+            userFormSet.getValue().setFollowing(followedUsers.contains(userFormSet.getKey()));
+        }
     }
 }

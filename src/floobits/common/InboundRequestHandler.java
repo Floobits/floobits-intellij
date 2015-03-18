@@ -459,7 +459,7 @@ public class InboundRequestHandler {
         if (res.user_id != state.getMyConnectionId()) {
             return;
         }
-        HashSet perms = new HashSet<String>(Arrays.asList(res.perms));
+        HashSet<String> perms = new HashSet<String>(Arrays.asList(res.perms));
         if (res.action.equals("add")) {
             state.perms.addAll(perms);
         } else if (res.action.equals("set")) {

@@ -29,8 +29,8 @@ public class ChatUserForm {
     private JPopupMenu menuPopup;
     private ContextImpl context;
     private String username;
+    private boolean following = false;
     private HashMap<Integer, ClientState> clients = new HashMap<Integer, ClientState>();
-
 
     protected class ClientChatActionListener implements ActionListener {
 
@@ -80,6 +80,10 @@ public class ChatUserForm {
         updateGravatar();
     }
 
+    public void setFollowing(boolean following) {
+        this.following = following;
+        updateBorder();
+    }
 
     private void setFollowState(FlooHandler flooHandler, String msg) {
         flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
@@ -217,7 +221,11 @@ public class ChatUserForm {
 
     public void updateBorder() {
         TitledBorder border = (TitledBorder) containerPanel.getBorder();
-        border.setTitle(username);
+        String usernameStr = username;
+        if (following) {
+            usernameStr += "*";
+        }
+        border.setTitle(usernameStr);
     }
 
     public void updateGravatar() {

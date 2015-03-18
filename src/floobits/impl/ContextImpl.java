@@ -152,8 +152,8 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public void updateFollowing(List<String> followedUsers) {
-
+    public void updateFollowing() {
+        chatManager.updateUserList();
     }
 
     @Override
@@ -328,6 +328,7 @@ public class ContextImpl extends IContext {
         if (chatManager != null && !chatManager.isOpen()) {
             chatManager.openChat();
         }
+        chatManager.updateUserList();
     }
 
     @Override

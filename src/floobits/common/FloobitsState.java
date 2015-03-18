@@ -158,7 +158,7 @@ public class FloobitsState {
             if (context.getFlooHandler() == null) {
                 return;
             }
-            context.updateFollowing(this.followedUsers);
+            context.updateFollowing();
         }
     }
 
@@ -198,5 +198,6 @@ public class FloobitsState {
     public void setFollowedUsers(List<String> followedUsers) {
         this.followedUsers = followedUsers;
         setFollowing(followedUsers.size() > 0);
+        context.updateFollowing();
     }
 }

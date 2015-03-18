@@ -1,5 +1,6 @@
 package floobits.windows;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
@@ -125,10 +126,19 @@ public class ChatManager {
     }
 
     public void updateUserList() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        Application app = ApplicationManager.getApplication();
+        if (app == null) {
+            return;
+        }
+        app.invokeLater(new Runnable() {
             @Override
             public void run() {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
                 chatForm.updateGravatars();
+                chatForm.updateFollowing(flooHandler.state.followedUsers);
             }
         }, ModalityState.NON_MODAL);
     }
