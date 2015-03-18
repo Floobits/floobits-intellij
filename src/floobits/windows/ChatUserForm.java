@@ -194,6 +194,8 @@ public class ChatUserForm {
                 }
                 kickMenuItem.setEnabled(floohandler.state.can("kick"));
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
+                followMenuItem.setEnabled(!following);
+                unFollowMenuItem.setEnabled(following);
 
             }
 
@@ -264,10 +266,6 @@ public class ChatUserForm {
         clients.remove(userId);
         menuPopup.remove(client.mi);
         refreshClientList();
-    }
-
-    public void toggleFollowIndicator(Boolean show) {
-
     }
 
     public int getNumClients() {
