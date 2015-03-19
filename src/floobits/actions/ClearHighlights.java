@@ -2,7 +2,6 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FloobitsPlugin;
-import floobits.common.EditorEventHandler;
 
 public class ClearHighlights extends RequiresAccountAction {
 

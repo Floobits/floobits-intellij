@@ -1,10 +1,12 @@
 package floobits.common.protocol.json.receive;
 
+import floobits.common.Utils;
 import floobits.common.protocol.Base;
 import floobits.common.protocol.buf.Buf;
 
 public class SetBuf implements Base {
     public String name = "set_buf";
+    public int req_id = Utils.getRequestId();
     public Integer id;
     public String buf;
     public String md5;

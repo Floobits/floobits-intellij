@@ -1,9 +1,11 @@
 package floobits.common.protocol;
 
+import floobits.common.Utils;
 import floobits.common.protocol.buf.Buf;
 
 public class FlooPatch implements Base  {
     public String name = "patch";
+    public int req_id = Utils.getRequestId();
     public Integer id;
     public Integer user_id;
     public String md5_after;

@@ -1,5 +1,6 @@
 package floobits.common.protocol.json.receive;
 
+import floobits.common.Utils;
 import floobits.common.protocol.Base;
 import floobits.common.protocol.buf.Buf;
 
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 
 public class FlooHighlight implements Base {
     public String name = "highlight";
+    public int req_id = Utils.getRequestId();
     public Integer id;
     public Boolean ping = false;
     public Boolean summon = false;

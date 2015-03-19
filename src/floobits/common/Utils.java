@@ -15,6 +15,13 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Utils {
+    private static int requestId = 0;
+
+    public static int getRequestId() {
+        requestId += 1;
+        return requestId;
+    }
+
     public static String stackToString(Exception e){
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

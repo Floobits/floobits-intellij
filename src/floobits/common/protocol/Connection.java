@@ -55,8 +55,8 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     private final BaseHandler handler;
     private final IContext context;
     protected Channel channel;
-    private Integer MAX_RETRIES = 22;
-    private Integer INITIAL_RECONNECT_DELAY = 500;
+    private int MAX_RETRIES = 22;
+    private int INITIAL_RECONNECT_DELAY = 500;
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
