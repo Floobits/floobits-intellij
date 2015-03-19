@@ -144,7 +144,6 @@ public class DocImpl extends IDoc {
                     Image img;
                     img = balloonState.smallGravatar;
                     previousLine = balloonState.lineNumber;
-                    final Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
                     if (first) {
                         first = false;
                         if (highlight.force) {
@@ -174,7 +173,7 @@ public class DocImpl extends IDoc {
                                 balloon = JBPopupFactory.getInstance()
                                         .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), Color.LIGHT_GRAY, null)
                                         .setFadeoutTime(1000)
-                                        .setBorderColor(newColor)
+                                        .setBorderColor(color)
                                         .createBalloon();
                                 balloonState.lineNumber = logPos.line;
                                 balloon.setAnimationEnabled(false);
