@@ -1,11 +1,14 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
 
-public class ClearHighlights extends IsJoinedAction {
+public class ClearHighlights extends RequiresAccountAction {
+
     @Override
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
-        editorEventHandler.clearHighlights();
+    protected void actionPerformedHasAccount(AnActionEvent e) {
+        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        floobitsPlugin.context.iFactory.clearHighlights();
     }
 }

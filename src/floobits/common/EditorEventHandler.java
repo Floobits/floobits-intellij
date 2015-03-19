@@ -187,10 +187,6 @@ public class EditorEventHandler {
         outbound.requestEdit();
     }
 
-    public void clearHighlights (){
-        context.iFactory.clearHighlights();
-    }
-
     public void openChat() {
         Flog.info("Showing user window.");
         context.openChat();
