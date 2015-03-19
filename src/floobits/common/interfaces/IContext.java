@@ -6,9 +6,7 @@ import floobits.common.protocol.handlers.BaseHandler;
 import floobits.common.protocol.handlers.CreateAccountHandler;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.handlers.LinkEditorHandler;
-
 import floobits.utilities.Flog;
-
 import io.fletty.bootstrap.Bootstrap;
 import io.fletty.channel.nio.NioEventLoopGroup;
 import io.fletty.util.concurrent.ScheduledFuture;

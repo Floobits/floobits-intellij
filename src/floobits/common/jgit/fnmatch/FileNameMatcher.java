@@ -44,15 +44,15 @@
 
 package floobits.common.jgit.fnmatch;
 
+import floobits.common.jgit.errors.InvalidPatternException;
+import floobits.common.jgit.errors.NoClosingBracketException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import floobits.common.jgit.errors.InvalidPatternException;
-import floobits.common.jgit.errors.NoClosingBracketException;
 
 /**
  * This class can be used to match filenames against fnmatch like patterns. It

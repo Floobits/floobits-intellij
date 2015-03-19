@@ -1,10 +1,10 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.common.interfaces.IContext;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
 import floobits.common.EditorEventHandler;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 

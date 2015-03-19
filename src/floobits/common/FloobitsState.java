@@ -1,9 +1,9 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;

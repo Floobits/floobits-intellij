@@ -1,10 +1,10 @@
 package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonObject;
-import floobits.common.protocol.Connection;
 import floobits.common.FlooUrl;
 import floobits.common.OutboundRequestHandler;
 import floobits.common.interfaces.IContext;
+import floobits.common.protocol.Connection;
 import floobits.utilities.Flog;
 
 abstract public class BaseHandler {

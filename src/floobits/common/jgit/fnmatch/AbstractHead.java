@@ -44,9 +44,9 @@
 
 package floobits.common.jgit.fnmatch;
 
-import java.util.List;
-
 import floobits.common.jgit.internal.JGitText;
+
+import java.util.List;
 
 abstract class AbstractHead implements Head {
 	private List<Head> newHeads = null;

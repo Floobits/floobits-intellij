@@ -46,9 +46,9 @@
 
 package floobits.common.jgit.errors;
 
-import java.text.MessageFormat;
-
 import floobits.common.jgit.internal.JGitText;
+
+import java.text.MessageFormat;
 
 /**
  * Thrown when a pattern contains a character group which is open to the right

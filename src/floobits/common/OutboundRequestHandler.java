@@ -1,11 +1,11 @@
 package floobits.common;
 
-import floobits.common.protocol.buf.Buf;
-import floobits.common.protocol.buf.TextBuf;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.common.protocol.Connection;
 import floobits.common.protocol.FlooPatch;
+import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.buf.TextBuf;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.*;
 import floobits.utilities.Flog;

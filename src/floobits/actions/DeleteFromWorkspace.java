@@ -4,9 +4,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
-import floobits.utilities.IntelliUtils;
 import floobits.common.EditorEventHandler;
 import floobits.common.interfaces.IContext;
+import floobits.utilities.IntelliUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;

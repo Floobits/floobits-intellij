@@ -3,8 +3,6 @@ package floobits.common.interfaces;
 import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 
-import java.util.ArrayList;
-
 
 abstract public class IDoc {
     public abstract void removeHighlight(Integer userId, final String path);

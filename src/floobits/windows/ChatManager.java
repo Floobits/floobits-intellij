@@ -10,14 +10,14 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import floobits.common.interfaces.IContext;
 import floobits.common.FlooUrl;
-import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
-import java.util.*;
+import java.util.Date;
 
 
 public class ChatManager {
