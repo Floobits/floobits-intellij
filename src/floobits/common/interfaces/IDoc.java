@@ -1,13 +1,12 @@
 package floobits.common.interfaces;
 
+import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
-
-import java.util.ArrayList;
 
 
 abstract public class IDoc {
     public abstract void removeHighlight(Integer userId, final String path);
-    public abstract void applyHighlight(String path, int userID, String username, Boolean following, Boolean force, ArrayList<ArrayList<Integer>> ranges);
+    public abstract void applyHighlight(HighlightContext highlight);
     public abstract void save();
     public abstract String getText();
     public abstract void setText(String text);

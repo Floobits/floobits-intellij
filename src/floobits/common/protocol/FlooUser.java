@@ -9,4 +9,5 @@ public class FlooUser implements Serializable {
     public Integer user_id;
     public String username;
     public String version;
+    public String gravatar;
 }

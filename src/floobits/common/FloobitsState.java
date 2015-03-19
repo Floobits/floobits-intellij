@@ -1,10 +1,9 @@
 package floobits.common;
 
 import com.google.gson.JsonObject;
-import floobits.common.protocol.buf.Buf;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
-import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
@@ -26,7 +25,6 @@ public class FloobitsState {
 
     public boolean readOnly = false;
     public String username = "";
-    protected HashSet<Integer> requests = new HashSet<Integer>();
     private IContext context;
     public FlooUrl url;
     public List<String> followedUsers = new ArrayList<String>();
@@ -48,15 +46,17 @@ public class FloobitsState {
     }
 
     public void handleRoomInfo(RoomInfoResponse ri) {
+        Flog.info("Got roominfo with userId %d", connectionId);
         users = ri.users;
-        context.setUsers(users);
         perms = new HashSet<String>(Arrays.asList(ri.perms));
         if (!can("patch")) {
             readOnly = true;
             context.statusMessage("You don't have permission to edit files in this workspace.  All documents will be set to read-only.");
         }
         connectionId = Integer.parseInt(ri.user_id);
-        Flog.info("Got roominfo with userId %d", connectionId);
+        for (FlooUser user : ri.users.values()) {
+            context.addUser(user);
+        }
 
     }
     public void setBufPath(Buf buf, String newPath) {
@@ -85,6 +85,14 @@ public class FloobitsState {
         return user.username;
     }
 
+    public String getGravatar(int userId) {
+        FlooUser user = users.get(userId);
+        if (user == null) {
+            return "";
+        }
+        return user.gravatar;
+    }
+
     /**
      * Get a user by their connection id (userId).
      * @param userId
@@ -94,22 +102,19 @@ public class FloobitsState {
         return users.get(userId);
     }
 
-    public void addUser(FlooUser flooser) {
-        users.put(flooser.user_id, flooser);
-        context.statusMessage(String.format("%s joined the workspace on %s (%s).", flooser.username, flooser.platform, flooser.client));
-        context.setUsers(users);
+    public void addUser(FlooUser user) {
+        users.put(user.user_id, user);
+        context.addUser(user);
     }
 
     public void removeUser(int userId) {
         FlooUser u = users.get(userId);
-        if (users.remove(userId) != null) {
-            context.setUsers(users);
-        }
         if (u == null) {
             return;
         }
-        context.statusMessage(String.format("%s left the workspace.", u.username));
+        context.removeUser(u);
     }
+
     public int getMyConnectionId() {
         return connectionId;
     }
@@ -150,11 +155,10 @@ public class FloobitsState {
         this.following = following;
         if (!following) {
             this.followedUsers.clear();
-            FlooHandler flooHandler = context.getFlooHandler();
-            if (flooHandler == null) {
+            if (context.getFlooHandler() == null) {
                 return;
             }
-            flooHandler.context.setUsers(users);
+            context.updateFollowing();
         }
     }
 
@@ -194,5 +198,6 @@ public class FloobitsState {
     public void setFollowedUsers(List<String> followedUsers) {
         this.followedUsers = followedUsers;
         setFollowing(followedUsers.size() > 0);
+        context.updateFollowing();
     }
 }

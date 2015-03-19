@@ -1,92 +1,53 @@
 package floobits.windows;
 
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import floobits.common.interfaces.IContext;
-import floobits.common.RunLater;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.FlooUser;
-import floobits.dialogs.SetPermissionsDialog;
+import floobits.common.protocol.handlers.FlooHandler;
+import floobits.impl.ContextImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatForm {
 
-    protected class ClientChatActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FlooHandler flooHandler = context.getFlooHandler();
-            if (flooHandler == null) {
-                return;
-            }
-            ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
-            if (client == null) {
-                return;
-            }
-            clientActionPerformed(flooHandler, client);
-        }
-
-        protected void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {}
-    }
-
-    protected class ClientModelItem {
-        public String username;
-        public String client;
-        public String platform;
-        public int userId;
-        public Boolean following;
-
-        public ClientModelItem(String username, String client, String platform, Integer userId, Boolean following) {
-            this.username = username;
-            this.client = client;
-            this.platform = platform;
-            this.userId = userId;
-            this.following = following;
-        }
-
-        public String toString() {
-            String formattedUsername = username;
-            if (following) {
-                formattedUsername += "*";
-            }
-            return String.format("<html><b>%s</b> <small><i>%s (%s)</html></i></small>", formattedUsername, client, platform);
-        }
-    }
 
     private JPanel chatPanel;
-    private DefaultListModel clientModel = new DefaultListModel();
-    private JList clients;
     private JScrollPane messagesScrollPane;
     private JButton chatButton;
     private JTextField chatInput;
     private JTextPane messages;
+    private JScrollPane clientsScrollPane;
+    private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
-    private IContext context;
+    private ContextImpl context;
     private boolean shouldScrollToBottom;
+    private HashMap<String, ChatUserForm> userForms = new HashMap<String, ChatUserForm>();
 
     public ChatForm (IContext context) {
         super();
-        this.context = context;
-        clients.setModel(clientModel);
-        setupPopupMenu();
+        this.context = (ContextImpl) context;
         kit = new HTMLEditorKit();
         doc = new HTMLDocument();
         messages.setEditorKit(kit);
@@ -135,120 +96,29 @@ public class ChatForm {
         });
     }
 
-    private void setFollowState(FlooHandler flooHandler, String msg) {
-        flooHandler.state.setFollowedUsers(flooHandler.state.followedUsers);
-        flooHandler.context.setUsers(flooHandler.state.users);
-        flooHandler.context.statusMessage(msg);
+
+    private void createUIComponents() {
+        clientsScrollPane = new JBScrollPane();
+        clientsPane = new JPanel();
+        clientsScrollPane.setViewportView(clientsPane);
+        clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
     }
 
-    private void setupPopupMenu() {
-        final JPopupMenu popupMenu = new JPopupMenu();
-        final JMenuItem kickMenuItem = new JMenuItem("Kick");
-        kickMenuItem.addActionListener(new ClientChatActionListener() {
-            @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Kicking %s with user id %d.", client.username, client.userId);
-                flooHandler.editorEventHandler.kick(client.userId);
-            }
-        });
-        popupMenu.add(kickMenuItem);
-        final JMenuItem followMenuItem = new JMenuItem("Follow");
-        followMenuItem.addActionListener(new ClientChatActionListener() {
-            @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Following %s with user id %d.", client.username, client.userId);
-                if (flooHandler.state.followedUsers.contains(client.username)) {
-                    flooHandler.context.errorMessage(String.format("You are already following %s", client.username));
-                    return;
-                }
-                flooHandler.state.followedUsers.add(client.username);
-                setFollowState(flooHandler, String.format("You are now following %s", client.username));
-            }
-        });
-        popupMenu.add(followMenuItem);
-        final JMenuItem unFollowMenuItem = new JMenuItem("Stop following");
-        unFollowMenuItem.addActionListener(new ClientChatActionListener() {
-            @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                Flog.info("Will stop following %s with user id %d.", client.username, client.userId);
-                if (!flooHandler.state.followedUsers.contains(client.username)) {
-                    flooHandler.context.errorMessage(String.format("You are not following %s", client.username));
-                    return;
-                }
-                flooHandler.state.followedUsers.remove(client.username);
-                setFollowState(flooHandler, String.format("You have stopped following %s", client.username));
-            }
-        });
-        popupMenu.add(unFollowMenuItem);
-        final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
-        adminMenuItem.addActionListener(new ClientChatActionListener() {
-            @Override
-            public void clientActionPerformed(FlooHandler flooHandler, ClientModelItem client) {
-                final int userId = client.userId;
-                Flog.info("Opening up permission dialog for %s", client.username);
-                FlooUser user = flooHandler.state.getUser(client.userId);
-                if (user == null) {
-                    return;
-                }
-                List<String> permissions = java.util.Arrays.asList(user.perms);
-                SetPermissionsDialog setPermissionsDialog = new SetPermissionsDialog(
-                        new RunLater<String[]>() {
-                            @Override
-                            public void run(String[] permissions) {
-                                Flog.info("Submitting permission changes.");
-                                FlooHandler flooHandler = context.getFlooHandler();
-                                if (flooHandler == null) {
-                                    return;
-                                }
-                                flooHandler.editorEventHandler.changePerms(userId, permissions);
-                            }
-                        },
-                        permissions.contains("get_buf"),
-                        permissions.contains("request_perms"),
-                        permissions.contains("patch"),
-                        permissions.contains("kick")
-                );
-                setPermissionsDialog.setUsername(client.username);
-                setPermissionsDialog.createCenterPanel();
-                setPermissionsDialog.show();
-            }
-        });
-        popupMenu.add(adminMenuItem);
-        popupMenu.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                FlooHandler floohandler = context.getFlooHandler();
-                if (floohandler == null) {
-                    return;
-                }
-                kickMenuItem.setEnabled(floohandler.state.can("kick"));
-                adminMenuItem.setEnabled(floohandler.state.can("kick"));
-                ClientModelItem client = (ClientModelItem) clients.getSelectedValue();
-                boolean canUnfollow = floohandler.state.followedUsers.contains(client.username);
-                boolean canFollow = !canUnfollow;
-                if (client.username.equals(floohandler.state.username)) {
-                    canUnfollow = false;
-                    canFollow = false;
-                }
-                followMenuItem.setVisible(canFollow);
-                unFollowMenuItem.setVisible(canUnfollow);
-            }
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-        });
-        clients.addMouseListener(new MouseAdapter()
-        {
-            public void mousePressed(MouseEvent e)
-            {
-                JList list = (JList)e.getSource();
-                int row = list.locationToIndex(e.getPoint());
-                list.setSelectedIndex(row);
-                popupMenu.show(e.getComponent(), e.getX(), e.getY());
-            }
+    public void clearClients() {
+        clientsPane.removeAll();
+        userForms.clear();
+    }
 
-        });
+    public void addUser(FlooUser user) {
+        ChatUserForm userForm;
+        userForm = userForms.get(user.username);
+        if (userForm == null) {
+            userForm = new ChatUserForm(context, user.username, user.gravatar);
+            userForms.put(user.username, userForm);
+        }
+        userForm.addClient(user.client, user.platform, user.user_id);
+        clientsPane.add(userForm.getContainerPanel());
+        chatPanel.validate();
     }
 
     private void sendChatContents() {
@@ -267,15 +137,6 @@ public class ChatForm {
 
     public JPanel getChatPanel() {
         return chatPanel;
-    }
-
-    public void clearClients() {
-        clientModel.clear();
-    }
-
-    public void addClient(String username, String client, String platform, Integer user_id, Boolean following) {
-        clientModel.addElement(new ClientModelItem(username, client, platform, user_id, following));
-        clients.setSelectedIndex(clientModel.size() - 1);
     }
 
     public void statusMessage(String message) {
@@ -318,5 +179,32 @@ public class ChatForm {
             displayNick = String.format(" <span style=\"background-color:%s;color:white;\">&nbsp;</span> %s ", rgba, nick);
         }
         return String.format("<span style=\"color:gray;\">[%s]</span> <b>%s</b>: ", new SimpleDateFormat("HH:mm:ss").format(when), displayNick);
+    }
+
+    public void removeUser(FlooUser user) {
+        ChatUserForm userForm = userForms.get(user.username);
+        if (userForm == null) {
+            Flog.info("Could not find userForm for %d %s when trying to remove a user.", user.user_id, user.username);
+            return;
+        }
+        userForm.removeClient(user.user_id);
+        if (userForm.getNumClients() < 1) {
+            clientsPane.remove(userForm.getContainerPanel());
+            userForms.remove(user.username);
+        }
+        chatPanel.validate();
+    }
+
+    public void updateGravatars() {
+        for (ChatUserForm userForm : userForms.values()) {
+            userForm.updateGravatar();
+        }
+        chatPanel.validate();
+    }
+
+    public void updateFollowing(List<String> followedUsers) {
+        for (Map.Entry<String, ChatUserForm> userFormSet: userForms.entrySet()) {
+            userFormSet.getValue().setFollowing(followedUsers.contains(userFormSet.getKey()));
+        }
     }
 }

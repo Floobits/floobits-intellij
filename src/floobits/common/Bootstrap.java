@@ -1,6 +1,5 @@
 package floobits.common;
 
-import floobits.common.protocol.json.send.InitialBase;
 import floobits.utilities.Flog;
 
 import java.util.Set;

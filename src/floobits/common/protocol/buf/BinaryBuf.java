@@ -2,10 +2,10 @@ package floobits.common.protocol.buf;
 
 import floobits.common.Encoding;
 import floobits.common.OutboundRequestHandler;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooPatch;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;

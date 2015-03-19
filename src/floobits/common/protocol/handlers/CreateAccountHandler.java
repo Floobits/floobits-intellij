@@ -2,8 +2,8 @@ package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.common.interfaces.IContext;
 import floobits.common.*;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.Connection;
 import floobits.common.protocol.json.send.NewAccount;
 import floobits.utilities.Flog;

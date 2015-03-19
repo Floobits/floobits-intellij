@@ -11,7 +11,6 @@ import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.buf.BinaryBuf;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.buf.TextBuf;
-import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.receive.*;
 import floobits.common.protocol.json.send.CreateBufResponse;
 import floobits.common.protocol.json.send.RoomInfoResponse;
@@ -326,8 +325,12 @@ public class InboundRequestHandler {
             return;
         }
         Integer userId = id.getAsInt();
-        state.removeUser(userId);
-        context.iFactory.removeHighlightsForUser(userId);
+        FlooUser user = state.users.get(userId);
+        if (user == null) {
+            return;
+        }
+        state.removeUser(user.user_id);
+        context.removeUser(user);
     }
 
     void _on_delete_buf(JsonObject obj) {
@@ -395,12 +398,19 @@ public class InboundRequestHandler {
                 if (iDoc == null) {
                     return;
                 }
-                String username = state.getUsername(res.user_id);
-                boolean following = state.getFollowing() && !res.following;
-                if (following && state.followedUsers.size() > 0) {
-                    following = state.followedUsers.contains(username);
+                HighlightContext highlight = new HighlightContext();
+                highlight.username = state.getUsername(res.user_id);
+                highlight.gravatar = state.getGravatar(res.user_id);
+                highlight.following = state.getFollowing() && !res.following;
+
+                if (highlight.following && state.followedUsers.size() > 0) {
+                    highlight.following = state.followedUsers.contains(highlight.username);
                 }
-                iDoc.applyHighlight(buf.path, res.user_id, username, following, res.summon, res.ranges);
+                highlight.path = buf.path;
+                highlight.userid = res.user_id;
+                highlight.force = res.summon;
+                highlight.ranges = res.ranges;
+                iDoc.applyHighlight(highlight);
             }
         });
     }
@@ -449,7 +459,7 @@ public class InboundRequestHandler {
         if (res.user_id != state.getMyConnectionId()) {
             return;
         }
-        HashSet perms = new HashSet<String>(Arrays.asList(res.perms));
+        HashSet<String> perms = new HashSet<String>(Arrays.asList(res.perms));
         if (res.action.equals("add")) {
             state.perms.addAll(perms);
         } else if (res.action.equals("set")) {

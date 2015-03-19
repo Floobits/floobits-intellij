@@ -5,6 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.popup.Balloon;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
@@ -15,17 +16,37 @@ import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
 import floobits.windows.ChatManager;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * I am the link between a project and floobits
  */
 public class ContextImpl extends IContext {
 
+    static public class BalloonState {
+        public Image smallGravatar;
+        public Image largeGravatar;
+        public int lineNumber;
+        public Balloon balloon;
+    }
+
     private Listener listener = new Listener(this);
+    public ConcurrentHashMap<String, BalloonState> gravatars = new ConcurrentHashMap<String, BalloonState>();
     public Project project;
     public ChatManager chatManager;
+    private ExecutorService pool;
 
     public ContextImpl(Project project) {
         super();
@@ -124,12 +145,31 @@ public class ContextImpl extends IContext {
             @Override
             public void run(FollowUserDialog dialog) {
                 getFlooHandler().state.setFollowedUsers(dialog.getFollowedUsers());
-                setUsers(flooHandler.state.users);
-
             }
         });
         followUserDialog.createCenterPanel();
         followUserDialog.show();
+    }
+
+    @Override
+    public void updateFollowing() {
+        chatManager.updateUserList();
+    }
+
+    @Override
+    public void connected() {
+        editor.reset();
+        if (pool != null) {
+            Flog.info("Pool wasn't null when creating a new one.");
+        }
+        pool = Executors.newFixedThreadPool(5);
+    }
+
+    @Override
+    public void removeUser(FlooUser user) {
+        statusMessage(String.format("%s left the workspace.", user.username));
+        chatManager.removeUser(user);
+        iFactory.removeHighlightsForUser(user.user_id);
     }
 
     @Override
@@ -144,14 +184,10 @@ public class ContextImpl extends IContext {
             Flog.warn(e);
         }
         listener = new Listener(this);
-    }
-
-    @Override
-    public void setUsers(Map<Integer, FlooUser> users) {
-        if (chatManager == null) {
-            return;
+        if (pool != null) {
+            pool.shutdownNow();
+            pool = null;
         }
-        chatManager.setUsers(users);
     }
 
     public void setListener(boolean b) {
@@ -292,6 +328,7 @@ public class ContextImpl extends IContext {
         if (chatManager != null && !chatManager.isOpen()) {
             chatManager.openChat();
         }
+        chatManager.updateUserList();
     }
 
     @Override
@@ -313,5 +350,48 @@ public class ContextImpl extends IContext {
         }
         Flog.info("Complete signup url is:", url);
         chatStatusMessage(String.format("Your account was auto-created. Please <a style=\"color:blue; text-decoration: underline;\" href=\"%s\">click here to complete sign up</a>.", url));
+    }
+
+    @Override
+    public void addUser(final FlooUser user) {
+        if (pool == null) {
+            Flog.info("Pool is null cannot add user.");
+            return;
+        }
+        statusMessage(String.format("%s joined the workspace on %s (%s).", user.username, user.platform, user.client));
+        Flog.info("Adding gravatar for user %s.", user);
+        pool.execute(new Runnable() {
+            @Override
+            public void run() {
+                Image img;
+                URL url;
+                try {
+                    url = new URL(user.gravatar);
+                } catch (MalformedURLException e) {
+                    Flog.info("Could not create url for gravatar %s.", user.gravatar);
+                    return;
+                }
+                try {
+                    URLConnection con = url.openConnection();
+                    con.setConnectTimeout(10000);
+                    con.setReadTimeout(10000);
+                    InputStream in = con.getInputStream();
+                    img = ImageIO.read(in);
+                } catch (IOException e) {
+                    Flog.info("Could not load gravatar from network.");
+                    return;
+                }
+                ContextImpl.BalloonState balloonState = new ContextImpl.BalloonState();
+                balloonState.largeGravatar = img.getScaledInstance(75, 75, Image.SCALE_SMOOTH);
+                balloonState.smallGravatar = img.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+                gravatars.put(user.gravatar, balloonState);
+                FlooHandler handler = getFlooHandler();
+                if (handler == null) {
+                    return;
+                }
+                chatManager.updateUserList();
+            }
+        });
+        chatManager.addUser(user);
     }
 }

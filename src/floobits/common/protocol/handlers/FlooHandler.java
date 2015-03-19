@@ -51,7 +51,7 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
-        context.editor.reset();
+        context.connected();
         context.statusMessage(String.format("Connecting to <a href=\"%s\">%s</a>.", url.toString(), url.toString()));
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }

@@ -1,7 +1,7 @@
 package floobits.common.protocol.json.receive;
 
-import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.Base;
+import floobits.common.protocol.buf.Buf;
 import org.apache.commons.io.FilenameUtils;
 
 public class CreateBuf implements Base {

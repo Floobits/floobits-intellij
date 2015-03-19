@@ -2,8 +2,8 @@ package floobits.dialogs;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.common.interfaces.IContext;
 import floobits.FloobitsPlugin;
+import floobits.common.interfaces.IContext;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;

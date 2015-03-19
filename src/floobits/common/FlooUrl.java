@@ -1,6 +1,7 @@
 package floobits.common;
 
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 
 public class FlooUrl {

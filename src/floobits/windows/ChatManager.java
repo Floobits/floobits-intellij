@@ -1,5 +1,6 @@
 package floobits.windows;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
@@ -9,14 +10,14 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import floobits.common.interfaces.IContext;
 import floobits.common.FlooUrl;
-import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
-import java.util.*;
+import java.util.Date;
 
 
 public class ChatManager {
@@ -33,7 +34,7 @@ public class ChatManager {
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
-        toolWindow.setIcon(IconLoader.getIcon("/icons/floo.png"));
+        toolWindow.setIcon(IconLoader.getIcon("/icons/floo13.png"));
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
     }
@@ -74,38 +75,11 @@ public class ChatManager {
         }, ModalityState.NON_MODAL);
     }
 
-    public void setUsers(final Map<Integer,FlooUser> originalUsers) {
+    public void addUser(final FlooUser user) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                // Copy users so we don't modify the flooHandler user list:
-                HashMap<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
-                users.putAll(originalUsers);
-
-                // Clear existing stuff:
-                chatForm.clearClients();
-
-                // Created a sorted list by username.
-                Iterator usersIterator = users.entrySet().iterator();
-                ArrayList<FlooUser> userList = new ArrayList<FlooUser>();
-                while (usersIterator.hasNext()) {
-                    Map.Entry user = (Map.Entry) usersIterator.next();
-                    userList.add((FlooUser) user.getValue());
-                    usersIterator.remove();
-                }
-                Collections.sort(userList, new Comparator<FlooUser>() {
-                   @Override
-                   public int compare(FlooUser a, FlooUser b) {
-                        return a.username.compareTo(b.username);
-                    }
-                });
-
-                // Add the list to the model.
-                FlooHandler handler = context.getFlooHandler();
-                for (FlooUser user : userList) {
-                    chatForm.addClient(user.username, user.client, user.platform, user.user_id,
-                            handler.state.followedUsers.contains(user.username));
-                }
+                chatForm.addUser(user);
             }
         }, ModalityState.NON_MODAL);
     }
@@ -138,6 +112,33 @@ public class ChatManager {
             @Override
             public void run() {
                 chatForm.chatMessage(username, msg, messageDate);
+            }
+        }, ModalityState.NON_MODAL);
+    }
+
+    public void removeUser(final FlooUser user) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                chatForm.removeUser(user);
+            }
+        }, ModalityState.NON_MODAL);
+    }
+
+    public void updateUserList() {
+        Application app = ApplicationManager.getApplication();
+        if (app == null) {
+            return;
+        }
+        app.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                chatForm.updateGravatars();
+                chatForm.updateFollowing(flooHandler.state.followedUsers);
             }
         }, ModalityState.NON_MODAL);
     }

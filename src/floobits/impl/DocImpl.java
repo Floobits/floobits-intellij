@@ -1,29 +1,44 @@
 package floobits.impl;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.psi.codeStyle.CodeStyleSettingsManager;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.awt.RelativePoint;
 import floobits.common.Constants;
+import floobits.common.HighlightContext;
 import floobits.common.dmp.FlooPatchPosition;
 import floobits.common.interfaces.IDoc;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 
 public class DocImpl extends IDoc {
+
     private final ContextImpl context;
     private final Document document;
+    private int editorWidth = 0;
     public final static HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = new HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>>();
 
     public DocImpl(ContextImpl context, Document document) {
         this.context = context;
         this.document = document;
+        CodeStyleSettings settings = CodeStyleSettingsManager.getSettings(context.project);
+        editorWidth = settings.getRightMargin(null);
     }
 
     public String toString() {
@@ -76,21 +91,27 @@ public class DocImpl extends IDoc {
         rangeHighlighters.clear();
     }
 
-    protected void applyHighlight(ArrayList<ArrayList<Integer>> ranges, String username, String path, Boolean force, int textLength, int userID) {
+    protected void applyHighlight_(HighlightContext highlight) {
         final TextAttributes attributes = new TextAttributes();
-        JBColor color = Colors.getColorForUser(username);
+        final JBColor color = Colors.getColorForUser(highlight.username);
+        final ContextImpl context = (ContextImpl) highlight.context;
+        FlooHandler handler = highlight.context.getFlooHandler();
+        if (handler == null) {
+            return;
+        }
         attributes.setEffectColor(color);
         attributes.setEffectType(EffectType.SEARCH_MATCH);
         attributes.setBackgroundColor(color);
-        attributes.setForegroundColor(Colors.getFGColor());
-
-        LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(path, userID);
+        attributes.setForegroundColor(JBColor.WHITE);
+        int textLength = highlight.textLength;
+        int userID = highlight.userid;
+        LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(highlight.path, userID);
         LinkedList<RangeHighlighter> newHighlighters = new LinkedList<RangeHighlighter>();
 
         boolean first = true;
         Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
 
-        for (List<Integer> range : ranges) {
+        for (List<Integer> range : highlight.ranges) {
             int start = range.get(0);
             int end = range.get(1);
             if (start == end) {
@@ -102,7 +123,8 @@ public class DocImpl extends IDoc {
             if (start >= textLength) {
                 start = textLength - 1;
             }
-            for (Editor editor : editors) {
+            final int balloonOffset = start;
+            for (final Editor editor : editors) {
                 if (editor.isDisposed()) {
                     continue;
                 }
@@ -112,50 +134,93 @@ public class DocImpl extends IDoc {
                 RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(start, end, HighlighterLayer.ERROR + 100, attributes, HighlighterTargetArea.EXACT_RANGE);
 
                 newHighlighters.add(rangeHighlighter);
-                if (force && first) {
-                    CaretModel caretModel = editor.getCaretModel();
-                    caretModel.moveToOffset(start);
-                    LogicalPosition position = caretModel.getLogicalPosition();
-                    ScrollingModel scrollingModel = editor.getScrollingModel();
-                    scrollingModel.scrollTo(position, ScrollType.MAKE_VISIBLE);
-                    first = false;
+                CaretModel caretModel = editor.getCaretModel();
+                final LogicalPosition logPos = editor.offsetToLogicalPosition(start);
+                final String htmlText = String.format("<p>%s</p>", highlight.username);
+                final ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
+                if (balloonState != null) {
+                    int previousLine;
+                    Image img;
+                    img = balloonState.smallGravatar;
+                    previousLine = balloonState.lineNumber;
+                    if (first) {
+                        first = false;
+                        if (highlight.force) {
+                            caretModel.moveToOffset(start);
+                            LogicalPosition newPosition = caretModel.getLogicalPosition();
+                            ScrollingModel scrollingModel = editor.getScrollingModel();
+                            scrollingModel.disableAnimation();
+                            scrollingModel.scrollTo(newPosition, ScrollType.MAKE_VISIBLE);
+                        }
+                    }
+                    final int bubblePos = editorWidth;
+                    if (previousLine != logPos.line && !handler.state.username.equals(highlight.username) && img != null) {
+                        final Image gravatarImg = img;
+                        ApplicationManager.getApplication().invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (context.getFlooHandler() == null) {
+                                    return;
+                                }
+                                VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, bubblePos);
+                                Point p = editor.visualPositionToXY(visPos);
+                                Balloon balloon;
+                                if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
+                                    balloonState.balloon.setAnimationEnabled(false);
+                                    balloonState.balloon.dispose();
+                                }
+                                balloon = JBPopupFactory.getInstance()
+                                        .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), Color.LIGHT_GRAY, null)
+                                        .setFadeoutTime(1000)
+                                        .setBorderColor(color)
+                                        .createBalloon();
+                                balloonState.lineNumber = logPos.line;
+                                balloon.setAnimationEnabled(false);
+                                balloon.show(new RelativePoint(editor.getContentComponent(), p), Balloon.Position.atRight);
+                                balloon.setAnimationEnabled(true);
+                                balloonState.balloon = balloon;
+
+                            }
+                        });
+                    }
                 }
             }
-
             HashMap<String, LinkedList<RangeHighlighter>> integerRangeHighlighterHashMap = highlights.get(userID);
 
             if (integerRangeHighlighterHashMap == null) {
                 integerRangeHighlighterHashMap = new HashMap<String, LinkedList<RangeHighlighter>>();
                 highlights.put(userID, integerRangeHighlighterHashMap);
             }
-            integerRangeHighlighterHashMap.put(path, newHighlighters);
+            integerRangeHighlighterHashMap.put(highlight.path, newHighlighters);
         }
     }
 
     @Override
-    public void applyHighlight(String path, int userID, String username, Boolean following, Boolean force, ArrayList<ArrayList<Integer>> ranges) {
+    public void applyHighlight(HighlightContext highlight) {
         final FileEditorManager manager = FileEditorManager.getInstance(context.project);
         final VirtualFile virtualFile = FileDocumentManager.getInstance().getFile(document);
 
-        if ((force || following) && virtualFile != null && virtualFile.isValid()) {
+        if ((highlight.force || highlight.following) && virtualFile != null && virtualFile.isValid()) {
             boolean spam = false;
             if (!manager.isFileOpen(virtualFile) || !Arrays.asList(manager.getSelectedFiles()).contains(virtualFile)) {
                 spam = true;
             }
-            if (spam && username.length() > 0 && force) {
-                context.statusMessage(String.format("%s has summoned you!", username));
+            if (spam && highlight.username.length() > 0 && highlight.force) {
+                context.statusMessage(String.format("%s has summoned you!", highlight.username));
             }
             manager.openFile(virtualFile, false, true);
         }
 
-        int textLength = document.getTextLength();
-        if (textLength == 0) {
+        highlight.textLength = document.getTextLength();
+        if (highlight.textLength == 0) {
             return;
         }
         synchronized (context) {
             try {
                 context.setListener(false);
-                applyHighlight(ranges, username, path, force || following, textLength, userID);
+                highlight.force = highlight.force || highlight.following;
+                highlight.context = context;
+                applyHighlight_(highlight);
             } catch (Throwable e) {
                 Flog.warn(e);
             } finally {

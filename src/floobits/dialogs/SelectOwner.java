@@ -1,12 +1,12 @@
 package floobits.dialogs;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.common.RunLater;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import com.intellij.openapi.ui.ComboBox;
 import java.util.List;
 
 public class SelectOwner extends DialogWrapper {
