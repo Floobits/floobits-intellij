@@ -171,7 +171,7 @@ public class DocImpl extends IDoc {
                                 }
                                 balloon = JBPopupFactory.getInstance()
                                         .createHtmlTextBalloonBuilder(htmlText, new ImageIcon(gravatarImg), Color.LIGHT_GRAY, null)
-                                        .setFadeoutTime(1000)
+                                        .setFadeoutTime(750)
                                         .setBorderColor(color)
                                         .createBalloon();
                                 balloonState.lineNumber = logPos.line;
