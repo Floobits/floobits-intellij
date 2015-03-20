@@ -234,6 +234,7 @@ public class ChatUserForm {
             usernameStr += "*";
         }
         border.setTitle(usernameStr);
+        containerPanel.validate();
     }
 
     public void updateGravatar() {
@@ -255,6 +256,7 @@ public class ChatUserForm {
         clientModel.addElement(label);
         JMenuItem mi = addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
         clients.put(userId, new ClientState(userId, mi, label));
+        containerPanel.validate();
     }
 
     private void refreshClientList() {
@@ -262,6 +264,7 @@ public class ChatUserForm {
         for (ClientState client : clients.values()) {
             clientModel.addElement(client.label);
         }
+        containerPanel.validate();
     }
 
     public void removeClient(int userId){
