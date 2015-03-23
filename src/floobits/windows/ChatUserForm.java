@@ -25,7 +25,7 @@ public class ChatUserForm {
     private JPanel gravatarContainer;
     private JPanel containerPanel;
     private JPanel subContainer;
-    private DefaultListModel<String> clientModel;
+    private DefaultListModel clientModel;
     private JPopupMenu menuPopup;
     private ContextImpl context;
     private String username;
@@ -142,6 +142,7 @@ public class ChatUserForm {
                 setFollowState(flooHandler, String.format("You are now following %s", username));
             }
         });
+        followMenuItem.setVisible(false);
         popupMenu.add(followMenuItem);
         final JMenuItem unFollowMenuItem = new JMenuItem("Stop following");
         unFollowMenuItem.addActionListener(new ClientChatActionListener() {
@@ -156,6 +157,7 @@ public class ChatUserForm {
                 setFollowState(flooHandler, String.format("You have stopped following %s", username));
             }
         });
+        unFollowMenuItem.setVisible(false);
         popupMenu.add(unFollowMenuItem);
         final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
         adminMenuItem.addActionListener(new ClientChatActionListener() {
@@ -200,8 +202,11 @@ public class ChatUserForm {
                 }
                 kickMenuItem.setEnabled(floohandler.state.can("kick"));
                 adminMenuItem.setEnabled(floohandler.state.can("kick"));
-                followMenuItem.setEnabled(!following);
-                unFollowMenuItem.setEnabled(following);
+                if (floohandler.state.username.equals(username)) {
+                    return;
+                }
+                followMenuItem.setVisible(!following);
+                unFollowMenuItem.setVisible(following);
 
             }
 
@@ -217,7 +222,7 @@ public class ChatUserForm {
 
     private void createUIComponents() {
         subContainer = new JPanel();
-        clientModel = new DefaultListModel<String>();
+        clientModel = new DefaultListModel();
         clientList = new JBList();
         clientList.setOpaque(false);
         clientList.setModel(clientModel);
@@ -248,6 +253,7 @@ public class ChatUserForm {
         JLabel iconlabel = new JLabel(new ImageIcon(balloonState.largeGravatar));
         iconlabel.setBorder(BorderFactory.createLineBorder(Colors.getColorForUser(username), 2));
         gravatarContainer.add(iconlabel, new GridConstraints());
+        containerPanel.validate();
 
     }
 
