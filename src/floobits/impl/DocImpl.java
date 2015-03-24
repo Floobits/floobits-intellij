@@ -102,7 +102,7 @@ public class DocImpl extends IDoc {
         attributes.setEffectColor(color);
         attributes.setEffectType(EffectType.SEARCH_MATCH);
         attributes.setBackgroundColor(color);
-        attributes.setForegroundColor(JBColor.WHITE);
+        attributes.setForegroundColor(Color.WHITE);
         int textLength = highlight.textLength;
         int userID = highlight.userid;
         LinkedList<RangeHighlighter> appliedHighlighters = getHighlightsForUser(highlight.path, userID);
