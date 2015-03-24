@@ -136,7 +136,7 @@ public class DocImpl extends IDoc {
                 newHighlighters.add(rangeHighlighter);
                 CaretModel caretModel = editor.getCaretModel();
                 final LogicalPosition logPos = editor.offsetToLogicalPosition(start);
-                final String htmlText = String.format("<p>%s</p>", highlight.username);
+                final String htmlText = String.format("<p style=\"color:#333\">%s</p>", highlight.username);
                 final ContextImpl.BalloonState balloonState = context.gravatars.get(highlight.gravatar);
                 if (balloonState != null) {
                     int previousLine;
