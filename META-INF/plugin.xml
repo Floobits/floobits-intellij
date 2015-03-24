@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.4.9</version>
+  <version>1.5.0</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -13,9 +13,12 @@
       ]]></description>
 
   <change-notes><![CDATA[
-    Delay save events a bit to handle on save change patches first.
-    Fixed checking edge case on seeing if files are in project directory.
-    Added more information to crash dumps.
+    Showing user position with a temporary bubble.
+    Updated user list to show user's gravatars.
+    Fixed user visible warning about icon size.
+    Removed transparency from highlights as that was causing performance issues.
+    Fixed null pointer exceptions.
+    Bug fixes.
     ]]>
   </change-notes>
 
