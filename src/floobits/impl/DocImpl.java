@@ -38,7 +38,9 @@ public class DocImpl extends IDoc {
         this.context = context;
         this.document = document;
         CodeStyleSettings settings = CodeStyleSettingsManager.getSettings(context.project);
-        editorWidth = settings.getRightMargin(null);
+        // Using deprecated because not all versions and forks of Intellij Have this.
+        // Replace with settings.getRightMargin(null); one day
+        editorWidth = settings.RIGHT_MARGIN;
     }
 
     public String toString() {

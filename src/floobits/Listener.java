@@ -144,11 +144,10 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             }
             if (event instanceof VFilePropertyChangeEvent) {
                 VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
-                if (propertyEvent.getPropertyName() != "name") {
+                if (!propertyEvent.getPropertyName().equals("name")) {
                     continue;
                 }
                 oldRenamePath = propertyEvent.getFile().getPath();
-                continue;
             }
         }
     }
@@ -169,7 +168,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             Flog.debug(" after event type %s", event.getClass().getSimpleName());
             if (event instanceof VFilePropertyChangeEvent) {
                 VFilePropertyChangeEvent propertyEvent = (VFilePropertyChangeEvent) event;
-                if (propertyEvent.getPropertyName() != "name") {
+                if (!propertyEvent.getPropertyName().equals("name")) {
                     continue;
                 }
                 VirtualFile virtualFile = propertyEvent.getFile();
