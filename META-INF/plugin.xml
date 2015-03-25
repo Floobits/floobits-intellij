@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -13,6 +13,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
+    Support IntelliJ IDEA 13 fixes.
     Showing user position with a temporary bubble.
     Updated user list to show user's gravatars.
     Fixed user visible warning about icon size.
