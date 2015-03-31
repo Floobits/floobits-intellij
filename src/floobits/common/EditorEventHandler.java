@@ -181,12 +181,20 @@ public class EditorEventHandler {
     }
 
     public void goToLastHighlight() {
-        if (state.lastHighlight != null) {
-            FlooHighlight lastHighlight = state.lastHighlight;
-            FlooHighlight highlight = new FlooHighlight(lastHighlight.id, lastHighlight.ranges, true,
-                lastHighlight.following, lastHighlight.user_id);
-            inbound._on_highlight(highlight);
+        goToHighlight(state.lastHighlight);
+    }
+
+    public void goToLastHighlight(String username) {
+        goToHighlight(state.lastUserHighlights.get(username));
+    }
+
+    public void goToHighlight(FlooHighlight highlight) {
+        if (highlight == null) {
+            return;
         }
+        FlooHighlight newHighlight = new FlooHighlight(highlight.id, highlight.ranges, true,
+                highlight.following, highlight.user_id);
+        inbound._on_highlight(newHighlight);
     }
 
     public void summon(String path, Integer offset) {

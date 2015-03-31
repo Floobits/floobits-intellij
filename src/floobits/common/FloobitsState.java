@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 
 public class FloobitsState {
     public FlooHighlight lastHighlight;
+    public HashMap<String, FlooHighlight> lastUserHighlights = new HashMap<String, FlooHighlight>();
     private Boolean following = false;
     private ScheduledFuture pausedFollowing;
     public HashSet<String> perms = new HashSet<String>();

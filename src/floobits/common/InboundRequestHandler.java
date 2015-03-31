@@ -390,6 +390,11 @@ public class InboundRequestHandler {
     public void _on_highlight(JsonObject obj) {
         FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
         state.lastHighlight = res;
+        FlooUser user = state.users.get(res.user_id);
+        if (user == null) {
+            return;
+        }
+        state.lastUserHighlights.put(user.username, res);
         _on_highlight(res);
     }
 

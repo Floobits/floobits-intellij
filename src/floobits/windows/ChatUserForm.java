@@ -15,11 +15,28 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.HashMap;
 
 public class ChatUserForm {
+
+
+    class ClickPanel extends JPanel {
+
+        public ClickPanel(final Runnable clickHandler) {
+            super();
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (clickHandler == null) {
+                        return;
+                    }
+                    clickHandler.run();
+                }
+            });
+        }
+    }
+
     private final String gravatar;
     private JList clientList;
     private JPanel gravatarContainer;
@@ -221,6 +238,16 @@ public class ChatUserForm {
     }
 
     private void createUIComponents() {
+        gravatarContainer = new ClickPanel(new Runnable() {
+            @Override
+            public void run() {
+                FlooHandler flooHandler = context.getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                flooHandler.editorEventHandler.goToLastHighlight(username);
+            }
+        });
         subContainer = new JPanel();
         clientModel = new DefaultListModel();
         clientList = new JBList();
@@ -244,6 +271,9 @@ public class ChatUserForm {
 
     public void updateGravatar() {
         if (gravatar == null) {
+            return;
+        }
+        if (gravatarContainer.getComponentCount() != 0) {
             return;
         }
         ContextImpl.BalloonState balloonState = context.gravatars.get(gravatar);
