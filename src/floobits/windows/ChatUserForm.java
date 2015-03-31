@@ -163,6 +163,7 @@ public class ChatUserForm {
                 }
                 flooHandler.state.followedUsers.add(username);
                 setFollowState(flooHandler, String.format("You are now following %s", username));
+                flooHandler.editorEventHandler.goToLastHighlight(username);
             }
         });
         followMenuItem.setVisible(false);
