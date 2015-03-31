@@ -299,7 +299,7 @@ public class InboundRequestHandler {
 
     void _on_request_perms(JsonObject obj) {
         Flog.log("got perms receive %s", obj);
-        RequestPerms requestPerms = new Gson().fromJson(obj, (Type)RequestPerms.class);
+        RequestPerms requestPerms = new Gson().fromJson(obj, (Type) RequestPerms.class);
         final int userId = requestPerms.user_id;
         final FlooUser u = state.getUser(userId);
         if (u == null) {
@@ -334,7 +334,7 @@ public class InboundRequestHandler {
     }
 
     void _on_delete_buf(JsonObject obj) {
-        final DeleteBuf deleteBuf = new Gson().fromJson(obj, (Type)DeleteBuf.class);
+        final DeleteBuf deleteBuf = new Gson().fromJson(obj, (Type) DeleteBuf.class);
         Buf buf = state.bufs.get(deleteBuf.id);
         if (buf == null) {
             Flog.warn(String.format("Tried to delete a buf that doesn't exist: %d", deleteBuf.id));
@@ -388,9 +388,13 @@ public class InboundRequestHandler {
     }
 
     public void _on_highlight(JsonObject obj) {
-        final FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
-        state.lastHighlight = obj;
-        final Buf buf = this.state.bufs.get(res.id);
+        FlooHighlight res = new Gson().fromJson(obj, (Type) FlooHighlight.class);
+        state.lastHighlight = res;
+        _on_highlight(res);
+    }
+
+    public void _on_highlight(final FlooHighlight flooHighlight) {
+        final Buf buf = this.state.bufs.get(flooHighlight.id);
         editor.queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf arg) {
@@ -399,17 +403,17 @@ public class InboundRequestHandler {
                     return;
                 }
                 HighlightContext highlight = new HighlightContext();
-                highlight.username = state.getUsername(res.user_id);
-                highlight.gravatar = state.getGravatar(res.user_id);
-                highlight.following = state.getFollowing() && !res.following;
+                highlight.username = state.getUsername(flooHighlight.user_id);
+                highlight.gravatar = state.getGravatar(flooHighlight.user_id);
+                highlight.following = state.getFollowing() && !flooHighlight.following;
 
                 if (highlight.following && state.followedUsers.size() > 0) {
                     highlight.following = state.followedUsers.contains(highlight.username);
                 }
                 highlight.path = buf.path;
-                highlight.userid = res.user_id;
-                highlight.force = res.summon;
-                highlight.ranges = res.ranges;
+                highlight.userid = flooHighlight.user_id;
+                highlight.force = flooHighlight.summon;
+                highlight.ranges = flooHighlight.ranges;
                 iDoc.applyHighlight(highlight);
             }
         });

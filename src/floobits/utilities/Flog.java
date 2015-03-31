@@ -42,9 +42,7 @@ public class Flog {
         Log.info(maybeFormat(s, args));
     }
     private static void ensureRegistered() {
-        if (!(NotificationsConfigurationImpl.getNotificationsConfigurationImpl().isRegistered(ID))) {
-            NotificationsConfiguration.getNotificationsConfiguration().register(ID, NotificationDisplayType.BALLOON, false);
-        }
+        NotificationsConfiguration.getNotificationsConfiguration().register(ID, NotificationDisplayType.BALLOON, false);
     }
     public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {

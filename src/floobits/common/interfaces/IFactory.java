@@ -4,17 +4,18 @@ import java.io.File;
 import java.util.HashSet;
 
 public interface IFactory {
-    public IFile findFileByIoFile(File file);
-    public IFile createFile(String path);
-    public IDoc getDocument(IFile file);
-    public IDoc getDocument(String relPath);
-    public IFile createDirectories(String path);
-    public IFile findFileByPath(String path);
-    public IFile getOrCreateFile(String path);
-    public void removeHighlightsForUser(int userID);
-    public void removeHighlight(Integer userId, final String path);
+    IFile findFileByIoFile(File file);
+    IFile createFile(String path);
+    IDoc getDocument(IFile file);
+    IDoc getDocument(String relPath);
+    IFile createDirectories(String path);
+    IFile findFileByPath(String path);
+    IFile getOrCreateFile(String path);
+    void removeHighlightsForUser(int userID);
+    void removeHighlight(Integer userId, final String path);
     boolean openFile(File file);
-    public void clearHighlights();
-    public void clearReadOnlyState();
-    public HashSet<String> readOnlyBufferIds = new HashSet<String>();
+    void clearHighlights();
+    void clearReadOnlyState();
+    void goToLastHighlight();
+    HashSet<String> readOnlyBufferIds = new HashSet<String>();
 }

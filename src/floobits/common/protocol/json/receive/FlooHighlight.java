@@ -25,4 +25,14 @@ public class FlooHighlight implements Base {
         }
         this.ranges = ranges;
     }
+
+
+    public FlooHighlight (Integer id, ArrayList<ArrayList<Integer>> ranges, Boolean summon, Boolean following, Integer userId) {
+        this.following = following;
+        this.id = id;
+        this.summon = summon;
+        this.ping = summon;
+        this.ranges = ranges;
+        this.user_id = userId;
+    }
 }

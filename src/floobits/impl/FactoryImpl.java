@@ -11,6 +11,7 @@ import floobits.common.EditorScheduler;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFactory;
 import floobits.common.interfaces.IFile;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
 import java.io.File;
@@ -82,6 +83,15 @@ public class FactoryImpl implements IFactory {
             document.setReadOnly(false);
         }
         readOnlyBufferIds.clear();
+    }
+
+    @Override
+    public void goToLastHighlight() {
+        FlooHandler handler = context.getFlooHandler();
+        if (handler == null) {
+            return;
+        }
+        handler.editorEventHandler.goToLastHighlight();
     }
 
     @Override

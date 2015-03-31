@@ -6,6 +6,7 @@ import floobits.common.interfaces.IFactory;
 import floobits.common.interfaces.IFile;
 import floobits.common.protocol.buf.Buf;
 import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.protocol.json.receive.FlooHighlight;
 import floobits.utilities.Flog;
 
 import java.awt.*;
@@ -173,10 +174,19 @@ public class EditorEventHandler {
         boolean mode = !state.getFollowing();
         state.setFollowing(mode);
         context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));;
-        if (mode && state.lastHighlight != null) {
-            inbound._on_highlight(state.lastHighlight);
+        if (mode) {
+            goToLastHighlight();
         }
         return mode;
+    }
+
+    public void goToLastHighlight() {
+        if (state.lastHighlight != null) {
+            FlooHighlight lastHighlight = state.lastHighlight;
+            FlooHighlight highlight = new FlooHighlight(lastHighlight.id, lastHighlight.ranges, true,
+                lastHighlight.following, lastHighlight.user_id);
+            inbound._on_highlight(highlight);
+        }
     }
 
     public void summon(String path, Integer offset) {

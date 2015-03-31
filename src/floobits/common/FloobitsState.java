@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.buf.Buf;
+import floobits.common.protocol.json.receive.FlooHighlight;
 import floobits.common.protocol.json.send.RoomInfoResponse;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
@@ -14,7 +15,7 @@ import java.util.concurrent.ScheduledFuture;
 
 
 public class FloobitsState {
-    public JsonObject lastHighlight;
+    public FlooHighlight lastHighlight;
     private Boolean following = false;
     private ScheduledFuture pausedFollowing;
     public HashSet<String> perms = new HashSet<String>();
