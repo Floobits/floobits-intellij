@@ -33,6 +33,12 @@ public class ChatUserForm {
                     }
                     clickHandler.run();
                 }
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    Cursor cursor = Cursor.getDefaultCursor();
+                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+                    setCursor(cursor);
+                }
             });
         }
     }

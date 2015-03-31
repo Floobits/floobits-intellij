@@ -185,7 +185,13 @@ public class EditorEventHandler {
     }
 
     public void goToLastHighlight(String username) {
-        goToHighlight(state.lastUserHighlights.get(username));
+        FlooHighlight hl = state.lastUserHighlights.get(username);
+        if (hl == null) {
+            context.statusMessage(String.format("%s has no previous highlight to go to.", username));
+            return;
+        }
+        goToHighlight(hl);
+        context.statusMessage(String.format("Jumped to %s last highlight.", username));
     }
 
     public void goToHighlight(FlooHighlight highlight) {
