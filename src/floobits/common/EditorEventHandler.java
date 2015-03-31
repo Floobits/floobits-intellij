@@ -191,7 +191,7 @@ public class EditorEventHandler {
             return;
         }
         goToHighlight(hl);
-        context.statusMessage(String.format("Jumped to %s last highlight.", username));
+        context.statusMessage(String.format("Jumped to %s's last highlight.", username));
     }
 
     public void goToHighlight(FlooHighlight highlight) {
