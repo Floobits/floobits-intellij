@@ -1,7 +1,11 @@
 package floobits.windows;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
+import floobits.actions.OpenProjectInWorkspace;
+import floobits.actions.OpenWorkspaceInBrowser;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -10,6 +14,7 @@ import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
@@ -38,6 +43,7 @@ public class ChatForm {
     private JTextField chatInput;
     private JTextPane messages;
     private JScrollPane clientsScrollPane;
+    private JPanel actionBarContainer;
     private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
@@ -102,6 +108,17 @@ public class ChatForm {
         clientsPane = new JPanel();
         clientsScrollPane.setViewportView(clientsPane);
         clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
+        actionBarContainer = new JPanel();
+        actionBarContainer.setPreferredSize(new Dimension(30, -1));
+
+        ActionGroup group = new DefaultActionGroup(new AnAction("Open Workspace in Browser", "Open Workspace in Browser", AllIcons.Actions.Nextfile) {
+            @Override
+            public void actionPerformed(AnActionEvent e) {
+                new OpenWorkspaceInBrowser().actionPerformed(e);
+            }
+        });
+        ActionToolbar tb = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, group, false);
+        actionBarContainer.add(tb.getComponent());
     }
 
     public void clearClients() {
