@@ -10,9 +10,7 @@ import floobits.utilities.Flog;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-/**
- * Created by kans on 2/18/14.
- */
+
 public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
         ContextImpl context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;

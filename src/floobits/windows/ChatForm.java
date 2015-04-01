@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import floobits.actions.OpenProjectInWorkspace;
+import floobits.actions.OpenSettingsInBrowser;
 import floobits.actions.OpenWorkspaceInBrowser;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
@@ -110,13 +111,22 @@ public class ChatForm {
         clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
         actionBarContainer = new JPanel();
         actionBarContainer.setPreferredSize(new Dimension(30, -1));
-
-        ActionGroup group = new DefaultActionGroup(new AnAction("Open Workspace in Browser", "Open Workspace in Browser", AllIcons.Actions.Nextfile) {
-            @Override
-            public void actionPerformed(AnActionEvent e) {
-                new OpenWorkspaceInBrowser().actionPerformed(e);
-            }
-        });
+        String openBrowserLabel = "Open Workspace in Browser";
+        String openSettingsLabel = "Open Workspace Settings in Browser";
+        ActionGroup group = new DefaultActionGroup(
+                new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenWorkspaceInBrowser().actionPerformed(e);
+                    }
+                },
+                new AnAction(openSettingsLabel, openSettingsLabel, AllIcons.General.Settings) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenSettingsInBrowser().actionPerformed(e);
+                    }
+                }
+        );
         ActionToolbar tb = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, group, false);
         actionBarContainer.add(tb.getComponent());
     }
