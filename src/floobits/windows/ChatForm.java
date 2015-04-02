@@ -145,13 +145,21 @@ public class ChatForm {
                 new AnAction(followLabel, followLabel, AllIcons.Actions.Share) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
-                        new FollowMode().actionPerformed(e);
+                        FlooHandler handler = context.getFlooHandler();
+                        if (handler == null) {
+                            return;
+                        }
+                        handler.state.setFollowing(true);
                     }
                 },
                 new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
-                        new FollowMode().actionPerformed(e);
+                        FlooHandler handler = context.getFlooHandler();
+                        if (handler == null) {
+                            return;
+                        }
+                        handler.state.setFollowing(false);
                     }
                 },
                 new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
