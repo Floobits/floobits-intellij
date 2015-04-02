@@ -150,6 +150,7 @@ public class ChatForm {
                             return;
                         }
                         handler.state.setFollowing(true);
+                        handler.editorEventHandler.goToLastHighlight();
                     }
                 },
                 new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
