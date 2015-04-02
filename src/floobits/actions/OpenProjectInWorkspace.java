@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.*;
+import floobits.dialogs.HandleNoWorkspaceJoin;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
@@ -38,6 +39,8 @@ public class OpenProjectInWorkspace extends CanFloobits {
                 }
             }
         }
-        context.errorMessage("This project doesn't seem to be associated with a Floobits workspace.");
+        HandleNoWorkspaceJoin dialog = new HandleNoWorkspaceJoin(context);
+        dialog.createCenterPanel();
+        dialog.show();
     }
 }
