@@ -83,17 +83,11 @@
             <constraints>
               <splitpane position="left"/>
             </constraints>
-            <properties/>
+            <properties>
+              <minimumSize width="150" height="49"/>
+            </properties>
             <border type="none"/>
             <children>
-              <component id="de80c" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Connected People"/>
-                </properties>
-              </component>
               <scrollpane id="61f90" binding="clientsScrollPane" custom-create="true">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -102,6 +96,14 @@
                 <border type="none"/>
                 <children/>
               </scrollpane>
+              <component id="de80c" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Connected People"/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>

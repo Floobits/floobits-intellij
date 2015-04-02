@@ -113,6 +113,10 @@ public class ChatForm {
         String openBrowserLabel = "Open Workspace in Browser";
         String openSettingsLabel = "Open Workspace Settings in Browser";
         String clearHighlightsLabel = "Clear Highlights";
+        String summonLabel = "Summon every one in workspace to current cursor location";
+        String followLabel = "Follow all changes in workspace";
+        String unFollowLabel = "Stop following changes";
+        String helpLabel = "Get help with using Floobits";
         ActionGroup group = new DefaultActionGroup(
                 new AnAction(connectLabel, connectLabel, AllIcons.Actions.Execute) {
                     @Override
@@ -124,6 +128,30 @@ public class ChatForm {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new LeaveWorkspace().actionPerformed(e);
+                    }
+                },
+                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new ClearHighlights().actionPerformed(e);
+                    }
+                },
+                new AnAction(summonLabel, summonLabel, AllIcons.Ide.IncomingChangesOn) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new Summon().actionPerformed(e);
+                    }
+                },
+                new AnAction(followLabel, followLabel, AllIcons.Actions.Share) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new FollowMode().actionPerformed(e);
+                    }
+                },
+                new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new FollowMode().actionPerformed(e);
                     }
                 },
                 new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
@@ -138,10 +166,10 @@ public class ChatForm {
                         new OpenSettingsInBrowser().actionPerformed(e);
                     }
                 },
-                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
+                new AnAction(helpLabel, helpLabel, AllIcons.Actions.Help) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
-                        new ClearHighlights().actionPerformed(e);
+                        new GoToHelp().actionPerformed(e);
                     }
                 }
         );
