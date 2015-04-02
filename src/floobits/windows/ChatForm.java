@@ -4,9 +4,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
-import floobits.actions.OpenProjectInWorkspace;
-import floobits.actions.OpenSettingsInBrowser;
-import floobits.actions.OpenWorkspaceInBrowser;
+import floobits.actions.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -15,7 +13,6 @@ import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.BadLocationException;
@@ -111,9 +108,24 @@ public class ChatForm {
         clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
         actionBarContainer = new JPanel();
         actionBarContainer.setPreferredSize(new Dimension(30, -1));
+        String connectLabel = "Connect to project's workspace";
+        String disconnectLabel = "Leave current workspace";
         String openBrowserLabel = "Open Workspace in Browser";
         String openSettingsLabel = "Open Workspace Settings in Browser";
+        String clearHighlightsLabel = "Clear Highlights";
         ActionGroup group = new DefaultActionGroup(
+                new AnAction(connectLabel, connectLabel, AllIcons.Actions.Execute) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenProjectInWorkspace().actionPerformed(e);
+                    }
+                },
+                new AnAction(disconnectLabel, disconnectLabel, AllIcons.Actions.Suspend) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new LeaveWorkspace().actionPerformed(e);
+                    }
+                },
                 new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
@@ -124,6 +136,12 @@ public class ChatForm {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new OpenSettingsInBrowser().actionPerformed(e);
+                    }
+                },
+                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new ClearHighlights().actionPerformed(e);
                     }
                 }
         );

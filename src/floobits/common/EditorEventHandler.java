@@ -215,6 +215,7 @@ public class EditorEventHandler {
         Flog.info("Showing user window.");
         context.openChat();
     }
+
     public void openInBrowser() {
         if(!Desktop.isDesktopSupported()) {
             context.statusMessage("This version of java lacks to support to open your browser.");
