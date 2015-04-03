@@ -80,7 +80,7 @@
       <action id="floobits.actions.AddToWorkspace" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
       <action id="floobits.actions.DeleteFromWorkspace" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
       <action id="floobits.actions.OpenFloorc" class="floobits.actions.OpenFloorc" text="Open settings (~/.floorc.json)"  description="Open your ~/.floorc.json"/>
-      <action id="floobits.actions.chat" class="floobits.actions.ChatAction" text="Chat" description="Chat with others in your workspace"/>
+
       <action id="floobits.actions.RequestEditPermissions" class="floobits.actions.RequestEditPermissions" text="Request Edit Permissions"
               description="Request edit permissions for a workspace, if you don&#39;t have them already."/>
 
@@ -97,7 +97,15 @@
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </group>
 
+
+      <action id="floobits.actions.FloobitsWindow" class="floobits.actions.FloobitsWindow" text="Open Floobits"
+              description="Open Floobits" icon="/icons/floo.png">
+          <add-to-group group-id="MainToolBar" anchor="last"/>
+      </action>
+
       <group id="Floobits" text="Floobits" description="Floobits" popup="true" icon="/icons/floo.png">
+          <reference ref="floobits.actions.FloobitsWindow"/>
+          <separator/>
           <reference ref="floobits.actions.SubmitIssue"/>
           <reference ref="floobits.actions.GoToHelp"/>
           <separator/>
@@ -118,7 +126,6 @@
           <reference ref="floobits.actions.OpenSettingsInBrowser"/>
           <action id="floobits.AddToWorkspace2" class="floobits.actions.AddToWorkspace" text="Add To Workspace" description="Add file or folders to the Workspace"/>
           <action id="floobits.actions.DeleteFromWorkspace2" class="floobits.actions.DeleteFromWorkspace" text="Remove From Workspace" description="Remove file(s) from workspace"/>
-          <reference ref="floobits.actions.chat"/>
           <separator/>
           <reference ref="floobits.actions.CompleteSignUp"/>
           <separator/>

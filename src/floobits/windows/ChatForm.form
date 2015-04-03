@@ -14,10 +14,12 @@
         <border type="none"/>
         <children/>
       </grid>
-      <splitpane id="5f8ea">
+      <splitpane id="5f8ea" binding="splitPane">
         <constraints border-constraint="Center"/>
         <properties>
-          <dividerLocation value="165"/>
+          <dividerLocation value="203"/>
+          <lastDividerLocation value="300"/>
+          <resizeWeight value="0.0"/>
         </properties>
         <border type="none"/>
         <children>

@@ -326,7 +326,7 @@ public class ContextImpl extends IContext {
     @Override
     public void openChat() {
         if (chatManager != null && !chatManager.isOpen()) {
-            chatManager.openChat();
+            chatManager.openFloobitsWindow();
         }
         chatManager.updateUserList();
     }

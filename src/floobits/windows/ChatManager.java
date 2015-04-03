@@ -39,15 +39,16 @@ public class ChatManager {
         toolWindow.getContentManager().addContent(content);
     }
 
-    public void openChat() {
-        FlooHandler flooHandler = context.getFlooHandler();
-        if (flooHandler == null) {
-            return;
-        }
+    public void openFloobitsWindow() {
         try {
             toolWindow.show(null);
         } catch (NullPointerException e) {
             Flog.warn("Could not open chat window.");
+            return;
+        }
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            toolWindow.setTitle("- not currently connected.");
             return;
         }
         FlooUrl url = flooHandler.getUrl();

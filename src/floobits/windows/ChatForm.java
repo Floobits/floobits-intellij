@@ -42,6 +42,7 @@ public class ChatForm {
     private JTextPane messages;
     private JScrollPane clientsScrollPane;
     private JPanel actionBarContainer;
+    private JSplitPane splitPane;
     private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
@@ -59,7 +60,7 @@ public class ChatForm {
         messages.setEditable(false);
         messages.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         URI uri = e.getURL().toURI();
                         Desktop.getDesktop().browse(uri);
@@ -94,8 +95,14 @@ public class ChatForm {
         chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-               Flog.log("Got action from chat button");
-               sendChatContents();
+                Flog.log("Got action from chat button");
+                sendChatContents();
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                splitPane.setDividerLocation(300);
             }
         });
     }
