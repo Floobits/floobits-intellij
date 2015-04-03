@@ -188,6 +188,7 @@ public class ContextImpl extends IContext {
             pool.shutdownNow();
             pool = null;
         }
+        chatManager.disconnect();
     }
 
     public void setListener(boolean b) {

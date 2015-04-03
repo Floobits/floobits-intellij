@@ -33,10 +33,11 @@ public class ChatManager {
 
     protected void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-        toolWindow = toolWindowManager.registerToolWindow("Floobits Chat", true, ToolWindowAnchor.BOTTOM);
+        toolWindow = toolWindowManager.registerToolWindow("Floobits", true, ToolWindowAnchor.BOTTOM);
         toolWindow.setIcon(IconLoader.getIcon("/icons/floo13.png"));
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);
+        updateTitle();
     }
 
     public void openFloobitsWindow() {
@@ -46,13 +47,6 @@ public class ChatManager {
             Flog.warn("Could not open chat window.");
             return;
         }
-        FlooHandler flooHandler = context.getFlooHandler();
-        if (flooHandler == null) {
-            toolWindow.setTitle("- not currently connected.");
-            return;
-        }
-        FlooUrl url = flooHandler.getUrl();
-        toolWindow.setTitle(String.format("- %s", url.toString()));
     }
 
     public void closeChat() {
@@ -140,7 +134,34 @@ public class ChatManager {
                 }
                 chatForm.updateGravatars();
                 chatForm.updateFollowing(flooHandler.state.followedUsers);
+                updateTitle();
             }
         }, ModalityState.NON_MODAL);
+    }
+
+    public void disconnect() {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateTitle();
+            }
+        });
+    }
+
+    protected void updateTitle() {
+        FlooHandler flooHandler = context.getFlooHandler();
+        if (flooHandler == null) {
+            toolWindow.setTitle("- not currently connected.");
+            return;
+        }
+        FlooUrl url = flooHandler.getUrl();
+        int numClients = flooHandler.state.users.size();
+        toolWindow.setTitle(String.format(
+                "- %s as %s. %d client%s connected.",
+                url.toString(),
+                flooHandler.state.username,
+                numClients,
+                numClients == 1 ? "" : "s"
+        ));
     }
 }
