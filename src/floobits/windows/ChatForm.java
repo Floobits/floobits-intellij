@@ -2,6 +2,7 @@ package floobits.windows;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.editor.markup.RangeHighlighter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import floobits.actions.*;
@@ -9,6 +10,7 @@ import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
+import floobits.impl.DocImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
@@ -27,10 +29,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class ChatForm {
 
@@ -130,11 +130,21 @@ public class ChatForm {
                     public void actionPerformed(AnActionEvent e) {
                         new OpenProjectInWorkspace().actionPerformed(e);
                     }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler == null);
+                    }
                 },
                 new AnAction(disconnectLabel, disconnectLabel, AllIcons.Actions.Suspend) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new LeaveWorkspace().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null);
                     }
                 },
                 new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
@@ -142,11 +152,21 @@ public class ChatForm {
                     public void actionPerformed(AnActionEvent e) {
                         new ClearHighlights().actionPerformed(e);
                     }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = DocImpl.highlights;
+                        e.getPresentation().setEnabled(highlights.size() > 0);
+                    }
                 },
                 new AnAction(summonLabel, summonLabel, AllIcons.Ide.IncomingChangesOn) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new Summon().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.users.size() > 1);
                     }
                 },
                 new AnAction(followLabel, followLabel, AllIcons.Actions.Share) {
@@ -159,6 +179,11 @@ public class ChatForm {
                         handler.state.setFollowing(true);
                         handler.editorEventHandler.goToLastHighlight();
                     }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && !flooHandler.state.getFollowing());
+                    }
                 },
                 new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
                     @Override
@@ -168,6 +193,11 @@ public class ChatForm {
                             return;
                         }
                         handler.state.setFollowing(false);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.getFollowing());
                     }
                 },
                 new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
