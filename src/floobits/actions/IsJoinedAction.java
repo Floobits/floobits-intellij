@@ -26,6 +26,7 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
             context = floobitsPlugin.context;
             flooHandler = context.getFlooHandler();
             if (flooHandler == null) {
+                context.errorMessage("You must join a workspace to perform this action.");
                 return;
             }
             actionPerformed(e, flooHandler.editorEventHandler);

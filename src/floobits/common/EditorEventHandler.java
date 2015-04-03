@@ -211,24 +211,6 @@ public class EditorEventHandler {
         outbound.requestEdit();
     }
 
-    public void openChat() {
-        Flog.info("Showing user window.");
-        context.openChat();
-    }
-    public void openInBrowser() {
-        if(!Desktop.isDesktopSupported()) {
-            context.statusMessage("This version of java lacks to support to open your browser.");
-            return;
-        }
-        try {
-            Desktop.getDesktop().browse(new URI(state.url.toString()));
-        } catch (IOException error) {
-            Flog.warn(error);
-        } catch (URISyntaxException error) {
-            Flog.warn(error);
-        }
-    }
-
     public void beforeChange(IDoc doc) {
         final IFile virtualFile = doc.getVirtualFile();
         final String path = virtualFile.getPath();

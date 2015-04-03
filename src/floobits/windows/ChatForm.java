@@ -1,11 +1,16 @@
 package floobits.windows;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.editor.markup.RangeHighlighter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
+import floobits.actions.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
+import floobits.impl.DocImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 
@@ -24,10 +29,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class ChatForm {
 
@@ -38,6 +41,8 @@ public class ChatForm {
     private JTextField chatInput;
     private JTextPane messages;
     private JScrollPane clientsScrollPane;
+    private JPanel actionBarContainer;
+    private JSplitPane splitPane;
     private JPanel clientsPane;
     private HTMLEditorKit kit;
     private HTMLDocument doc;
@@ -55,7 +60,7 @@ public class ChatForm {
         messages.setEditable(false);
         messages.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         URI uri = e.getURL().toURI();
                         Desktop.getDesktop().browse(uri);
@@ -90,8 +95,14 @@ public class ChatForm {
         chatButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-               Flog.log("Got action from chat button");
-               sendChatContents();
+                Flog.log("Got action from chat button");
+                sendChatContents();
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                splitPane.setDividerLocation(300);
             }
         });
     }
@@ -102,6 +113,136 @@ public class ChatForm {
         clientsPane = new JPanel();
         clientsScrollPane.setViewportView(clientsPane);
         clientsPane.setLayout(new BoxLayout(clientsPane, BoxLayout.Y_AXIS));
+        actionBarContainer = new JPanel();
+        actionBarContainer.setPreferredSize(new Dimension(30, -1));
+        String connectLabel = "Connect to project's workspace";
+        String disconnectLabel = "Leave current workspace";
+        String openBrowserLabel = "Open Workspace in Browser";
+        String openSettingsLabel = "Open Workspace Settings in Browser";
+        String clearHighlightsLabel = "Clear Highlights";
+        String summonLabel = "Summon everyone in workspace to current cursor location";
+        String followLabel = "Follow all changes in workspace";
+        String unFollowLabel = "Stop following changes";
+        String helpLabel = "Get help with using Floobits";
+        ActionGroup group = new DefaultActionGroup(
+                new AnAction(connectLabel, connectLabel, AllIcons.Actions.Execute) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenProjectInWorkspace().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler == null);
+                    }
+                },
+                new AnAction(disconnectLabel, disconnectLabel, AllIcons.Actions.Suspend) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new LeaveWorkspace().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null);
+                    }
+                },
+                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new ClearHighlights().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        HashMap<Integer, HashMap<String, LinkedList<RangeHighlighter>>> highlights = DocImpl.highlights;
+                        e.getPresentation().setEnabled(highlights.size() > 0);
+                    }
+                },
+                new AnAction(summonLabel, summonLabel, AllIcons.Ide.IncomingChangesOn) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new Summon().actionPerformed(e);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.users.size() > 1);
+                    }
+                },
+                new AnAction(followLabel, followLabel, AllIcons.Actions.Share) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler handler = context.getFlooHandler();
+                        if (handler == null) {
+                            return;
+                        }
+                        handler.state.setFollowing(true);
+                        handler.editorEventHandler.goToLastHighlight();
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && !flooHandler.state.getFollowing());
+                    }
+                },
+                new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler handler = context.getFlooHandler();
+                        if (handler == null) {
+                            return;
+                        }
+                        handler.state.setFollowing(false);
+                    }
+                    @Override
+                    public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
+                        FlooHandler flooHandler = context.getFlooHandler();
+                        e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.getFollowing());
+                    }
+                },
+                new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenWorkspaceInBrowser().actionPerformed(e);
+                    }
+                },
+                new AnAction(openSettingsLabel, openSettingsLabel, AllIcons.General.Settings) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new OpenSettingsInBrowser().actionPerformed(e);
+                    }
+                },
+                new AnAction(helpLabel, helpLabel, AllIcons.Actions.Help) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        new GoToHelp().actionPerformed(e);
+                    }
+                }
+        );
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionToolbar tb = actionManager.createActionToolbar(ActionPlaces.UNKNOWN, group, false);
+        actionBarContainer.add(tb.getComponent());
     }
 
     public void clearClients() {

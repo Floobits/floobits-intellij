@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="floobits.windows.ChatForm">
-  <grid id="27dc6" binding="chatPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-    <margin top="0" left="0" bottom="0" right="0"/>
+  <grid id="27dc6" binding="chatPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
       <xy x="20" y="20" width="500" height="400"/>
     </constraints>
     <properties/>
     <border type="none" title=""/>
     <children>
-      <splitpane id="5f8ea">
-        <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="200" height="200"/>
-          </grid>
-        </constraints>
+      <grid id="d09c3" binding="actionBarContainer" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints border-constraint="West"/>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <splitpane id="5f8ea" binding="splitPane">
+        <constraints border-constraint="Center"/>
         <properties>
-          <dividerLocation value="300"/>
+          <dividerLocation value="203"/>
+          <lastDividerLocation value="300"/>
+          <resizeWeight value="0.0"/>
         </properties>
         <border type="none"/>
         <children>
@@ -81,17 +85,11 @@
             <constraints>
               <splitpane position="left"/>
             </constraints>
-            <properties/>
+            <properties>
+              <minimumSize width="150" height="49"/>
+            </properties>
             <border type="none"/>
             <children>
-              <component id="de80c" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Connected People"/>
-                </properties>
-              </component>
               <scrollpane id="61f90" binding="clientsScrollPane" custom-create="true">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -100,6 +98,14 @@
                 <border type="none"/>
                 <children/>
               </scrollpane>
+              <component id="de80c" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Connected People"/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>

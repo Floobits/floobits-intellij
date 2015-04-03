@@ -31,6 +31,9 @@ public class ChatUserForm {
                     if (clickHandler == null) {
                         return;
                     }
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        return;
+                    }
                     clickHandler.run();
                 }
                 @Override

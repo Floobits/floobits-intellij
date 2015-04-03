@@ -2,10 +2,11 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
-import floobits.common.EditorEventHandler;
 import floobits.common.FlooUrl;
+import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
@@ -14,10 +15,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class OpenWorkspaceInBrowser extends CanFloobits {
-    @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
-        Project project = anActionEvent.getProject();
+
+public class OpenSettingsInBrowser extends CanFloobits {
+    public void actionPerformed(AnActionEvent actionEvent) {
+        Project project = actionEvent.getProject();
         if (project == null) {
             return;
         }
@@ -29,7 +30,7 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(flooUrl.toString()));
+            Desktop.getDesktop().browse(new URI(String.format("%s/settings", flooUrl.toString())));
         } catch (IOException e) {
             Flog.info("Couldn't open settings in browser", e);
         } catch (URISyntaxException e) {

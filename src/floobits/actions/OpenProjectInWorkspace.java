@@ -4,15 +4,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.*;
+import floobits.dialogs.HandleNoWorkspaceJoin;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
 import java.net.MalformedURLException;
 import java.util.Map;
 
-/**
- * Created by kans on 2/18/14.
- */
+
 public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
         ContextImpl context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
@@ -40,6 +39,8 @@ public class OpenProjectInWorkspace extends CanFloobits {
                 }
             }
         }
-        context.errorMessage("This project doesn't seem to be associated with a Floobits workspace.");
+        HandleNoWorkspaceJoin dialog = new HandleNoWorkspaceJoin(context);
+        dialog.createCenterPanel();
+        dialog.show();
     }
 }
