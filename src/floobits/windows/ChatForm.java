@@ -132,6 +132,9 @@ public class ChatForm {
                     }
                     @Override
                     public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler flooHandler = context.getFlooHandler();
                         e.getPresentation().setEnabled(flooHandler == null);
                     }
@@ -143,6 +146,9 @@ public class ChatForm {
                     }
                     @Override
                     public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler flooHandler = context.getFlooHandler();
                         e.getPresentation().setEnabled(flooHandler != null);
                     }
@@ -165,6 +171,9 @@ public class ChatForm {
                     }
                     @Override
                     public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler flooHandler = context.getFlooHandler();
                         e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.users.size() > 1);
                     }
@@ -172,6 +181,9 @@ public class ChatForm {
                 new AnAction(followLabel, followLabel, AllIcons.Actions.Share) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler handler = context.getFlooHandler();
                         if (handler == null) {
                             return;
@@ -181,6 +193,9 @@ public class ChatForm {
                     }
                     @Override
                     public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler flooHandler = context.getFlooHandler();
                         e.getPresentation().setEnabled(flooHandler != null && !flooHandler.state.getFollowing());
                     }
@@ -188,6 +203,9 @@ public class ChatForm {
                 new AnAction(unFollowLabel, unFollowLabel, AllIcons.Actions.Unshare) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler handler = context.getFlooHandler();
                         if (handler == null) {
                             return;
@@ -196,6 +214,9 @@ public class ChatForm {
                     }
                     @Override
                     public void update(AnActionEvent e) {
+                        if (context == null) {
+                            return;
+                        }
                         FlooHandler flooHandler = context.getFlooHandler();
                         e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.getFollowing());
                     }
@@ -219,7 +240,8 @@ public class ChatForm {
                     }
                 }
         );
-        ActionToolbar tb = ActionManager.getInstance().createActionToolbar(ActionPlaces.UNKNOWN, group, false);
+        ActionManager actionManager = ActionManager.getInstance();
+        ActionToolbar tb = actionManager.createActionToolbar(ActionPlaces.UNKNOWN, group, false);
         actionBarContainer.add(tb.getComponent());
     }
 

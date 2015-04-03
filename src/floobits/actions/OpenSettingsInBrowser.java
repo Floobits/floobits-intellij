@@ -1,6 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
@@ -17,7 +18,11 @@ import java.net.URISyntaxException;
 
 public class OpenSettingsInBrowser extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent) {
-        ContextImpl context = FloobitsPlugin.getInstance(actionEvent.getProject()).context;
+        Project project = actionEvent.getProject();
+        if (project == null) {
+            return;
+        }
+        ContextImpl context = FloobitsPlugin.getInstance(project).context;
         String path = context.project.getBasePath();
         FlooUrl flooUrl = DotFloo.read(path);
         if (flooUrl == null) {
