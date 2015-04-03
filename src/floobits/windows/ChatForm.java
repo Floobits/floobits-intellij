@@ -120,7 +120,7 @@ public class ChatForm {
         String openBrowserLabel = "Open Workspace in Browser";
         String openSettingsLabel = "Open Workspace Settings in Browser";
         String clearHighlightsLabel = "Clear Highlights";
-        String summonLabel = "Summon every one in workspace to current cursor location";
+        String summonLabel = "Summon everyone in workspace to current cursor location";
         String followLabel = "Follow all changes in workspace";
         String unFollowLabel = "Stop following changes";
         String helpLabel = "Get help with using Floobits";
