@@ -3,9 +3,13 @@ package floobits.impl;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
@@ -18,6 +22,7 @@ import floobits.windows.ChatManager;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -109,14 +114,26 @@ public class ContextImpl extends IContext {
     @Override
     protected void shareProjectDialog(String name, List<String> orgs, final String host, final boolean _private_, final String projectPath) {
         final ContextImpl context = this;
-        ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project, new RunLater<ShareProjectDialog>() {
-            @Override
-            public void run(ShareProjectDialog dialog) {
-                if (API.createWorkspace(host, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                    joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), projectPath, true);
-                }
-            }
-        });
+        final String projectDir = colabDir;
+        ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project,
+                new RunLater<ShareProjectDialog>() {
+                    @Override
+                    public void run(ShareProjectDialog dialog) {
+                        if (API.createWorkspace(host, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
+                            joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), projectPath, true);
+                        }
+                    }
+                },
+                new RunLater<ShareProjectDialog>() {
+                    @Override
+                    public void run(ShareProjectDialog arg) {
+                        FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, false, false, false, false);
+                        descriptor.setTitle("Select folder to upload");
+                        descriptor.setDescription("NOTE: You cannot choose a folder outside of your project.");
+                        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(projectDir));
+                        VirtualFile[] vFiles = FileChooser.chooseFiles(descriptor, null, virtualFile);
+                    }
+                });
         shareProjectDialog.createCenterPanel();
         shareProjectDialog.show();
     }
