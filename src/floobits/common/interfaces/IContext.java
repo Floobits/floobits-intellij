@@ -1,5 +1,6 @@
 package floobits.common.interfaces;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.BaseHandler;
@@ -89,7 +90,7 @@ public abstract class IContext {
         String[] newPerms = _private_ ? new String[]{} : new String[]{"view_room"};
 
         if (flooUrl != null && changePerms(flooUrl, newPerms)) {
-            joinWorkspace(flooUrl, projectPath, true);
+            joinWorkspace(flooUrl, projectPath, true, null);
             return;
         }
 
@@ -106,7 +107,7 @@ public abstract class IContext {
                         continue;
                     }
                     if (changePerms(flooUrl, newPerms)) {
-                        joinWorkspace(flooUrl, w.path, true);
+                        joinWorkspace(flooUrl, w.path, true, null);
                         return;
                     }
                 }
@@ -149,7 +150,7 @@ public abstract class IContext {
 
     protected abstract void shareProjectDialog(String name, List<String> orgs, String host, boolean _private_, String projectPath);
 
-    public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload) {
+    public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload, final VirtualFile dirToAdd) {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
@@ -162,7 +163,7 @@ public abstract class IContext {
             setupHandler(new LinkEditorHandler(this, flooUrl.host, new Runnable() {
                 @Override
                 public void run() {
-                    joinWorkspace(flooUrl, path, upload);
+                    joinWorkspace(flooUrl, path, upload, dirToAdd);
                 }
             }));
             return;
@@ -172,7 +173,7 @@ public abstract class IContext {
             errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
             return;
         }
-        if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth))) {
+        if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth, dirToAdd))) {
             setListener(true);
             return;
         }
@@ -186,7 +187,7 @@ public abstract class IContext {
                     return;
                 }
                 shutdown();
-                joinWorkspace(flooUrl, path, upload);
+                joinWorkspace(flooUrl, path, upload, dirToAdd);
             }
         });
     }

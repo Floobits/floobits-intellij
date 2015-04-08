@@ -88,7 +88,7 @@ public class FloobitsApplication implements ApplicationComponent {
                         if (window != null) {
                             window.toFront();
                         }
-                        context.joinWorkspace(f, location, false);
+                        context.joinWorkspace(f, location, false, null);
                     }
                 });
             }
@@ -115,7 +115,7 @@ public class FloobitsApplication implements ApplicationComponent {
                 if (window != null) {
                     window.toFront();
                 }
-                finalContext.joinWorkspace(flooUrl, location, false);
+                finalContext.joinWorkspace(flooUrl, location, false, null);
             }
         });
     }

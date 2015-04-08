@@ -120,18 +120,27 @@ public class ContextImpl extends IContext {
                     @Override
                     public void run(ShareProjectDialog dialog) {
                         if (API.createWorkspace(host, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
-                            joinWorkspace(new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true), projectPath, true);
+                            FlooUrl url = new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true);
+                            joinWorkspace(url, projectPath, true, null);
                         }
                     }
                 },
                 new RunLater<ShareProjectDialog>() {
                     @Override
-                    public void run(ShareProjectDialog arg) {
+                    public void run(ShareProjectDialog dialog) {
                         FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, false, false, false, false);
                         descriptor.setTitle("Select folder to upload");
                         descriptor.setDescription("NOTE: You cannot choose a folder outside of your project.");
                         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(projectDir));
                         VirtualFile[] vFiles = FileChooser.chooseFiles(descriptor, null, virtualFile);
+                        if (vFiles.length < 1) {
+                            Flog.warn("No directory selected for picking files to upload in share project.");
+                            return;
+                        }
+                        if (API.createWorkspace(host, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
+                            FlooUrl url = new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true);
+                            joinWorkspace(url, projectPath, true, vFiles[0]);
+                        }
                     }
                 });
         shareProjectDialog.createCenterPanel();

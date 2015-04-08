@@ -1,6 +1,7 @@
 package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonObject;
+import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.Connection;
@@ -13,14 +14,17 @@ import java.util.HashMap;
 public class FlooHandler extends BaseHandler {
     private final HashMap<String, String> auth;
     private final boolean shouldUpload;
+    private final VirtualFile dirToAdd;
     public FloobitsState state;
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
 
-    public FlooHandler(final IContext context, FlooUrl flooUrl, boolean shouldUpload, String path, HashMap<String, String> auth) {
+    public FlooHandler(final IContext context, FlooUrl flooUrl, boolean shouldUpload, String path,
+                       HashMap<String, String> auth, VirtualFile dirToAdd) {
         super(context);
         this.auth = auth;
         this.shouldUpload = shouldUpload;
+        this.dirToAdd = dirToAdd;
         context.setColabDir(Utils.fixPath(path));
         url = flooUrl;
         state = new FloobitsState(context, flooUrl);
@@ -37,7 +41,7 @@ public class FlooHandler extends BaseHandler {
         Flog.log("joining workspace %s", url);
         conn = new Connection(this);
         outbound = new OutboundRequestHandler(context, state, conn);
-        inbound = new InboundRequestHandler(context, state, outbound, shouldUpload);
+        inbound = new InboundRequestHandler(context, state, outbound, shouldUpload, dirToAdd);
         editorEventHandler = new EditorEventHandler(context, state, outbound, inbound);
         PersistentJson persistentJson = PersistentJson.getInstance();
         persistentJson.addWorkspace(url, context.colabDir);
