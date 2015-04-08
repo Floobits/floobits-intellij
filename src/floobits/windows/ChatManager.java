@@ -66,6 +66,7 @@ public class ChatManager {
             @Override
             public void run() {
                 chatForm.clearClients();
+                updateTitle();
             }
         }, ModalityState.NON_MODAL);
     }
@@ -137,15 +138,6 @@ public class ChatManager {
                 updateTitle();
             }
         }, ModalityState.NON_MODAL);
-    }
-
-    public void disconnect() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateTitle();
-            }
-        });
     }
 
     protected void updateTitle() {

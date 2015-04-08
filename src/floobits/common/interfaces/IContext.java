@@ -307,6 +307,7 @@ public abstract class IContext {
     public abstract void chatStatusMessage(String message);
     public abstract void chatErrorMessage(String message);
     public abstract void chat(String username, String msg, Date messageDate);
+    public abstract void setupChat();
     public abstract void openChat();
     public abstract void listenToEditor(EditorEventHandler editorEventHandler);
     public abstract void setListener(boolean b);
@@ -327,4 +328,5 @@ public abstract class IContext {
     public abstract void followUser();
     public abstract void updateFollowing();
     public abstract void connected();
+
 }

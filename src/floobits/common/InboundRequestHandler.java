@@ -519,6 +519,7 @@ public class InboundRequestHandler {
         });
     }
     void _on_room_info(final JsonObject obj) {
+        context.setupChat();
         context.readThread(new Runnable() {
             @Override
             public void run() {
@@ -527,7 +528,6 @@ public class InboundRequestHandler {
                     state.handleRoomInfo(ri);
 
                     context.statusMessage(String.format("You successfully joined %s ", state.url.toString()));
-                    context.openChat();
 
                     DotFloo.write(context.colabDir, state.url.toString());
 

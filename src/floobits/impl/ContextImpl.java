@@ -220,7 +220,6 @@ public class ContextImpl extends IContext {
             pool.shutdownNow();
             pool = null;
         }
-        chatManager.disconnect();
     }
 
     public void setListener(boolean b) {
@@ -330,7 +329,8 @@ public class ContextImpl extends IContext {
                         conflictedPathsArray, connections);
                 dialog.createCenterPanel();
                 dialog.show();
-            }});
+            }
+        });
     }
 
     @Override
@@ -362,6 +362,14 @@ public class ContextImpl extends IContext {
             chatManager.openFloobitsWindow();
         }
         chatManager.updateUserList();
+    }
+
+    @Override
+    public void setupChat() {
+        if (chatManager != null) {
+            chatManager.clearUsers();
+        }
+        openChat();
     }
 
     @Override
