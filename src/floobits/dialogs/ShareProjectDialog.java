@@ -9,8 +9,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
-public class ShareProjectDialog extends DialogWrapper {
-    private RunLater<ShareProjectDialog> runLater;
+public class ShareProjectDialog extends CustomButtonDialogWrapper {
     protected ShareProjectForm form = new ShareProjectForm();
 
 
@@ -28,18 +27,39 @@ public class ShareProjectDialog extends DialogWrapper {
         }
     }
 
-    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project, RunLater<ShareProjectDialog> runLater) {
+    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project,
+                              final RunLater<ShareProjectDialog> uploadAll,
+                              final RunLater<ShareProjectDialog> uploadPick) {
         super(project, true);
 
         if (orgs.size() < 1 && project != null) {
             Flog.errorMessage("Unable to share project, do you have a Floobits account?", project);
             return;
         }
-        this.runLater = runLater;
         form.setWorkSpaceName(workspaceName);
         form.setOrgs(orgs);
-        init();
+        final ShareProjectDialog self = this;
         this.setTitle("Create a New Workspace");
+        CustomButtonAction abortAction = new CustomButtonAction("Cancel", new Runnable() {
+            @Override
+            public void run() {
+                Flog.warn("User aborted joining workspace.");
+            }
+        });
+        CustomButtonAction uploadProject = new CustomButtonAction("Upload Entire Project", new Runnable() {
+            @Override
+            public void run() {
+                uploadAll.run(self);
+            }
+        });
+        CustomButtonAction uploadFiles = new CustomButtonAction("Select Files to Upload", new Runnable() {
+            @Override
+            public void run() {
+                uploadPick.run(self);
+            }
+        });
+        actions = new Action[]{uploadProject, uploadFiles, abortAction};
+        init();
     }
 
     @Override
@@ -59,14 +79,5 @@ public class ShareProjectDialog extends DialogWrapper {
 
     public String getOrgName() {
         return form.getSelectedOrg();
-    }
-
-    @Override
-    protected void doOKAction() {
-        super.doOKAction();
-        if (runLater == null) {
-            return;
-        }
-        runLater.run(this);
     }
 }

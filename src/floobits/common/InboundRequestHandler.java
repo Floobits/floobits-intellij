@@ -3,6 +3,7 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFile;
@@ -30,6 +31,7 @@ public class InboundRequestHandler {
     private final FloobitsState state;
     private final OutboundRequestHandler outbound;
     private boolean shouldUpload;
+    private IFile dirToAdd;
     private StatusMessageThrottler fileAddedMessageThrottler;
     private StatusMessageThrottler fileRemovedMessageThrottler;
     private EditorScheduler editor;
@@ -38,12 +40,14 @@ public class InboundRequestHandler {
         room_info, get_buf, patch, highlight, saved, join, part, create_buf, ack,
         request_perms, msg, rename_buf, term_stdin, term_stdout, delete_buf, perms, ping
     }
-    public InboundRequestHandler(IContext context, FloobitsState state, OutboundRequestHandler outbound, boolean shouldUpload) {
+    public InboundRequestHandler(IContext context, FloobitsState state, OutboundRequestHandler outbound,
+                                 boolean shouldUpload,  IFile dirToAdd) {
         this.context = context;
         editor = context.editor;
         this.state = state;
         this.outbound = outbound;
         this.shouldUpload = shouldUpload;
+        this.dirToAdd = dirToAdd;
         fileAddedMessageThrottler = new StatusMessageThrottler(context,
                 "%d files were added to the workspace.");
         fileRemovedMessageThrottler = new StatusMessageThrottler(context,
@@ -127,7 +131,12 @@ public class InboundRequestHandler {
         context.statusMessage("Overwriting remote files and uploading new ones.");
         context.flashMessage("Overwriting remote files and uploading new ones.");
 
-        final Ignore ignoreTree = context.getIgnoreTree();
+        final Ignore ignoreTree;
+        if (dirToAdd == null) {
+            ignoreTree = context.getIgnoreTree();
+        } else {
+            ignoreTree = Ignore.BuildIgnore(dirToAdd);
+        }
         ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
         LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
         tempIgnores.add(ignoreTree);
@@ -239,6 +248,7 @@ public class InboundRequestHandler {
             context.setListener(true);
         }
         shouldUpload = false;
+        dirToAdd = null;
     }
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
