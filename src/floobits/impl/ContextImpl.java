@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import floobits.Listener;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.dialogs.*;
@@ -139,7 +140,13 @@ public class ContextImpl extends IContext {
                         }
                         if (API.createWorkspace(host, dialog.getOrgName(), dialog.getWorkspaceName(), context, _private_)) {
                             FlooUrl url = new FlooUrl(host, dialog.getOrgName(), dialog.getWorkspaceName(), Constants.defaultPort, true);
-                            joinWorkspace(url, projectPath, true, vFiles[0]);
+                            String filePath = vFiles[0].getCanonicalPath();
+                            if (filePath == null) {
+                                Flog.warn("Upload for picked directory in share project has a null path");
+                                return;
+                            }
+                            IFile dirToAdd = iFactory.findFileByIoFile(new File(filePath));
+                            joinWorkspace(url, projectPath, true, dirToAdd);
                         }
                     }
                 });

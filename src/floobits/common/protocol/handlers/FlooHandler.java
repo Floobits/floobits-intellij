@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
+import floobits.common.interfaces.IFile;
 import floobits.common.protocol.Connection;
 import floobits.common.protocol.json.send.FlooAuth;
 import floobits.utilities.Flog;
@@ -14,13 +15,13 @@ import java.util.HashMap;
 public class FlooHandler extends BaseHandler {
     private final HashMap<String, String> auth;
     private final boolean shouldUpload;
-    private final VirtualFile dirToAdd;
+    private final IFile dirToAdd;
     public FloobitsState state;
     InboundRequestHandler inbound;
     public EditorEventHandler editorEventHandler;
 
     public FlooHandler(final IContext context, FlooUrl flooUrl, boolean shouldUpload, String path,
-                       HashMap<String, String> auth, VirtualFile dirToAdd) {
+                       HashMap<String, String> auth, IFile dirToAdd) {
         super(context);
         this.auth = auth;
         this.shouldUpload = shouldUpload;

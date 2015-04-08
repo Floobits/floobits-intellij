@@ -150,7 +150,7 @@ public abstract class IContext {
 
     protected abstract void shareProjectDialog(String name, List<String> orgs, String host, boolean _private_, String projectPath);
 
-    public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload, final VirtualFile dirToAdd) {
+    public void joinWorkspace(final FlooUrl flooUrl, final String path, final boolean upload, final IFile dirToAdd) {
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
