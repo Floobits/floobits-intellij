@@ -115,7 +115,6 @@ public class ContextImpl extends IContext {
     @Override
     protected void shareProjectDialog(String name, List<String> orgs, final String host, final boolean _private_, final String projectPath) {
         final ContextImpl context = this;
-        final String projectDir = colabDir;
         ShareProjectDialog shareProjectDialog = new ShareProjectDialog(name, orgs, project,
                 new RunLater<ShareProjectDialog>() {
                     @Override
@@ -132,7 +131,7 @@ public class ContextImpl extends IContext {
                         FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, false, false, false, false);
                         descriptor.setTitle("Select folder to upload");
                         descriptor.setDescription("NOTE: You cannot choose a folder outside of your project.");
-                        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(projectDir));
+                        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(projectPath));
                         VirtualFile[] vFiles = FileChooser.chooseFiles(descriptor, null, virtualFile);
                         if (vFiles.length < 1) {
                             Flog.warn("No directory selected for picking files to upload in share project.");

@@ -40,7 +40,7 @@ public class ShareProjectDialog extends CustomButtonDialogWrapper {
         form.setOrgs(orgs);
         final ShareProjectDialog self = this;
         this.setTitle("Create a New Workspace");
-        CustomButtonAction abortAction = new CustomButtonAction("Abort", new Runnable() {
+        CustomButtonAction abortAction = new CustomButtonAction("Cancel", new Runnable() {
             @Override
             public void run() {
                 Flog.warn("User aborted joining workspace.");
