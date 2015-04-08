@@ -18,7 +18,7 @@ public class HandleNoWorkspaceJoin extends CustomButtonDialogWrapper {
         JLabel infoLabel = new JLabel();
         infoLabel.setText("This project doesn't seem to be associated with a Floobits workspace. Create one?");
         container.add(infoLabel);
-        CustomButtonAction abortAction = new CustomButtonAction("Abort", new Runnable() {
+        CustomButtonAction abortAction = new CustomButtonAction("Cancel", new Runnable() {
             @Override
             public void run() {
                 context.errorMessage("This project doesn't seem to be associated with a Floobits workspace.");
