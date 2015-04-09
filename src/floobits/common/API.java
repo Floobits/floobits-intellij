@@ -65,7 +65,8 @@ public class API {
                     Flog.warn(e);
                     return false;
                 }
-                context.errorMessage(details);
+                context.errorMessage(String.format(
+                        "%s Get more <a style=\"color: blue;text-decoration:underline;\" href=\"https://floobits.com/%s/settings#billing\">here</a>.", details, owner));
                 return false;
             case 409:
                 context.statusMessage("The workspace already exists so I am joining it.");
