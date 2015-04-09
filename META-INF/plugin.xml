@@ -91,9 +91,11 @@
               description="Get help for Floobits">
       </action>
 
-      <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo-themed.png">
+      <group id="Floobits-File-Context" text="Floobits" description="Floobits" popup="true" icon="/icons/floo.png">
           <reference ref="floobits.actions.AddToWorkspace"/>
           <reference ref="floobits.actions.DeleteFromWorkspace"/>
+          <reference ref="floobits.actions.ShareProject"/>
+          <reference ref="floobits.actions.ShareProjectPrivately"/>
           <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
       </group>
 

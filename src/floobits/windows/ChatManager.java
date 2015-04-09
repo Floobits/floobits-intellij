@@ -41,12 +41,15 @@ public class ChatManager {
     }
 
     public void openFloobitsWindow() {
-        try {
-            toolWindow.show(null);
-        } catch (NullPointerException e) {
-            Flog.warn("Could not open chat window.");
-            return;
-        }
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (toolWindow == null) {
+                    return;
+                }
+                toolWindow.show(null);
+            }
+        });
     }
 
     public void closeChat() {

@@ -9,7 +9,7 @@ import floobits.FloobitsPlugin;
  * Date: 2/14/14
  * Time: 12:08 PM
  */
-public class ShareProjectPrivately extends CanFloobits {
+public class ShareProjectPrivately extends IsBaseProjectPath {
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getProject();
         if (project == null ) {
