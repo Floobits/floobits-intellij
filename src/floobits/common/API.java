@@ -66,10 +66,12 @@ public class API {
                     return false;
                 }
                 context.errorMessage(String.format(
-                        "%s Get more <a style=\"color: blue;text-decoration:underline;\" href=\"https://floobits.com/%s/settings#billing\">here</a>.", details, owner));
+                    "%s Get more <a style=\"color: blue;text-decoration:underline;\" href=\"https://%s/%s/settings#billing\">here</a>.",
+                    details, host, owner));
                 return false;
             case 409:
                 context.statusMessage("The workspace already exists so I am joining it.");
+                return true;
             case 201:
                 context.statusMessage("Workspace created.");
                 return true;
@@ -78,11 +80,14 @@ public class API {
                 context.errorMessage("There is an invalid username or secret in your ~/.floorc and you were not able to authenticate.");
                 return context.iFactory.openFile(new File(Settings.floorcJsonPath));
             default:
+                String errorMessage = "Unknown error.";
                 try {
-                    Flog.warn(String.format("Unknown error creating workspace:\n%s", method.getResponseBodyAsString()));
+                    errorMessage = method.getResponseBodyAsString();
                 } catch (IOException e) {
                     Flog.warn(e);
                 }
+                context.errorMessage(String.format("Error creating workspace: %s", errorMessage));
+                Flog.warn(String.format("Unknown error creating workspace:\n%s", errorMessage));
                 return false;
         }
     }
