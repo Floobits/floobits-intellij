@@ -2,6 +2,7 @@ package floobits.utilities;
 
 import com.intellij.notification.*;
 import com.intellij.notification.impl.NotificationsConfigurationImpl;
+import com.intellij.notification.impl.ui.NotificationsUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -10,6 +11,12 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
@@ -52,7 +59,24 @@ public class Flog {
                     public void run() {
                         try {
                             ensureRegistered();
-                            final Notification statusMessage = new Notification("Floobits", "Floobits", message, notificationType);
+                            NotificationListener listener = new NotificationListener() {
+                                @Override
+                                public void hyperlinkUpdate(Notification notification, HyperlinkEvent event) {
+                                        if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                                            try {
+                                                URI uri = event.getURL().toURI();
+                                                Desktop.getDesktop().browse(uri);
+                                            } catch (IOException error) {
+                                                Flog.warn(error);
+                                            } catch (URISyntaxException error) {
+                                                Flog.warn(error);
+                                            }
+                                        }
+                                }
+                            };
+                            final Notification statusMessage = new Notification("Floobits", "Floobits", message,
+                                    notificationType, listener);
+                            NotificationsUtil.wrapListener(statusMessage);
                             Notifications.Bus.notify(statusMessage, project);
                             boolean sticky = NotificationsConfigurationImpl.getSettings(ID).getDisplayType() == NotificationDisplayType.STICKY_BALLOON;
                             if (!sticky) {
