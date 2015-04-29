@@ -181,12 +181,12 @@ public class FloobitsApplication implements ApplicationComponent {
             try {
                 String projectFilePath = ".idea/misc.xml";
                 if (path.endsWith(projectFilePath)) {
-                    Flog.warn("Attempted to open the project misc.xml file instead of the directory.");
+                    Flog.error("Attempted to open the project misc.xml file instead of the directory.");
                     path = path.replace(projectFilePath, "");
                 }
                 openedProject = ProjectManager.getInstance().loadAndOpenProject(path);
             } catch (Throwable e) {
-                Flog.warn(e);
+                Flog.error(e);
                 API.uploadCrash(null, null, e);
                 return null;
             }

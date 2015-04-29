@@ -199,7 +199,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
                     }
                 }
                 if (copiedFile == null) {
-                    Flog.warn("Couldn't find copied virtual file %s", path);
+                    Flog.error("Couldn't find copied virtual file %s", path);
                     continue;
                 }
                 editorManager.createFile(new FileImpl(copiedFile));

@@ -62,7 +62,7 @@ public class CreateAccountHandler extends BaseHandler {
 
     @Override
     public void on_connect() {
-        Flog.warn("Connected.");
+        Flog.error("Connected.");
         conn.setRetries(-1);
         conn.write(new NewAccount());
     }

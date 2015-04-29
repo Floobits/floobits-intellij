@@ -62,7 +62,7 @@ public class API {
                     JsonObject obj = (JsonObject)new JsonParser().parse(res);
                     details = obj.get("detail").getAsString();
                 } catch (IOException e) {
-                    Flog.warn(e);
+                    Flog.error(e);
                     return false;
                 }
                 context.errorMessage(String.format(
@@ -84,10 +84,10 @@ public class API {
                 try {
                     errorMessage = method.getResponseBodyAsString();
                 } catch (IOException e) {
-                    Flog.warn(e);
+                    Flog.error(e);
                 }
                 context.errorMessage(String.format("Error creating workspace: %s", errorMessage));
-                Flog.warn(String.format("Unknown error creating workspace:\n%s", errorMessage));
+                Flog.error(String.format("Unknown error creating workspace:\n%s", errorMessage));
                 return false;
         }
     }
@@ -107,7 +107,7 @@ public class API {
         try {
             responseBodyAsString = method.getResponseBodyAsString();
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         Flog.log(responseBodyAsString);
@@ -144,7 +144,7 @@ public class API {
         try {
             method = getWorkspaceMethod(f, context);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
 
@@ -173,7 +173,7 @@ public class API {
         try {
             floorcJson = Settings.get();
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
         HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(host) : null;
         String username = null, secret = null;
@@ -225,7 +225,7 @@ public class API {
         try {
             apiRequest(method, context, host);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             return orgs;
         }
 
@@ -243,7 +243,7 @@ public class API {
                 orgs.add(orgName);
             }
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             context.errorMessage("Error getting Floobits organizations. Try again later or please contact support.");
         }
 
@@ -253,7 +253,7 @@ public class API {
         numSent++;
         if (numSent >= maxErrorReports) {
             Flog.warn(String.format("Already sent %s errors this session. Not sending any more.", numSent));
-            if (throwable != null) Flog.warn(throwable);
+            if (throwable != null) Flog.error(throwable);
             return;
         }
         if (throwable instanceof ProcessCanceledException) {

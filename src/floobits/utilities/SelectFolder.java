@@ -67,7 +67,7 @@ public class SelectFolder {
         try {
             FileUtils.forceMkdir(file);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return null;
         }
         return file;

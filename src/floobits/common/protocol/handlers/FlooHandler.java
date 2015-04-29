@@ -1,7 +1,6 @@
 package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonObject;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
@@ -35,7 +34,7 @@ public class FlooHandler extends BaseHandler {
     public void go() {
         super.go();
         if (context == null) {
-            Flog.warn("Attempted to join a workspace with no context.");
+            Flog.error("Attempted to join a workspace with no context.");
             isJoined = false;
             return;
         }
@@ -66,7 +65,7 @@ public class FlooHandler extends BaseHandler {
         try {
             inbound.on_data(name, obj);
         } catch (Throwable e) {
-            Flog.warn(String.format("on_data error \n\n%s", e.toString()));
+            Flog.error(String.format("on_data error \n\n%s", e.toString()));
             API.uploadCrash(this, context, e);
         }
     }

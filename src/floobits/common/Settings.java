@@ -52,7 +52,7 @@ public class Settings {
         try {
             FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson));
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             context.errorMessage("Can't write new ~/.floorc.json");
         }
     }

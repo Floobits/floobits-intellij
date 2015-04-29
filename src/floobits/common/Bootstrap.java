@@ -14,7 +14,7 @@ public class Bootstrap {
             try {
                 floorcJson = Settings.get();
             } catch (Throwable e) {
-                Flog.warn(e);
+                Flog.error(e);
             }
             Set<String> strings = null;
             if (floorcJson != null && floorcJson.auth != null) {
@@ -32,7 +32,7 @@ public class Bootstrap {
             String userAgent = String.format("%s-%s-%s %s (%s-%s)", editor, major, minor, pluginVersion, System.getProperty("os.name"), System.getProperty("os.version"));
             CrashDump.setUA(userAgent, editor);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             API.uploadCrash(null, null, e);
         }
         return createAccount;

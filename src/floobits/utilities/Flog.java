@@ -9,10 +9,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import floobits.common.FloorcJson;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
@@ -20,12 +20,13 @@ import java.net.URISyntaxException;
 
 /**
  * Do not add a Log.error statement to this class. Error statements are user visible exceptions. Use
- * Utitls.errorMessage to notify the user of a problem and Flog.warn to log an exception in a way that doesn't
+ * Utitls.errorMessage to notify the user of a problem and Flog.error to log an exception in a way that doesn't
  * disturb the user.
  */
 public class Flog {
     public static String ID = "Floobits notifications";
     public static Logger Log = Logger.getInstance(Flog.class);
+    protected static Boolean logAll;
     private static String maybeFormat(String s, Object... args) {
         if (args.length == 0) {
             return s;
@@ -33,20 +34,37 @@ public class Flog {
             return String.format(s, args);
         }
     }
+    public static boolean logAll() {
+        if (logAll != null) {
+            return logAll;
+        }
+        FloorcJson settings = FloorcJson.getFloorcJsonFromSettings();
+        logAll = settings.debug;
+        return logAll;
+    }
     public static void log (String s, Object... args) {
-        Log.info(maybeFormat(s, args));
+        if (logAll()){
+            Log.info(maybeFormat(s, args));
+        }
     }
     public static void debug (String s, Object... args) {
-        Log.debug(maybeFormat(s, args));
+        if (logAll()) {
+            Log.debug(maybeFormat(s, args));
+        }
     }
-    public static void warn (Throwable e) {
+    public static void warn(String s, Object... args) {
+        Log.warn(maybeFormat(s, args));
+    }
+    public static void error(Throwable e) {
         Log.warn(e);
     }
-    public static void warn (String s, Object... args) {
+    public static void error(String s, Object... args) {
         Log.warn(maybeFormat(s, args));
     }
     public static void info (String s, Object... args) {
-        Log.info(maybeFormat(s, args));
+        if (logAll()) {
+            Log.info(maybeFormat(s, args));
+        }
     }
     private static void ensureRegistered() {
         NotificationsConfiguration.getNotificationsConfiguration().register(ID, NotificationDisplayType.BALLOON, false);
@@ -67,9 +85,9 @@ public class Flog {
                                                 URI uri = event.getURL().toURI();
                                                 Desktop.getDesktop().browse(uri);
                                             } catch (IOException error) {
-                                                Flog.warn(error);
+                                                Flog.error(error);
                                             } catch (URISyntaxException error) {
-                                                Flog.warn(error);
+                                                Flog.error(error);
                                             }
                                         }
                                 }
@@ -89,7 +107,7 @@ public class Flog {
                                 }, 3000);
                             }
                         } catch (Throwable e) {
-                            Flog.warn(e);
+                            Flog.error(e);
                             Flog.log(message);
                         }
                     }

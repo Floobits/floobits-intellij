@@ -182,20 +182,20 @@ public class FactoryImpl implements IFactory {
         try {
             VfsUtil.createDirectories(parentPath);
         } catch (IOException e) {
-            Flog.warn("Create directories error %s", e);
+            Flog.error("Create directories error %s", e);
             context.errorMessage("The Floobits plugin was unable to create directories for file.");
             return null;
         }
         VirtualFile parent = LocalFileSystem.getInstance().findFileByPath(parentPath);
         if (parent == null) {
-            Flog.warn("Virtual file is null? %s", parentPath);
+            Flog.error("Virtual file is null? %s", parentPath);
             return null;
         }
         VirtualFile newFile;
         try {
             newFile = parent.findOrCreateChildData(context, name);
         } catch (Throwable e) {
-            Flog.warn("Create file error %s", e);
+            Flog.error("Create file error %s", e);
             context.errorMessage(String.format("The Floobits plugin was unable to create a file: %s.", path));
             return null;
         }
@@ -222,7 +222,7 @@ public class FactoryImpl implements IFactory {
             document = FileDocumentManager.getInstance().getDocument(((FileImpl) virtualFile).virtualFile);
         } catch (RuntimeException e) {
             // We've seen an java.io.EOFException here before.
-            Flog.warn(e);
+            Flog.error(e);
             return null;
         }
         if (document == null) {
@@ -243,7 +243,7 @@ public class FactoryImpl implements IFactory {
         try {
             directory = VfsUtil.createDirectories(path);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
 
         if (directory == null) {

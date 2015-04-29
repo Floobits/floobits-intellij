@@ -88,7 +88,7 @@ public class IntelliUtils {
         }
 
         if (auth.size() < 1) {
-            Flog.warn("No auth.");
+            Flog.error("No auth.");
             return null;
         }
         String host;
@@ -100,12 +100,12 @@ public class IntelliUtils {
         HashMap<String, String> hostAuth = auth.get(host);
 
         if (hostAuth == null) {
-            Flog.warn("This probably shouldn't happen, but there is no auth.");
+            Flog.error("This probably shouldn't happen, but there is no auth.");
             return null;
         }
         String username = hostAuth.get("username");
         if (username == null) {
-            Flog.warn("This probably shouldn't happen, but there is no username.");
+            Flog.error("This probably shouldn't happen, but there is no username.");
             return null;
         }
         String secret = hostAuth.get("secret");

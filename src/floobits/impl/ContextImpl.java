@@ -90,7 +90,7 @@ public class ContextImpl extends IContext {
     }
 
     @Override public void errorMessage(String message) {
-        Flog.warn(message);
+        Flog.error(message);
         statusMessage(message, NotificationType.ERROR);
         chatErrorMessage(message);
     }
@@ -213,7 +213,7 @@ public class ContextImpl extends IContext {
         try {
             listener.shutdown();
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
         listener = new Listener(this);
         if (pool != null) {

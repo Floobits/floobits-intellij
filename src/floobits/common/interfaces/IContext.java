@@ -1,6 +1,5 @@
 package floobits.common.interfaces;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.*;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.BaseHandler;
@@ -56,7 +55,7 @@ public abstract class IContext {
                 schedule = loopGroup.schedule(runnable, time, TimeUnit.MILLISECONDS);
             }
         } catch(Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         } finally {
             lock.readLock().unlock();
         }
@@ -103,7 +102,7 @@ public abstract class IContext {
                     try {
                         flooUrl = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
-                        Flog.warn(e);
+                        Flog.error(e);
                         continue;
                     }
                     if (changePerms(flooUrl, newPerms)) {
@@ -283,7 +282,7 @@ public abstract class IContext {
                 try {
                     loopGroup.shutdownGracefully(0, 500, TimeUnit.MILLISECONDS);
                 } catch (Throwable e) {
-                    Flog.warn(e);
+                    Flog.error(e);
                 } finally {
                     loopGroup = null;
                 }

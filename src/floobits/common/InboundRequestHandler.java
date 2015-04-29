@@ -3,7 +3,6 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.vfs.VirtualFile;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFile;
@@ -243,7 +242,7 @@ public class InboundRequestHandler {
                 ignoreTree.addRules(fileByIoFile);
             }
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
         } finally {
             context.setListener(true);
         }

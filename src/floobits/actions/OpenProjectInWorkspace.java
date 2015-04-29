@@ -31,7 +31,7 @@ public class OpenProjectInWorkspace extends CanFloobits {
                     try {
                         flooUrl = new FlooUrl(w.url);
                     } catch (MalformedURLException e) {
-                        Flog.warn(e);
+                        Flog.error(e);
                         continue;
                     }
                     FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());

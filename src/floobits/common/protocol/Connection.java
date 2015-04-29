@@ -75,12 +75,12 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     public void write(Serializable obj) {
         // TODO: threading issue. lock channel
         if (channel == null) {
-            Flog.warn("not writing because no channel");
+            Flog.error("not writing because no channel");
             return;
         }
         String data = new Gson().toJson(obj);
         if (channel == null) {
-            Flog.warn("Lost connection? Not writing because no channel. Also, race condition!");
+            Flog.error("Lost connection? Not writing because no channel. Also, race condition!");
             return;
         }
         channel.writeAndFlush(data + "\n");
@@ -106,14 +106,14 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             context.errorMessage("Can not connect to floobits!");
             context.shutdown();
         }   catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             reconnect();
         }
     }
 
     protected void connect() {
         if (retries <= 0) {
-            Flog.warn("I give up connecting.");
+            Flog.error("I give up connecting.");
             return;
         }
         retries -= 1;
@@ -142,7 +142,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
                 }
             });
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             reconnect();
         }
     }
@@ -171,7 +171,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
                 channel.disconnect();
                 channel.close();
             } catch (Throwable e) {
-                Flog.warn(e);
+                Flog.error(e);
             }
             channel = null;
         }
@@ -219,19 +219,19 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             return;
         }
         if (cause instanceof ConnectException) {
-            Flog.warn("Failed to connect: " + cause.getMessage());
+            Flog.error("Failed to connect: " + cause.getMessage());
             return;
         }
         if (cause instanceof IOException){
-            Flog.warn(cause);
+            Flog.error(cause);
             return;
         }
         if (cause instanceof TooLongFrameException) {
-            Flog.warn(String.format("Took too long: %s", cause.getMessage()));
+            Flog.error(String.format("Took too long: %s", cause.getMessage()));
             return;
         }
         if (cause instanceof SSLHandshakeException) {
-            Flog.warn(String.format("SSL Handshake failed: %s", cause.getMessage()));
+            Flog.error(String.format("SSL Handshake failed: %s", cause.getMessage()));
             return;
         }
         API.uploadCrash(handler, context, cause);

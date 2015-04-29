@@ -64,7 +64,7 @@ public class TextBuf extends Buf<String> {
         try {
             virtualFile.setBytes(buf.getBytes());
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             context.errorMessage("The Floobits plugin was unable to write to a file.");
         }
     }
@@ -161,7 +161,7 @@ public class TextBuf extends Buf<String> {
 
         String md5Before = DigestUtils.md5Hex(viewText);
         if (!md5Before.equals(res.md5_before)) {
-            Flog.warn("starting md5s don't match for %s. this is dangerous!", b.path);
+            Flog.error("starting md5s don't match for %s. this is dangerous!", b.path);
         }
 
         List<diff_match_patch.Patch> patches =  dmp.patch_fromText(res.patch);

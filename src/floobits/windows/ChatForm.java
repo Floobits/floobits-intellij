@@ -65,9 +65,9 @@ public class ChatForm {
                         URI uri = e.getURL().toURI();
                         Desktop.getDesktop().browse(uri);
                     } catch (IOException error) {
-                        Flog.warn(error);
+                        Flog.error(error);
                     } catch (URISyntaxException error) {
-                        Flog.warn(error);
+                        Flog.error(error);
                     }
                 }
             }

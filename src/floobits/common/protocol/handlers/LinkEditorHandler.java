@@ -93,16 +93,16 @@ public class LinkEditorHandler extends BaseHandler {
             Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s", host, token)));
         } catch (IOException error) {
             context.shutdown();
-            Flog.warn(error);
+            Flog.error(error);
         } catch (URISyntaxException error) {
             context.shutdown();
-            Flog.warn(error);
+            Flog.error(error);
         }
     }
 
     @Override
     public void on_connect() {
-        Flog.warn("Connected.");
+        Flog.error("Connected.");
         conn.write(new FlooRequestCredentials(token));
     }
 }

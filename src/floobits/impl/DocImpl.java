@@ -224,7 +224,7 @@ public class DocImpl extends IDoc {
                 highlight.context = context;
                 applyHighlight_(highlight);
             } catch (Throwable e) {
-                Flog.warn(e);
+                Flog.error(e);
             } finally {
                 context.setListener(true);
             }
@@ -299,7 +299,7 @@ public class DocImpl extends IDoc {
                     context.setListener(false);
                     document.replaceString(start, finalEnd_ld, contents);
                 } catch (Throwable e) {
-                    Flog.warn(e);
+                    Flog.error(e);
                 } finally {
                     context.setListener(true);
                 }

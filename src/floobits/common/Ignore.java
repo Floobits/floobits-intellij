@@ -51,7 +51,7 @@ public class Ignore implements Comparable<Ignore>{
             }
             FileUtils.writeLines(f, DEFAULT_IGNORES);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
     }
 
@@ -87,7 +87,7 @@ public class Ignore implements Comparable<Ignore>{
             try {
                 ignoreNode.parse(inputStream);
             } catch (IOException e) {
-                Flog.warn(e);
+                Flog.error(e);
             }
         }
     }

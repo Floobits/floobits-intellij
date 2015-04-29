@@ -9,10 +9,6 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.receive.FlooHighlight;
 import floobits.utilities.Flog;
 
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -251,7 +247,7 @@ public class EditorEventHandler {
                                 d.setText(text);
                                 d.setReadOnly(true);
                             } catch (Throwable e) {
-                                Flog.warn(e);
+                                Flog.error(e);
                             } finally {
                                 context.setListener(true);
                             }

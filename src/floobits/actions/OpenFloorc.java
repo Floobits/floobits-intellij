@@ -29,7 +29,7 @@ public class OpenFloorc extends AnAction {
                 created = file.createNewFile();
             } catch (IOException e) {
                 floobitsPlugin.context.errorMessage("Can't create ~/.floorc.json");
-                Flog.warn(e);
+                Flog.error(e);
                 return;
             }
             if (!created) {

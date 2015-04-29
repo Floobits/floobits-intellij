@@ -39,7 +39,7 @@ public class FileImpl extends IFile {
         try {
             virtualFile.setBinaryContent(bytes);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         return true;
@@ -50,7 +50,7 @@ public class FileImpl extends IFile {
         try {
             virtualFile.rename(obj, name);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         return true;
@@ -61,7 +61,7 @@ public class FileImpl extends IFile {
         try {
             virtualFile.createChildDirectory(this, dir);
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         return true;
@@ -73,7 +73,7 @@ public class FileImpl extends IFile {
         try {
             virtualFile.move(obj, ((FileImpl)d).virtualFile);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         return true;
@@ -84,7 +84,7 @@ public class FileImpl extends IFile {
         try {
             virtualFile.delete(obj);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
             return false;
         }
         return true;
@@ -113,7 +113,7 @@ public class FileImpl extends IFile {
         try {
             return virtualFile.getInputStream();
         } catch (IOException e) {
-            Flog.warn(e);
+            Flog.error(e);
             return null;
         }
     }

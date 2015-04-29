@@ -21,9 +21,9 @@ public class CompleteSignup extends AnAction {
             URI uri = new URI(url);
             Desktop.getDesktop().browse(uri);
         } catch (IOException error) {
-            Flog.warn(error);
+            Flog.error(error);
         } catch (URISyntaxException error) {
-            Flog.warn(error);
+            Flog.error(error);
         }
     }
     public void update (AnActionEvent e) {

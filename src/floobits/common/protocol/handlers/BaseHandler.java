@@ -21,7 +21,7 @@ abstract public class BaseHandler {
     void _on_error(JsonObject jsonObject) {
         String reason = jsonObject.get("msg").getAsString();
         reason = String.format("Floobits Error: %s", reason);
-        Flog.warn(reason);
+        Flog.error(reason);
         if (jsonObject.has("flash") && jsonObject.get("flash").getAsBoolean()) {
             context.errorMessage(reason);
             context.flashMessage(reason);

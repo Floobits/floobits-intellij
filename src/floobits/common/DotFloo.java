@@ -35,7 +35,7 @@ public class DotFloo {
         try {
             return new Gson().fromJson(floo, (Type) DotFlooJson.class);
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
         return null;
     }
@@ -82,7 +82,7 @@ public class DotFloo {
         try {
             FileUtils.write(path(base_dir), json, "UTF-8");
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
     }
 }

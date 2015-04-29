@@ -19,13 +19,16 @@ public class FloorcJson implements Serializable {
         try {
             floorcJson = Settings.get();
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
         if (floorcJson == null) {
             floorcJson = new FloorcJson();
         }
         if (floorcJson.auth == null) {
             floorcJson.auth = new HashMap<String, HashMap<String, String>>();
+        }
+        if (floorcJson.debug == null) {
+            floorcJson.debug = false;
         }
         return floorcJson;
     }

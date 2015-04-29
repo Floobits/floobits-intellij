@@ -233,7 +233,7 @@ public class Utils {
                     try {
                         a.verify(b.getPublicKey());
                     } catch (Exception e) {
-                        Flog.warn(e);
+                        Flog.error(e);
                         throw new CertificateException(e);
                     }
                     a = b;
@@ -246,7 +246,7 @@ public class Utils {
             sc = SSLContext.getInstance("SSL");
             sc.init(null, new javax.net.ssl.TrustManager[]{x509TrustManager}, new SecureRandom());
         } catch (Exception e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
         return sc;
     }

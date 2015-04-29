@@ -73,7 +73,7 @@ public class PersistentJson {
         try {
             FileUtils.write(getFile(), gson.toJson(this), "UTF-8");
         } catch (Throwable e) {
-            Flog.warn(e);
+            Flog.error(e);
         }
     }
 
