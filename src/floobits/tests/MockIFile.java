@@ -2,7 +2,9 @@ package floobits.tests;
 
 import floobits.common.interfaces.IFile;
 
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,12 +75,19 @@ public class MockIFile extends IFile {
 
     @Override
     public String getName() {
-        return null;
+        if (path.length() < 1) {
+            return "";
+        }
+        File f = new File(path);
+        return f.getName();
     }
 
     @Override
     public long getLength() {
-        return length;
+        if (contents == null) {
+            return length;
+        }
+        return contents.getBytes().length;
     }
 
     @Override
