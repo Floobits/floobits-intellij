@@ -14,12 +14,14 @@ public class MockIFile extends IFile {
         public HashMap<String, MockNode> children;
         public String path;
         public Boolean isFile;
+        public String contents;
     }
 
     public Boolean isValid = true;
     public Boolean isSpecial = false;
     public Boolean isSymlink = false;
     public Boolean isDirectory = false;
+    public String contents;
     public String path;
     public HashMap<String, MockNode> children;
     public int length = 100;
@@ -28,7 +30,7 @@ public class MockIFile extends IFile {
         this.path = path;
     }
 
-    public MockIFile (HashMap<String, MockNode> nodes, String path) {
+    public MockIFile (HashMap<String, MockNode> nodes, String contents, String path) {
         if (nodes != null) {
             isDirectory = true;
             children = nodes;
@@ -64,7 +66,7 @@ public class MockIFile extends IFile {
         List<IFile> files = new ArrayList<IFile>();
         for (Map.Entry<String, MockNode> entry : children.entrySet()) {
             MockNode value = entry.getValue();
-            files.add((IFile) new MockIFile(value.children, value.path));
+            files.add((IFile) new MockIFile(value.children, value.path, value.contents));
         }
         return (IFile[]) files.toArray();
     }
@@ -106,7 +108,10 @@ public class MockIFile extends IFile {
 
     @Override
     public byte[] getBytes() {
-        return new byte[0];
+        if (contents == null) {
+            return new byte[0];
+        }
+        return contents.getBytes();
     }
 
     @Override
