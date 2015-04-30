@@ -13,7 +13,7 @@ public class IgnoreTest {
 
     @Before
     public void setUp() {
-        ignore = Ignore.BuildIgnore(new MockIFile());
+        ignore = Ignore.BuildIgnore(new MockIFile(""));
     }
 
     @After
@@ -23,7 +23,7 @@ public class IgnoreTest {
 
     @Test
     public void testCompareTo(){
-        Ignore dummyIgnore = Ignore.BuildIgnore(new MockIFile());
+        Ignore dummyIgnore = Ignore.BuildIgnore(new MockIFile(""));
         ignore.size = 100;
         dummyIgnore.size = 200;
         assertEquals("Ignore's compareTo should return the difference.", ignore.compareTo(dummyIgnore), dummyIgnore.size - ignore.size);
@@ -31,7 +31,7 @@ public class IgnoreTest {
 
     @Test
     public void testIsFlooIgnored() {
-        MockIFile dummy = new MockIFile();
+        MockIFile dummy = new MockIFile("");
         assertFalse("Valid file should not be ignored.", ignore.isFlooIgnored(dummy, ""));
         ((MockIFile) ignore.file).isValid = false;
         assertTrue("If a root ignore all files given to it should be ignored.", ignore.isFlooIgnored(dummy, ""));
