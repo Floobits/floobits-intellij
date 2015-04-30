@@ -37,6 +37,7 @@ public class MockIFile extends IFile {
             isDirectory = true;
             children = nodes;
         }
+        this.contents = contents;
         this.path = path;
     }
 
