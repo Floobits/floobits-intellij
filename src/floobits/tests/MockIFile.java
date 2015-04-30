@@ -1,9 +1,11 @@
 package floobits.tests;
 
+import com.google.gson.Gson;
 import floobits.common.interfaces.IFile;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.Map;
 
 public class MockIFile extends IFile {
 
-    public class MockNode {
+    public class MockNode implements Serializable {
 
         public HashMap<String, MockNode> children;
         public String path;
@@ -32,6 +34,22 @@ public class MockIFile extends IFile {
     public String path;
     public HashMap<String, MockNode> children;
     public int length = 100;
+
+    public static MockNode mockFileFromJSON (String jsonStr) {
+        return new Gson().fromJson(jsonStr, (Type) MockNode.class);
+    }
+
+    public static MockNode mockFileFromJSON (URL mockFileURL) throws IOException {
+        BufferedReader in = new BufferedReader( new InputStreamReader(mockFileURL.openStream()));
+        String inputLine;
+        StringBuilder b = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            System.out.println(inputLine);
+            b.append(inputLine);
+        }
+        in.close();
+        return mockFileFromJSON(b.toString());
+    }
 
     public MockIFile (String path) {
         this.path = path;

@@ -1,0 +1,11 @@
+{
+  "path": "foo",
+  "content": null,
+  "children": {
+    "bar": {
+      "path": "foo/bar",
+      "content": "test",
+      "children": null
+    }
+  }
+}

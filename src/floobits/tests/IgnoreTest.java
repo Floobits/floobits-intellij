@@ -5,6 +5,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import static org.junit.Assert.*;
 
 public class IgnoreTest {
@@ -48,5 +52,13 @@ public class IgnoreTest {
         assertFalse("If given file is a directory it should not be ignored even if it's big.", ignore.isFlooIgnored(dummy, ""));
 
 
+    }
+
+    @Test
+    public void testBuildIgnores() throws IOException {
+        URL data = IgnoreTest.class.getResource("ignore_file_test.json");
+        assertNotEquals(data, null);
+        MockIFile.MockNode m = MockIFile.mockFileFromJSON(data);
+        assertNotEquals(m, null);
     }
 }
