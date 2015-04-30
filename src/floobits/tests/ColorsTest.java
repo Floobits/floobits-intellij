@@ -1,8 +1,7 @@
-package floobits.utilities;
+package floobits.tests;
 
 import com.intellij.ui.JBColor;
-import org.junit.After;
-import org.junit.Before;
+import floobits.utilities.Colors;
 import org.junit.Test;
 
 import java.awt.*;

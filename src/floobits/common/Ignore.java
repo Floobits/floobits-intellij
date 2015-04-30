@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Ignore implements Comparable<Ignore>{
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
     static final ArrayList<String> DEFAULT_IGNORES = new ArrayList<String>(Arrays.asList("extern", "node_modules", "tmp", "vendor", ".idea/workspace.xml", ".idea/misc.xml"));
-    static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
+    public static final int MAX_FILE_SIZE = 1024 * 1024 * 5;
     public final IFile file;
     public final String stringPath;
     public final HashMap<String, Ignore> children = new HashMap<String, Ignore>();
