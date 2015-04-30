@@ -13,10 +13,16 @@ import java.util.Map;
 public class MockIFile extends IFile {
 
     public class MockNode {
+
         public HashMap<String, MockNode> children;
         public String path;
-        public Boolean isFile;
         public String contents;
+
+        public MockNode(HashMap<String, MockNode> children, String path, String contents) {
+            this.children = children;
+            this.path = path;
+            this.contents = contents;
+        }
     }
 
     public Boolean isValid = true;
