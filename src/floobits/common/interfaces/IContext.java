@@ -262,7 +262,7 @@ public abstract class IContext {
             return true;
         }
 
-        return ignoreTree.isIgnored(f, path, toProjectRelPath(path), f.isDirectory());
+        return ignoreTree.isIgnored(f, toProjectRelPath(path));
     }
 
     public synchronized void shutdown() {

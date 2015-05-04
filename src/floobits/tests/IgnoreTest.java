@@ -1,6 +1,7 @@
 package floobits.tests;
 
 import floobits.common.Ignore;
+import floobits.common.interfaces.IFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +58,14 @@ public class IgnoreTest {
     public void testBuildIgnores() throws IOException {
         URL data = IgnoreTest.class.getResource("ignore_file_test.json");
         assertNotEquals(data, null);
-        MockIFile.MockNode m = MockIFile.mockFileFromJSON(data);
-        assertNotEquals(m, null);
+        MockIFile.MockNode mn = MockIFile.mockFileFromJSON(data);
+        String basePath = mn.path;
+        assertNotEquals(mn, null);
+        MockIFile mf = new MockIFile(mn, "");
+        Ignore i = Ignore.BuildIgnore(mf);
+        IFile t1 = new MockIFile(mn.children.get(".git"), ".git");
+        assertTrue("Hidden files should be ignored by default.", i.isIgnored(t1, t1.getPath()));
+        t1 = new MockIFile(mn.children.get("bar"), "bar");
+        assertFalse("Non hidden file should not be ignored by default", i.isFlooIgnored(t1, basePath));
     }
 }

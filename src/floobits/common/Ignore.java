@@ -59,13 +59,13 @@ public class Ignore implements Comparable<Ignore>{
         return virtualFile != null && IGNORE_FILES.contains(virtualFile.getName()) && virtualFile.isValid();
     }
 
-    public Boolean isIgnored(IFile f, String absPath, String relPath, boolean isDir) {
-        if (isFlooIgnored(f, absPath)) {
-            Flog.log("Ignoring %s just because.", absPath);
+    public Boolean isIgnored(IFile f, String relPath) {
+        if (isFlooIgnored(f, f.getPath())) {
+            Flog.log("Ignoring %s just because.", f.getPath());
             return true;
         }
         relPath = FilenameUtils.separatorsToUnix(relPath);
-        return !relPath.equals(stringPath) && isGitIgnored(relPath, isDir);
+        return !relPath.equals(stringPath) && isGitIgnored(relPath, f.isDirectory());
     }
 
     private Ignore(IFile virtualFile) {

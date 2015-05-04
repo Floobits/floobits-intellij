@@ -1,11 +1,32 @@
 {
-  "path": "foo",
-  "content": null,
   "children": {
+    ".idea": {
+      "children": {
+        "workspace.xml": {
+          "content": "test"
+        },
+        "misc.xml": {
+          "content": "test"
+        },
+        "intellij.iml": {
+          "content": "test"
+        }
+      }
+    },
+    ".git": {
+      "children": {}
+    },
+    ".svn": {
+      "children": {}
+    },
+    ".hg": {
+      "children": {}
+    },
+    ".bar": {
+      "children": {}
+    },
     "bar": {
-      "path": "foo/bar",
-      "content": "test",
-      "children": null
+      "content": "test"
     }
   }
 }

@@ -55,12 +55,12 @@ public class MockIFile extends IFile {
         this.path = path;
     }
 
-    public MockIFile (HashMap<String, MockNode> nodes, String contents, String path) {
-        if (nodes != null) {
+    public MockIFile (MockNode mn, String path) {
+        if (mn.children != null) {
             isDirectory = true;
-            children = nodes;
+            children = mn.children;
         }
-        this.contents = contents;
+        this.contents = mn.contents;
         this.path = path;
     }
 
@@ -92,9 +92,11 @@ public class MockIFile extends IFile {
         List<IFile> files = new ArrayList<IFile>();
         for (Map.Entry<String, MockNode> entry : children.entrySet()) {
             MockNode value = entry.getValue();
-            files.add((IFile) new MockIFile(value.children, value.path, value.contents));
+            files.add(new MockIFile(value, String.format("%s/%s", path, value)));
         }
-        return (IFile[]) files.toArray();
+        IFile[] result = new IFile[files.size()];
+        result = files.toArray(result);
+        return result;
     }
 
     @Override
