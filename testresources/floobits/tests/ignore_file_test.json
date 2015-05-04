@@ -3,15 +3,18 @@
     ".idea": {
       "children": {
         "workspace.xml": {
-          "content": "test"
+          "contents": "test"
         },
         "misc.xml": {
-          "content": "test"
+          "contents": "test"
         },
         "intellij.iml": {
-          "content": "test"
+          "contents": "test"
         }
       }
+    },
+    ".gitignore": {
+      "contents": "\nshouldbeignored\n"
     },
     ".git": {
       "children": {}
@@ -26,7 +29,10 @@
       "children": {}
     },
     "bar": {
-      "content": "test"
+      "contents": "test"
+    },
+    "shouldbeignored": {
+      "contents": "nope"
     }
   }
 }

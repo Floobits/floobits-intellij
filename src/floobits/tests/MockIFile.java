@@ -6,6 +6,7 @@ import floobits.common.interfaces.IFile;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ public class MockIFile extends IFile {
 
         public MockNode(HashMap<String, MockNode> children, String path, String contents) {
             this.children = children;
-            this.path = path;
             this.contents = contents;
         }
     }
@@ -92,7 +92,8 @@ public class MockIFile extends IFile {
         List<IFile> files = new ArrayList<IFile>();
         for (Map.Entry<String, MockNode> entry : children.entrySet()) {
             MockNode value = entry.getValue();
-            files.add(new MockIFile(value, String.format("%s/%s", path, value)));
+            String name = entry.getKey();
+            files.add(new MockIFile(value, String.format("%s/%s", path, name)));
         }
         IFile[] result = new IFile[files.size()];
         result = files.toArray(result);
@@ -166,6 +167,9 @@ public class MockIFile extends IFile {
 
     @Override
     public InputStream getInputStream() {
-        return null;
+        if (contents == null) {
+            return null;
+        }
+        return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -59,13 +59,15 @@ public class IgnoreTest {
         URL data = IgnoreTest.class.getResource("ignore_file_test.json");
         assertNotEquals(data, null);
         MockIFile.MockNode mn = MockIFile.mockFileFromJSON(data);
-        String basePath = mn.path;
+        String basePath = "";
         assertNotEquals(mn, null);
         MockIFile mf = new MockIFile(mn, "");
         Ignore i = Ignore.BuildIgnore(mf);
         IFile t1 = new MockIFile(mn.children.get(".git"), ".git");
         assertTrue("Hidden files should be ignored by default.", i.isIgnored(t1, t1.getPath()));
         t1 = new MockIFile(mn.children.get("bar"), "bar");
-        assertFalse("Non hidden file should not be ignored by default", i.isFlooIgnored(t1, basePath));
+        assertFalse("Non hidden file should not be ignored by default", i.isIgnored(t1, basePath));
+        t1 = new MockIFile(mn.children.get("shouldbeignored"), "shouldbeignored");
+        assertTrue("File given in .gitignore file should be ignored.", i.isIgnored(t1, t1.getPath()));
     }
 }
