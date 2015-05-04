@@ -69,5 +69,24 @@ public class IgnoreTest {
         assertFalse("Non hidden file should not be ignored by default", i.isIgnored(t1, basePath));
         t1 = new MockIFile(mn.children.get("shouldbeignored"), "shouldbeignored");
         assertTrue("File given in .gitignore file should be ignored.", i.isIgnored(t1, t1.getPath()));
+        int count = 0;
+        for (IFile file : mf.getChildren()) {
+            if (file.getName().equals(".bar")) {
+                for (IFile file1 : file.getChildren()) {
+                    if (file1.getName().equals("stuff")) {
+                        for (IFile file2 : file1.getChildren()) {
+                            if (file2.getName().equals("pepsi.txt")) {
+                                assertTrue("Deeply nested ignored file should be ignored", i.isFlooIgnored(file2, file2.getPath()));
+                                count++;
+                            } else if (file2.getName().equals("coke.txt")) {
+                                assertFalse("Deeply nested not-ignored file should not be ignored", i.isFlooIgnored(file2, file2.getPath()));
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assertEquals("Should have run two ignore checks.", 2, count);
     }
 }

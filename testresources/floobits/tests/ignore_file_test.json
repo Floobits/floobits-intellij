@@ -26,7 +26,21 @@
       "children": {}
     },
     ".bar": {
-      "children": {}
+      "children": {
+        ".flooignore": {
+          "contents": "pepsi.txt"
+        },
+        "stuff": {
+          "children": {
+            "coke.txt": {
+              "contents": "yup"
+            },
+            "pepsi.txt": {
+              "contents": "should totally be ignored"
+            }
+          }
+        }
+      }
     },
     "bar": {
       "contents": "test"
