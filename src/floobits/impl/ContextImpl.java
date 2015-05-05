@@ -6,9 +6,12 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.Listener;
 import floobits.common.*;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * I am the link between a project and floobits
@@ -322,6 +326,21 @@ public class ContextImpl extends IContext {
     public void dialogResolveConflicts(final Runnable stompLocal, final Runnable stompRemote, final boolean readOnly,
                                        final Runnable flee, final String[] conflictedPathsArray,
                                        final String[] connections) {
+        ProjectRootManager prm = ProjectRootManager.getInstance(project);
+        final AtomicInteger count = new AtomicInteger();
+        count.set(0);
+        for (VirtualFile file : prm.getContentRoots()) {
+            VfsUtil.iterateChildrenRecursively(file, null, new ContentIterator() {
+                @Override
+                public boolean processFile(VirtualFile file) {
+                    FileImpl fileImpl = new FileImpl(file);
+                    if (fileImpl.isValid()) {
+                        count.getAndIncrement();
+                    }
+                    return true;
+                }
+            });
+        }
         mainThread(new Runnable() {
             @Override
             public void run() {
