@@ -1,6 +1,7 @@
 package floobits.tests;
 
 import floobits.common.Ignore;
+import floobits.common.Utils;
 import floobits.common.interfaces.IFile;
 import org.junit.After;
 import org.junit.Before;
@@ -59,9 +60,9 @@ public class IgnoreTest {
         URL data = IgnoreTest.class.getResource("ignore_file_test.json");
         assertNotEquals(data, null);
         MockIFile.MockNode mn = MockIFile.mockFileFromJSON(data);
-        String basePath = "";
+        String basePath = "/foo";
         assertNotEquals(mn, null);
-        MockIFile mf = new MockIFile(mn, "");
+        MockIFile mf = new MockIFile(mn, basePath);
         Ignore i = Ignore.BuildIgnore(mf);
         IFile t1 = new MockIFile(mn.children.get(".git"), ".git");
         assertTrue("Hidden files should be ignored by default.", i.isIgnored(t1, t1.getPath()));
@@ -75,11 +76,12 @@ public class IgnoreTest {
                 for (IFile file1 : file.getChildren()) {
                     if (file1.getName().equals("stuff")) {
                         for (IFile file2 : file1.getChildren()) {
+                            String path = Utils.toProjectRelPath(file2.getPath(), basePath);
                             if (file2.getName().equals("pepsi.txt")) {
-                                assertTrue("Deeply nested ignored file should be ignored", i.isFlooIgnored(file2, file2.getPath()));
+                                assertTrue("Deeply nested ignored file should be ignored", i.isIgnored(file2, path));
                                 count++;
                             } else if (file2.getName().equals("coke.txt")) {
-                                assertFalse("Deeply nested not-ignored file should not be ignored", i.isFlooIgnored(file2, file2.getPath()));
+                                assertFalse("Deeply nested not-ignored file should not be ignored", i.isIgnored(file2, path));
                                 count++;
                             }
                         }

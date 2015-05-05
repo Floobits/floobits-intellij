@@ -17,10 +17,9 @@ public class MockIFile extends IFile {
     public class MockNode implements Serializable {
 
         public HashMap<String, MockNode> children;
-        public String path;
         public String contents;
 
-        public MockNode(HashMap<String, MockNode> children, String path, String contents) {
+        public MockNode(HashMap<String, MockNode> children, String contents) {
             this.children = children;
             this.contents = contents;
         }
@@ -93,7 +92,9 @@ public class MockIFile extends IFile {
         for (Map.Entry<String, MockNode> entry : children.entrySet()) {
             MockNode value = entry.getValue();
             String name = entry.getKey();
-            files.add(new MockIFile(value, String.format("%s/%s", path, name)));
+            String filePath = String.format("%s/%s", path, name);
+            files.add(new MockIFile(value, filePath));
+
         }
         IFile[] result = new IFile[files.size()];
         result = files.toArray(result);
