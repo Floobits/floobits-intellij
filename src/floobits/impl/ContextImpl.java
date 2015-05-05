@@ -344,6 +344,12 @@ public class ContextImpl extends IContext {
         mainThread(new Runnable() {
             @Override
             public void run() {
+                FlooHandler flooHandler = getFlooHandler();
+                if (flooHandler == null) {
+                    return;
+                }
+                int numFilesInProject = count.get();
+                int numFilesInWorkspace = flooHandler.state.numBufs();
                 ResolveConflictsDialog dialog = new ResolveConflictsDialog(stompLocal, stompRemote, readOnly, flee,
                         conflictedPathsArray, connections);
                 dialog.createCenterPanel();
