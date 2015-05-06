@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.2</version>
+  <version>1.5.3</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -13,13 +13,8 @@
       ]]></description>
 
   <change-notes><![CDATA[
-        Add new toolbar to Floobits window.
-        Rename chat window to just Floobits window.
-        Add Floobits button to main toolbar.
-        Add context menu option to project root for sharing.
-        Add link to billing when reaching max workspaces.
-        Provide option to share project if trying to connect to a project that hasn't been shared before.
-        Provide an option to pick what to upload instead of defaulting to uploading the entire project.
+        Spam the IntelliJ Log less.
+        Show how many files are not in the workspace in conflict resolution dialog.
     ]]>
   </change-notes>
 
