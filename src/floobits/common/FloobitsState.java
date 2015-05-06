@@ -202,4 +202,8 @@ public class FloobitsState {
         setFollowing(followedUsers.size() > 0);
         context.updateFollowing();
     }
+
+    public int numBufs() {
+        return pathsToIds.size();
+    }
 }

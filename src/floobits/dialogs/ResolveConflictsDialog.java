@@ -7,9 +7,11 @@ import javax.swing.*;
 
 public class ResolveConflictsDialog extends CustomButtonDialogWrapper {
     protected FileListPromptForm form = new FileListPromptForm("The following remote %s different from your version.");
+    protected MessageContainer messageContainer;
 
     public ResolveConflictsDialog(Runnable stompLocal, Runnable stompRemote, boolean readOnly, Runnable flee,
-                                  final String[] conflicts, final String[]connections) {
+                                  final String[] conflicts, final String[]connections, int workspaceFileCount,
+                                  int projectFilesCount) {
         super(true);
         form.setItems(conflicts);
         form.setConnections(connections);
@@ -22,13 +24,16 @@ public class ResolveConflictsDialog extends CustomButtonDialogWrapper {
                 stompRemoteAction,
                 new CustomButtonAction("Disconnect", flee),
         };
+        messageContainer = new MessageContainer(form.getContentPanel(),
+                String.format("%d of your project's %d files are currently in the workspace. You can add files via the context menu in your Project view.", workspaceFileCount,
+                        projectFilesCount));
         init();
     }
 
     @Nullable
     @Override
     public JComponent createCenterPanel() {
-        return form.getContentPanel();
+        return messageContainer.getContentPanel();
 
     }
 }
