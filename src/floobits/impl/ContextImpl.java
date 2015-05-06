@@ -348,10 +348,8 @@ public class ContextImpl extends IContext {
                 if (flooHandler == null) {
                     return;
                 }
-                int numFilesInProject = count.get();
-                int numFilesInWorkspace = flooHandler.state.numBufs();
                 ResolveConflictsDialog dialog = new ResolveConflictsDialog(stompLocal, stompRemote, readOnly, flee,
-                        conflictedPathsArray, connections);
+                        conflictedPathsArray, connections, flooHandler.state.numBufs(), count.get());
                 dialog.createCenterPanel();
                 dialog.show();
             }
