@@ -6,7 +6,6 @@ import floobits.common.interfaces.IFile;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -171,6 +170,6 @@ public class MockIFile extends IFile {
         if (contents == null) {
             return null;
         }
-        return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
+        return new ByteArrayInputStream(contents.getBytes());
     }
 }
