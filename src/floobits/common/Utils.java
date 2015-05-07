@@ -1,5 +1,6 @@
 package floobits.common;
 
+import floobits.common.interfaces.IFile;
 import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 
@@ -208,6 +209,10 @@ public class Utils {
         PathResolutionException (String msg) {
             super(msg);
         }
+    }
+
+    interface FileProcessor<T> {
+        public T call(IFile file);
     }
 
     static public SSLContext createSSLContext() {

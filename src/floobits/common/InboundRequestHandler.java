@@ -136,21 +136,9 @@ public class InboundRequestHandler {
         } else {
             ignoreTree = Ignore.BuildIgnore(dirToAdd);
         }
-        ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
-        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
-        tempIgnores.add(ignoreTree);
-        int size = 0;
-        Ignore ignore;
-        while (tempIgnores.size() > 0) {
-            ignore = tempIgnores.removeLast();
-            size += ignore.size;
-            allIgnores.add(ignore);
-            for(Ignore ig: ignore.children.values()) {
-                tempIgnores.add(ig);
-            }
-        }
+        List<Ignore> allIgnores = ignoreTree.flattenIgnores();
         LinkedList<Ignore> tooBigIgnores = new LinkedList<Ignore>();
-        Collections.sort(allIgnores);
+        int size = Ignore.getTotalIgnoreSize(allIgnores);
 
         while (size > ri.max_size) {
             Ignore ig = allIgnores.remove(0);
@@ -171,12 +159,12 @@ public class InboundRequestHandler {
                 return;
             }
         }
-
-        HashSet<String> paths = new HashSet<String>();
-        for (Ignore ig : allIgnores) {
-            for (IFile virtualFile : ig.files)
-                paths.add(context.toProjectRelPath(virtualFile.getPath()));
-        }
+        HashSet<String> paths = Ignore.getAllFilesForIgnores(allIgnores, new Utils.FileProcessor<String>() {
+            @Override
+            public String call(IFile file) {
+                return context.toProjectRelPath(file.getPath());
+            }
+        });
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();

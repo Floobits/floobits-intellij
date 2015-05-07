@@ -12,10 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.concurrent.Callable;
 
 public class Ignore implements Comparable<Ignore>{
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
@@ -161,8 +159,41 @@ public class Ignore implements Comparable<Ignore>{
         return false;
     }
 
+    public List<Ignore> flattenIgnores() {
+        ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
+        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
+        tempIgnores.add(this);
+        Ignore ignore;
+        while (tempIgnores.size() > 0) {
+            ignore = tempIgnores.removeLast();
+            allIgnores.add(ignore);
+            for(Ignore ig: ignore.children.values()) {
+                tempIgnores.add(ig);
+            }
+        }
+        Collections.sort(allIgnores);
+        return allIgnores;
+    }
+
     @Override
     public int compareTo(@NotNull Ignore ignore) {
         return ignore.size - size;
+    }
+
+    public static int getTotalIgnoreSize(List<Ignore> allIgnores) {
+        int size = 0;
+        for (Ignore i : allIgnores) {
+            size += i.size;
+        }
+        return size;
+    }
+
+    public static HashSet<String> getAllFilesForIgnores(List<Ignore> allIgnores, Utils.FileProcessor<String> processor) {
+        HashSet<String> files = new HashSet<String>();
+        for (Ignore ig : allIgnores) {
+            for (IFile virtualFile : ig.files)
+                files.add(processor.call(virtualFile));
+        }
+        return files;
     }
 }
