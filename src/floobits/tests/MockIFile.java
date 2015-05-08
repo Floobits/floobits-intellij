@@ -17,10 +17,12 @@ public class MockIFile extends IFile {
 
         public HashMap<String, MockNode> children;
         public String contents;
+        public Integer size;
 
-        public MockNode(HashMap<String, MockNode> children, String contents) {
+        public MockNode(HashMap<String, MockNode> children, String contents, Integer size) {
             this.children = children;
             this.contents = contents;
+            this.size = size;
         }
     }
 
@@ -31,7 +33,7 @@ public class MockIFile extends IFile {
     public String contents;
     public String path;
     public HashMap<String, MockNode> children;
-    public int length = 100;
+    public Integer length;
 
     public static MockNode mockFileFromJSON (String jsonStr) {
         return new Gson().fromJson(jsonStr, (Type) MockNode.class);
@@ -58,7 +60,8 @@ public class MockIFile extends IFile {
             isDirectory = true;
             children = mn.children;
         }
-        this.contents = mn.contents;
+        contents = mn.contents;
+        length = mn.size;
         this.path = path;
     }
 
@@ -111,10 +114,13 @@ public class MockIFile extends IFile {
 
     @Override
     public long getLength() {
-        if (contents == null) {
+        if (length != null) {
             return length;
         }
-        return contents.getBytes().length;
+        if (contents != null){
+            return contents.getBytes().length;
+        }
+        return 100;
     }
 
     @Override

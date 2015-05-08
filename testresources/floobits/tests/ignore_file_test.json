@@ -3,21 +3,30 @@
     ".idea": {
       "children": {
         "workspace.xml": {
+          "size": 10,
           "contents": "test"
         },
         "misc.xml": {
+          "size": 10,
           "contents": "test"
         },
         "intellij.iml": {
+          "size": 10,
           "contents": "test"
         }
       }
     },
     ".gitignore": {
+      "size": 10,
       "contents": "\nshouldbeignored\n"
     },
     ".git": {
-      "children": {}
+      "children": {
+        "config": {
+          "size": 10,
+          "contents": "stuff"
+        }
+      }
     },
     ".svn": {
       "children": {}
@@ -28,14 +37,17 @@
     ".bar": {
       "children": {
         ".flooignore": {
+          "size": 10,
           "contents": "pepsi.txt"
         },
         "stuff": {
           "children": {
             "coke.txt": {
+              "size": 10,
               "contents": "yup"
             },
             "pepsi.txt": {
+              "size": 10,
               "contents": "should totally be ignored"
             }
           }
@@ -47,6 +59,14 @@
     },
     "shouldbeignored": {
       "contents": "nope"
+    },
+    "toobig": {
+      "children": {
+        "hugefile.txt": {
+          "size": 100000,
+          "contents": "should totally be too big"
+        }
+      }
     }
   }
 }

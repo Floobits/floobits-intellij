@@ -92,7 +92,6 @@ public class IgnoreTest {
         assertEquals("Should have run two ignore checks.", 2, count);
     }
 
-
     @Test
     public void testUploadData() throws IOException {
         URL data = IgnoreTest.class.getResource("ignore_file_test.json");
@@ -110,5 +109,8 @@ public class IgnoreTest {
         assertFalse("Should not have workspace.xml in upload files.", uploadData.paths.contains(t1.getPath()));
         t1 = new MockIFile(mn.children.get("bar"), "/foo/bar");
         assertTrue("Should have bar in upload files.", uploadData.paths.contains(t1.getPath()));
+        assertEquals("There should be one directory that's too big.", 1, uploadData.bigStuff.size());
+        int bigFileSize = uploadData.bigStuff.get("/foo/toobig");
+        assertEquals("The big file should be listed in the too big list", 100000, bigFileSize);
     }
 }
