@@ -26,8 +26,8 @@ public class Ignore implements Comparable<Ignore>{
     private final IgnoreNode ignoreNode = new IgnoreNode();
 
     public class UploadData {
-        HashMap<String, Integer> bigStuff;
-        HashSet<String> paths;
+        public HashMap<String, Integer> bigStuff;
+        public HashSet<String> paths;
         public UploadData(HashMap<String, Integer> bigStuff, HashSet<String> paths) {
             this.bigStuff = bigStuff;
             this.paths = paths;

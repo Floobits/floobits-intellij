@@ -228,6 +228,7 @@ public class InboundRequestHandler {
         shouldUpload = false;
         dirToAdd = null;
     }
+
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = context.absPath(name);

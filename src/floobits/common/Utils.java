@@ -211,8 +211,8 @@ public class Utils {
         }
     }
 
-    interface FileProcessor<T> {
-        public T call(IFile file);
+    public interface FileProcessor<T> {
+        T call(IFile file);
     }
 
     static public SSLContext createSSLContext() {
