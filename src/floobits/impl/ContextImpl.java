@@ -315,8 +315,8 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public boolean dialogTooBig(LinkedList<Ignore> tooBigIgnores) {
-        HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(tooBigIgnores);
+    public boolean dialogTooBig(HashMap<String, Integer> bigStuff) {
+        HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(bigStuff);
         handleTooBigDialog.createCenterPanel();
         handleTooBigDialog.show();
         return handleTooBigDialog.getExitCode() == 1;

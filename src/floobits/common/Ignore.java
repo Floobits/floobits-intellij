@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 public class Ignore implements Comparable<Ignore>{
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
@@ -25,6 +24,15 @@ public class Ignore implements Comparable<Ignore>{
     public final ArrayList<IFile> files = new ArrayList<IFile>();
     public int size = 0;
     private final IgnoreNode ignoreNode = new IgnoreNode();
+
+    public class UploadData {
+        HashMap<String, Integer> bigStuff;
+        HashSet<String> paths;
+        public UploadData(HashMap<String, Integer> bigStuff, HashSet<String> paths) {
+            this.bigStuff = bigStuff;
+            this.paths = paths;
+        }
+    }
 
     public static Ignore BuildIgnore(IFile virtualFile) {
         Ignore ig = new Ignore(virtualFile);
@@ -159,41 +167,37 @@ public class Ignore implements Comparable<Ignore>{
         return false;
     }
 
-    public List<Ignore> flattenIgnores() {
-        ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
+    public UploadData getUploadData(Integer maxSize, Utils.FileProcessor<String> fileProcessor) {
+        List<Ignore> allIgnores = new ArrayList<Ignore>();
         LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
         tempIgnores.add(this);
         Ignore ignore;
+        int totalSize = 0;
         while (tempIgnores.size() > 0) {
             ignore = tempIgnores.removeLast();
             allIgnores.add(ignore);
             for(Ignore ig: ignore.children.values()) {
+                totalSize += ig.size;
                 tempIgnores.add(ig);
             }
         }
         Collections.sort(allIgnores);
-        return allIgnores;
+        HashMap<String, Integer> bigStuff = new HashMap<String, Integer>();
+        HashSet<String> paths = new HashSet<String>();
+        for (Ignore ig : allIgnores) {
+            for (IFile virtualFile : ig.files)
+                paths.add(fileProcessor.call(virtualFile));
+        }
+        while (totalSize > maxSize) {
+            Ignore ig = allIgnores.remove(0);
+            totalSize -= ig.size;
+            bigStuff.put(ig.file.getPath(), ig.size);
+        }
+        return new UploadData(bigStuff, paths);
     }
 
     @Override
     public int compareTo(@NotNull Ignore ignore) {
         return ignore.size - size;
-    }
-
-    public static int getTotalIgnoreSize(List<Ignore> allIgnores) {
-        int size = 0;
-        for (Ignore i : allIgnores) {
-            size += i.size;
-        }
-        return size;
-    }
-
-    public static HashSet<String> getAllFilesForIgnores(List<Ignore> allIgnores, Utils.FileProcessor<String> processor) {
-        HashSet<String> files = new HashSet<String>();
-        for (Ignore ig : allIgnores) {
-            for (IFile virtualFile : ig.files)
-                files.add(processor.call(virtualFile));
-        }
-        return files;
     }
 }
