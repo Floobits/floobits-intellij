@@ -4,6 +4,7 @@ import floobits.common.Ignore;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,15 +27,11 @@ public class HandleTooBigDialog extends CustomButtonDialogWrapper {
         form.setItems(problems.toArray(new String[problems.size()]));
         CustomButtonAction cancelAction = new CustomButtonAction("Quit", new Runnable() {
             @Override
-            public void run() {
-
-            }
-        });
+            public void run() {}
+        }, CANCEL_EXIT_CODE);
         CustomButtonAction okAction = new CustomButtonAction("Ignore and Continue", new Runnable() {
             @Override
-            public void run() {
-
-            }
+            public void run() {}
         });
         actions = new Action[]{cancelAction, okAction};
         init();

@@ -319,7 +319,7 @@ public class ContextImpl extends IContext {
         HandleTooBigDialog handleTooBigDialog = new HandleTooBigDialog(bigStuff);
         handleTooBigDialog.createCenterPanel();
         handleTooBigDialog.show();
-        return handleTooBigDialog.getExitCode() == 1;
+        return handleTooBigDialog.getExitCode() == 0;
     }
 
     @Override
