@@ -114,5 +114,7 @@ public class IgnoreTest {
         assertEquals("The big file should be listed in the too big list", 100000, bigFileSize);
         t1 = new MockIFile(mn.children.get("toobig").children.get("hugefile.txt"), "/foo/toobig/hugefile.txt");
         assertFalse("Should not have hugefile in upload files.", uploadData.paths.contains(t1.getPath()));
+        t1 = new MockIFile(mn.children.get("toobig").children.get("nesteddir").children.get("smallnested.txt"), "/foo/toobig/nesteddir/smallnested.txt");
+        assertFalse("Should not have nested dir from huge dir in upload files.", uploadData.paths.contains(t1.getPath()));
     }
 }

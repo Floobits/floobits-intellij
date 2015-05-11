@@ -65,6 +65,14 @@
         "hugefile.txt": {
           "size": 100000,
           "contents": "should totally be too big"
+        },
+        "nesteddir": {
+          "children": {
+            "smallnested.txt": {
+              "size": 10,
+              "contents": "should also totally be ignored"
+            }
+          }
         }
       }
     }
