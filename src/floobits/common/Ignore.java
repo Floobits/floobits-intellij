@@ -184,14 +184,14 @@ public class Ignore implements Comparable<Ignore>{
         Collections.sort(allIgnores);
         HashMap<String, Integer> bigStuff = new HashMap<String, Integer>();
         HashSet<String> paths = new HashSet<String>();
-        for (Ignore ig : allIgnores) {
-            for (IFile virtualFile : ig.files)
-                paths.add(fileProcessor.call(virtualFile));
-        }
         while (totalSize > maxSize) {
             Ignore ig = allIgnores.remove(0);
             totalSize -= ig.size;
             bigStuff.put(ig.file.getPath(), ig.size);
+        }
+        for (Ignore ig : allIgnores) {
+            for (IFile virtualFile : ig.files)
+                paths.add(fileProcessor.call(virtualFile));
         }
         return new UploadData(bigStuff, paths);
     }

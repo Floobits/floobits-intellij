@@ -136,7 +136,7 @@ public class InboundRequestHandler {
         } else {
             ignoreTree = Ignore.BuildIgnore(dirToAdd);
         }
-        Ignore.UploadData uploadData = ignoreTree.getUploadData(10000, new Utils.FileProcessor<String>() {
+        Ignore.UploadData uploadData = ignoreTree.getUploadData(100000, new Utils.FileProcessor<String>() {
             @Override
             public String call(IFile file) {
                 return context.toProjectRelPath(file.getPath());
