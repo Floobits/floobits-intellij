@@ -112,5 +112,7 @@ public class IgnoreTest {
         assertEquals("There should be one directory that's too big.", 1, uploadData.bigStuff.size());
         int bigFileSize = uploadData.bigStuff.get("/foo/toobig");
         assertEquals("The big file should be listed in the too big list", 100000, bigFileSize);
+        t1 = new MockIFile(mn.children.get("toobig").children.get("hugefile.txt"), "/foo/toobig/hugefile.txt");
+        assertFalse("Should not have hugefile in upload files.", uploadData.paths.contains(t1.getPath()));
     }
 }

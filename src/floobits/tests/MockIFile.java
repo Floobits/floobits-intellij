@@ -44,7 +44,6 @@ public class MockIFile extends IFile {
         String inputLine;
         StringBuilder b = new StringBuilder();
         while ((inputLine = in.readLine()) != null) {
-            System.out.println(inputLine);
             b.append(inputLine);
         }
         in.close();
