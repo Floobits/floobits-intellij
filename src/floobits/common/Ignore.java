@@ -201,7 +201,9 @@ public class Ignore implements Comparable<Ignore>{
             totalSize -= ig.size;
             bigStuff.put(ig.file.getPath(), ig.size);
         }
-        allIgnores = buildIgnores(this, ignoredIgnores);
+        if (ignoredIgnores.size() > 0) {
+            allIgnores = buildIgnores(this, ignoredIgnores);
+        }
         for (Ignore ig : allIgnores) {
             for (IFile virtualFile : ig.files)
                 paths.add(fileProcessor.call(virtualFile));
