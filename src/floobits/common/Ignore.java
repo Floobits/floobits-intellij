@@ -167,28 +167,41 @@ public class Ignore implements Comparable<Ignore>{
         return false;
     }
 
-    public UploadData getUploadData(Integer maxSize, Utils.FileProcessor<String> fileProcessor) {
-        List<Ignore> allIgnores = new ArrayList<Ignore>();
+    List<Ignore> buildIgnores(Ignore startIgnore, HashSet<Ignore> ignoredIgnores) {
+        List<Ignore> ignores = new ArrayList<Ignore>();
         LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
-        tempIgnores.add(this);
+        tempIgnores.add(startIgnore);
         Ignore ignore;
-        int totalSize = 0;
         while (tempIgnores.size() > 0) {
             ignore = tempIgnores.removeLast();
-            allIgnores.add(ignore);
+            if (ignoredIgnores != null && ignoredIgnores.contains(ignore)) {
+                continue;
+            }
+            ignores.add(ignore);
             for(Ignore ig: ignore.children.values()) {
-                totalSize += ig.size;
                 tempIgnores.add(ig);
             }
         }
-        Collections.sort(allIgnores);
+        Collections.sort(ignores);
+        return ignores;
+    }
+
+    public UploadData getUploadData(Integer maxSize, Utils.FileProcessor<String> fileProcessor) {
         HashMap<String, Integer> bigStuff = new HashMap<String, Integer>();
         HashSet<String> paths = new HashSet<String>();
+        HashSet<Ignore> ignoredIgnores = new HashSet<Ignore>();
+        List<Ignore> allIgnores = buildIgnores(this, null);
+        int totalSize = 0;
+        for (Ignore ignore : allIgnores) {
+            totalSize += ignore.size;
+        }
         while (totalSize > maxSize) {
             Ignore ig = allIgnores.remove(0);
+            ignoredIgnores.add(ig);
             totalSize -= ig.size;
             bigStuff.put(ig.file.getPath(), ig.size);
         }
+        allIgnores = buildIgnores(this, ignoredIgnores);
         for (Ignore ig : allIgnores) {
             for (IFile virtualFile : ig.files)
                 paths.add(fileProcessor.call(virtualFile));
