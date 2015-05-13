@@ -170,12 +170,7 @@ public class IgnoreRule {
 		if (matcher == null) {
 			if (target.equals(pattern)) {
 				//Exact match
-				if (dirOnly && !isDirectory)
-					//Directory expectations not met
-					return false;
-				else
-					//Directory expectations met
-					return true;
+				return !(dirOnly && !isDirectory);
 			}
 
 			/*

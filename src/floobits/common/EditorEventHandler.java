@@ -169,7 +169,7 @@ public class EditorEventHandler {
     public boolean follow() {
         boolean mode = !state.getFollowing();
         state.setFollowing(mode);
-        context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));;
+        context.statusMessage(String.format("%s follow mode", mode ? "Enabling" : "Disabling"));
         if (mode) {
             goToLastHighlight();
         }
