@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 
 public interface Base extends Serializable {
-    public String name = null;
-    public Integer req_id = 0;
+    String name = null;
+    Integer req_id = 0;
 }

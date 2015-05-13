@@ -64,9 +64,9 @@ public class IgnoreTest {
         assertNotEquals(mn, null);
         MockIFile mf = new MockIFile(mn, basePath);
         Ignore i = Ignore.BuildIgnore(mf);
-        IFile t1 = new MockIFile(mn.children.get(".git"), ".git");
+        IFile t1 = new MockIFile(mn.children.get(".git"), "/foo/.git");
         assertTrue("Hidden files should be ignored by default.", i.isIgnored(t1, t1.getPath()));
-        t1 = new MockIFile(mn.children.get("bar"), "bar");
+        t1 = new MockIFile(mn.children.get("bar"), "/foo/bar");
         assertFalse("Non hidden file should not be ignored by default", i.isIgnored(t1, basePath));
         t1 = new MockIFile(mn.children.get("shouldbeignored"), "shouldbeignored");
         assertTrue("File given in .gitignore file should be ignored.", i.isIgnored(t1, t1.getPath()));
@@ -90,5 +90,31 @@ public class IgnoreTest {
             }
         }
         assertEquals("Should have run two ignore checks.", 2, count);
+    }
+
+    @Test
+    public void testUploadData() throws IOException {
+        URL data = IgnoreTest.class.getResource("ignore_file_test.json");
+        MockIFile.MockNode mn = MockIFile.mockFileFromJSON(data);
+        String basePath = "/foo";
+        MockIFile mf = new MockIFile(mn, basePath);
+        Ignore i = Ignore.BuildIgnore(mf);
+        Ignore.UploadData uploadData = i.getUploadData(1000, new Utils.FileProcessor<String>() {
+            @Override
+            public String call(IFile file) {
+                return file.getPath();
+            }
+        });
+        IFile t1 = new MockIFile(mn.children.get(".idea").children.get("workspace.xml"), "/foo/.idea/workspace.xml");
+        assertFalse("Should not have workspace.xml in upload files.", uploadData.paths.contains(t1.getPath()));
+        t1 = new MockIFile(mn.children.get("bar"), "/foo/bar");
+        assertTrue("Should have bar in upload files.", uploadData.paths.contains(t1.getPath()));
+        assertEquals("There should be one directory that's too big.", 1, uploadData.bigStuff.size());
+        int bigFileSize = uploadData.bigStuff.get("/foo/toobig");
+        assertEquals("The big file should be listed in the too big list", 100000, bigFileSize);
+        t1 = new MockIFile(mn.children.get("toobig").children.get("hugefile.txt"), "/foo/toobig/hugefile.txt");
+        assertFalse("Should not have hugefile in upload files.", uploadData.paths.contains(t1.getPath()));
+        t1 = new MockIFile(mn.children.get("toobig").children.get("nesteddir").children.get("smallnested.txt"), "/foo/toobig/nesteddir/smallnested.txt");
+        assertFalse("Should not have nested dir from huge dir in upload files.", uploadData.paths.contains(t1.getPath()));
     }
 }

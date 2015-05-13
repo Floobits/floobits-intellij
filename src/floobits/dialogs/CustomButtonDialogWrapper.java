@@ -21,10 +21,17 @@ public class CustomButtonDialogWrapper extends DialogWrapper {
 
     protected class CustomButtonAction extends DialogWrapperAction {
         protected Runnable action;
+        protected int exitCode = OK_EXIT_CODE;
 
         protected CustomButtonAction(String name, Runnable action) {
             super(name);
             this.action = action;
+        }
+
+        protected CustomButtonAction(String name, Runnable action, int exitCode) {
+            super(name);
+            this.action = action;
+            this.exitCode = exitCode;
         }
 
         @Override
@@ -32,7 +39,7 @@ public class CustomButtonDialogWrapper extends DialogWrapper {
             if (action != null) {
                 action.run();
             }
-            close(OK_EXIT_CODE);
+            close(exitCode);
         }
 
     }

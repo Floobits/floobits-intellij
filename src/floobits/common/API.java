@@ -204,7 +204,7 @@ public class API {
             }
 
             @Override
-            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException, ConnectTimeoutException {
+            public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
             }
 

@@ -36,6 +36,7 @@ public class ChatUserForm {
                     }
                     clickHandler.run();
                 }
+
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     Cursor cursor = Cursor.getDefaultCursor();
@@ -69,7 +70,8 @@ public class ChatUserForm {
             clientActionPerformed(flooHandler);
         }
 
-        protected void clientActionPerformed(FlooHandler flooHandler) {}
+        protected void clientActionPerformed(FlooHandler flooHandler) {
+        }
     }
 
     static private class ClientState {
@@ -149,7 +151,7 @@ public class ChatUserForm {
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler) {
-                for (ClientState client: clients.values()) {
+                for (ClientState client : clients.values()) {
                     kickClient(client.userId);
                 }
             }
@@ -313,7 +315,7 @@ public class ChatUserForm {
         containerPanel.validate();
     }
 
-    public void removeClient(int userId){
+    public void removeClient(int userId) {
         ClientState client = clients.get(userId);
         if (client == null) {
             return;

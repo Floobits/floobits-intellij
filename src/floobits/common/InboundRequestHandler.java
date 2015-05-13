@@ -136,46 +136,25 @@ public class InboundRequestHandler {
         } else {
             ignoreTree = Ignore.BuildIgnore(dirToAdd);
         }
-        ArrayList<Ignore> allIgnores = new ArrayList<Ignore>();
-        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
-        tempIgnores.add(ignoreTree);
-        int size = 0;
-        Ignore ignore;
-        while (tempIgnores.size() > 0) {
-            ignore = tempIgnores.removeLast();
-            size += ignore.size;
-            allIgnores.add(ignore);
-            for(Ignore ig: ignore.children.values()) {
-                tempIgnores.add(ig);
+        Ignore.UploadData uploadData = ignoreTree.getUploadData(ri.max_size, new Utils.FileProcessor<String>() {
+            @Override
+            public String call(IFile file) {
+                return context.toProjectRelPath(file.getPath());
             }
-        }
-        LinkedList<Ignore> tooBigIgnores = new LinkedList<Ignore>();
-        Collections.sort(allIgnores);
-
-        while (size > ri.max_size) {
-            Ignore ig = allIgnores.remove(0);
-            size -= ig.size;
-            tooBigIgnores.add(ig);
-        }
-        if (tooBigIgnores.size() > 0) {
-            if (tooBigIgnores.size() > Constants.TOO_MANY_BIG_DIRS) {
-                context.dialogDisconnect(ri.max_size/1000, tooBigIgnores.size());
+        });
+        if (uploadData.bigStuff.size() > 0) {
+            if (uploadData.bigStuff.size() > Constants.TOO_MANY_BIG_DIRS) {
+                context.dialogDisconnect(ri.max_size / 1000, uploadData.bigStuff.size());
                 return;
             }
             boolean shouldContinue;
 
-            shouldContinue = context.dialogTooBig(tooBigIgnores);
+            shouldContinue = context.dialogTooBig(uploadData.bigStuff);
 
             if (!shouldContinue) {
                 context.shutdown();
                 return;
             }
-        }
-
-        HashSet<String> paths = new HashSet<String>();
-        for (Ignore ig : allIgnores) {
-            for (IFile virtualFile : ig.files)
-                paths.add(context.toProjectRelPath(virtualFile.getPath()));
         }
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
@@ -188,11 +167,11 @@ public class InboundRequestHandler {
                 return;
             }
             state.pathsToIds.put(b.path, b.id);
-            if (!paths.contains(buf.path)) {
+            if (!uploadData.paths.contains(buf.path)) {
                 outbound.deleteBuf(buf, false);
                 continue;
             }
-            paths.remove(buf.path);
+            uploadData.paths.remove(buf.path);
             buf.read();
             if (buf.buf == null) {
                 Flog.warn("%s is null but we want to upload it?", b.path);
@@ -207,7 +186,7 @@ public class InboundRequestHandler {
         }
 
 
-        for (String path : paths) {
+        for (String path : uploadData.paths) {
             IFile fileByPath = context.iFactory.findFileByPath(context.absPath(path));
             if (fileByPath == null || !fileByPath.isValid()) {
                 Flog.warn(String.format("path is no longer a valid virtual file"));
@@ -226,8 +205,8 @@ public class InboundRequestHandler {
                 strings = new ArrayList<String>();
             }
 
-            for (Ignore ig : tooBigIgnores) {
-                String rule = "/" + context.toProjectRelPath(ig.stringPath);
+            for (Map.Entry<String, Integer> bigData : uploadData.bigStuff.entrySet()) {
+                String rule = "/" + context.toProjectRelPath(FilenameUtils.separatorsToUnix(bigData.getKey()));
                 if (!rule.endsWith("/")) {
                     rule += "/";
                 }
@@ -249,6 +228,7 @@ public class InboundRequestHandler {
         shouldUpload = false;
         dirToAdd = null;
     }
+
     void _on_rename_buf(JsonObject jsonObject) {
         final String name = jsonObject.get("old_path").getAsString();
         final String oldPath = context.absPath(name);

@@ -12,10 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Ignore implements Comparable<Ignore>{
     static final HashSet<String> IGNORE_FILES = new HashSet<String>(Arrays.asList(".gitignore", ".hgignore", ".flignore", ".flooignore"));
@@ -27,6 +24,15 @@ public class Ignore implements Comparable<Ignore>{
     public final ArrayList<IFile> files = new ArrayList<IFile>();
     public int size = 0;
     private final IgnoreNode ignoreNode = new IgnoreNode();
+
+    public class UploadData {
+        public HashMap<String, Integer> bigStuff;
+        public HashSet<String> paths;
+        public UploadData(HashMap<String, Integer> bigStuff, HashSet<String> paths) {
+            this.bigStuff = bigStuff;
+            this.paths = paths;
+        }
+    }
 
     public static Ignore BuildIgnore(IFile virtualFile) {
         Ignore ig = new Ignore(virtualFile);
@@ -159,6 +165,50 @@ public class Ignore implements Comparable<Ignore>{
             return true;
         }
         return false;
+    }
+
+    List<Ignore> buildIgnores(Ignore startIgnore, HashSet<Ignore> ignoredIgnores) {
+        List<Ignore> ignores = new ArrayList<Ignore>();
+        LinkedList<Ignore> tempIgnores = new LinkedList<Ignore>();
+        tempIgnores.add(startIgnore);
+        Ignore ignore;
+        while (tempIgnores.size() > 0) {
+            ignore = tempIgnores.removeLast();
+            if (ignoredIgnores != null && ignoredIgnores.contains(ignore)) {
+                continue;
+            }
+            ignores.add(ignore);
+            for(Ignore ig: ignore.children.values()) {
+                tempIgnores.add(ig);
+            }
+        }
+        Collections.sort(ignores);
+        return ignores;
+    }
+
+    public UploadData getUploadData(Integer maxSize, Utils.FileProcessor<String> fileProcessor) {
+        HashMap<String, Integer> bigStuff = new HashMap<String, Integer>();
+        HashSet<String> paths = new HashSet<String>();
+        HashSet<Ignore> ignoredIgnores = new HashSet<Ignore>();
+        List<Ignore> allIgnores = buildIgnores(this, null);
+        int totalSize = 0;
+        for (Ignore ignore : allIgnores) {
+            totalSize += ignore.size;
+        }
+        while (totalSize > maxSize) {
+            Ignore ig = allIgnores.remove(0);
+            ignoredIgnores.add(ig);
+            totalSize -= ig.size;
+            bigStuff.put(ig.file.getPath(), ig.size);
+        }
+        if (ignoredIgnores.size() > 0) {
+            allIgnores = buildIgnores(this, ignoredIgnores);
+        }
+        for (Ignore ig : allIgnores) {
+            for (IFile virtualFile : ig.files)
+                paths.add(fileProcessor.call(virtualFile));
+        }
+        return new UploadData(bigStuff, paths);
     }
 
     @Override
