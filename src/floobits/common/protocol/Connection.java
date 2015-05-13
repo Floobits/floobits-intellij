@@ -16,11 +16,11 @@ import io.fletty.channel.*;
 import io.fletty.channel.socket.SocketChannel;
 import io.fletty.channel.socket.nio.NioSocketChannel;
 import io.fletty.handler.codec.LineBasedFrameDecoder;
+import io.fletty.handler.codec.TooLongFrameException;
 import io.fletty.handler.codec.string.StringDecoder;
 import io.fletty.handler.codec.string.StringEncoder;
 import io.fletty.handler.ssl.SslHandler;
 import io.fletty.util.CharsetUtil;
-import io.fletty.handler.codec.TooLongFrameException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;

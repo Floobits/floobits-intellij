@@ -15,7 +15,6 @@ import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
-import floobits.utilities.Flog;
 
 import java.util.Date;
 

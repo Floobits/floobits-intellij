@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
-import floobits.common.EditorEventHandler;
 import floobits.common.FlooUrl;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.3</version>
+  <version>1.5.4</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -13,8 +13,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-        Spam the IntelliJ Log less.
-        Show how many files are not in the workspace in conflict resolution dialog.
+        Fix initial upload issues when project size is too big.
     ]]>
   </change-notes>
 

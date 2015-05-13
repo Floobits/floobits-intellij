@@ -1,6 +1,5 @@
 package floobits.common;
 
-import com.google.gson.JsonObject;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.buf.Buf;
