@@ -278,16 +278,6 @@ public class DocImpl extends IDoc {
     }
 
     public String patch(FlooPatchPosition[] positions) {
-
-        final Editor[] editors = EditorFactory.getInstance().getEditors(document, context.project);
-        final HashMap<ScrollingModel, Integer[]> original = new HashMap<ScrollingModel, Integer[]>();
-        for (Editor editor : editors) {
-            if (editor.isDisposed()) {
-                continue;
-            }
-            ScrollingModel scrollingModel = editor.getScrollingModel();
-            original.put(scrollingModel, new Integer[]{scrollingModel.getHorizontalScrollOffset(), scrollingModel.getVerticalScrollOffset()});
-        }
         for (FlooPatchPosition flooPatchPosition : positions) {
             final int start = Math.max(0, flooPatchPosition.start);
             int end_ld = Math.max(start + flooPatchPosition.end, start);
@@ -305,13 +295,6 @@ public class DocImpl extends IDoc {
                 }
             }
         }
-        String text = document.getText();
-        for (Map.Entry<ScrollingModel, Integer[]> entry : original.entrySet()) {
-            ScrollingModel model = entry.getKey();
-            Integer[] offsets = entry.getValue();
-            model.scrollHorizontally(offsets[0]);
-            model.scrollVertically(offsets[1]);
-        }
-        return text;
+        return document.getText();
     }
 }
