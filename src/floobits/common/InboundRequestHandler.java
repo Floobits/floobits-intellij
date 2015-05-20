@@ -163,7 +163,7 @@ public class InboundRequestHandler {
             try {
                 state.bufs.put(buf_id, buf);
             } catch (NullPointerException e) {
-                Flog.warn("state.buffs is null, tried to upload after disconnecting. This is a race condition.");
+                Flog.warn("state.bufs is null, tried to upload after disconnecting. This is a race condition.");
                 return;
             }
             state.pathsToIds.put(b.path, b.id);
@@ -505,8 +505,7 @@ public class InboundRequestHandler {
                 try {
                     RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                     state.handleRoomInfo(ri);
-
-                    context.statusMessage(String.format("You successfully joined %s ", state.url.toString()));
+                    context.statusMessage(String.format("You successfully joined <a href=\"%s\">%s</a>", state.url.toString(), state.url.toString()));
 
                     DotFloo.write(context.colabDir, state.url.toString());
 
