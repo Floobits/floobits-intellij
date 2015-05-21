@@ -310,6 +310,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             int start = r.getStartOffset();
             int end = r.getEndOffset();
             if (start == end) {
+                //This signifies a selection was cleared. We don't want to store that as a range.
                 continue;
             }
             ranges.add(new ArrayList<Integer>(Arrays.asList(start, end)));
