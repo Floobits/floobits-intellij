@@ -307,7 +307,12 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         TextRange[] textRanges = event.getNewRanges();
         ranges = new ArrayList<ArrayList<Integer>>();
         for(TextRange r : textRanges) {
-            ranges.add(new ArrayList<Integer>(Arrays.asList(r.getStartOffset(), r.getEndOffset())));
+            int start = r.getStartOffset();
+            int end = r.getEndOffset();
+            if (start == end) {
+                continue;
+            }
+            ranges.add(new ArrayList<Integer>(Arrays.asList(start, end)));
         }
         editorManager.changeSelection(path, ranges, !isListening.get());
     }
