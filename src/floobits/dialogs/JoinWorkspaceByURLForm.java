@@ -8,7 +8,6 @@ public class JoinWorkspaceByURLForm {
 
     public void setURL(String url) {
         urlTextField.setText(url);
-        urlTextField.selectAll();
     }
 
     public String getURL() {
