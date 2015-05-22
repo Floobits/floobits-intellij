@@ -272,6 +272,7 @@ public class ChatUserForm {
         menuPopup = new JPopupMenu();
         subContainer.setComponentPopupMenu(menuPopup);
         clientList.setComponentPopupMenu(menuPopup);
+        gravatarContainer.setComponentPopupMenu(menuPopup);
     }
 
     public void updateBorder() {
