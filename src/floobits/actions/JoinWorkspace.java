@@ -1,13 +1,12 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FloobitsApplication;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
+import floobits.dialogs.JoinWorkspaceDialog;
 import floobits.impl.ContextImpl;
 
-import javax.swing.*;
 
 
 public class JoinWorkspace extends CanFloobits {
@@ -23,10 +22,9 @@ public class JoinWorkspace extends CanFloobits {
         if (floourl != null) {
             url = floourl.toString();
         }
-        String inputValue = JOptionPane.showInputDialog("Workspace URL", url);
-        if (inputValue == null) {
-            return;
-        }
-        FloobitsApplication.self.joinWorkspace(context, inputValue);
+
+        JoinWorkspaceDialog dialog = new JoinWorkspaceDialog(url);
+        dialog.createCenterPanel();
+        dialog.show();
     }
 }

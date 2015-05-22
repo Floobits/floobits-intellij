@@ -9,9 +9,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by kans on 5/29/14.
- */
+
 public class Migrations {
 
     public static void migrateFloorc() {
