@@ -23,7 +23,7 @@ public class Settings {
         try {
             string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
-            Flog.log("No floorc.json found");
+            Flog.warn("No floorc.json found");
             return new FloorcJson();
         }
         try {
