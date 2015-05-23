@@ -1,15 +1,14 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.4</version>
+  <version>1.5.5</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
-      Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
-      You need a Floobits account. Create one at https://floobits.com
-
-      Features include being able to see other people's cursor and highlights, being able to summon, and also follow edits
-      automatically.
+      Fix errors when no .floorc.json was present.
+      Fix user indicator jitters.
+      Fix not being able to right click on user icon in user list to get user menu.
+      Fix moving view when new lines were added or removed above in workspace.
       ]]></description>
 
   <change-notes><![CDATA[
