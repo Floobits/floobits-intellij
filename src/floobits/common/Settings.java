@@ -23,13 +23,14 @@ public class Settings {
         try {
             string = FileUtils.readFileToString(f, "UTF-8");
         } catch (IOException e) {
+            // Do not change this to a log (and don't change Log.warn) or else you'll get a stack overflow!
             Flog.warn("No floorc.json found");
             return new FloorcJson();
         }
         try {
             return new Gson().fromJson(string, (Type) FloorcJson.class);
         } catch (JsonSyntaxException e) {
-           throw new Exception("Invalid JSON.");
+            throw new Exception("Invalid JSON.");
        }
     }
 
