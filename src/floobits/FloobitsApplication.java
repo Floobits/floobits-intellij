@@ -53,9 +53,9 @@ public class FloobitsApplication implements ApplicationComponent {
             return;
         }
         createAccount = false;
-        CreateAccount createAccount = new CreateAccount(context.project);
-        createAccount.createCenterPanel();
-        createAccount.show();
+        CreateAccount createAccountDialog = new CreateAccount(context.project);
+        createAccountDialog.createCenterPanel();
+        createAccountDialog.show();
     }
 
     @NotNull
