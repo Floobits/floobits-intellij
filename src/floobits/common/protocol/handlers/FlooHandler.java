@@ -62,7 +62,7 @@ public class FlooHandler extends BaseHandler {
 
     public void on_connect () {
         context.connected();
-        context.statusMessage(String.format("Connecting to <a href=\"%s\">%s</a>.", url.toString(), url.toString()));
+        context.statusMessage(String.format("Connecting to %s.", Utils.getLinkHTML(url.toString(), url.toString())));
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
     }
 
@@ -79,7 +79,7 @@ public class FlooHandler extends BaseHandler {
     @Override
     public void shutdown() {
         super.shutdown();
-        context.statusMessage(String.format("Leaving workspace <a href=\"%s\">%s</a>.", url.toString(), url.toString()));
+        context.statusMessage(String.format("Leaving workspace %s.", Utils.getLinkHTML(url.toString(), url.toString())));
         state.shutdown();
     }
 }

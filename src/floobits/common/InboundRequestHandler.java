@@ -505,7 +505,8 @@ public class InboundRequestHandler {
                 try {
                     RoomInfoResponse ri = new Gson().fromJson(obj, (Type) RoomInfoResponse.class);
                     state.handleRoomInfo(ri);
-                    context.statusMessage(String.format("You successfully joined <a href=\"%s\">%s</a>", state.url.toString(), state.url.toString()));
+                    context.statusMessage(String.format("You successfully joined %s.",
+                            Utils.getLinkHTML(state.url.toString(), state.url.toString())));
 
                     DotFloo.write(context.colabDir, state.url.toString());
 

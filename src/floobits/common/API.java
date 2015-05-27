@@ -65,9 +65,8 @@ public class API {
                     Flog.error(e);
                     return false;
                 }
-                context.errorMessage(String.format(
-                    "%s Get more <a style=\"color: blue;text-decoration:underline;\" href=\"https://%s/%s/settings#billing\">here</a>.",
-                    details, host, owner));
+                context.errorMessage(String.format("%s Get more %s.", details,
+                        Utils.getLinkHTML(String.format("https://%s/%s/settings#billing", host, owner), "here")));
                 return false;
             case 409:
                 context.statusMessage("The workspace already exists so I am joining it.");

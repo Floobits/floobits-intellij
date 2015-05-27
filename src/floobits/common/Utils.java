@@ -269,4 +269,8 @@ public class Utils {
         return Constants.defaultHost;
     }
 
+    static public String getLinkHTML(String URL, String text) {
+        return String.format("<a href=\"%s\" style=\"color:#e78c0c;text-decoration:underline;\">%s</a>", URL, text);
+    }
+
 }

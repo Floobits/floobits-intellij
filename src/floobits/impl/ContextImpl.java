@@ -415,7 +415,8 @@ public class ContextImpl extends IContext {
             return;
         }
         Flog.info("Complete signup url is:", url);
-        chatStatusMessage(String.format("Your account was auto-created. Please <a style=\"color:blue; text-decoration: underline;\" href=\"%s\">click here to complete sign up</a>.", url));
+        chatStatusMessage(String.format("Your account was auto-created. Please %s.",
+                Utils.getLinkHTML(url, "click here to complete sign up")));
     }
 
     @Override
