@@ -298,7 +298,7 @@ public abstract class IContext {
         return ignoreTree;
     }
     public abstract Object getActualContext();
-    public abstract void loadChatManager();
+    public abstract void loadFloobitsWindow();
     public abstract void flashMessage(String message);
     public abstract void warnMessage(String message);
     public abstract void statusMessage(String message);
@@ -306,8 +306,10 @@ public abstract class IContext {
     public abstract void chatStatusMessage(String message);
     public abstract void chatErrorMessage(String message);
     public abstract void chat(String username, String msg, Date messageDate);
-    public abstract void setupChat();
-    public abstract void openChat();
+    public abstract void setupFloobitsWindow();
+    public abstract void openFloobitsWindow();
+    public abstract void closeFloobitsWindow();
+    public abstract void toggleFloobitsWindow();
     public abstract void listenToEditor(EditorEventHandler editorEventHandler);
     public abstract void setListener(boolean b);
     public abstract void mainThread(final Runnable runnable);

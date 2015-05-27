@@ -15,12 +15,7 @@ import java.net.URISyntaxException;
 
 public class OpenWorkspaceInBrowser extends CanFloobits {
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
-        Project project = anActionEvent.getProject();
-        if (project == null) {
-            return;
-        }
-        ContextImpl context = FloobitsPlugin.getInstance(project).context;
+        public void actionPerformed(AnActionEvent event, Project project, FloobitsPlugin plugin, ContextImpl context) {
         String path = context.project.getBasePath();
         FlooUrl flooUrl = DotFloo.read(path);
         if (flooUrl == null) {
@@ -35,4 +30,5 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
             Flog.info("Couldn't open settings in browser", e);
         }
     }
+
 }

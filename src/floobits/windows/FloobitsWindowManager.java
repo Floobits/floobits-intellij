@@ -19,14 +19,14 @@ import floobits.impl.ContextImpl;
 import java.util.Date;
 
 
-public class ChatManager {
+public class FloobitsWindowManager {
     protected IContext context;
     protected ToolWindow toolWindow;
-    protected ChatForm chatForm;
+    protected FloobitsWindowForm chatForm;
 
-    public ChatManager (ContextImpl context) {
+    public FloobitsWindowManager(ContextImpl context) {
        this.context = context;
-       chatForm = new ChatForm(context);
+       chatForm = new FloobitsWindowForm(context);
        this.createChatWindow(context.project);
     }
 
@@ -51,8 +51,16 @@ public class ChatManager {
         });
     }
 
-    public void closeChat() {
+    public void closeFloobitsWindow() {
         toolWindow.hide(null);
+    }
+
+    public void toggleFloobitsWindow() {
+        if (isOpen()) {
+            closeFloobitsWindow();
+        } else {
+            openFloobitsWindow();
+        }
     }
 
     public boolean isOpen() {

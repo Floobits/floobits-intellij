@@ -498,7 +498,7 @@ public class InboundRequestHandler {
         });
     }
     void _on_room_info(final JsonObject obj) {
-        context.setupChat();
+        context.setupFloobitsWindow();
         context.readThread(new Runnable() {
             @Override
             public void run() {

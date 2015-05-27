@@ -22,7 +22,7 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.dialogs.*;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
-import floobits.windows.ChatManager;
+import floobits.windows.FloobitsWindowManager;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -57,7 +57,7 @@ public class ContextImpl extends IContext {
     private Listener listener = new Listener(this);
     public ConcurrentHashMap<String, BalloonState> gravatars = new ConcurrentHashMap<String, BalloonState>();
     public Project project;
-    public ChatManager chatManager;
+    public FloobitsWindowManager floobitsWindowManager;
     private ExecutorService pool;
 
     public ContextImpl(Project project) {
@@ -71,8 +71,8 @@ public class ContextImpl extends IContext {
     }
 
     @Override
-    public void loadChatManager() {
-        chatManager = new ChatManager(this);
+    public void loadFloobitsWindow() {
+        floobitsWindowManager = new FloobitsWindowManager(this);
     }
 
     @Override public void flashMessage(final String message) {
@@ -88,7 +88,7 @@ public class ContextImpl extends IContext {
 
     @Override public void statusMessage(String message) {
         Flog.log(message);
-        if (chatManager != null && !chatManager.isOpen()) {
+        if (floobitsWindowManager != null && !floobitsWindowManager.isOpen()) {
             //Only show a status message when chat is not open.
             statusMessage(message, NotificationType.INFORMATION);
         }
@@ -102,14 +102,14 @@ public class ContextImpl extends IContext {
     }
 
     @Override public void chatStatusMessage(String message) {
-        if (chatManager != null) {
-            chatManager.statusMessage(message);
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.statusMessage(message);
         }
     }
 
     @Override public void chatErrorMessage(String message) {
-        if (chatManager != null) {
-            chatManager.errorMessage(message);
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.errorMessage(message);
         }
     }
 
@@ -191,7 +191,7 @@ public class ContextImpl extends IContext {
 
     @Override
     public void updateFollowing() {
-        chatManager.updateUserList();
+        floobitsWindowManager.updateUserList();
     }
 
     @Override
@@ -206,15 +206,15 @@ public class ContextImpl extends IContext {
     @Override
     public void removeUser(FlooUser user) {
         statusMessage(String.format("%s left the workspace.", user.username));
-        chatManager.removeUser(user);
+        floobitsWindowManager.removeUser(user);
         iFactory.removeHighlightsForUser(user.user_id);
     }
 
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        if (chatManager != null) {
-            chatManager.clearUsers();
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.clearUsers();
         }
         try {
             listener.shutdown();
@@ -372,29 +372,49 @@ public class ContextImpl extends IContext {
 
     @Override
     public void chat(String username, String msg, Date messageDate) {
-        if (chatManager == null) {
+        if (floobitsWindowManager == null) {
             return;
         }
-        if (!chatManager.isOpen()) {
+        if (!floobitsWindowManager.isOpen()) {
             statusMessage(String.format("%s: %s", username, msg));
         }
-        chatManager.chatMessage(username, msg, messageDate);
+        floobitsWindowManager.chatMessage(username, msg, messageDate);
     }
 
     @Override
-    public void openChat() {
-        if (chatManager != null && !chatManager.isOpen()) {
-            chatManager.openFloobitsWindow();
+    public void openFloobitsWindow() {
+        if (floobitsWindowManager == null || floobitsWindowManager.isOpen()) {
+            return;
         }
-        chatManager.updateUserList();
+        floobitsWindowManager.openFloobitsWindow();
+        floobitsWindowManager.updateUserList();
     }
 
     @Override
-    public void setupChat() {
-        if (chatManager != null) {
-            chatManager.clearUsers();
+    public void closeFloobitsWindow() {
+        if (floobitsWindowManager == null) {
+            return;
         }
-        openChat();
+        floobitsWindowManager.closeFloobitsWindow();
+    }
+
+    @Override
+    public void toggleFloobitsWindow() {
+        if (floobitsWindowManager == null) {
+            return;
+        }
+        floobitsWindowManager.toggleFloobitsWindow();
+        if (floobitsWindowManager.isOpen()) {
+            floobitsWindowManager.updateUserList();
+        }
+    }
+
+    @Override
+    public void setupFloobitsWindow() {
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.clearUsers();
+        }
+        openFloobitsWindow();
     }
 
     @Override
@@ -456,9 +476,9 @@ public class ContextImpl extends IContext {
                 if (handler == null) {
                     return;
                 }
-                chatManager.updateUserList();
+                floobitsWindowManager.updateUserList();
             }
         });
-        chatManager.addUser(user);
+        floobitsWindowManager.addUser(user);
     }
 }

@@ -1,6 +1,7 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
@@ -11,13 +12,11 @@ import floobits.impl.ContextImpl;
 
 public class JoinWorkspace extends CanFloobits {
 
-    public void actionPerformed(AnActionEvent e) {
-        String url = "https://floobits.com/";
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
-        if (floobitsPlugin == null) {
+    public void actionPerformed(AnActionEvent actionEvent, Project project, FloobitsPlugin plugin, ContextImpl context) {
+        if (plugin == null) {
             return;
         }
-        ContextImpl context = floobitsPlugin.context;
+        String url = "https://floobits.com/";
         FlooUrl floourl = DotFloo.read(context.project.getBasePath());
         if (floourl != null) {
             url = floourl.toString();

@@ -2,8 +2,10 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import floobits.FloobitsPlugin;
 import floobits.common.PersistentJson;
 import floobits.common.Workspace;
+import floobits.impl.ContextImpl;
 
 import java.util.LinkedList;
 
@@ -20,7 +22,7 @@ public class SelectRecentWorkspace extends CanFloobits {
         selectRecentWorkspace.show();
     }
 
-    public void actionPerformed(AnActionEvent e) {
-        joinRecent(e.getProject());
+    public void actionPerformed(AnActionEvent actionEvent, Project project, FloobitsPlugin plugin, ContextImpl context) {
+        joinRecent(project);
     }
 }

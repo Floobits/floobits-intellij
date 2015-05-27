@@ -93,8 +93,8 @@
       </group>
 
 
-      <action id="floobits.actions.FloobitsWindow" class="floobits.actions.FloobitsWindow" text="Open Floobits"
-              description="Open Floobits" icon="/icons/floo.png">
+      <action id="floobits.actions.FloobitsWindow" class="floobits.actions.FloobitsWindow" text="Toggle Floobits Window"
+              description="Toggle Floobits Window" icon="/icons/floo.png">
           <add-to-group group-id="MainToolBar" anchor="last"/>
       </action>
 

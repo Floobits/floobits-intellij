@@ -15,12 +15,7 @@ import java.net.URISyntaxException;
 
 
 public class OpenSettingsInBrowser extends CanFloobits {
-    public void actionPerformed(AnActionEvent actionEvent) {
-        Project project = actionEvent.getProject();
-        if (project == null) {
-            return;
-        }
-        ContextImpl context = FloobitsPlugin.getInstance(project).context;
+    public void actionPerformed(AnActionEvent actionEvent, Project project, FloobitsPlugin plugin, ContextImpl context) {
         String path = context.project.getBasePath();
         FlooUrl flooUrl = DotFloo.read(path);
         if (flooUrl == null) {

@@ -32,7 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
-public class ChatForm {
+public class FloobitsWindowForm {
 
 
     private JPanel chatPanel;
@@ -50,7 +50,7 @@ public class ChatForm {
     private boolean shouldScrollToBottom;
     private HashMap<String, ChatUserForm> userForms = new HashMap<String, ChatUserForm>();
 
-    public ChatForm (IContext context) {
+    public FloobitsWindowForm(IContext context) {
         super();
         this.context = (ContextImpl) context;
         kit = new HTMLEditorKit();

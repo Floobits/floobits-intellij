@@ -24,7 +24,7 @@ public class FloobitsPlugin implements ProjectComponent {
     @Override
     public void projectOpened() {
         FloobitsApplication.self.projectOpened(context);
-        context.loadChatManager();
+        context.loadFloobitsWindow();
     }
 
     @Override
