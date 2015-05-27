@@ -11,6 +11,7 @@ public class FloorcJson implements Serializable {
     public Boolean debug;
     public String share_dir;
     public Integer MAX_ERROR_REPORTS;
+    public String DEFAULT_HOST;
 
     public static FloorcJson getFloorcJsonFromSettings () {
         FloorcJson floorcJson = null;

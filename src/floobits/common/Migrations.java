@@ -37,8 +37,8 @@ public class Migrations {
                     line = br.readLine();
                     continue;
                 }
-                String[] shit = line.split(" ");
-                settings.put(shit[0].toUpperCase(), shit[1]);
+                String[] value = line.split(" ");
+                settings.put(value[0].toUpperCase(), value[1]);
                 line = br.readLine();
             }
         } catch (Throwable e) {

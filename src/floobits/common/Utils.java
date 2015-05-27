@@ -256,4 +256,17 @@ public class Utils {
         return sc;
     }
 
+    static public String getDefaultHost() {
+        FloorcJson floorcJson;
+        try {
+            floorcJson = Settings.get();
+        } catch (Exception e) {
+            return Constants.defaultHost;
+        }
+        if (floorcJson != null && floorcJson.DEFAULT_HOST != null) {
+            return floorcJson.DEFAULT_HOST;
+        }
+        return Constants.defaultHost;
+    }
+
 }

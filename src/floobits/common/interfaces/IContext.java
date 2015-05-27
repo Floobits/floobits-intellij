@@ -192,7 +192,7 @@ public abstract class IContext {
     }
 
     public void createAccount() {
-        if (setupHandler(new CreateAccountHandler(this, Constants.defaultHost))) {
+        if (setupHandler(new CreateAccountHandler(this, Utils.getDefaultHost()))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.");
@@ -200,7 +200,7 @@ public abstract class IContext {
     }
 
     public void linkEditor() {
-        if (setupHandler(new LinkEditorHandler(this, Constants.defaultHost))) {
+        if (setupHandler(new LinkEditorHandler(this, Utils.getDefaultHost()))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.");

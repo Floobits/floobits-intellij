@@ -1,9 +1,6 @@
 package floobits.dialogs;
 
-import floobits.common.API;
-import floobits.common.Constants;
-import floobits.common.FloorcJson;
-import floobits.common.Settings;
+import floobits.common.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -48,7 +45,7 @@ public class SubmitIssueForm {
             floorcJson = Settings.get();
         } catch (Throwable ignored) {}
 
-        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(Constants.defaultHost) : null;
+        HashMap<String, String> auth = floorcJson != null ? floorcJson.auth.get(Utils.getDefaultHost()) : null;
         String username = "?";
         if (auth != null) {
             username = auth.get("username");

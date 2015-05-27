@@ -136,6 +136,28 @@ public class API {
         return new Gson().fromJson(responseBodyAsString, (Type) HTTPWorkspaceRequest.class);
     }
 
+    public static FlooUserDetail getUserDetail(IContext context, FloobitsState state) {
+
+        HttpMethod method;
+
+        String defaultHhost = Utils.getDefaultHost();
+        try {
+            method = apiRequest(new GetMethod(String.format("/api/user/%s", state.username)), context, defaultHhost);
+        } catch (IOException e) {
+            return null;
+        }
+        String responseBodyAsString;
+        try {
+            responseBodyAsString = method.getResponseBodyAsString();
+        } catch (IOException e) {
+            return null;
+        }
+        if (method.getStatusCode() >= 300) {
+            return null;
+        }
+        return new Gson().fromJson(responseBodyAsString, (Type) FlooUserDetail.class);
+    }
+
     public static boolean workspaceExists(final FlooUrl f, IContext context) {
         if (f == null) {
             return false;
