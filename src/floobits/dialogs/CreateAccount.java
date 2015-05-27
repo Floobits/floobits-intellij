@@ -11,54 +11,51 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class CreateAccount extends DialogWrapper {
+public class CreateAccount extends CustomButtonDialogWrapper {
     private JPanel jPanel;
-    protected Project project;
 
 
-    private class CreateAccountAction extends DialogWrapper.DialogWrapperAction {
 
-        protected CreateAccountAction() {
-            super("Create a Floobits account");
-        }
-
-        @Override
-        protected void doAction(ActionEvent e) {
-            Flog.info("Creating account from button press");
-            doOKAction();
-        }
-    }
-
-
-    private class LinkAccountAction extends DialogWrapper.DialogWrapperAction {
-
-        protected LinkAccountAction() {
-            super("I already have an account");
-        }
-
-        @Override
-        protected void doAction(ActionEvent e) {
-            Flog.info("Linking account from button press");
-            doCancelAction();
-        }
-    }
-
-
-    public CreateAccount(Project project) {
+    public CreateAccount(final Project project) {
         super(project, true);
-        this.project = project;
         jPanel = new JPanel();
-        init();
         this.setTitle("No Floobits Account Detected");
         JLabel label = new JLabel("You need a Floobits account! If you don't have one we will create one for you.");
         jPanel.add(label);
-    }
-
-    @Override
-    public void createDefaultActions () {
-        super.createDefaultActions();
-        myOKAction = new CreateAccountAction();
-        myCancelAction = new LinkAccountAction();
+        CustomButtonAction cancelAction = new CustomButtonAction("Cancel", new Runnable() {
+            @Override
+            public void run() {
+                doCancelAction();
+            }
+        });
+        CustomButtonAction linkAccountAction = new CustomButtonAction("I already have an account", new Runnable() {
+            @Override
+            public void run() {
+                Flog.info("Linking account from button press");
+                IContext context;
+                if (project == null) {
+                    context = new ContextImpl(null);
+                } else {
+                    context = FloobitsPlugin.getInstance(project).context;
+                }
+                context.linkEditor();
+            }
+        });
+        CustomButtonAction createAccountAction = new CustomButtonAction("Create a Floobits account", new Runnable() {
+            @Override
+            public void run() {
+                Flog.info("Creating account from button press");
+                IContext context;
+                if (project == null) {
+                    context = new ContextImpl(null);
+                } else {
+                    context = FloobitsPlugin.getInstance(project).context;
+                }
+                context.createAccount();
+            }
+        });
+        actions = new Action[]{cancelAction, linkAccountAction, createAccountAction};
+        init();
     }
 
     @Nullable
@@ -70,25 +67,11 @@ public class CreateAccount extends DialogWrapper {
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-        IContext context;
-        if (project == null) {
-            context = new ContextImpl(null);
-        } else {
-            context = FloobitsPlugin.getInstance(project).context;
-        }
-        context.linkEditor();
     }
 
     @Override
     protected void doOKAction() {
         super.doOKAction();
-        IContext context;
-        if (project == null) {
-            context = new ContextImpl(null);
-        } else {
-            context = FloobitsPlugin.getInstance(project).context;
-        }
-        context.createAccount();
     }
 }
 
