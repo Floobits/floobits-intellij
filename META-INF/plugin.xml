@@ -1,14 +1,15 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.5</version>
+  <version>1.5.6</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
-      Fix errors when no .floorc.json was present.
-      Fix user indicator jitters.
-      Fix not being able to right click on user icon in user list to get user menu.
-      Fix moving view when new lines were added or removed above in workspace.
+      Fix ugly blue link colors.
+      Make floobits button a toggle instead of just open.
+      Make floobits button work when there's no .floorc.json
+      Make actions that require account prompt for account when triggered.
+      Fix account creation dialog cancel, add cancel button.
       ]]></description>
 
   <change-notes><![CDATA[
