@@ -388,7 +388,10 @@ public class InboundRequestHandler {
     }
 
     public void _on_highlight(final FlooHighlight flooHighlight) {
-        final Buf buf = this.state.bufs.get(flooHighlight.id);
+        if (state.bufs == null) {
+            return;
+        }
+        final Buf buf = state.bufs.get(flooHighlight.id);
         editor.queue(buf, new RunLater<Buf>() {
             @Override
             public void run(Buf arg) {
