@@ -1,19 +1,23 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.6</version>
+  <version>1.5.7</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
+     Floobits lets you collaborate on code in real-time across multiple text editors and IDEs.<br>
+      You need a Floobits account. Create one at https://floobits.com
+      Features include being able to see other people's cursor and highlights, being able to summon, and also follow edits
+      automatically.
+      ]]></description>
+
+  <change-notes><![CDATA[
+
       Fix ugly blue link colors.
       Make floobits button a toggle instead of just open.
       Make floobits button work when there's no .floorc.json
       Make actions that require account prompt for account when triggered.
       Fix account creation dialog cancel, add cancel button.
-      ]]></description>
-
-  <change-notes><![CDATA[
-        Fix initial upload issues when project size is too big.
     ]]>
   </change-notes>
 
