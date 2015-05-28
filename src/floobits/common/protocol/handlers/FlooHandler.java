@@ -61,6 +61,9 @@ public class FlooHandler extends BaseHandler {
     }
 
     public void on_connect () {
+        if (conn == null) {
+            return;
+        }
         context.connected();
         context.statusMessage(String.format("Connecting to %s.", Utils.getLinkHTML(url.toString(), url.toString())));
         conn.write(new FlooAuth(auth.get("username"), auth.get("api_key"), auth.get("secret"), url.owner, url.workspace));
