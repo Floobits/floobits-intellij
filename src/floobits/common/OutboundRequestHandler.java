@@ -107,6 +107,10 @@ public class OutboundRequestHandler {
         if (!state.can("highlight")) {
             return;
         }
+        if (textRanges.size() == 0) {
+            Flog.info("Attempt to send a highlight with no ranges.");
+            return;
+        }
         if (Buf.isBad(b)) {
             Flog.info("Not sending highlight. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
