@@ -425,7 +425,9 @@ public class InboundRequestHandler {
                 if (document == null) {
                     return;
                 }
+                context.setSaving(true);
                 document.save();
+                context.setSaving(false);
             }
         });
     }

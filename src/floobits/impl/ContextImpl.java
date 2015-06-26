@@ -232,6 +232,10 @@ public class ContextImpl extends IContext {
         listener.isListening.set(b);
     }
 
+    public void setSaving(boolean b) {
+        listener.isSaving.set(b);
+    }
+
     @Override
     public void mainThread(Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(runnable);

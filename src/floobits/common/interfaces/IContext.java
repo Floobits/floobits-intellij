@@ -312,6 +312,7 @@ public abstract class IContext {
     public abstract void toggleFloobitsWindow();
     public abstract void listenToEditor(EditorEventHandler editorEventHandler);
     public abstract void setListener(boolean b);
+    public abstract void setSaving(boolean b);
     public abstract void mainThread(final Runnable runnable);
     public abstract void readThread(final Runnable runnable);
     public abstract void writeThread(final Runnable runnable);
