@@ -303,6 +303,7 @@ public abstract class IContext {
     public abstract void warnMessage(String message);
     public abstract void statusMessage(String message);
     public abstract void errorMessage(String message);
+    public abstract boolean confirmDialog(String message);
     public abstract void chatStatusMessage(String message);
     public abstract void chatErrorMessage(String message);
     public abstract void chat(String username, String msg, Date messageDate);

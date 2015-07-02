@@ -25,6 +25,7 @@ import floobits.utilities.IntelliUtils;
 import floobits.windows.FloobitsWindowManager;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -99,6 +100,15 @@ public class ContextImpl extends IContext {
         Flog.error(message);
         statusMessage(message, NotificationType.ERROR);
         chatErrorMessage(message);
+    }
+
+    @Override
+    public boolean confirmDialog(String message) {
+        int answer = JOptionPane.showConfirmDialog(null, message);
+        if (answer == JOptionPane.YES_OPTION) {
+            return true;
+        }
+        return false;
     }
 
     @Override public void chatStatusMessage(String message) {

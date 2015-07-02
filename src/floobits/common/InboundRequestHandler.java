@@ -3,6 +3,7 @@ package floobits.common;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import floobits.GitUtils;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IDoc;
 import floobits.common.interfaces.IFile;
@@ -514,7 +515,20 @@ public class InboundRequestHandler {
                             Utils.getLinkHTML(state.url.toString(), state.url.toString())));
 
                     DotFloo.write(context.colabDir, state.url.toString());
-
+                    if (ri.branchname != null) {
+                        String currentLocalBranch = GitUtils.branchName(context.colabDir);
+                        if (currentLocalBranch != null) {
+                            if (!currentLocalBranch.equals(ri.branchname)) {
+                                String msg = String.format(
+                                        "Your current HEAD or branch '%s' is not the same as the remote: '%s'. Continue anyway?",
+                                        currentLocalBranch, ri.branchname);
+                                if (!context.confirmDialog(msg)) {
+                                    context.statusMessage("Disconnected because you decided you were in a conflicting branch.");
+                                    context.shutdown();
+                                }
+                            }
+                        }
+                    }
                     if (shouldUpload) {
                         if (!state.readOnly) {
                             initialUpload(ri);

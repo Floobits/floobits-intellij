@@ -16,5 +16,6 @@ public class RoomInfoResponse implements Base {
     public HashMap<Integer, FlooUser> users;
     public HashMap<Integer, RoomInfoBuf> bufs;
     public String user_id;
+    public String branchname;
 
 }

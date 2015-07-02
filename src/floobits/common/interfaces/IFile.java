@@ -2,9 +2,6 @@ package floobits.common.interfaces;
 
 import java.io.InputStream;
 
-/**
- * Created by kans on 7/7/14.
- */
 public abstract class IFile {
     public abstract String getPath();
     public abstract boolean rename(Object obj, String name);
