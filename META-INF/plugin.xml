@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.8</version>
+  <version>1.5.9</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -12,8 +12,10 @@
       ]]></description>
 
   <change-notes><![CDATA[
-      Fixed sending empty highlights.
-      Fixed echoing save events.
+      Show you a URL we attempted to open when your desktop doesn't support opening your browser from Java.
+      Add ability to clear your cache and remove persisted data.
+      Show when your git branch conflict's with what's in colab.
+      Opening web editor now puts you in the same file and line if you have the editor open and focused.
     ]]>
   </change-notes>
 
