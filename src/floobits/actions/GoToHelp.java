@@ -2,6 +2,9 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
+import floobits.FloobitsPlugin;
+import floobits.common.Utils;
 import floobits.utilities.Flog;
 
 import java.awt.*;
@@ -15,12 +18,15 @@ public class GoToHelp extends AnAction {
             Flog.error("Browser not supported on this platform, couldn't open help.");
             return;
         }
+        URI uri;
         try {
-            Desktop.getDesktop().browse(new URI("https://floobits.com/help/plugins/intellij"));
-        } catch (IOException error) {
-            Flog.error(error);
+            uri = new URI("https://floobits.com/help/plugins/intellij");
         } catch (URISyntaxException error) {
             Flog.error(error);
+            return;
         }
+        Project project = e.getProject();
+        FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
+        Utils.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
     }
 }

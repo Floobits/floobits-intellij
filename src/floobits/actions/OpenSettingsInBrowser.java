@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
+import floobits.common.Utils;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
@@ -23,9 +24,7 @@ public class OpenSettingsInBrowser extends CanFloobits {
             return;
         }
         try {
-            Desktop.getDesktop().browse(new URI(String.format("%s/settings", flooUrl.toString())));
-        } catch (IOException e) {
-            Flog.info("Couldn't open settings in browser", e);
+            Utils.openInBrowser(new URI(String.format("%s/settings", flooUrl.toString())), "Click here to open your settings", context);
         } catch (URISyntaxException e) {
             Flog.info("Couldn't open settings in browser", e);
         }

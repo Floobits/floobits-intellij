@@ -9,7 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
+import floobits.FloobitsPlugin;
 import floobits.common.FloorcJson;
+import floobits.common.Utils;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -80,16 +82,7 @@ public class Flog {
                             NotificationListener listener = new NotificationListener() {
                                 @Override
                                 public void hyperlinkUpdate(Notification notification, HyperlinkEvent event) {
-                                        if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                                            try {
-                                                URI uri = event.getURL().toURI();
-                                                Desktop.getDesktop().browse(uri);
-                                            } catch (IOException error) {
-                                                Flog.error(error);
-                                            } catch (URISyntaxException error) {
-                                                Flog.error(error);
-                                            }
-                                        }
+                                    IntelliUtils.handleHyperLink(event, project);
                                 }
                             };
                             final Notification statusMessage = new Notification("Floobits", "Floobits", message,

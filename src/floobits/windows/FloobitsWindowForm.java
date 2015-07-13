@@ -13,6 +13,7 @@ import floobits.impl.ContextImpl;
 import floobits.impl.DocImpl;
 import floobits.utilities.Colors;
 import floobits.utilities.Flog;
+import floobits.utilities.IntelliUtils;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -50,9 +51,9 @@ public class FloobitsWindowForm {
     private boolean shouldScrollToBottom;
     private HashMap<String, ChatUserForm> userForms = new HashMap<String, ChatUserForm>();
 
-    public FloobitsWindowForm(IContext context) {
+    public FloobitsWindowForm(final ContextImpl context) {
         super();
-        this.context = (ContextImpl) context;
+        this.context = context;
         kit = new HTMLEditorKit();
         doc = new HTMLDocument();
         messages.setEditorKit(kit);
@@ -60,16 +61,7 @@ public class FloobitsWindowForm {
         messages.setEditable(false);
         messages.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    try {
-                        URI uri = e.getURL().toURI();
-                        Desktop.getDesktop().browse(uri);
-                    } catch (IOException error) {
-                        Flog.error(error);
-                    } catch (URISyntaxException error) {
-                        Flog.error(error);
-                    }
-                }
+                IntelliUtils.handleHyperLink(e, context.project);
             }
         });
         try {

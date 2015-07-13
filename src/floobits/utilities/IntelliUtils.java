@@ -5,14 +5,19 @@ import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import floobits.FloobitsPlugin;
 import floobits.common.Constants;
 import floobits.common.PersistentJson;
 import floobits.common.Settings;
+import floobits.common.Utils;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.impl.FileImpl;
 
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -110,5 +115,23 @@ public class IntelliUtils {
         }
         String secret = hostAuth.get("secret");
         return String.format("https://%s/%s/pinocchio/%s", host, username, secret);
+    }
+
+
+    public static void handleHyperLink(HyperlinkEvent event, Project project) {
+        if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            URI uri;
+            try {
+                uri = event.getURL().toURI();
+            } catch (URISyntaxException error) {
+                Flog.error(error);
+                return;
+            }
+            FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
+            if (!Utils.openInBrowser(uri, "Click to continue.", plugin.context)) {
+                plugin.context.errorMessage(
+                        String.format("You cannot click on links in IntelliJ apparently, try copy and paste: %s.", uri.toString()));
+            }
+        }
     }
 }

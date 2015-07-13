@@ -18,7 +18,6 @@ import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 
 import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -48,13 +47,14 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
         if (path != null) {
             urlStr = String.format("%s/file/%s:%d", flooUrl, path, line);
         }
+        URI uri;
         try {
-            Desktop.getDesktop().browse(new URI(urlStr));
-        } catch (IOException e) {
-            Flog.info("Couldn't open settings in browser", e);
+            uri = new URI(urlStr);
         } catch (URISyntaxException e) {
             Flog.info("Couldn't open settings in browser", e);
+            return;
         }
+        Utils.openInBrowser(uri, "Click here to go your project's settings.", context);
     }
 
 }

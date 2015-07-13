@@ -2,11 +2,13 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
+import floobits.FloobitsPlugin;
+import floobits.common.Utils;
+import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
 
-import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -17,11 +19,12 @@ public class CompleteSignup extends AnAction {
         if (url == null) {
             return;
         }
+        Project project = e.getProject();
+        FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
+        IContext context = plugin.context;
         try {
             URI uri = new URI(url);
-            Desktop.getDesktop().browse(uri);
-        } catch (IOException error) {
-            Flog.error(error);
+            Utils.openInBrowser(uri, "Click here to complete sign up.", context);
         } catch (URISyntaxException error) {
             Flog.error(error);
         }

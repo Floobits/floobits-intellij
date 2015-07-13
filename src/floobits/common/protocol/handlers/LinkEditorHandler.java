@@ -2,10 +2,7 @@ package floobits.common.protocol.handlers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import floobits.common.Constants;
-import floobits.common.FlooUrl;
-import floobits.common.FloorcJson;
-import floobits.common.Settings;
+import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.Connection;
 import floobits.common.protocol.json.send.FlooRequestCredentials;
@@ -89,14 +86,16 @@ public class LinkEditorHandler extends BaseHandler {
             context.shutdown();
             return;
         }
+        URI uri;
         try {
-            Desktop.getDesktop().browse(new URI(String.format("https://%s/dash/link_editor/intellij/%s", host, token)));
-        } catch (IOException error) {
-            context.shutdown();
-            Flog.error(error);
+            uri = new URI(String.format("https://%s/dash/link_editor/intellij/%s", host, token));
         } catch (URISyntaxException error) {
-            context.shutdown();
             Flog.error(error);
+            return;
+        }
+        if (!Utils.openInBrowser(uri, "Click here to sign in to Floobits.", context)) {
+            context.shutdown();
+            context.errorMessage("Could not sign you in. Please check our .floorc.json documentation on our help pages.");
         }
     }
 
