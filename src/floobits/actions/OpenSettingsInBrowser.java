@@ -8,6 +8,7 @@ import floobits.common.FlooUrl;
 import floobits.common.Utils;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
+import floobits.utilities.IntelliUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class OpenSettingsInBrowser extends CanFloobits {
             return;
         }
         try {
-            Utils.openInBrowser(new URI(String.format("%s/settings", flooUrl.toString())), "Click here to open your settings", context);
+            IntelliUtils.openInBrowser(new URI(String.format("%s/settings", flooUrl.toString())), "Click here to open your settings", context);
         } catch (URISyntaxException e) {
             Flog.info("Couldn't open settings in browser", e);
         }

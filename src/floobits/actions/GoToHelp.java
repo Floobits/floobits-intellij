@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.Utils;
 import floobits.utilities.Flog;
+import floobits.utilities.IntelliUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -27,6 +28,6 @@ public class GoToHelp extends AnAction {
         }
         Project project = e.getProject();
         FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-        Utils.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
+        IntelliUtils.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
     }
 }

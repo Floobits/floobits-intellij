@@ -16,6 +16,7 @@ import floobits.common.FlooUrl;
 import floobits.common.Utils;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
+import floobits.utilities.IntelliUtils;
 
 import java.awt.*;
 import java.net.URI;
@@ -54,7 +55,7 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
             Flog.info("Couldn't open settings in browser", e);
             return;
         }
-        Utils.openInBrowser(uri, "Click here to go your project's settings.", context);
+        IntelliUtils.openInBrowser(uri, "Click here to go your project's settings.", context);
     }
 
 }

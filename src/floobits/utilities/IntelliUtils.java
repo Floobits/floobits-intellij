@@ -1,5 +1,6 @@
 package floobits.utilities;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VFileProperty;
@@ -128,10 +129,30 @@ public class IntelliUtils {
                 return;
             }
             FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-            if (!Utils.openInBrowser(uri, "Click to continue.", plugin.context)) {
+            if (!openInBrowser(uri, "Click to continue.", plugin.context)) {
                 plugin.context.errorMessage(
                         String.format("You cannot click on links in IntelliJ apparently, try copy and paste: %s.", uri.toString()));
             }
         }
+    }
+
+    /**
+     * Wrap the common Utils.openInBrowser function so that we first attempt to use
+     * IntelliJ's native open-in-browser feature, which works more reliably across platforms.
+     * @param uri - The link to open
+     * @param defaultLinkText - Link text for hyperlink dropped into console if opening browser fails
+     * @param context - Application context so that we can write to console if needed
+     * @return boolean true if the browser was successfully opened.
+     */
+    static public boolean openInBrowser(URI uri, String defaultLinkText, IContext context) {
+        boolean shown = false;
+        try {
+            BrowserUtil.browse(uri);
+            context.statusMessage(Utils.getLinkHTML(defaultLinkText, uri.toString()));
+            shown = true;
+        } catch (Exception e) {
+            shown = Utils.openInBrowser(uri, defaultLinkText, context);
+        }
+        return shown;
     }
 }
