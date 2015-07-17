@@ -201,7 +201,9 @@ public class ContextImpl extends IContext {
 
     @Override
     public void updateFollowing() {
-        floobitsWindowManager.updateUserList();
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.updateUserList();
+        }
     }
 
     @Override
@@ -216,7 +218,9 @@ public class ContextImpl extends IContext {
     @Override
     public void removeUser(FlooUser user) {
         statusMessage(String.format("%s left the workspace.", user.username));
-        floobitsWindowManager.removeUser(user);
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.removeUser(user);
+        }
         iFactory.removeHighlightsForUser(user.user_id);
     }
 
@@ -490,9 +494,13 @@ public class ContextImpl extends IContext {
                 if (handler == null) {
                     return;
                 }
-                floobitsWindowManager.updateUserList();
+                if (floobitsWindowManager != null) {
+                    floobitsWindowManager.updateUserList();
+                }
             }
         });
-        floobitsWindowManager.addUser(user);
+        if (floobitsWindowManager != null) {
+            floobitsWindowManager.addUser(user);
+        }
     }
 }
