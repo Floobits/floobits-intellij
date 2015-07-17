@@ -1,6 +1,5 @@
 package floobits.common;
 
-import floobits.FloobitsPlugin;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.utilities.Flog;
@@ -8,11 +7,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
-import javax.swing.event.HyperlinkEvent;
-import java.awt.*;
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -280,24 +276,7 @@ public class Utils {
     }
 
     static public boolean openInBrowser(URI uri, String defaultLinkText, IContext context) {
-        boolean shown = false;
-        String linkText = "Please click here to continue.";
-        if (defaultLinkText != null) {
-            linkText = defaultLinkText;
-        }
-        if(Desktop.isDesktopSupported()) {
-            try {
-                Desktop.getDesktop().browse(uri);
-                shown = true;
-            } catch (IOException error) {
-                Flog.error(error);
-            }
-        }
-        if (!shown && context != null) {
-            context.errorMessage("Could not open your system's browser.");
-            context.statusMessage(getLinkHTML(linkText, uri.toString()));
-        }
-        return shown;
+        return BrowserOpener.getInstance().openInBrowser(uri, defaultLinkText, context);
     }
 
 }

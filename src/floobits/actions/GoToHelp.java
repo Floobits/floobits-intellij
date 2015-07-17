@@ -4,17 +4,16 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
-import floobits.common.Utils;
+import floobits.common.BrowserOpener;
 import floobits.utilities.Flog;
 
-import java.awt.*;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class GoToHelp extends AnAction {
     public void actionPerformed(AnActionEvent e) {
-        if(!Desktop.isDesktopSupported()) {
+        BrowserOpener browserOpener = BrowserOpener.getInstance();
+        if(!browserOpener.isBrowserSupported()) {
             Flog.error("Browser not supported on this platform, couldn't open help.");
             return;
         }
@@ -27,6 +26,6 @@ public class GoToHelp extends AnAction {
         }
         Project project = e.getProject();
         FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-        Utils.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
+        browserOpener.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
     }
 }

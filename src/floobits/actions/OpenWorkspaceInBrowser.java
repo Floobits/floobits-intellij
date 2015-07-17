@@ -11,6 +11,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
+import floobits.common.BrowserOpener;
 import floobits.common.DotFloo;
 import floobits.common.FlooUrl;
 import floobits.common.Utils;
@@ -54,7 +55,7 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
             Flog.info("Couldn't open settings in browser", e);
             return;
         }
-        Utils.openInBrowser(uri, "Click here to go your project's settings.", context);
+        BrowserOpener.getInstance().openInBrowser(uri, "Click here to go your project's settings.", context);
     }
 
 }

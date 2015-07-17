@@ -6,16 +6,12 @@ import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
-import floobits.common.Constants;
-import floobits.common.PersistentJson;
-import floobits.common.Settings;
-import floobits.common.Utils;
+import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.impl.FileImpl;
 
 import javax.swing.event.HyperlinkEvent;
-import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -80,7 +76,7 @@ public class IntelliUtils {
             Flog.errorMessage("Error, no account details detected. You will have to sign up manually.", project);
             return null;
         }
-        if(!Desktop.isDesktopSupported()) {
+        if(!BrowserOpener.getInstance().isBrowserSupported()) {
             Flog.errorMessage("Can't use a browser on this system.", project);
             return null;
         }
@@ -128,7 +124,7 @@ public class IntelliUtils {
                 return;
             }
             FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-            if (!Utils.openInBrowser(uri, "Click to continue.", plugin.context)) {
+            if (!BrowserOpener.getInstance().openInBrowser(uri, "Click to continue.", plugin.context)) {
                 plugin.context.errorMessage(
                         String.format("You cannot click on links in IntelliJ apparently, try copy and paste: %s.", uri.toString()));
             }

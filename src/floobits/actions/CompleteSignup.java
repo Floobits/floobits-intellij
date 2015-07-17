@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
-import floobits.common.Utils;
+import floobits.common.BrowserOpener;
 import floobits.common.interfaces.IContext;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
@@ -24,7 +24,7 @@ public class CompleteSignup extends AnAction {
         IContext context = plugin.context;
         try {
             URI uri = new URI(url);
-            Utils.openInBrowser(uri, "Click here to complete sign up.", context);
+            BrowserOpener.getInstance().openInBrowser(uri, "Click here to complete sign up.", context);
         } catch (URISyntaxException error) {
             Flog.error(error);
         }

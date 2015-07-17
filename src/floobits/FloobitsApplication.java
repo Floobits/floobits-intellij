@@ -18,6 +18,7 @@ import floobits.common.*;
 import floobits.dialogs.CreateAccount;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
+import floobits.utilities.IntelliBrowserOpener;
 import floobits.utilities.SelectFolder;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,7 @@ public class FloobitsApplication implements ApplicationComponent {
     }
 
     public void initComponent() {
+        BrowserOpener.replaceSingleton(new IntelliBrowserOpener());
         ApplicationInfo instance = ApplicationInfo.getInstance();
         IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
         createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), plugin != null ? plugin.getVersion() : "???");
