@@ -8,8 +8,6 @@ import floobits.common.protocol.Connection;
 import floobits.common.protocol.json.send.FlooRequestCredentials;
 import floobits.utilities.Flog;
 
-import java.awt.*;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -81,7 +79,8 @@ public class LinkEditorHandler extends BaseHandler {
     }
 
     protected void openBrowser() {
-        if(!Desktop.isDesktopSupported()) {
+        BrowserOpener browserOpener = BrowserOpener.getInstance();
+        if(!browserOpener.isBrowserSupported()) {
             context.errorMessage("Floobits can't use a browser on this system.");
             context.shutdown();
             return;
@@ -93,7 +92,7 @@ public class LinkEditorHandler extends BaseHandler {
             Flog.error(error);
             return;
         }
-        if (!Utils.openInBrowser(uri, "Click here to sign in to Floobits.", context)) {
+        if (!browserOpener.openInBrowser(uri, "Click here to sign in to Floobits.", context)) {
             context.shutdown();
             context.errorMessage("Could not sign you in. Please check our .floorc.json documentation on our help pages.");
         }

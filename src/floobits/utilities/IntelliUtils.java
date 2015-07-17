@@ -1,22 +1,17 @@
 package floobits.utilities;
 
-import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VFileProperty;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import floobits.FloobitsPlugin;
-import floobits.common.Constants;
-import floobits.common.PersistentJson;
-import floobits.common.Settings;
-import floobits.common.Utils;
+import floobits.common.*;
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.impl.FileImpl;
 
 import javax.swing.event.HyperlinkEvent;
-import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -81,7 +76,7 @@ public class IntelliUtils {
             Flog.errorMessage("Error, no account details detected. You will have to sign up manually.", project);
             return null;
         }
-        if(!Desktop.isDesktopSupported()) {
+        if(!BrowserOpener.getInstance().isBrowserSupported()) {
             Flog.errorMessage("Can't use a browser on this system.", project);
             return null;
         }
@@ -129,30 +124,10 @@ public class IntelliUtils {
                 return;
             }
             FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-            if (!openInBrowser(uri, "Click to continue.", plugin.context)) {
+            if (!BrowserOpener.getInstance().openInBrowser(uri, "Click to continue.", plugin.context)) {
                 plugin.context.errorMessage(
                         String.format("You cannot click on links in IntelliJ apparently, try copy and paste: %s.", uri.toString()));
             }
         }
-    }
-
-    /**
-     * Wrap the common Utils.openInBrowser function so that we first attempt to use
-     * IntelliJ's native open-in-browser feature, which works more reliably across platforms.
-     * @param uri - The link to open
-     * @param defaultLinkText - Link text for hyperlink dropped into console if opening browser fails
-     * @param context - Application context so that we can write to console if needed
-     * @return boolean true if the browser was successfully opened.
-     */
-    static public boolean openInBrowser(URI uri, String defaultLinkText, IContext context) {
-        boolean shown = false;
-        try {
-            BrowserUtil.browse(uri);
-            context.statusMessage(Utils.getLinkHTML(defaultLinkText, uri.toString()));
-            shown = true;
-        } catch (Exception e) {
-            shown = Utils.openInBrowser(uri, defaultLinkText, context);
-        }
-        return shown;
     }
 }
