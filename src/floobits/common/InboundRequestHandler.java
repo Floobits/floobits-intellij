@@ -246,44 +246,44 @@ public class InboundRequestHandler {
         }
 
         editor.queue(buf, new RunLater<Buf>() {
-                @Override
-                public void run(Buf buf) {
-                    final IFile foundFile = context.iFactory.findFileByPath(oldPath);
-                    if (foundFile == null) {
-                        Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
-                        return;
-                    }
-                    String newRelativePath = context.toProjectRelPath(newPath);
-                    if (newRelativePath == null) {
-                        context.errorMessage("A file is now outside the workspace.");
-                        return;
-                    }
-                    state.setBufPath(buf, newRelativePath);
+                    @Override
+                    public void run(Buf buf) {
+                        final IFile foundFile = context.iFactory.findFileByPath(oldPath);
+                        if (foundFile == null) {
+                            Flog.warn("File we want to move was not found %s %s.", oldPath, newPath);
+                            return;
+                        }
+                        String newRelativePath = context.toProjectRelPath(newPath);
+                        if (newRelativePath == null) {
+                            context.errorMessage("A file is now outside the workspace.");
+                            return;
+                        }
+                        state.setBufPath(buf, newRelativePath);
 
-                    File oldFile = new File(oldPath);
-                    File newFile = new File(newPath);
-                    String newFileName = newFile.getName();
-                    // Rename file
+                        File oldFile = new File(oldPath);
+                        File newFile = new File(newPath);
+                        String newFileName = newFile.getName();
+                        // Rename file
 
-                    if (foundFile.rename(null, newFileName)) {
-                        return;
-                    }
+                        if (foundFile.rename(null, newFileName)) {
+                            return;
+                        }
 
-                    // Move file
-                    String newParentDirectoryPath = newFile.getParent();
-                    String oldParentDirectoryPath = oldFile.getParent();
-                    if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
-                        Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
-                        return;
-                    }
-                    IFile directory = context.iFactory.createDirectories(newParentDirectoryPath);
-                    if (directory == null) {
-                        return;
-                    }
+                        // Move file
+                        String newParentDirectoryPath = newFile.getParent();
+                        String oldParentDirectoryPath = oldFile.getParent();
+                        if (newParentDirectoryPath.equals(oldParentDirectoryPath)) {
+                            Flog.warn("Only rename file, don't need to move %s %s", oldPath, newPath);
+                            return;
+                        }
+                        IFile directory = context.iFactory.createDirectories(newParentDirectoryPath);
+                        if (directory == null) {
+                            return;
+                        }
 
-                    foundFile.move(null, directory);
+                        foundFile.move(null, directory);
+                    }
                 }
-            }
         );
     }
 
@@ -547,6 +547,9 @@ public class InboundRequestHandler {
     }
 
     void _on_get_buf(JsonObject obj) {
+        if (state == null || state.bufs == null) {
+            return;
+        }
         Gson gson = new Gson();
         final GetBufResponse res = gson.fromJson(obj, (Type) GetBufResponse.class);
         Buf b = state.bufs.get(res.id);
