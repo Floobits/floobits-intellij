@@ -62,7 +62,7 @@ public class TextBuf extends Buf<String> {
 
         IFile virtualFile = getOrCreateFile();
         try {
-            virtualFile.setBytes(buf.getBytes());
+            virtualFile.setBytes(buf.getBytes("UTF-8"));
         } catch (Throwable e) {
             Flog.error(e);
             context.errorMessage("The Floobits plugin was unable to write to a file.");
