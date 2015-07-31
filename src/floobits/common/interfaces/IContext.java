@@ -172,6 +172,10 @@ public abstract class IContext {
             errorMessage(String.format("The workspace %s does not exist!", flooUrl.toString()));
             return;
         }
+        if (iFactory.findFileByIoFile(new File(path)) == null) {
+            errorMessage(String.format("The specified path %s is not valid!", path));
+            return;
+        }
         if (setupHandler(new FlooHandler(this, flooUrl, upload, path, auth, dirToAdd))) {
             setListener(true);
             return;
