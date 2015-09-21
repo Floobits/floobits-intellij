@@ -8,6 +8,7 @@ public class ShareProjectForm {
     private JTextField workspaceNameTextField;
     private JLabel JLabel;
     private JPanel contentPanel;
+    private JLabel warningLabel;
 
 
     public void setWorkSpaceName(String workspaceName) {
@@ -32,5 +33,9 @@ public class ShareProjectForm {
 
     public String getWorkspaceName () {
         return workspaceNameTextField.getText();
+    }
+
+    public void setWarning(String s) {
+        warningLabel.setText(s);
     }
 }

@@ -27,7 +27,7 @@ public class ShareProjectDialog extends CustomButtonDialogWrapper {
         }
     }
 
-    public ShareProjectDialog(String workspaceName, List<String> orgs, Project project,
+    public ShareProjectDialog(String projectName, List<String> orgs, Project project,
                               final RunLater<ShareProjectDialog> uploadAll,
                               final RunLater<ShareProjectDialog> uploadPick) {
         super(project, true);
@@ -35,6 +35,10 @@ public class ShareProjectDialog extends CustomButtonDialogWrapper {
         if (orgs.size() < 1 && project != null) {
             Flog.errorMessage("Unable to share project, do you have a Floobits account?", project);
             return;
+        }
+        String workspaceName = projectName.replaceAll("[^a-zA-Z0-9\\-_]", "-");
+        if (!workspaceName.equals(projectName)) {
+            form.setWarning("Replaced at least one non-valid character with a dash.");
         }
         form.setWorkSpaceName(workspaceName);
         form.setOrgs(orgs);

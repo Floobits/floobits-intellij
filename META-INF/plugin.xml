@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.5.10</version>
+  <version>1.5.11</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -12,9 +12,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-      Fix opening the browser, thank you islemaster!
-      NPE fixes.
-      UTF-8 fixes.
+      Automatically replace non-valid workspace name characters with dashes.
     ]]>
   </change-notes>
 
