@@ -168,8 +168,8 @@ public class API {
             Flog.error(e);
             return false;
         }
-
-        if (method.getStatusCode() >= 300){
+        // TODO: this could be an auth error or 500 or 503. Return more useful error message in that case
+        if (method.getStatusCode() >= 300) {
             PersistentJson.removeWorkspace(f);
             return false;
         }
