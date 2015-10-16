@@ -242,8 +242,11 @@ public class DocImpl extends IDoc {
             return;
         }
         setReadOnly(false);
-        FileDocumentManager.getInstance().saveDocument(document);
-
+        try {
+            FileDocumentManager.getInstance().saveDocument(document);
+        } catch (Throwable e) {
+            Flog.error(e);
+        }
     }
 
     public void setText(final String text) {
