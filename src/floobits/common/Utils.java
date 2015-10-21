@@ -6,9 +6,14 @@ import floobits.utilities.Flog;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.URI;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -219,7 +224,19 @@ public class Utils {
     }
 
     static public SSLContext createSSLContext() {
-        X509TrustManager x509TrustManager = new X509TrustManager() {
+        TrustManager[] defaultTrustManagers = null;
+
+        try {
+            TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustMgrFactory.init((KeyStore) null);
+            defaultTrustManagers = trustMgrFactory.getTrustManagers();
+        } catch (NoSuchAlgorithmException e) {
+            Flog.error(e);
+        } catch (KeyStoreException e) {
+            Flog.error(e);
+        }
+
+        X509TrustManager StartComSSLTrustManager = new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
             public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
@@ -249,10 +266,19 @@ public class Utils {
             }
         };
 
+        TrustManager[] allTrustManagers;
+        if (defaultTrustManagers == null) {
+            allTrustManagers = new TrustManager[]{StartComSSLTrustManager};
+        } else {
+            allTrustManagers = new TrustManager[defaultTrustManagers.length + 1];
+            System.arraycopy(defaultTrustManagers, 0, allTrustManagers, 1, defaultTrustManagers.length);
+            allTrustManagers[0] = StartComSSLTrustManager;
+        }
+
         SSLContext sc = null;
         try {
             sc = SSLContext.getInstance("SSL");
-            sc.init(null, new javax.net.ssl.TrustManager[]{x509TrustManager}, new SecureRandom());
+            sc.init(null, allTrustManagers, new SecureRandom());
         } catch (Exception e) {
             Flog.error(e);
         }
