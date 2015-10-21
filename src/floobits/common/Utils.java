@@ -224,22 +224,36 @@ public class Utils {
     }
 
     static public SSLContext createSSLContext() {
-        TrustManager[] defaultTrustManagers = null;
-
+        TrustManagerFactory trustManagerFactory = null;
         try {
-            TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustMgrFactory.init((KeyStore) null);
-            defaultTrustManagers = trustMgrFactory.getTrustManagers();
+            trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null);
         } catch (NoSuchAlgorithmException e) {
             Flog.error(e);
         } catch (KeyStoreException e) {
             Flog.error(e);
         }
 
-        X509TrustManager StartComSSLTrustManager = new X509TrustManager() {
+        final TrustManagerFactory finalTrustManagerFactory = trustManagerFactory;
+        X509TrustManager FloobitsSSLTrustManager = new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
             public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+                if (finalTrustManagerFactory != null) {
+                    for (TrustManager trustManager : finalTrustManagerFactory.getTrustManagers()) {
+                        if (trustManager instanceof X509TrustManager) {
+                            X509TrustManager x509TrustManager = (X509TrustManager) trustManager;
+                            try {
+                                x509TrustManager.checkServerTrusted(certs, authType);
+                                return;
+                            } catch (CertificateException e) {
+                                Flog.error(e);
+                            }
+                        }
+                    }
+
+                }
+
                 InputStream is = new ByteArrayInputStream(cert.getBytes());
                 CertificateFactory cf;
                 X509Certificate cert;
@@ -266,19 +280,10 @@ public class Utils {
             }
         };
 
-        TrustManager[] allTrustManagers;
-        if (defaultTrustManagers == null) {
-            allTrustManagers = new TrustManager[]{StartComSSLTrustManager};
-        } else {
-            allTrustManagers = new TrustManager[defaultTrustManagers.length + 1];
-            System.arraycopy(defaultTrustManagers, 0, allTrustManagers, 1, defaultTrustManagers.length);
-            allTrustManagers[0] = StartComSSLTrustManager;
-        }
-
         SSLContext sc = null;
         try {
             sc = SSLContext.getInstance("SSL");
-            sc.init(null, allTrustManagers, new SecureRandom());
+            sc.init(null, new TrustManager[]{FloobitsSSLTrustManager}, new SecureRandom());
         } catch (Exception e) {
             Flog.error(e);
         }
