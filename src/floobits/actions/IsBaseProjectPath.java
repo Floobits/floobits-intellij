@@ -22,6 +22,6 @@ public abstract class IsBaseProjectPath extends CanFloobits {
         String place = e.getPlace();
         e.getPresentation().setEnabled(place.equals("MainMenu") || file.getPath().equals(project.getBasePath()));
         e.getPresentation().setVisible(place.equals("MainMenu") || file.getPath().equals(project.getBasePath()));
-        Flog.warn("file is %s at %s", file.getPath(), place);
+        Flog.debug("file is %s at %s", file.getPath(), place);
     }
 }
