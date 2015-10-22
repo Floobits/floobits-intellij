@@ -234,11 +234,25 @@ public class Utils {
             Flog.error(e);
         }
 
+        final FloorcJson settings;
+        boolean unsecured;
+        try {
+            settings = FloorcJson.getFloorcJsonFromSettings();
+            unsecured = settings.unsecured;
+        } catch (Exception e) {
+            unsecured = false;
+        }
+
         final TrustManagerFactory finalTrustManagerFactory = trustManagerFactory;
+        final boolean finalUnsecured = unsecured;
         X509TrustManager FloobitsSSLTrustManager = new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
             public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+                if (finalUnsecured) {
+                    Flog.warn("Not checking SSL Certs because of unsecured flag in your ~/.floorc");
+                    return;
+                }
                 if (finalTrustManagerFactory != null) {
                     for (TrustManager trustManager : finalTrustManagerFactory.getTrustManagers()) {
                         if (trustManager instanceof X509TrustManager) {
@@ -251,7 +265,6 @@ public class Utils {
                             }
                         }
                     }
-
                 }
 
                 InputStream is = new ByteArrayInputStream(cert.getBytes());

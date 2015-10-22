@@ -12,6 +12,7 @@ public class FloorcJson implements Serializable {
     public String share_dir;
     public Integer MAX_ERROR_REPORTS;
     public String DEFAULT_HOST;
+    public Boolean unsecured;
 
     public static FloorcJson getFloorcJsonFromSettings () {
         FloorcJson floorcJson = null;
@@ -28,6 +29,9 @@ public class FloorcJson implements Serializable {
         }
         if (floorcJson.debug == null) {
             floorcJson.debug = false;
+        }
+        if (floorcJson.unsecured == null) {
+            floorcJson.unsecured = false;
         }
         return floorcJson;
     }
