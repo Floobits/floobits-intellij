@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -12,7 +12,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-      Automatically replace non-valid workspace name characters with dashes.
+      Fixes issues verifying TLS certs for domains other than floobits.com. Adds a configuration option to skip cert validation.
     ]]>
   </change-notes>
 
