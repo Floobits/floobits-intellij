@@ -9,6 +9,7 @@ import java.util.HashMap;
 public class FloorcJson implements Serializable {
     public HashMap<String, HashMap<String, String>> auth;
     public Boolean debug;
+    public Boolean insecure;
     public String share_dir;
     public Integer MAX_ERROR_REPORTS;
     public String DEFAULT_HOST;
@@ -28,6 +29,9 @@ public class FloorcJson implements Serializable {
         }
         if (floorcJson.debug == null) {
             floorcJson.debug = false;
+        }
+        if (floorcJson.insecure == null) {
+            floorcJson.insecure = false;
         }
         return floorcJson;
     }

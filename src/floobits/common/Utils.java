@@ -239,6 +239,15 @@ public class Utils {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
             public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+                try {
+                    FloorcJson floorcJson = Settings.get();
+                    if (floorcJson.insecure) {
+                        Flog.warn("Insecure mode enabled in ~/.floorc.json! Skipping certificate validation!");
+                        return;
+                    }
+                } catch (Exception e) {
+                    Flog.error(e);
+                }
                 if (finalTrustManagerFactory != null) {
                     for (TrustManager trustManager : finalTrustManagerFactory.getTrustManagers()) {
                         if (trustManager instanceof X509TrustManager) {
@@ -251,7 +260,6 @@ public class Utils {
                             }
                         }
                     }
-
                 }
 
                 InputStream is = new ByteArrayInputStream(cert.getBytes());
