@@ -4,8 +4,31 @@ import com.intellij.ui.JBColor;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Colors {
+    final static protected ArrayList<String> HIGHLIGHT_COLORS = new ArrayList<String>(){{
+        add("lime");
+        add("black");
+        add("blue");
+        add("darkblue");
+        add("fuchsia");
+        add("gray");
+        add("green");
+        add("greenyellow");
+        add("indigo");
+        add("magenta");
+        add("midnightblue");
+        add("maroon");
+        add("orange");
+        add("orangered");
+        add("purple");
+        add("red");
+        add("teal");
+        add("yellow");
+    }};
+
     static protected JBColor[] colors = new JBColor[] {
         new JBColor(new Color(0, 255, 0, 77), new Color(0, 255, 0, 77)),
         new JBColor(new Color(0, 0, 0, 77), new Color(0, 0, 0, 77)),
@@ -49,10 +72,20 @@ public class Colors {
     }
 
     public static JBColor getColorForUser(String username) {
+        String color = color_map.get(username);
+        if (color != null) {
+            int indexOf = HIGHLIGHT_COLORS.indexOf(color);
+            if (indexOf >= 0) {
+                return colors[indexOf];
+            }
+        }
+
         int i = 0;
         for(char c : DigestUtils.md5Hex(username).toCharArray()) {
             i += (int)c;
         }
         return colors[i % colors.length];
     }
+
+    public static final HashMap<String, String> color_map = new HashMap<String, String>();
 }

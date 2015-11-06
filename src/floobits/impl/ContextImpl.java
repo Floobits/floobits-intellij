@@ -20,6 +20,7 @@ import floobits.common.interfaces.IFile;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.dialogs.*;
+import floobits.utilities.Colors;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliUtils;
 import floobits.windows.FloobitsWindowManager;
@@ -463,6 +464,11 @@ public class ContextImpl extends IContext {
             Flog.info("Pool is null cannot add user.");
             return;
         }
+
+        if (user.color != null) {
+            Colors.color_map.put(user.username, user.color);
+        }
+
         statusMessage(String.format("%s joined the workspace on %s (%s).", user.username, user.platform, user.client));
         Flog.info("Adding gravatar for user %s.", user);
         pool.execute(new Runnable() {
