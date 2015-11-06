@@ -164,8 +164,14 @@ public class DocImpl extends IDoc {
                                 if (context.getFlooHandler() == null) {
                                     return;
                                 }
-                                VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, bubblePos);
-                                Point p = editor.visualPositionToXY(visPos);
+                                Point p;
+                                try {
+                                    VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, bubblePos);
+                                    p = editor.visualPositionToXY(visPos);
+                                } catch (IndexOutOfBoundsException e) {
+                                    return;
+                                }
+
                                 Balloon balloon;
                                 if (balloonState.balloon != null && !balloonState.balloon.isDisposed()) {
                                     balloonState.balloon.setAnimationEnabled(false);
