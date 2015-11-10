@@ -1,5 +1,7 @@
 package floobits.common;
 
+import com.intellij.util.net.ssl.ConfirmingTrustManager;
+
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.utilities.Flog;
@@ -21,6 +23,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+
+import static com.intellij.util.net.ssl.ConfirmingTrustManager.*;
 
 public class Utils {
     private static int requestId = 0;
@@ -144,7 +148,6 @@ public class Utils {
         if (pathSeparator.equals("/")) {
             normalizedTargetPath = FilenameUtils.separatorsToUnix(normalizedTargetPath);
             normalizedBasePath = FilenameUtils.separatorsToUnix(normalizedBasePath);
-
         } else if (pathSeparator.equals("\\")) {
             normalizedTargetPath = FilenameUtils.separatorsToWindows(normalizedTargetPath);
             normalizedBasePath = FilenameUtils.separatorsToWindows(normalizedBasePath);
@@ -239,6 +242,9 @@ public class Utils {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
             public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+                String path = FilenameUtils.concat(FilenameUtils.concat(System.getProperty("user.home"), "floobits"), "trust-store");
+                X509TrustManager manager = ConfirmingTrustManager.createForStorage(path, "");
+                manager.checkServerTrusted(certs, authType);
                 try {
                     FloorcJson floorcJson = Settings.get();
                     if (floorcJson.insecure) {
