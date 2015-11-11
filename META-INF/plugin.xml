@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -12,8 +12,9 @@
       ]]></description>
 
   <change-notes><![CDATA[
-    Adds support for custom highlight colors.
-    Fixes a rare crash that could occur if a highlight was applied after a buffer was edited to be smaller.
+    Our plugin now does a better job of trying to use the operating system's trust store to validate TLS certificates.
+    Also, invalid TLS certificates cause a prompt instead of an automatic rejection.
+    This should make life better for users who are behind MitM proxies.
     ]]>
   </change-notes>
 
