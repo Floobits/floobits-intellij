@@ -168,7 +168,7 @@ public class DocImpl extends IDoc {
                                 try {
                                     VisualPosition visPos = new VisualPosition(editor.offsetToVisualPosition(balloonOffset).line, bubblePos);
                                     p = editor.visualPositionToXY(visPos);
-                                } catch (IndexOutOfBoundsException e) {
+                                } catch (Throwable e) {
                                     return;
                                 }
 

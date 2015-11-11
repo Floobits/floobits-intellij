@@ -60,7 +60,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
     protected volatile Integer retries = MAX_RETRIES;
     protected Integer delay = INITIAL_RECONNECT_DELAY;
 
-    public Connection(final BaseHandler handler){
+    public Connection(final BaseHandler handler) {
         this.handler = handler;
         this.context = handler.context;
     }

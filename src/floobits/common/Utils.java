@@ -1,5 +1,7 @@
 package floobits.common;
 
+import com.intellij.util.net.ssl.ConfirmingTrustManager;
+
 import floobits.common.interfaces.IContext;
 import floobits.common.interfaces.IFile;
 import floobits.utilities.Flog;
@@ -21,6 +23,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
+
+import static com.intellij.util.net.ssl.ConfirmingTrustManager.*;
 
 public class Utils {
     private static int requestId = 0;
@@ -144,7 +148,6 @@ public class Utils {
         if (pathSeparator.equals("/")) {
             normalizedTargetPath = FilenameUtils.separatorsToUnix(normalizedTargetPath);
             normalizedBasePath = FilenameUtils.separatorsToUnix(normalizedBasePath);
-
         } else if (pathSeparator.equals("\\")) {
             normalizedTargetPath = FilenameUtils.separatorsToWindows(normalizedTargetPath);
             normalizedBasePath = FilenameUtils.separatorsToWindows(normalizedBasePath);
@@ -224,17 +227,6 @@ public class Utils {
     }
 
     static public SSLContext createSSLContext() {
-        TrustManagerFactory trustManagerFactory = null;
-        try {
-            trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init((KeyStore) null);
-        } catch (NoSuchAlgorithmException e) {
-            Flog.error(e);
-        } catch (KeyStoreException e) {
-            Flog.error(e);
-        }
-
-        final TrustManagerFactory finalTrustManagerFactory = trustManagerFactory;
         X509TrustManager FloobitsSSLTrustManager = new X509TrustManager() {
             public X509Certificate[] getAcceptedIssuers() {return null;}
             public void checkClientTrusted(X509Certificate[] certs, String authType) {}
@@ -248,19 +240,6 @@ public class Utils {
                 } catch (Exception e) {
                     Flog.error(e);
                 }
-                if (finalTrustManagerFactory != null) {
-                    for (TrustManager trustManager : finalTrustManagerFactory.getTrustManagers()) {
-                        if (trustManager instanceof X509TrustManager) {
-                            X509TrustManager x509TrustManager = (X509TrustManager) trustManager;
-                            try {
-                                x509TrustManager.checkServerTrusted(certs, authType);
-                                return;
-                            } catch (CertificateException e) {
-                                Flog.error(e);
-                            }
-                        }
-                    }
-                }
 
                 InputStream is = new ByteArrayInputStream(cert.getBytes());
                 CertificateFactory cf;
@@ -273,17 +252,19 @@ public class Utils {
                 ArrayList<X509Certificate> x509Certificates = new ArrayList<X509Certificate>(Arrays.asList(certs));
                 x509Certificates.add(cert);
                 X509Certificate a, b;
-                a = x509Certificates.get(0);
-                for (int i = 1; i < x509Certificates.size(); i++) {
-                    b = x509Certificates.get(i);
-                    a.checkValidity();
-                    try {
+                try {
+                    a = x509Certificates.get(0);
+                    for (int i = 1; i < x509Certificates.size(); i++) {
+                        b = x509Certificates.get(i);
+                        a.checkValidity();
                         a.verify(b.getPublicKey());
-                    } catch (Exception e) {
-                        Flog.error(e);
-                        throw new CertificateException(e);
+                        a = b;
                     }
-                    a = b;
+                } catch (Exception e) {
+                    Flog.debug(e.toString());
+                    String path = FilenameUtils.concat(FilenameUtils.concat(System.getProperty("user.home"), "floobits"), "trust-store");
+                    X509TrustManager manager = ConfirmingTrustManager.createForStorage(path, "");
+                    manager.checkServerTrusted(certs, authType);
                 }
             }
         };
