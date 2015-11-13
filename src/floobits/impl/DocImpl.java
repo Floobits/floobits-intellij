@@ -274,7 +274,13 @@ public class DocImpl extends IDoc {
         if (!document.isWritable()) {
             document.setReadOnly(false);
         }
-        return ReadonlyStatusHandler.ensureDocumentWritable(context.project, document);
+
+        try {
+            return ReadonlyStatusHandler.ensureDocumentWritable(context.project, document);
+        } catch (Throwable e) {
+            Flog.error(e);
+        }
+        return false;
     }
 
     @Override
