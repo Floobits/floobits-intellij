@@ -1,7 +1,10 @@
 package floobits.windows;
 
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.ui.components.JBList;
 import com.intellij.uiDesigner.core.GridConstraints;
+import floobits.actions.Summon;
 import floobits.common.RunLater;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -70,10 +73,10 @@ public class ChatUserForm {
             if (flooHandler == null) {
                 return;
             }
-            clientActionPerformed(flooHandler);
+            clientActionPerformed(flooHandler, e);
         }
 
-        protected void clientActionPerformed(FlooHandler flooHandler) {
+        protected void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
         }
     }
 
@@ -134,7 +137,7 @@ public class ChatUserForm {
         final JMenuItem kickMenuItem = new JMenuItem(label);
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
                 kickClient(userId);
             }
         });
@@ -147,7 +150,7 @@ public class ChatUserForm {
         final JMenuItem followMenuItem = new JMenuItem("Follow");
         followMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
                 Flog.info("Following %s.", username);
                 if (flooHandler.state.followedUsers.contains(username)) {
                     flooHandler.context.errorMessage(String.format("You are already following %s", username));
@@ -163,7 +166,7 @@ public class ChatUserForm {
         final JMenuItem unFollowMenuItem = new JMenuItem("Stop following");
         unFollowMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
                 Flog.info("Will stop following %s", username);
                 if (!flooHandler.state.followedUsers.contains(username)) {
                     flooHandler.context.errorMessage(String.format("You are not following %s", username));
@@ -175,10 +178,22 @@ public class ChatUserForm {
         });
         unFollowMenuItem.setVisible(false);
         popupMenu.add(unFollowMenuItem);
+
+        final JMenuItem summonMenuItem = new JMenuItem("Summon");
+        summonMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
+                Flog.info("Will summon %s", username);
+                Editor selectedTextEditor = FileEditorManager.getInstance(((ContextImpl)flooHandler.context).project).getSelectedTextEditor();
+                Summon.summon(selectedTextEditor, flooHandler.editorEventHandler);
+            }
+        });
+        popupMenu.add(summonMenuItem);
+
         final JMenuItem adminMenuItem = new JMenuItem("Edit Permissions...");
         adminMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
                 final int userId = clients.entrySet().iterator().next().getKey();
                 Flog.info("Opening up permission dialog for %s", username);
                 FlooUser user = flooHandler.state.getUser(userId);
@@ -219,7 +234,7 @@ public class ChatUserForm {
         final JMenuItem kickMenuItem = new JMenuItem(kickAllLabel);
         kickMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
+            public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
                 for (ClientState client : clients.values()) {
                     kickClient(client.userId);
                 }

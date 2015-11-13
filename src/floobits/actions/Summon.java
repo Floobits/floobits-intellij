@@ -15,11 +15,15 @@ public class Summon extends IsJoinedAction {
     @Override
     public void actionPerformed(AnActionEvent e, final EditorEventHandler editorEventHandler) {
         final Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
+        summon(editor, editorEventHandler);
+    }
+
+    public static void summon(Editor editor, EditorEventHandler editorEventHandler) {
         if (editor == null) {
             return;
         }
         Document document = editor.getDocument();
-        ContextImpl context = FloobitsPlugin.getInstance(e.getProject()).context;
+        ContextImpl context = FloobitsPlugin.getInstance(editor.getProject()).context;
         FactoryImpl iFactory = (FactoryImpl) context.iFactory;
         String path = iFactory.getPathForDoc(document);
         if (path == null) {
