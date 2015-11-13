@@ -144,22 +144,6 @@ public class ChatUserForm {
 
     private void setupPopupMenu() {
         final JPopupMenu popupMenu = menuPopup;
-        String kickAllLabel;
-        if (username == null) {
-            kickAllLabel = "Kick all clients for this user.";
-        } else {
-            kickAllLabel = String.format("Kick all of %s's clients", username);
-        }
-        final JMenuItem kickMenuItem = new JMenuItem(kickAllLabel);
-        kickMenuItem.addActionListener(new ClientChatActionListener() {
-            @Override
-            public void clientActionPerformed(FlooHandler flooHandler) {
-                for (ClientState client : clients.values()) {
-                    kickClient(client.userId);
-                }
-            }
-        });
-        popupMenu.add(kickMenuItem);
         final JMenuItem followMenuItem = new JMenuItem("Follow");
         followMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
@@ -225,6 +209,23 @@ public class ChatUserForm {
             }
         });
         popupMenu.add(adminMenuItem);
+
+        String kickAllLabel;
+        if (username == null) {
+            kickAllLabel = "Kick all clients for this user.";
+        } else {
+            kickAllLabel = String.format("Kick all of %s's clients", username);
+        }
+        final JMenuItem kickMenuItem = new JMenuItem(kickAllLabel);
+        kickMenuItem.addActionListener(new ClientChatActionListener() {
+            @Override
+            public void clientActionPerformed(FlooHandler flooHandler) {
+                for (ClientState client : clients.values()) {
+                    kickClient(client.userId);
+                }
+            }
+        });
+        popupMenu.add(kickMenuItem);
         popupMenu.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
