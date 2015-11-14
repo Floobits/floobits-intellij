@@ -31,7 +31,7 @@ public class Settings {
             return new Gson().fromJson(string, (Type) FloorcJson.class);
         } catch (JsonSyntaxException e) {
             throw new Exception("Invalid JSON.");
-       }
+        }
     }
 
     public static void write(IContext context, FloorcJson floorcJson) {

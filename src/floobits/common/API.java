@@ -16,6 +16,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -26,7 +27,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -183,13 +186,7 @@ public class API {
     static public HttpMethod apiRequest(HttpMethod method, IContext context, String host) throws IOException, IllegalArgumentException {
         Flog.info("Sending an API request");
         final HttpClient client = new HttpClient();
-        // NOTE: we cant tell java to follow redirects because they can fail.
-        HttpConnectionManager connectionManager = client.getHttpConnectionManager();
-        HttpConnectionParams connectionParams = connectionManager.getParams();
-        connectionParams.setParameter("http.protocol.handle-redirects", true);
-        connectionParams.setSoTimeout(5000);
-        connectionParams.setConnectionTimeout(3000);
-        connectionParams.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
+
         FloorcJson floorcJson = null;
         try {
             floorcJson = Settings.get();
@@ -209,24 +206,36 @@ public class API {
             secret = "";
         }
         HttpClientParams params = client.getParams();
+
         params.setAuthenticationPreemptive(true);
+
+        params.setParameter("http.protocol.handle-redirects", true);
+        params.setConnectionManagerTimeout(10000);
+        params.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
         client.setParams(params);
+
         Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
         client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SSLProtocolSocketFactory() {
             @Override
-            public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
-                return Utils.createSSLContext().getSocketFactory().createSocket(socket, s, i, b);
+            public Socket createSocket(Socket sock, String s, int i, boolean b) throws IOException {
+                return Utils.createSSLContext().getSocketFactory().createSocket(sock, s, i, b);
             }
 
             @Override
             public Socket createSocket(String s, int i, InetAddress inetAddress, int i2) throws IOException {
-                return Utils.createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
+                Socket socket = Utils.createSSLContext().getSocketFactory().createSocket();
+                socket.bind(new InetSocketAddress(inetAddress, i2));
+                socket.connect(new InetSocketAddress(s, i), 10000);
+                return socket;
             }
 
             @Override
             public Socket createSocket(String s, int i, InetAddress inetAddress, int i2, HttpConnectionParams httpConnectionParams) throws IOException {
-                return Utils.createSSLContext().getSocketFactory().createSocket(s, i, inetAddress, i2);
+                Socket socket = Utils.createSSLContext().getSocketFactory().createSocket();
+                socket.bind(new InetSocketAddress(inetAddress, i2));
+                socket.connect(new InetSocketAddress(s, i), 10000);
+                return socket;
             }
 
             @Override
