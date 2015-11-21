@@ -15,10 +15,10 @@ public class Summon extends IsJoinedAction {
     @Override
     public void actionPerformed(AnActionEvent e, final EditorEventHandler editorEventHandler) {
         final Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
-        summon(editor, editorEventHandler);
+        summon(editor, editorEventHandler, null);
     }
 
-    public static void summon(Editor editor, EditorEventHandler editorEventHandler) {
+    public static void summon(Editor editor, EditorEventHandler editorEventHandler, String username) {
         if (editor == null) {
             return;
         }
@@ -30,6 +30,6 @@ public class Summon extends IsJoinedAction {
             return;
         }
         int offset = editor.getCaretModel().getOffset();
-        editorEventHandler.summon(path, offset);
+        editorEventHandler.summon(path, offset, username);
     }
 }

@@ -179,13 +179,12 @@ public class ChatUserForm {
         unFollowMenuItem.setVisible(false);
         popupMenu.add(unFollowMenuItem);
 
-        final JMenuItem summonMenuItem = new JMenuItem("Summon");
+        final JMenuItem summonMenuItem = new JMenuItem("Summon user");
         summonMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
-                Flog.info("Will summon %s", username);
                 Editor selectedTextEditor = FileEditorManager.getInstance(((ContextImpl)flooHandler.context).project).getSelectedTextEditor();
-                Summon.summon(selectedTextEditor, flooHandler.editorEventHandler);
+                Summon.summon(selectedTextEditor, flooHandler.editorEventHandler, username);
             }
         });
         popupMenu.add(summonMenuItem);

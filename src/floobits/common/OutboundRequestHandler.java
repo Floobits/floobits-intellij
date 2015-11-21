@@ -118,7 +118,7 @@ public class OutboundRequestHandler {
         conn.write(new FlooHighlight(b, textRanges, summon, following));
     }
 
-    public void summon(String current, Integer offset) {
+    public void summon(String current, Integer offset, String username) {
         if (!state.can("patch")) {
             return;
         }
@@ -127,9 +127,11 @@ public class OutboundRequestHandler {
             context.errorMessage(String.format("The file %s is not shared!", current));
             return;
         }
+        ArrayList<String> to = new ArrayList<String>();
+        to.add(username);
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        conn.write(new FlooHighlight(buf, ranges, true, false));
+        conn.write(new FlooHighlight(buf, ranges, true, false, to));
     }
 
     public void requestEdit() {

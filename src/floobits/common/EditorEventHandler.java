@@ -199,8 +199,8 @@ public class EditorEventHandler {
         inbound._on_highlight(newHighlight);
     }
 
-    public void summon(String path, Integer offset) {
-        outbound.summon(path, offset);
+    public void summon(String path, Integer offset, String username) {
+        outbound.summon(path, offset, username);
     }
 
     public void sendEditRequest() {

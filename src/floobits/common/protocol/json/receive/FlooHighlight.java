@@ -15,6 +15,7 @@ public class FlooHighlight implements Base {
     public Boolean following = false;
     public ArrayList<ArrayList<Integer>> ranges;
     public Integer user_id;
+    public ArrayList<String> to;
 
     public FlooHighlight (Buf buf, ArrayList<ArrayList<Integer>> ranges, Boolean summon, Boolean following) {
         this.following = following;
@@ -26,6 +27,16 @@ public class FlooHighlight implements Base {
         this.ranges = ranges;
     }
 
+    public FlooHighlight (Buf buf, ArrayList<ArrayList<Integer>> ranges, Boolean summon, Boolean following, ArrayList<String> to) {
+        this.following = following;
+        this.id = buf.id;
+        if (summon != null) {
+            this.summon = summon;
+            this.ping = summon;
+        }
+        this.ranges = ranges;
+        this.to = to;
+    }
 
     public FlooHighlight (Integer id, ArrayList<ArrayList<Integer>> ranges, Boolean summon, Boolean following, Integer userId) {
         this.following = following;
