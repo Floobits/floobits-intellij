@@ -127,11 +127,15 @@ public class OutboundRequestHandler {
             context.errorMessage(String.format("The file %s is not shared!", current));
             return;
         }
-        ArrayList<String> to = new ArrayList<String>();
-        to.add(username);
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        conn.write(new FlooHighlight(buf, ranges, true, false, to));
+        if (username == null) {
+            ArrayList<String> to = new ArrayList<String>();
+            to.add(username);
+            conn.write(new FlooHighlight(buf, ranges, true, false, to));
+        } else {
+            conn.write(new FlooHighlight(buf, ranges, true, false));
+        }
     }
 
     public void requestEdit() {
