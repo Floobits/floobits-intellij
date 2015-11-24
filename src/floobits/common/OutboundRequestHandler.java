@@ -118,7 +118,7 @@ public class OutboundRequestHandler {
         conn.write(new FlooHighlight(b, textRanges, summon, following));
     }
 
-    public void summon(String current, Integer offset) {
+    public void summon(String current, Integer offset, String username) {
         if (!state.can("patch")) {
             return;
         }
@@ -129,7 +129,13 @@ public class OutboundRequestHandler {
         }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
-        conn.write(new FlooHighlight(buf, ranges, true, false));
+        if (username == null) {
+            ArrayList<String> to = new ArrayList<String>();
+            to.add(username);
+            conn.write(new FlooHighlight(buf, ranges, true, false, to));
+        } else {
+            conn.write(new FlooHighlight(buf, ranges, true, false));
+        }
     }
 
     public void requestEdit() {
