@@ -130,11 +130,11 @@ public class OutboundRequestHandler {
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
         ranges.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
         if (username == null) {
+            conn.write(new FlooHighlight(buf, ranges, true, false));
+        } else {
             ArrayList<String> to = new ArrayList<String>();
             to.add(username);
             conn.write(new FlooHighlight(buf, ranges, true, false, to));
-        } else {
-            conn.write(new FlooHighlight(buf, ranges, true, false));
         }
     }
 
