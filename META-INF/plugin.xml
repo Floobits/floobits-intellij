@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.6.4</version>
+  <version>1.6.5</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
@@ -12,7 +12,7 @@
       ]]></description>
 
   <change-notes><![CDATA[
-    We've fixed some issues with connection timeouts being too long. Previously, connecting to a nonexistent server could cause your IDE to lock up for 5 minutes.
+    You can now summon individual users to your cursor position. Just right-click on them in the user list and choose "summon".
     ]]>
   </change-notes>
 
