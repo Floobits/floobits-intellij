@@ -19,12 +19,7 @@ public class ClearPersistentJSON extends AnAction {
         if (floobitsPlugin != null) {
             context = floobitsPlugin.context;
         }
-        int answer;
-        if (context != null) {
-            answer = JOptionPane.showConfirmDialog(null, message);
-        } else {
-            answer = JOptionPane.YES_OPTION;
-        }
+        int answer = JOptionPane.showConfirmDialog(null, message);
         if (answer == JOptionPane.YES_OPTION) {
             String homeDir = System.getProperty("user.home");
             File file = new File(String.format("%s/floobits/persistent.json", homeDir));
