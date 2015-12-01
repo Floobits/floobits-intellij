@@ -327,6 +327,10 @@ public class API {
                 }
             }, "Floobits Crash Reporter").run();
         } catch (Throwable e) {
+            if (context == null) {
+                Flog.warn(String.format("Couldn't send crash report %s", e));
+                return;
+            }
             try {
                 context.errorMessage(String.format("Couldn't send crash report %s", e));
             } catch (Throwable ignored) {}

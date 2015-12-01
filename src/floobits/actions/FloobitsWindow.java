@@ -9,6 +9,8 @@ public class FloobitsWindow extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
-        floobitsPlugin.context.toggleFloobitsWindow();
+        if (floobitsPlugin != null) {
+            floobitsPlugin.context.toggleFloobitsWindow();
+        }
     }
 }

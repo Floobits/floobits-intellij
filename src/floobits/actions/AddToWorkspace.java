@@ -14,14 +14,14 @@ import floobits.utilities.IntelliUtils;
 import java.util.ArrayList;
 
 public class AddToWorkspace extends IsJoinedAction {
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {
         final HashSet<IFile> filesToAdd = new HashSet<IFile>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
         if (virtualFiles == null) {
             return;
         }
-        ContextImpl context = FloobitsPlugin.getInstance(e.getProject()).context;
+        ContextImpl context = floobitsPlugin.context;
         for (final VirtualFile virtualFile : virtualFiles) {
             FileImpl fileImpl = new FileImpl(virtualFile);
             if (filesToAdd.contains(fileImpl)) {

@@ -9,7 +9,6 @@ import floobits.dialogs.CreateAccount;
 public abstract class RequiresAccountAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-        PersistentJson p = PersistentJson.getInstance();
         if (Settings.canFloobits()) {
             actionPerformedHasAccount(e);
         } else {

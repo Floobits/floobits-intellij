@@ -106,10 +106,7 @@ public class ContextImpl extends IContext {
     @Override
     public boolean confirmDialog(String message) {
         int answer = JOptionPane.showConfirmDialog(null, message);
-        if (answer == JOptionPane.YES_OPTION) {
-            return true;
-        }
-        return false;
+        return answer == JOptionPane.YES_OPTION;
     }
 
     @Override public void chatStatusMessage(String message) {

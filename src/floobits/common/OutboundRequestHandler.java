@@ -25,6 +25,10 @@ public class OutboundRequestHandler {
     }
 
     public void getBuf(Integer buf_id) {
+        if (state == null || state.bufs == null) {
+            Flog.warn("Tried to get buf with no state!?");
+            return;
+        }
         Buf buf = state.bufs.get(buf_id);
         if (buf == null) {
             return;

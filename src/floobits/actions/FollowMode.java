@@ -7,7 +7,7 @@ import floobits.common.protocol.handlers.FlooHandler;
 import floobits.utilities.Flog;
 
 public class FollowMode extends IsJoinedAction {
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {
         editorEventHandler.follow();
     }
 

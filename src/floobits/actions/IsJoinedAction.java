@@ -10,7 +10,7 @@ import floobits.utilities.Flog;
 
 public abstract class IsJoinedAction extends RequiresAccountAction {
 
-    public abstract void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler);
+    public abstract void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin);
 
     @Override
     public void actionPerformedHasAccount(AnActionEvent e) {
@@ -29,7 +29,7 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
                 context.errorMessage("You must join a workspace to perform this action.");
                 return;
             }
-            actionPerformed(e, flooHandler.editorEventHandler);
+            actionPerformed(e, flooHandler.editorEventHandler, floobitsPlugin);
         } catch (Throwable throwable) {
             API.uploadCrash(context, throwable);
         }

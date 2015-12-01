@@ -6,7 +6,7 @@ import floobits.common.EditorEventHandler;
 
 public class FollowUser extends IsJoinedAction {
     @Override
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
-        FloobitsPlugin.getInstance(e.getProject()).context.followUser();
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {
+        floobitsPlugin.context.followUser();
     }
 }

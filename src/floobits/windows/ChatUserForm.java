@@ -45,7 +45,8 @@ public class ChatUserForm {
 
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    Cursor cursor = Cursor.getDefaultCursor();
+                    Cursor cursor;
+                    Cursor.getDefaultCursor();
                     cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
                     setCursor(cursor);
                 }
@@ -183,8 +184,9 @@ public class ChatUserForm {
         summonMenuItem.addActionListener(new ClientChatActionListener() {
             @Override
             public void clientActionPerformed(FlooHandler flooHandler, ActionEvent e) {
-                Editor selectedTextEditor = FileEditorManager.getInstance(((ContextImpl)flooHandler.context).project).getSelectedTextEditor();
-                Summon.summon(selectedTextEditor, flooHandler.editorEventHandler, username);
+                ContextImpl context = (ContextImpl) flooHandler.context;
+                Editor selectedTextEditor = FileEditorManager.getInstance(context.project).getSelectedTextEditor();
+                Summon.summon(selectedTextEditor, flooHandler.editorEventHandler, username, context);
             }
         });
         popupMenu.add(summonMenuItem);

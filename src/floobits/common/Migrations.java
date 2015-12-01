@@ -83,7 +83,10 @@ public class Migrations {
             return;
         }
         try {
-            file.createNewFile();
+            boolean newFile = file.createNewFile();
+            if (!newFile) {
+                return;
+            }
         } catch (IOException e) {
             return;
         }

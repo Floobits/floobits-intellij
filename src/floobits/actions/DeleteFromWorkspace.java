@@ -13,14 +13,14 @@ import java.util.HashSet;
 
 public class DeleteFromWorkspace extends IsJoinedAction {
     @Override
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {
         final HashSet<String> fileHashSet = new HashSet<String>();
         final VirtualFile[] virtualFiles = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(e.getDataContext());
 
         if (editorEventHandler == null || virtualFiles == null) {
             return;
         }
-        IContext context = FloobitsPlugin.getInstance(e.getProject()).context;
+        IContext context = floobitsPlugin.context;
         for (final VirtualFile virtualFile : virtualFiles) {
             if (fileHashSet.contains(virtualFile.getPath())) {
                 continue;
