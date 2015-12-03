@@ -36,7 +36,7 @@ public class OpenWorkspaceInBrowser extends CanFloobits {
             CaretModel caretModel = editor.getCaretModel();
             LogicalPosition logicalPosition = caretModel.getLogicalPosition();
             line = logicalPosition.line + 1;
-            String absPath = virtualFile.getPath();
+            String absPath = virtualFile != null ? virtualFile.getPath() : null;
             path = Utils.toProjectRelPath(absPath, projectPath);
         }
         FlooUrl flooUrl = DotFloo.read(projectPath);

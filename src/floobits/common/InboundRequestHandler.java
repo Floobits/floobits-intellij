@@ -157,6 +157,9 @@ public class InboundRequestHandler {
                 return;
             }
         }
+        if (state == null || state.bufs == null) {
+            return;
+        }
         for (Map.Entry entry : ri.bufs.entrySet()) {
             Integer buf_id = (Integer) entry.getKey();
             RoomInfoBuf b = (RoomInfoBuf) entry.getValue();
@@ -190,7 +193,7 @@ public class InboundRequestHandler {
         for (String path : uploadData.paths) {
             IFile fileByPath = context.iFactory.findFileByPath(context.absPath(path));
             if (fileByPath == null || !fileByPath.isValid()) {
-                Flog.warn(String.format("path is no longer a valid virtual file"));
+                Flog.warn("path is no longer a valid virtual file");
                 continue;
             }
             outbound.createBuf(fileByPath);
@@ -325,6 +328,9 @@ public class InboundRequestHandler {
 
     void _on_delete_buf(JsonObject obj) {
         final DeleteBuf deleteBuf = new Gson().fromJson(obj, (Type) DeleteBuf.class);
+        if (state == null || state.bufs == null) {
+            return;
+        }
         Buf buf = state.bufs.get(deleteBuf.id);
         if (buf == null) {
             Flog.warn(String.format("Tried to delete a buf that doesn't exist: %d", deleteBuf.id));
@@ -359,7 +365,7 @@ public class InboundRequestHandler {
         String username = jsonObject.get("username").getAsString();
         Double time = jsonObject.get("time").getAsDouble();
         Date messageDate;
-        if (time == null) {
+        if (time == 0) {
             messageDate = new Date();
         } else {
             Calendar c = Calendar.getInstance();
@@ -419,7 +425,10 @@ public class InboundRequestHandler {
 
     void _on_saved(JsonObject obj) {
         final Integer id = obj.get("id").getAsInt();
-        final Buf buf = this.state.bufs.get(id);
+        if (state == null || state.bufs == null) {
+            return;
+        }
+        final Buf buf = state.bufs.get(id);
         editor.queue(buf, new RunLater<Buf>() {
             public void run(Buf b) {
                 IDoc document = context.iFactory.getDocument(buf.path);
@@ -485,6 +494,9 @@ public class InboundRequestHandler {
 
     void _on_patch(JsonObject obj) {
         final FlooPatch res = new Gson().fromJson(obj, (Type) FlooPatch.class);
+        if (state == null || state.bufs == null) {
+            return;
+        }
         final Buf buf = this.state.bufs.get(res.id);
         editor.queue(buf, new RunLater<Buf>() {
             @Override

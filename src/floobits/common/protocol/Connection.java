@@ -230,10 +230,10 @@ public class Connection extends SimpleChannelInboundHandler<String> {
             Flog.error(String.format("Took too long: %s", cause.getMessage()));
             return;
         }
-        if (cause instanceof SSLHandshakeException) {
-            Flog.error(String.format("SSL Handshake failed: %s", cause.getMessage()));
-            return;
-        }
+//        if (cause instanceof SSLHandshakeException) {
+//            Flog.error(String.format("SSL Handshake failed: %s", cause.getMessage()));
+//            return;
+//        }
         API.uploadCrash(handler, context, cause);
     }
 }

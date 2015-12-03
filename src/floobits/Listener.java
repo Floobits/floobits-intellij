@@ -244,7 +244,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     }
 
     @Override
-    public void fileContentReloaded(VirtualFile file, @NotNull Document document) {
+    public void fileContentReloaded(@NotNull VirtualFile file, @NotNull Document document) {
     }
 
     @Override

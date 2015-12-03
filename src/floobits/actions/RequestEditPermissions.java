@@ -7,7 +7,7 @@ import floobits.common.protocol.handlers.FlooHandler;
 
 public class RequestEditPermissions extends IsJoinedAction {
     @Override
-    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler) {
+    public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {
         editorEventHandler.sendEditRequest();
     }
 

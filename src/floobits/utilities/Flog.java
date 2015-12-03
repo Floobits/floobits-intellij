@@ -12,6 +12,7 @@ import com.intellij.ui.JBColor;
 import floobits.FloobitsPlugin;
 import floobits.common.FloorcJson;
 import floobits.common.Utils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -81,7 +82,7 @@ public class Flog {
                             ensureRegistered();
                             NotificationListener listener = new NotificationListener() {
                                 @Override
-                                public void hyperlinkUpdate(Notification notification, HyperlinkEvent event) {
+                                public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
                                     IntelliUtils.handleHyperLink(event, project);
                                 }
                             };

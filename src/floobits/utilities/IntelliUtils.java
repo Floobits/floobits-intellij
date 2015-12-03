@@ -80,7 +80,7 @@ public class IntelliUtils {
             Flog.errorMessage("Can't use a browser on this system.", project);
             return null;
         }
-        HashMap<String, HashMap<String, String>> auth = null;
+        HashMap<String, HashMap<String, String>> auth;
         try {
             auth = Settings.get().auth;
         } catch (Throwable e1) {

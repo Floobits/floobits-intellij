@@ -20,7 +20,7 @@ public class FloobitsState {
     private ScheduledFuture pausedFollowing;
     public HashSet<String> perms = new HashSet<String>();
     public Map<Integer, FlooUser> users = new HashMap<Integer, FlooUser>();
-    HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
+    @Nullable HashMap<Integer, Buf> bufs = new HashMap<Integer, Buf>();
     final HashMap<String, Integer> pathsToIds = new HashMap<String, Integer>();
     private int connectionId;
 
@@ -73,7 +73,7 @@ public class FloobitsState {
             return null;
         }
         Integer id = pathsToIds.get(FilenameUtils.separatorsToUnix(relPath));
-        if (id == null) {
+        if (id == null || bufs == null) {
             return null;
         }
         return bufs.get(id);
