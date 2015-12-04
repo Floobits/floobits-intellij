@@ -65,6 +65,7 @@
               description="If you have never signed up to the main website and created a real account, this step will do it for you. If you have, it does nothing.">
       </action>
       <action id="floobits.actions.ClearHighlights" class="floobits.actions.ClearHighlights" text="Clear Highlights"/>
+      <action id="floobits.actions.RequestReview" class="floobits.actions.RequestReview" text="Request Code Review"/>
       <action id="floobits.actions.ClearPersistentJSON" class="floobits.actions.ClearPersistentJSON" text="Clear Cache"/>
       <action id="floobits.actions.GoToLastHighlight" class="floobits.actions.GoToLastHighlight" text="Go to last Highlight"/>
       <action id="floobits.actions.OpenProjectInWorkspace" class="floobits.actions.OpenProjectInWorkspace" text="Join Project's Workspace" description="Open the project in an existing workspace."/>
