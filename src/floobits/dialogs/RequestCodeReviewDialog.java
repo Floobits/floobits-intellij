@@ -7,6 +7,8 @@ import floobits.common.interfaces.IContext;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 
 public class RequestCodeReviewDialog extends CustomButtonDialogWrapper {
@@ -23,8 +25,6 @@ public class RequestCodeReviewDialog extends CustomButtonDialogWrapper {
         JScrollPane scrollPane = new JScrollPane(description);
         container.add(infoLabel, BorderLayout.NORTH);
         container.add(scrollPane, BorderLayout.SOUTH);
-        scrollPane.requestFocus();
-
 
         CustomButtonAction cancel = new CustomButtonAction("Cancel", new Runnable() {
             @Override
@@ -38,9 +38,27 @@ public class RequestCodeReviewDialog extends CustomButtonDialogWrapper {
                 container.setVisible(false);
                 String text = description.getText();
                 API.requestReview(flooUrl, text, context);
+                context.flashMessage("A human has been paged and will send you an email");
             }
         });
         actions = new Action[]{requestReviewAction, cancel};
+        description.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
+                JComponent component = ancestorEvent.getComponent();
+                component.requestFocusInWindow();
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {
+
+            }
+
+            @Override
+            public void ancestorMoved(AncestorEvent ancestorEvent) {
+
+            }
+        });
         init();
     }
 
