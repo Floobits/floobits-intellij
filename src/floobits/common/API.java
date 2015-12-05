@@ -8,6 +8,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.handlers.BaseHandler;
 import floobits.common.protocol.handlers.FlooHandler;
+import floobits.common.protocol.json.send.CodeReviewRequest;
 import floobits.utilities.Flog;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -93,6 +94,31 @@ public class API {
                 return false;
         }
     }
+    public static boolean requestReview(final FlooUrl f, String description, IContext context) {
+
+        PostMethod method = new PostMethod(String.format("/api/workspace/%s/%s/review", f.owner, f.workspace));
+        Gson gson = new Gson();
+        CodeReviewRequest request = new CodeReviewRequest(description);
+        String json = gson.toJson(request);
+
+        try {
+            method.setRequestEntity(new StringRequestEntity(json, "application/json", "UTF-8"));
+            apiRequest(method, context, f.host);
+        } catch (IOException e) {
+            context.errorMessage(String.format("Could not request code review: %s", e.toString()));
+            return false;
+        }
+        String responseBodyAsString;
+        try {
+            responseBodyAsString = method.getResponseBodyAsString();
+        } catch (IOException e) {
+            Flog.error(e);
+            return false;
+        }
+        Flog.log(responseBodyAsString);
+        return method.getStatusCode() < 300;
+    }
+
     public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, IContext context) {
 
         PutMethod method = new PutMethod(String.format("/api/workspace/%s/%s", f.owner, f.workspace));
