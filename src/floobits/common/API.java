@@ -1,27 +1,29 @@
 package floobits.common;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import floobits.common.interfaces.IContext;
 import floobits.common.protocol.handlers.BaseHandler;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.common.protocol.json.send.CodeReviewRequest;
+import floobits.impl.ApplicationImpl;
 import floobits.utilities.Flog;
-import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
+import org.apache.http.params.CoreProtocolPNames;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +32,6 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,8 @@ import java.util.List;
 public class API {
     public static  int maxErrorReports = 3;
     private static int numSent = 0;
+    private static String UA = String.format("Floo.%s %s-%s.%s (%s)", Constants.version, ApplicationImpl.getClientName(),
+            ApplicationInfo.getInstance().getMajorVersion(), ApplicationInfo.getInstance().getMinorVersion(), System.getProperty("os.name"));
 
     public static boolean createWorkspace(String host, String owner, String workspace, IContext context, boolean notPublic) {
         PostMethod method;
@@ -94,7 +97,7 @@ public class API {
                 return false;
         }
     }
-    public static boolean requestReview(final FlooUrl f, String description, IContext context) {
+    public static String requestReview(final FlooUrl f, String description, IContext context) {
 
         PostMethod method = new PostMethod(String.format("/api/workspace/%s/%s/review", f.owner, f.workspace));
         Gson gson = new Gson();
@@ -106,17 +109,19 @@ public class API {
             apiRequest(method, context, f.host);
         } catch (IOException e) {
             context.errorMessage(String.format("Could not request code review: %s", e.toString()));
-            return false;
+            return e.toString();
         }
         String responseBodyAsString;
+        JsonElement message;
         try {
             responseBodyAsString = method.getResponseBodyAsString();
-        } catch (IOException e) {
+            JsonObject jsonObject = new Gson().fromJson(responseBodyAsString, JsonObject.class);
+            message = jsonObject.get("message");
+        } catch (Throwable e) {
             Flog.error(e);
-            return false;
+            return e.toString();
         }
-        Flog.log(responseBodyAsString);
-        return method.getStatusCode() < 300;
+        return message.getAsString();
     }
 
     public static boolean updateWorkspace(final FlooUrl f, HTTPWorkspaceRequest workspaceRequest, IContext context) {
@@ -236,6 +241,7 @@ public class API {
         params.setAuthenticationPreemptive(true);
 
         params.setParameter("http.protocol.handle-redirects", true);
+        params.setParameter(CoreProtocolPNames.USER_AGENT, UA);
         params.setConnectionManagerTimeout(10000);
         params.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
         client.setParams(params);

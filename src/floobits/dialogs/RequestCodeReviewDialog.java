@@ -37,8 +37,8 @@ public class RequestCodeReviewDialog extends CustomButtonDialogWrapper {
             public void run() {
                 container.setVisible(false);
                 String text = description.getText();
-                API.requestReview(flooUrl, text, context);
-                context.flashMessage("A human has been paged and will send you an email");
+                String s = API.requestReview(flooUrl, text, context);
+                context.flashMessage(s);
             }
         });
         actions = new Action[]{requestReviewAction, cancel};
