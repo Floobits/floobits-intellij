@@ -23,7 +23,6 @@ import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
-import org.apache.http.params.CoreProtocolPNames;
 
 import java.io.File;
 import java.io.IOException;
@@ -241,7 +240,7 @@ public class API {
         params.setAuthenticationPreemptive(true);
 
         params.setParameter("http.protocol.handle-redirects", true);
-        params.setParameter(CoreProtocolPNames.USER_AGENT, UA);
+        params.setParameter("http.useragent", UA);
         params.setConnectionManagerTimeout(10000);
         params.setIntParameter(HttpMethodParams.BUFFER_WARN_TRIGGER_LIMIT, 1024 * 1024);
         client.setParams(params);
