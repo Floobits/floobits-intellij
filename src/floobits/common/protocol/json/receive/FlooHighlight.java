@@ -5,6 +5,7 @@ import floobits.common.protocol.Base;
 import floobits.common.protocol.buf.Buf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FlooHighlight implements Base {
     public String name = "highlight";
@@ -45,5 +46,42 @@ public class FlooHighlight implements Base {
         this.ping = summon;
         this.ranges = ranges;
         this.user_id = userId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof FlooHighlight)) {
+            return false;
+        }
+        FlooHighlight a = (FlooHighlight) o;
+        FlooHighlight b = this;
+
+        if (!a.id.equals(b.id) || a.summon != b.summon || a.following != b.following) {
+            return false;
+        }
+
+        if (a.ranges.size() != b.ranges.size()) {
+            return false;
+        }
+
+        // Why, Java? Why?!
+        for (int i = 0; i < a.ranges.size(); i++) {
+            ArrayList<Integer> integersA = a.ranges.get(i);
+            Integer[] aRange = integersA.toArray(new Integer[integersA.size()]);
+            Arrays.sort(aRange);
+
+            ArrayList<Integer> integersB = b.ranges.get(i);
+            Integer[] bRange = integersB.toArray(new Integer[integersB.size()]);
+            Arrays.sort(bRange);
+
+            if (!Arrays.equals(aRange, bRange)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
