@@ -17,6 +17,7 @@ public class OutboundRequestHandler {
     private final IContext context;
     private final FloobitsState state;
     private final Connection conn;
+    private FlooHighlight previousHighlight;
 
     public OutboundRequestHandler(IContext context, FloobitsState state, Connection conn) {
         this.context = context;
@@ -119,7 +120,13 @@ public class OutboundRequestHandler {
             Flog.info("Not sending highlight. Buf isn't populated yet %s", b != null ? b.path : "?");
             return;
         }
-        conn.write(new FlooHighlight(b, textRanges, summon, following));
+
+        FlooHighlight flooHighlight = new FlooHighlight(b, textRanges, summon, following);
+        if (flooHighlight.equals(previousHighlight)) {
+            return;
+        }
+        previousHighlight = flooHighlight;
+        conn.write(flooHighlight);
     }
 
     public void summon(String current, Integer offset, String username) {
