@@ -321,9 +321,9 @@ public class ChatUserForm {
     }
 
     public void addClient(String client, String platform, int userId) {
-        String label = String.format("<html>&middot; %s  <small><i>(%s)</html></i></small>", client, platform);
+        String label = String.format("· %s (%s)", client, platform);
         clientModel.addElement(label);
-        JMenuItem mi = addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</html></i></small>", client, platform));
+        JMenuItem mi = addKickMenuItem(userId, String.format("<html>Kick %s <small><i>(%s)</i></small></html>", client, platform));
         clients.put(userId, new ClientState(userId, mi, label));
         containerPanel.validate();
     }
