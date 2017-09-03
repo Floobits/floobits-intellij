@@ -32,10 +32,16 @@ public class FactoryImpl implements IFactory {
     }
 
     private VirtualFile getVirtualFile(String relPath) {
-        VirtualFile fileByPath = instance.findFileByPath(context.absPath(relPath));
+        String absPath = context.absPath(relPath);
+        if (absPath == null) {
+            Flog.debug("No absPath for %s", relPath);
+            return null;
+        }
+        VirtualFile fileByPath = instance.findFileByPath(absPath);
         if (fileByPath != null && fileByPath.isValid()) {
             return fileByPath;
         }
+        Flog.debug("No fileByPath for %s %s", relPath, absPath);
         return null;
     }
 
