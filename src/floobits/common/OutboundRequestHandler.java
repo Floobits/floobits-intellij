@@ -135,7 +135,7 @@ public class OutboundRequestHandler {
         }
         Buf buf = state.getBufByPath(current);
         if (Buf.isBad(buf)) {
-            context.errorMessage(String.format("The file %s is not shared!", current));
+            context.errorMessage(String.format("The file %s is not shared. Changes will not be synchronized.", current));
             return;
         }
         ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
