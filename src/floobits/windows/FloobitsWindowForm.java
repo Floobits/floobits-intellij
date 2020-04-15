@@ -145,7 +145,7 @@ public class FloobitsWindowForm {
                         e.getPresentation().setEnabled(flooHandler != null);
                     }
                 },
-                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.ObjectBrowser.ShowEditorHighlighting) {
+                new AnAction(clearHighlightsLabel, clearHighlightsLabel, AllIcons.Actions.Edit) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new ClearHighlights().actionPerformed(e);
@@ -213,7 +213,7 @@ public class FloobitsWindowForm {
                         e.getPresentation().setEnabled(flooHandler != null && flooHandler.state.getFollowing());
                     }
                 },
-                new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Nextfile) {
+                new AnAction(openBrowserLabel, openBrowserLabel, AllIcons.Actions.Forward) {
                     @Override
                     public void actionPerformed(AnActionEvent e) {
                         new OpenWorkspaceInBrowser().actionPerformed(e);
