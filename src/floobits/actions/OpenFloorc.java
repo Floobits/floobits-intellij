@@ -2,6 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
@@ -19,8 +20,12 @@ public class OpenFloorc extends AnAction {
     public void actionPerformed(AnActionEvent actionEvent) {
         Project project = actionEvent.getProject();
 
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(project);
-        ContextImpl context = floobitsPlugin.context;
+        ContextImpl context;
+        if (project == null) {
+            context = ServiceManager.getService(FloobitsPlugin.class).context;
+        } else {
+            context = ServiceManager.getService(project, FloobitsPlugin.class).context;
+        }
         File file = new File(Settings.floorcJsonPath);
         if (!file.exists()) {
             boolean created;

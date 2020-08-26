@@ -72,7 +72,7 @@ public class FloobitsApplicationService {
                     Flog.errorMessage("The editor could not open the project :(", null);
                     return;
                 }
-                final ContextImpl context = FloobitsPlugin.getInstance(projectForPath).context;
+                final ContextImpl context = ServiceManager.getService(projectForPath, FloobitsPlugin.class).context;
                 context.writeThread(new Runnable() {
                     @Override
                     public void run() {
@@ -97,7 +97,7 @@ public class FloobitsApplicationService {
                 Flog.errorMessage("The editor could not open the project :(", null);
                 return;
             }
-            context = FloobitsPlugin.getInstance(projectForPath).context;
+            context = ServiceManager.getService(projectForPath, FloobitsPlugin.class).context;
         }
         // not gonna work here
         final ContextImpl finalContext = context;

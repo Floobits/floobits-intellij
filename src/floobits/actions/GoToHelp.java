@@ -2,6 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.BrowserOpener;
@@ -25,7 +26,13 @@ public class GoToHelp extends AnAction {
             return;
         }
         Project project = e.getProject();
-        FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-        browserOpener.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", plugin.context);
+        FloobitsPlugin floobitsPlugin;
+        if (project != null) {
+            floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+        } else {
+            floobitsPlugin = ServiceManager.getService(FloobitsPlugin.class);
+        }
+
+        browserOpener.openInBrowser(uri, "Click here to go to our IntelliJ IDEA help.", floobitsPlugin.context);
     }
 }

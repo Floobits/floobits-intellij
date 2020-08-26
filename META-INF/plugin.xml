@@ -17,18 +17,11 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+  <idea-version since-build="193"/>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
-
-  <project-components>
-    <!-- Add your project components here -->
-      <component>
-          <implementation-class>floobits.FloobitsPlugin</implementation-class>
-      </component>
-  </project-components>
 
   <actions>
       <action id="floobits.actions.JoinWorkspace" class="floobits.actions.JoinWorkspace" text="Join Workspace by URL"
@@ -136,6 +129,11 @@
       </action>
   </actions>
   <extensions defaultExtensionNs="com.intellij">
-      <applicationService serviceImplementation="floobits.FloobitsApplicationService"/>
+    <applicationService serviceImplementation="floobits.FloobitsApplicationService"/>
+    <projectService serviceImplementation="floobits.FloobitsPlugin"/>
   </extensions>
+    <projectListeners>
+        <listener class="floobits.FloobitsProjectListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
 </idea-plugin>

@@ -3,6 +3,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import floobits.FloobitsPlugin;
 import floobits.common.interfaces.IContext;
 
@@ -14,7 +15,7 @@ public class ClearPersistentJSON extends AnAction {
         String message = "You are about to clear the Floobits cache located at ~/.floobits/persistent.json.\n";
         message += "Doing this could have adverse side effects if you've created your account via this plugin\n";
         message += "and haven't signed up on the website yet.";
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        FloobitsPlugin floobitsPlugin = ServiceManager.getService(FloobitsPlugin.class);
         IContext context = null;
         if (floobitsPlugin != null) {
             context = floobitsPlugin.context;

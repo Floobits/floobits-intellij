@@ -1,6 +1,8 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
 import floobits.common.protocol.handlers.FlooHandler;
@@ -16,7 +18,12 @@ public class FollowMode extends IsJoinedAction {
         super.update(e);
         FloobitsPlugin floobitsPlugin;
         FlooHandler flooHandler;
-        floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        Project project = e.getProject();
+        if (project == null) {
+            Flog.log("No project, aborting update.");
+            return;
+        }
+        floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
         if (floobitsPlugin == null) {
             Flog.log("No floobits plugin, aborting update.");
             return;

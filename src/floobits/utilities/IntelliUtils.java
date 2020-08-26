@@ -1,5 +1,6 @@
 package floobits.utilities;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
 import com.intellij.openapi.vfs.VFileProperty;
@@ -123,9 +124,9 @@ public class IntelliUtils {
                 Flog.error(error);
                 return;
             }
-            FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-            if (!BrowserOpener.getInstance().openInBrowser(uri, "Click to continue.", plugin.context)) {
-                plugin.context.errorMessage(
+            FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+            if (!BrowserOpener.getInstance().openInBrowser(uri, "Click to continue.", floobitsPlugin.context)) {
+                floobitsPlugin.context.errorMessage(
                         String.format("You cannot click on links in IntelliJ apparently, try copy and paste: %s.", uri.toString()));
             }
         }

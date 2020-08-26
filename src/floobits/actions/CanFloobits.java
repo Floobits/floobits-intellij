@@ -2,6 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.Settings;
@@ -15,7 +16,12 @@ abstract public class CanFloobits extends AnAction {
     @Override
     public void update(AnActionEvent e) {
         super.update(e);
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        Project project = e.getProject();
+        if (project == null) {
+            e.getPresentation().setEnabled(false);
+            return;
+        }
+        FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
         if (floobitsPlugin == null) {
             e.getPresentation().setEnabled(false);
             return;
@@ -30,13 +36,13 @@ abstract public class CanFloobits extends AnAction {
             Flog.warn("Tried to perform an action but there is no project");
             return;
         }
-        FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
-        if (plugin == null || !Settings.canFloobits()) {
+        FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+        if (floobitsPlugin == null || !Settings.canFloobits()) {
             showCreateAccount(project);
             return;
         }
-        ContextImpl context = plugin.context;
-        actionPerformed(e, project, plugin, context);
+        ContextImpl context = floobitsPlugin.context;
+        actionPerformed(e, project, floobitsPlugin, context);
     }
 
     private void showCreateAccount(Project project) {

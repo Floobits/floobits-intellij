@@ -1,5 +1,6 @@
 package floobits.dialogs;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import floobits.FloobitsPlugin;
@@ -36,7 +37,8 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                 if (project == null) {
                     context = new ContextImpl(null);
                 } else {
-                    context = FloobitsPlugin.getInstance(project).context;
+                    FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+                    context = floobitsPlugin.context;
                 }
                 context.linkEditor();
             }
@@ -49,7 +51,8 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                 if (project == null) {
                     context = new ContextImpl(null);
                 } else {
-                    context = FloobitsPlugin.getInstance(project).context;
+                    FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+                    context = floobitsPlugin.context;
                 }
                 context.createAccount();
             }

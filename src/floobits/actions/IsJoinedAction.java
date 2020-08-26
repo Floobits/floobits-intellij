@@ -1,6 +1,8 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.API;
 import floobits.common.EditorEventHandler;
@@ -18,7 +20,12 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
         FlooHandler flooHandler;
         IContext context = null;
         try {
-            floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+            Project project = e.getProject();
+            if (project == null) {
+                Flog.log("no project, aborting.");
+                return;
+            }
+            floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
             if (floobitsPlugin == null) {
                 Flog.log("no floobits plugin, aborting.");
                 return;
@@ -38,7 +45,12 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
     @Override
     public void update(AnActionEvent e) {
         super.update(e);
-        FloobitsPlugin floobitsPlugin = FloobitsPlugin.getInstance(e.getProject());
+        Project project = e.getProject();
+        if (project == null) {
+            Flog.log("no project, aborting.");
+            return;
+        }
+        FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
         if (floobitsPlugin == null) {
             return;
         }

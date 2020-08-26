@@ -2,6 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 import floobits.common.BrowserOpener;
@@ -20,7 +21,7 @@ public class CompleteSignup extends AnAction {
             return;
         }
         Project project = e.getProject();
-        FloobitsPlugin plugin = FloobitsPlugin.getInstance(project);
+        FloobitsPlugin plugin = ServiceManager.getService(project, FloobitsPlugin.class);
         IContext context = plugin.context;
         try {
             URI uri = new URI(url);
