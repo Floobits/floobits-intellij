@@ -128,7 +128,7 @@ public class FloobitsApplication implements ApplicationComponent {
         try {
             f = new FlooUrl(url);
         } catch (Throwable e) {
-            Flog.errorMessage(String.format("Invalid url: %s", e), context.project);
+            Flog.errorMessage(String.format("Invalid url: %s", e), context != null ? context.project : null);
             return;
         }
 

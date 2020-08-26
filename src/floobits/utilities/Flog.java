@@ -13,6 +13,7 @@ import floobits.FloobitsPlugin;
 import floobits.common.FloorcJson;
 import floobits.common.Utils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -72,7 +73,7 @@ public class Flog {
     private static void ensureRegistered() {
         NotificationsConfiguration.getNotificationsConfiguration().register(ID, NotificationDisplayType.BALLOON, false);
     }
-    public static void statusMessage(final String message, final NotificationType notificationType, final Project project) {
+    public static void statusMessage(final String message, final NotificationType notificationType, @Nullable final Project project) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
