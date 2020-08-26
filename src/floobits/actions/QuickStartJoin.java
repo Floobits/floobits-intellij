@@ -1,7 +1,8 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.FloobitsApplication;
+import com.intellij.openapi.components.ServiceManager;
+import floobits.FloobitsApplicationService;
 
 import javax.swing.*;
 
@@ -11,7 +12,7 @@ public class QuickStartJoin extends RequiresAccountAction {
         if (inputValue == null) {
             return;
         }
-
-        FloobitsApplication.self.joinWorkspace(inputValue);
+        FloobitsApplicationService applicationService = ServiceManager.getService(FloobitsApplicationService.class);
+        applicationService.joinWorkspace(inputValue);
     }
 }

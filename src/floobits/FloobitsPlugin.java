@@ -1,6 +1,7 @@
 package floobits;
 
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
@@ -23,7 +24,8 @@ public class FloobitsPlugin implements ProjectComponent {
 
     @Override
     public void projectOpened() {
-        FloobitsApplication.self.projectOpened(context);
+        FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);
+        floobitsApplicationService.projectOpened(context);
         context.loadFloobitsWindow();
     }
 

@@ -1,4 +1,4 @@
-<idea-plugin version="2" url="https://floobits.com">
+<idea-plugin url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
   <version>1.6.8</version>
@@ -22,12 +22,6 @@
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
-
-  <application-components>
-      <component>
-          <implementation-class>floobits.FloobitsApplication</implementation-class>
-      </component>
-  </application-components>
 
   <project-components>
     <!-- Add your project components here -->
@@ -141,8 +135,7 @@
           <add-to-group group-id="WelcomeScreen.QuickStart" anchor="last"/>
       </action>
   </actions>
-
   <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
+      <applicationService serviceImplementation="floobits.FloobitsApplicationService"/>
   </extensions>
 </idea-plugin>

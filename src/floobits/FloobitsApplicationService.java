@@ -4,7 +4,8 @@ import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.components.Service;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileChooser.impl.FileChooserUtil;
 import com.intellij.openapi.project.Project;
@@ -20,29 +21,24 @@ import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliBrowserOpener;
 import floobits.utilities.SelectFolder;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
 import java.net.URI;
 
-public class FloobitsApplication implements ApplicationComponent {
-    public static FloobitsApplication self;
+@Service
+public class FloobitsApplicationService {
     private Boolean createAccount = true;
 
-    public FloobitsApplication() {
-        self = this;
+    public static FloobitsApplicationService getInstance() {
+        return ServiceManager.getService(FloobitsApplicationService.class);
     }
 
-    public void initComponent() {
+    public void constructor() {
         BrowserOpener.replaceSingleton(new IntelliBrowserOpener());
         ApplicationInfo instance = ApplicationInfo.getInstance();
         IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
         createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), plugin != null ? plugin.getVersion() : "???");
-    }
-
-    public void disposeComponent() {
-        // TODO: insert component disposal logic here
     }
 
     public synchronized void projectOpened(ContextImpl context) {
@@ -58,11 +54,6 @@ public class FloobitsApplication implements ApplicationComponent {
         CreateAccount createAccountDialog = new CreateAccount(context.project);
         createAccountDialog.createCenterPanel();
         createAccountDialog.show();
-    }
-
-    @NotNull
-    public String getComponentName() {
-        return "FloobitsApplication";
     }
 
     public void joinWorkspace(final String url) {
@@ -175,7 +166,8 @@ public class FloobitsApplication implements ApplicationComponent {
         VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(new File(path));
         Project openedProject;
         if (ProjectAttachProcessor.canAttachToProject() && file != null) {
-            openedProject = PlatformProjectOpenProcessor.doOpenProject(file, null, false, -1, null, false);
+            PlatformProjectOpenProcessor platformProjectOpenProcessor = PlatformProjectOpenProcessor.getInstance();
+            openedProject = platformProjectOpenProcessor.doOpenProject(file, null, false);
         } else {
             openedProject = ProjectUtil.openOrImport(path, null, false);
         }
@@ -197,5 +189,4 @@ public class FloobitsApplication implements ApplicationComponent {
         FileChooserUtil.setLastOpenedFile(openedProject, file);
         return openedProject;
     }
-
 }

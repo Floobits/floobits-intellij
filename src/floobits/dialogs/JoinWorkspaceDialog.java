@@ -1,6 +1,7 @@
 package floobits.dialogs;
 
-import floobits.FloobitsApplication;
+import com.intellij.openapi.components.ServiceManager;
+import floobits.FloobitsApplicationService;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -23,7 +24,8 @@ public class JoinWorkspaceDialog extends CustomButtonDialogWrapper {
                 if (inputValue == null) {
                     return;
                 }
-                FloobitsApplication.self.joinWorkspace(inputValue);
+                FloobitsApplicationService applicationService = ServiceManager.getService(FloobitsApplicationService.class);
+                applicationService.joinWorkspace(inputValue);
             }
         });
         joinAction.putValue(FOCUSED_ACTION, true);

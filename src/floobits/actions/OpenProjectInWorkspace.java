@@ -1,8 +1,9 @@
 package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import floobits.FloobitsApplication;
+import floobits.FloobitsApplicationService;
 import floobits.FloobitsPlugin;
 import floobits.common.*;
 import floobits.dialogs.HandleNoWorkspaceJoin;
@@ -16,8 +17,9 @@ import java.util.Map;
 public class OpenProjectInWorkspace extends CanFloobits {
     public void actionPerformed(AnActionEvent actionEvent, Project project, FloobitsPlugin plugin, ContextImpl context) {
         FlooUrl flooUrl = DotFloo.read(project.getBasePath());
+        FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);
         if (flooUrl != null) {
-            FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());
+            floobitsApplicationService.joinWorkspace(context, flooUrl.toString());
             return;
         }
 
@@ -34,7 +36,7 @@ public class OpenProjectInWorkspace extends CanFloobits {
                         Flog.error(e);
                         continue;
                     }
-                    FloobitsApplication.self.joinWorkspace(context, flooUrl.toString());
+                    floobitsApplicationService.joinWorkspace(context, flooUrl.toString());
                     return;
                 }
             }

@@ -1,8 +1,9 @@
 package floobits.dialogs;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import floobits.FloobitsApplication;
+import floobits.FloobitsApplicationService;
 import floobits.FloobitsPlugin;
 import floobits.impl.ContextImpl;
 import org.jetbrains.annotations.Nullable;
@@ -46,12 +47,13 @@ public class SelectRecentWorkspace extends DialogWrapper {
     @Override
     protected void doOKAction() {
         super.doOKAction();
+        FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);
         if (project != null) {
             ContextImpl context = project.getComponent(FloobitsPlugin.class).context;
-            FloobitsApplication.self.joinWorkspace(context, selectWorkspace.getSelectedItem());
+            floobitsApplicationService.joinWorkspace(context, selectWorkspace.getSelectedItem());
             return;
         }
-        FloobitsApplication.self.joinWorkspace(null, selectWorkspace.getSelectedItem());
+        floobitsApplicationService.joinWorkspace(null, selectWorkspace.getSelectedItem());
 
     }
 }
