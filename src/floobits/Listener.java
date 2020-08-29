@@ -1,6 +1,7 @@
 package floobits;
 
 import com.intellij.AppTopics;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -37,59 +38,59 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
     public final AtomicBoolean isSaving = new AtomicBoolean(false);
     private final ContextImpl context;
     private EditorEventHandler editorManager;
-    private VirtualFileAdapter virtualFileAdapter;
-    private MessageBusConnection connection = ApplicationManager.getApplication().getMessageBus().connect();
-    private EditorEventMulticaster em = EditorFactory.getInstance().getEventMulticaster();
+    private MessageBusConnection messageBusConnection;
+    private EditorEventMulticaster em;
     private String oldRenamePath;
     private ArrayList<ArrayList<Integer>> ranges = new ArrayList<ArrayList<Integer>>();
-
 
     public Listener(ContextImpl context) {
         this.context = context;
     }
 
-    public synchronized void start(final EditorEventHandler editorManager) {
-        this.editorManager = editorManager;
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
-        connection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
-        em.addDocumentListener(this);
-        em.addSelectionListener(this);
-        em.addCaretListener(this);
-        em.addVisibleAreaListener(this);
+    public synchronized void start(final EditorEventHandler editorManager_) {
+        editorManager = editorManager_;
+        messageBusConnection = ApplicationManager.getApplication().getMessageBus().connect();
+        messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, this);
+        messageBusConnection.subscribe(AppTopics.FILE_DOCUMENT_SYNC, this);
+        messageBusConnection.subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+            List<? extends VFileEvent> beforeEvents;
+//            before/after could maybe be in different threads?
+            @Override
+            public void before(@NotNull List<? extends VFileEvent> events) {
+                beforeEvents = events;
+            }
 
-//        context.project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
-//            @Override
-//            public void after(@NotNull List<? extends VFileEvent> events) {
-//                VFileEvent event = events.get(0);
-//                event.
-//                // handle the events
-//            }
-//        });
+            @Override
+            public void after(@NotNull List<? extends VFileEvent> afterEvents) {
+                for (int i = 0; i < beforeEvents.size(); i ++) {
+//                    VFileEvent vFileEvent = afterEvents.get(i);
+//                    if (vFileEvent instanceof VFileMoveEvent) {
+//                        Flog.info("move event %s", vFileEvent);
+//                        VirtualFile oldParent = ((VFileMoveEvent) vFileEvent).getOldParent();
+//                        VirtualFile newParent = ((VFileMoveEvent) vFileEvent).getNewParent();
+//                        renameAllNestedFiles(vFileEvent.getFile(), oldParent.getPath(), newParent.getPath());
+//                    }
+                    String oldPath = beforeEvents.get(i).getPath();
+                    String newPath = afterEvents.get(i).getPath();
+                    editorManager.rename(oldPath, newPath);
+                }
+            }
+        });
 
-        virtualFileAdapter = new VirtualFileAdapter() {
-            public void beforePropertyChange(@NotNull final VirtualFilePropertyEvent event) {
-                if (!event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
-                    return;
-                }
-                VirtualFile parent = event.getParent();
-                if (parent == null) {
-                    return;
-                }
-                String parentPath = parent.getPath();
-                // XXX: pretty sure is this wrong.
-                String newValue = parentPath + "/" + event.getNewValue().toString();
-                String oldValue = parentPath + "/" + event.getOldValue().toString();
-                editorManager.rename(oldValue, newValue);
+        em = EditorFactory.getInstance().getEventMulticaster();
+        final Disposable disposable = new Disposable() {
+            @Override
+            public void dispose() {
+                Flog.debug("disposing");
             }
         };
-        VirtualFileManager.getInstance().addVirtualFileListener(virtualFileAdapter);
+        em.addDocumentListener(this, disposable);
+        em.addSelectionListener(this, disposable);
+        em.addCaretListener(this, disposable);
+        em.addVisibleAreaListener(this, disposable);
     }
 
     public synchronized void shutdown() {
-        if (connection != null) {
-            connection.disconnect();
-            connection = null;
-        }
         if (em != null) {
             em.removeSelectionListener(this);
             em.removeDocumentListener(this);
@@ -97,11 +98,10 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
             em.removeVisibleAreaListener(this);
             em = null;
         }
-        if (virtualFileAdapter != null) {
-            VirtualFileManager.getInstance().removeVirtualFileListener(virtualFileAdapter);
-            virtualFileAdapter = null;
+        if (messageBusConnection != null) {
+            messageBusConnection.disconnect();
+            messageBusConnection = null;
         }
-
     }
 
     @Override
@@ -299,9 +299,7 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         }
 
         ArrayList<ArrayList<Integer>> rangesWithCaret = new ArrayList<ArrayList<Integer>>(ranges.size() + 1);
-        for(ArrayList<Integer> item: ranges) {
-            rangesWithCaret.add(item);
-        }
+        rangesWithCaret.addAll(ranges);
         Integer offset = editor.getCaretModel().getOffset();
         rangesWithCaret.add(new ArrayList<Integer>(Arrays.asList(offset, offset)));
         editorManager.changeSelection(path, rangesWithCaret, !isListening.get() || following);
