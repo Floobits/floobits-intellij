@@ -34,11 +34,18 @@ public class FloobitsApplicationService {
         return ServiceManager.getService(FloobitsApplicationService.class);
     }
 
-    public void constructor() {
+    public void constructor () {
         BrowserOpener.replaceSingleton(new IntelliBrowserOpener());
         ApplicationInfo instance = ApplicationInfo.getInstance();
-        IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
-        createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), plugin != null ? plugin.getVersion() : "???");
+        PluginId pluginId = PluginManager.getPluginByClassName("com.floobits.unique.plugin.id");
+        IdeaPluginDescriptor[] plugins = PluginManager.getPlugins();
+        String version = "Unknown version";
+        for (IdeaPluginDescriptor plugin : plugins) {
+            if (plugin.getPluginId() == pluginId) {
+                version = plugin.getVersion();
+            }
+        }
+        createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version);
     }
 
     public synchronized void projectOpened(ContextImpl context) {

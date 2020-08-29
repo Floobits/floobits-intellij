@@ -1,5 +1,6 @@
 package floobits.impl;
 
+import com.intellij.application.options.CodeStyle;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.markup.*;
@@ -10,7 +11,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.codeStyle.CodeStyleSettingsManager;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import floobits.common.Constants;
@@ -37,10 +37,8 @@ public class DocImpl extends IDoc {
     public DocImpl(ContextImpl context, Document document) {
         this.context = context;
         this.document = document;
-        CodeStyleSettings settings = CodeStyleSettingsManager.getSettings(context.project);
-        // Using deprecated because not all versions and forks of Intellij Have this.
-        // Replace with settings.getRightMargin(null); one day
-        editorWidth = settings.RIGHT_MARGIN;
+        CodeStyleSettings settings = CodeStyle.getSettings(context.project);
+        editorWidth = settings.getRightMargin(null);
     }
 
     public String toString() {

@@ -57,6 +57,14 @@ public class Listener implements BulkFileListener, DocumentListener, SelectionLi
         em.addCaretListener(this);
         em.addVisibleAreaListener(this);
 
+//        context.project.getMessageBus().connect().subscribe(VirtualFileManager.VFS_CHANGES, new BulkFileListener() {
+//            @Override
+//            public void after(@NotNull List<? extends VFileEvent> events) {
+//                VFileEvent event = events.get(0);
+//                event.
+//                // handle the events
+//            }
+//        });
 
         virtualFileAdapter = new VirtualFileAdapter() {
             public void beforePropertyChange(@NotNull final VirtualFilePropertyEvent event) {

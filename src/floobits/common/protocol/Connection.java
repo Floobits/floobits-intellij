@@ -185,7 +185,7 @@ public class Connection extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        JsonObject obj = (JsonObject)new JsonParser().parse(msg);
+        JsonObject obj = JsonParser.parseString(msg).getAsJsonObject();
         JsonElement name = obj.get("name");
         if (name == null) {
             Flog.warn("No name for receive, ignoring");

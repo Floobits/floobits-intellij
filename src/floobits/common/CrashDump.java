@@ -27,7 +27,14 @@ public class CrashDump implements Serializable {
     }
 
     private IdeaPluginDescriptor getPlugin() {
-        return PluginManager.getPlugin(PluginId.getId("com.floobits.unique.plugin.id"));
+        PluginId pluginId = PluginManager.getPluginByClassName("com.floobits.unique.plugin.id");
+        IdeaPluginDescriptor[] plugins = PluginManager.getPlugins();
+        for (IdeaPluginDescriptor plugin : plugins) {
+            if (plugin.getPluginId() == pluginId) {
+                return plugin;
+            }
+        }
+        return null;
     }
 
     public CrashDump(Throwable e, String owner, String workspace, String dir, String username) {

@@ -5,9 +5,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowAnchor;
-import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.*;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import floobits.common.FlooUrl;
@@ -15,6 +13,8 @@ import floobits.common.interfaces.IContext;
 import floobits.common.protocol.FlooUser;
 import floobits.common.protocol.handlers.FlooHandler;
 import floobits.impl.ContextImpl;
+import org.jetbrains.annotations.NotNull;
+
 
 import java.util.Date;
 

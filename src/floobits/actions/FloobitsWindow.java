@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project;
 import floobits.FloobitsPlugin;
 
 public class FloobitsWindow extends AnAction {
-
     @Override
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getProject();

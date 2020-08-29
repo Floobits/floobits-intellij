@@ -23,6 +23,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.*;
 
 
@@ -204,7 +205,7 @@ public class InboundRequestHandler {
             File f = new File(flooignore);
             List<String> strings;
             if (f.exists()) {
-                strings = FileUtils.readLines(f);
+                strings = FileUtils.readLines(f, Charset.defaultCharset());
             } else {
                 strings = new ArrayList<String>();
             }

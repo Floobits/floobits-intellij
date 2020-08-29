@@ -11,6 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 
 
@@ -51,7 +52,7 @@ public class Settings {
         }
 
         try {
-            FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson));
+            FileUtils.write(file, new GsonBuilder().setPrettyPrinting().create().toJson(floorcJson), Charset.defaultCharset(), false);
         } catch (IOException e) {
             Flog.error(e);
             context.errorMessage("Can't write new ~/.floorc.json");

@@ -3,7 +3,6 @@ package floobits.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.containers.hash.HashSet;
 import floobits.FloobitsPlugin;
 import floobits.common.EditorEventHandler;
 import floobits.common.interfaces.IFile;
@@ -12,6 +11,7 @@ import floobits.impl.FileImpl;
 import floobits.utilities.IntelliUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class AddToWorkspace extends IsJoinedAction {
     public void actionPerformed(AnActionEvent e, EditorEventHandler editorEventHandler, FloobitsPlugin floobitsPlugin) {

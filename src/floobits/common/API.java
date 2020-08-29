@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 
 import java.io.File;
@@ -65,7 +66,7 @@ public class API {
                 String details;
                 try {
                     String res = method.getResponseBodyAsString();
-                    JsonObject obj = (JsonObject)new JsonParser().parse(res);
+                    JsonObject obj = (JsonObject)JsonParser.parseString(res);
                     details = obj.get("detail").getAsString();
                 } catch (IOException e) {
                     Flog.error(e);
@@ -247,7 +248,7 @@ public class API {
 
         Credentials credentials = new UsernamePasswordCredentials(username, secret);
         client.getState().setCredentials(AuthScope.ANY, credentials);
-        client.getHostConfiguration().setHost(host, 443, new Protocol("https", new SSLProtocolSocketFactory() {
+        client.getHostConfiguration().setHost(host, 443, new Protocol("https", (ProtocolSocketFactory)new SSLProtocolSocketFactory() {
             @Override
             public Socket createSocket(Socket sock, String s, int i, boolean b) throws IOException {
                 return Utils.createSSLContext().getSocketFactory().createSocket(sock, s, i, b);
@@ -296,7 +297,7 @@ public class API {
 
         try {
             String response = method.getResponseBodyAsString();
-            JsonArray orgsJson = new JsonParser().parse(response).getAsJsonArray();
+            JsonArray orgsJson = JsonParser.parseString(response).getAsJsonArray();
     
             for (int i = 0; i < orgsJson.size(); i++) {
                 JsonObject org = orgsJson.get(i).getAsJsonObject();
@@ -356,7 +357,7 @@ public class API {
 
                     }
                 }
-            }, "Floobits Crash Reporter").run();
+            }, "Floobits Crash Reporter").start();
         } catch (Throwable e) {
             if (context == null) {
                 Flog.warn(String.format("Couldn't send crash report %s", e));
