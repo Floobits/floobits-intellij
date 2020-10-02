@@ -1,11 +1,13 @@
 package floobits;
 
 import com.intellij.ide.impl.ProjectUtil;
+
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.ServiceManager;
+
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.fileChooser.impl.FileChooserUtil;
 import com.intellij.openapi.project.Project;
@@ -16,6 +18,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectAttachProcessor;
 import floobits.common.*;
+
 import floobits.dialogs.CreateAccount;
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
@@ -29,12 +32,11 @@ import java.net.URI;
 @Service
 public class FloobitsApplicationService {
     private Boolean createAccount = true;
-
     public static FloobitsApplicationService getInstance() {
         return ServiceManager.getService(FloobitsApplicationService.class);
     }
 
-    public void constructor () {
+    public FloobitsApplicationService () {
         BrowserOpener.replaceSingleton(new IntelliBrowserOpener());
         ApplicationInfo instance = ApplicationInfo.getInstance();
         PluginId pluginId = PluginManager.getPluginByClassName("com.floobits.unique.plugin.id");

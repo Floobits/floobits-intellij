@@ -23,7 +23,7 @@ public class FollowMode extends IsJoinedAction {
             Flog.log("No project, aborting update.");
             return;
         }
-        floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+        floobitsPlugin = project.getServiceIfCreated(FloobitsPlugin.class);
         if (floobitsPlugin == null) {
             Flog.log("No floobits plugin, aborting update.");
             return;

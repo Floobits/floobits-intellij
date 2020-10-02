@@ -1,8 +1,6 @@
 package floobits.dialogs;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import floobits.FloobitsPlugin;
 import floobits.common.interfaces.IContext;
 import floobits.impl.ContextImpl;
@@ -10,13 +8,9 @@ import floobits.utilities.Flog;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 
 public class CreateAccount extends CustomButtonDialogWrapper {
     private JPanel jPanel;
-
-
-
     public CreateAccount(final Project project) {
         super(project, true);
         jPanel = new JPanel();
@@ -37,7 +31,7 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                 if (project == null) {
                     context = new ContextImpl(null);
                 } else {
-                    FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+                    FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
                     context = floobitsPlugin.context;
                 }
                 context.linkEditor();
@@ -51,7 +45,7 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                 if (project == null) {
                     context = new ContextImpl(null);
                 } else {
-                    FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+                    FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
                     context = floobitsPlugin.context;
                 }
                 context.createAccount();

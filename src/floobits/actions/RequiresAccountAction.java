@@ -2,7 +2,7 @@ package floobits.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import floobits.common.PersistentJson;
+import com.intellij.openapi.project.Project;
 import floobits.common.Settings;
 import floobits.dialogs.CreateAccount;
 
@@ -12,7 +12,8 @@ public abstract class RequiresAccountAction extends AnAction {
         if (Settings.canFloobits()) {
             actionPerformedHasAccount(e);
         } else {
-            CreateAccount createAccount1 = new CreateAccount(null);
+            Project project = e.getProject();
+            CreateAccount createAccount1 = new CreateAccount(project);
             createAccount1.createCenterPanel();
             createAccount1.show();
         }

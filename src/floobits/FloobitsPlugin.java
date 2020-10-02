@@ -3,6 +3,7 @@ package floobits;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 

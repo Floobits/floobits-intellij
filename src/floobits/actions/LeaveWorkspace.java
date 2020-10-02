@@ -36,8 +36,9 @@ public class LeaveWorkspace extends AnAction {
             Flog.log("no project to find FloobitsPlugin, can not update LeaveWorkspace, sorry.");
             return;
         }
-        FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+        FloobitsPlugin floobitsPlugin = project.getServiceIfCreated(FloobitsPlugin.class);
         if (floobitsPlugin == null) {
+            e.getPresentation().setEnabled(false);
             return;
         }
         e.getPresentation().setEnabled(floobitsPlugin.context.isJoined());

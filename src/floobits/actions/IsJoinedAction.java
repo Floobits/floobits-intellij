@@ -50,8 +50,9 @@ public abstract class IsJoinedAction extends RequiresAccountAction {
             Flog.log("no project, aborting.");
             return;
         }
-        FloobitsPlugin floobitsPlugin = ServiceManager.getService(project, FloobitsPlugin.class);
+        FloobitsPlugin floobitsPlugin = project.getServiceIfCreated(FloobitsPlugin.class);
         if (floobitsPlugin == null) {
+            e.getPresentation().setEnabled(false);
             return;
         }
         e.getPresentation().setEnabled(isEnabled(floobitsPlugin));

@@ -15,6 +15,7 @@ import java.util.Map;
 
 
 public class OpenProjectInWorkspace extends CanFloobits {
+    @Override
     public void actionPerformed(AnActionEvent actionEvent, Project project, FloobitsPlugin plugin, ContextImpl context) {
         FlooUrl flooUrl = DotFloo.read(project.getBasePath());
         FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);

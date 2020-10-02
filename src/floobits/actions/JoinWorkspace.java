@@ -17,7 +17,7 @@ public class JoinWorkspace extends CanFloobits {
             return;
         }
         String url = "https://floobits.com/";
-        FlooUrl floourl = DotFloo.read(context.project.getBasePath());
+        FlooUrl floourl = DotFloo.read(project.getBasePath());
         if (floourl != null) {
             url = floourl.toString();
         }
