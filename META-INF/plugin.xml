@@ -1,7 +1,7 @@
 <idea-plugin url="https://floobits.com">
   <id>com.floobits.unique.plugin.id</id>
   <name>Floobits</name>
-  <version>1.6.8</version>
+  <version>1.7.0</version>
   <vendor email="info@floobits.com" url="https://floobits.com">Floobits</vendor>
 
   <description><![CDATA[
