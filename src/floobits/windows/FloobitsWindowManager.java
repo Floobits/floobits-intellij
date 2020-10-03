@@ -69,7 +69,7 @@ public class FloobitsWindowManager {
 
     public boolean isOpen() {
         try {
-            return toolWindow.isVisible();
+            return toolWindow != null && toolWindow.isVisible();
         } catch (IllegalStateException e) {
             return false;
         }
