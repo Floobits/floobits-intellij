@@ -402,7 +402,11 @@ public class ContextImpl extends IContext {
 
     @Override
     public void openFloobitsWindow() {
-        if (floobitsWindowManager == null || floobitsWindowManager.isOpen()) {
+        if (floobitsWindowManager == null) {
+            loadFloobitsWindow();
+        }
+
+        if (floobitsWindowManager.isOpen()) {
             return;
         }
         floobitsWindowManager.openFloobitsWindow();
@@ -420,6 +424,7 @@ public class ContextImpl extends IContext {
     @Override
     public void toggleFloobitsWindow() {
         if (floobitsWindowManager == null) {
+            loadFloobitsWindow();
             return;
         }
         floobitsWindowManager.toggleFloobitsWindow();
