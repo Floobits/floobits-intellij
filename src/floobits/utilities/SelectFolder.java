@@ -4,10 +4,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import floobits.common.Constants;
-import floobits.common.FloorcJson;
-import floobits.common.RunLater;
-import floobits.common.Settings;
+import floobits.common.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -22,24 +19,38 @@ public class SelectFolder {
         descriptor.setDescription("NOTE: Floobits will NOT make a new, root directory inside the folder you choose. If you have cloned the project already, select that folder.");
         FloorcJson floorcJson;
         try {
-            floorcJson =  Settings.get();
+            floorcJson = Settings.get();
         } catch (Exception e) {
             Flog.errorMessage("Your floorc.json has invalid json.", null);
             return;
         }
+        // TODO: try current project's basepath
         File file = null;
+        PersistentJson persistentJson = PersistentJson.getInstance();
+        Workspace workspaceJson;
+        try {
+            workspaceJson = persistentJson.workspaces.get(owner).get(workspace);
+            File workspaceDir = new File(workspaceJson.path);
+            if (workspaceDir.exists()) {
+                file = workspaceDir;
+            }
+        } catch (Throwable e) {
+            Flog.errorMessage(String.format("Can not read ~/persistent.json: %s", e), null);
+        }
+
         String shareDir = floorcJson.share_dir;
-        if (shareDir != null) {
-            if (shareDir.substring(0, 2).equals("~/")) {
+        if (file == null && shareDir != null) {
+            if (shareDir.startsWith("~/")) {
                 shareDir = shareDir.replaceFirst("~/", System.getProperty("user.home") + "/");
             }
             file = createDir(shareDir, owner, workspace);
             if (file == null) {
-                Flog.errorMessage(String.format("Your floorc.json share_dir setting %s did not work, using default ~/floobits",
+                Flog.errorMessage(String.format("Your floorc.json share_dir setting %s did not work, falling back to persistent.json",
                         floorcJson.share_dir), null);
             }
         }
         if (file == null) {
+            Flog.errorMessage("No mapping found in persistent.json. Falling back to ~/floobits", null);
             file = createDir(Constants.shareDir, owner, workspace);
         }
         if (file == null) {
