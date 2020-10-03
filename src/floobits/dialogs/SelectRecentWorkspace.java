@@ -49,7 +49,7 @@ public class SelectRecentWorkspace extends DialogWrapper {
         super.doOKAction();
         FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);
         if (project != null) {
-            ContextImpl context = project.getComponent(FloobitsPlugin.class).context;
+            ContextImpl context = project.getService(FloobitsPlugin.class).context;
             floobitsApplicationService.joinWorkspace(context, selectWorkspace.getSelectedItem());
             return;
         }
