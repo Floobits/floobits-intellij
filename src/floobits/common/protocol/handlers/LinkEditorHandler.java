@@ -21,15 +21,11 @@ public class LinkEditorHandler extends BaseHandler {
     protected String token;
     private String host;
 
-    public LinkEditorHandler(IContext context, String host) {
+    public LinkEditorHandler(IContext context, String host, Runnable runnable) {
         super(context);
         UUID uuid = UUID.randomUUID();
         token = String.format("%040x", new BigInteger(1, uuid.toString().getBytes()));
         this.host = host;
-    }
-
-    public LinkEditorHandler(IContext context, String host, Runnable runnable) {
-        this(context, host);
         this.runnable = runnable;
     }
 
@@ -75,7 +71,7 @@ public class LinkEditorHandler extends BaseHandler {
         if (runnable == null) {
             return;
         }
-        context.readThread(runnable);
+        context.mainThread(runnable);
     }
 
     protected void openBrowser() {

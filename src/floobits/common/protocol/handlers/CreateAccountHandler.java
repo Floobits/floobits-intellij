@@ -14,10 +14,12 @@ import java.util.Map;
 public class CreateAccountHandler extends BaseHandler {
 
     private String host;
+    private Runnable afterCreateAccount;
 
-    public CreateAccountHandler(IContext context, String _host) {
+    public CreateAccountHandler(IContext context, String _host, Runnable runnable) {
         super(context);
         host = _host;
+        afterCreateAccount = runnable;
         url = new FlooUrl(host, null, null, Constants.defaultPort, true);
     }
 
@@ -58,6 +60,8 @@ public class CreateAccountHandler extends BaseHandler {
                 "You can now share a project or join a workspace.", auth_host.get("username")));
         Flog.info("All setup");
         context.shutdown();
+
+        context.mainThread(afterCreateAccount);
     }
 
     @Override

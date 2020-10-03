@@ -195,16 +195,16 @@ public abstract class IContext {
         });
     }
 
-    public void createAccount() {
-        if (setupHandler(new CreateAccountHandler(this, Utils.getDefaultHost()))) {
+    public void createAccount(Runnable afterSetup) {
+        if (setupHandler(new CreateAccountHandler(this, Utils.getDefaultHost(), afterSetup))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.");
         shutdown();
     }
 
-    public void linkEditor() {
-        if (setupHandler(new LinkEditorHandler(this, Utils.getDefaultHost()))) {
+    public void linkEditor(Runnable afterSetup) {
+        if (setupHandler(new LinkEditorHandler(this, Utils.getDefaultHost(), afterSetup))) {
             return;
         }
         statusMessage("You already have an account and are connected with it.");

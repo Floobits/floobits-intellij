@@ -24,6 +24,7 @@ import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
 import floobits.utilities.IntelliBrowserOpener;
 import floobits.utilities.SelectFolder;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.File;
@@ -50,8 +51,9 @@ public class FloobitsApplicationService {
         createAccount = Bootstrap.bootstrap(instance.getVersionName(), instance.getMajorVersion(), instance.getMinorVersion(), version);
     }
 
-    public synchronized void projectOpened(ContextImpl context) {
+    public synchronized void setupAccount(@NotNull ContextImpl context, @NotNull Runnable afterSetup) {
         if (!createAccount) {
+            context.mainThread(afterSetup);
             return;
         }
         PersistentJson p = PersistentJson.getInstance();
@@ -60,7 +62,7 @@ public class FloobitsApplicationService {
             return;
         }
         createAccount = false;
-        CreateAccount createAccountDialog = new CreateAccount(context.project);
+        CreateAccount createAccountDialog = new CreateAccount(context.project, afterSetup);
         createAccountDialog.createCenterPanel();
         createAccountDialog.show();
     }

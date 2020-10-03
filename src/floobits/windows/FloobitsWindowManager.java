@@ -20,19 +20,23 @@ import java.util.Date;
 
 
 public class FloobitsWindowManager {
-    protected IContext context;
+    protected ContextImpl context;
     protected ToolWindow toolWindow;
     protected FloobitsWindowForm chatForm;
 
     public FloobitsWindowManager(ContextImpl context) {
        this.context = context;
        chatForm = new FloobitsWindowForm(context);
-       this.createChatWindow(context.project);
     }
 
-    protected void createChatWindow(Project project) {
+    public void createChatWindow(Project project) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-        toolWindow = toolWindowManager.registerToolWindow("Floobits", true, ToolWindowAnchor.BOTTOM);
+        toolWindow = toolWindowManager.getToolWindow("floobits");
+        if (toolWindow == null) {
+            toolWindow = toolWindowManager.registerToolWindow("floobits", true, ToolWindowAnchor.BOTTOM);
+        } else {
+            toolWindow.getContentManager().removeAllContents(false);
+        }
         toolWindow.setIcon(IconLoader.getIcon("/icons/floo13.png"));
         Content content = ContentFactory.SERVICE.getInstance().createContent(chatForm.getChatPanel(), "", true);
         toolWindow.getContentManager().addContent(content);

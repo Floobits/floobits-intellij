@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class CreateAccount extends CustomButtonDialogWrapper {
     private JPanel jPanel;
-    public CreateAccount(final Project project) {
+    public CreateAccount(final Project project, final Runnable afterSetup) {
         super(project, true);
         jPanel = new JPanel();
         this.setTitle("No Floobits Account Detected");
@@ -34,7 +34,7 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                     FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
                     context = floobitsPlugin.context;
                 }
-                context.linkEditor();
+                context.linkEditor(afterSetup);
             }
         });
         CustomButtonAction createAccountAction = new CustomButtonAction("Create a Floobits account", new Runnable() {
@@ -48,7 +48,7 @@ public class CreateAccount extends CustomButtonDialogWrapper {
                     FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
                     context = floobitsPlugin.context;
                 }
-                context.createAccount();
+                context.createAccount(afterSetup);
             }
         });
         actions = new Action[]{cancelAction, linkAccountAction, createAccountAction};

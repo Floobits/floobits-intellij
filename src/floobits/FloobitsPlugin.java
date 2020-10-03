@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 
 import floobits.impl.ContextImpl;
 import floobits.utilities.Flog;
+import org.jetbrains.annotations.NotNull;
 
 @Service
 public class FloobitsPlugin {
@@ -15,8 +16,11 @@ public class FloobitsPlugin {
     public FloobitsPlugin(Project project) {
         context = new ContextImpl(project);
         Flog.info("Floobits plugin");
+    }
+
+    public void setupAccount(@NotNull Runnable afterSetup) {
         FloobitsApplicationService floobitsApplicationService = ServiceManager.getService(FloobitsApplicationService.class);
-        floobitsApplicationService.projectOpened(context);
+        floobitsApplicationService.setupAccount(context, afterSetup);
         context.loadFloobitsWindow();
     }
 }

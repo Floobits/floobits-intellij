@@ -22,15 +22,19 @@ abstract public class CanFloobits extends AnAction {
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
-        Project project = e.getProject();
+    public void actionPerformed(final AnActionEvent e) {
+        final Project project = e.getProject();
         if (project == null) {
             Flog.warn("Tried to perform an action but there is no project");
             return;
         }
-        FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
-        ContextImpl context = floobitsPlugin.context;
-        actionPerformed(e, project, floobitsPlugin, context);
+        final FloobitsPlugin floobitsPlugin = project.getService(FloobitsPlugin.class);
+        floobitsPlugin.setupAccount(new Runnable() {
+            @Override
+            public void run() {
+                actionPerformed(e, project, floobitsPlugin, floobitsPlugin.context);
+            }
+        });
     }
 
     abstract public void actionPerformed(AnActionEvent e, Project project, FloobitsPlugin plugin, ContextImpl context);

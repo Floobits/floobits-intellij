@@ -74,7 +74,10 @@ public class ContextImpl extends IContext {
 
     @Override
     public void loadFloobitsWindow() {
-        floobitsWindowManager = new FloobitsWindowManager(this);
+        if (floobitsWindowManager == null) {
+            floobitsWindowManager = new FloobitsWindowManager(this);
+        }
+        floobitsWindowManager.createChatWindow(project);
     }
 
     @Override public void flashMessage(final String message) {

@@ -13,7 +13,12 @@ public abstract class RequiresAccountAction extends AnAction {
             actionPerformedHasAccount(e);
         } else {
             Project project = e.getProject();
-            CreateAccount createAccount1 = new CreateAccount(project);
+            CreateAccount createAccount1 = new CreateAccount(project, new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            });
             createAccount1.createCenterPanel();
             createAccount1.show();
         }
